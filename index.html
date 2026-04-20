@@ -3,35 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CHANNELS PRO</title>
+    <title>CHANNELS</title>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.6/controls.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.6/shaka-player.ui.js"></script>
+
     <style>
         :root { --bg: #0b0e11; --card: #151921; --blue: #00d2ff; --yellow: #ffcc00; }
         body { background: var(--bg); color: #fff; font-family: sans-serif; margin: 0; padding: 20px; }
-        .header { display: flex; align-items: baseline; border-bottom: 1px solid #1e232d; margin-bottom: 25px; padding-bottom: 15px; }
+        
+        /* Schermata di blocco */
+        #lock { 
+            position: fixed; inset: 0; background: var(--bg); 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            z-index: 9999; 
+        }
+        #lock input { padding: 12px; background: #000; border: 1px solid #333; color: #fff; border-radius: 4px; margin-bottom: 10px; width: 200px; text-align: center; }
+        #lock button { padding: 10px 30px; background: var(--blue); border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+
+        /* App e Griglia */
+        #app { display: none; }
+        .header { border-bottom: 1px solid #1e232d; margin-bottom: 25px; padding-bottom: 15px; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
-        .card { background: var(--card); border-radius: 4px; padding: 15px; cursor: pointer; border: 1px solid #1e232d; display: flex; flex-direction: column; min-height: 140px; }
-        .logo-box { height: 60px; margin-bottom: 15px; display: flex; align-items: center; }
-        .logo-box img { max-width: 80%; max-height: 100%; object-fit: contain; }
+        .card { background: var(--card); border-radius: 4px; padding: 15px; border: 1px solid #1e232d; cursor: pointer; }
+        .logo-box { height: 60px; margin-bottom: 10px; }
+        .logo-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
         .name { font-size: 13px; font-weight: bold; }
-        .sub { font-size: 9px; color: var(--blue); text-transform: uppercase; font-weight: bold; }
-        #player-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.98); display: none; align-items: center; justify-content: center; z-index: 1000; }
-        .player-container { width: 95%; max-width: 900px; }
+        .sub { font-size: 9px; color: var(--blue); text-transform: uppercase; }
+
+        /* Player */
+        #player-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; z-index: 1000; align-items: center; justify-content: center; }
+        .player-container { width: 90%; max-width: 800px; }
         .shaka-video-container { width: 100%; aspect-ratio: 16/9; }
-        .shaka-range-element { color: var(--yellow) !important; }
-        #lock { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 2000; }
-        .hidden { display: none; }
+        .shaka-range-element { color: var(--yellow) !important; } /* Barra Gialla */
     </style>
 </head>
 <body>
 
 <div id="lock">
-    <input type="password" id="pw" placeholder="PASSWORD" style="padding:10px; background:#000; color:#fff; border:1px solid #333;">
-    <button onclick="login()" style="padding:10px 20px; background:var(--blue); border:none; cursor:pointer; font-weight:bold;">ENTRA</button>
+    <input type="password" id="pw" placeholder="PASSWORD">
+    <button onclick="checkLogin()">ENTRA</button>
 </div>
 
-<div id="app" class="hidden">
+<div id="app">
     <div class="header"><h1>📺 CHANNELS</h1></div>
     <div id="grid" class="grid"></div>
 </div>
@@ -39,73 +53,86 @@
 <div id="player-overlay">
     <div class="player-container">
         <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-            <div style="display:flex; align-items:center; gap:10px;">
-                <h3 id="p-name" style="margin:0;"></h3>
-                <span id="p-sub" class="sub"></span>
-            </div>
-            <button onclick="closePlayer()" style="background:#333; color:#fff; border:none; padding:5px 10px; cursor:pointer;">✕ CLOSE</button>
+            <h3 id="p-name" style="margin:0"></h3>
+            <button onclick="closePlayer()" style="color:#fff; background:none; border:1px solid #333; cursor:pointer;">✕ CLOSE</button>
         </div>
-        <div id="video-container" class="shaka-video-container"><video id="video" autoplay></video></div>
+        <div id="video-container" class="shaka-video-container">
+            <video id="video" autoplay crossorigin="anonymous"></video>
+        </div>
     </div>
 </div>
 
 <script>
-    const PW = "1234";
-    let player, ui;
-
-    function login() {
-        if(document.getElementById('pw').value === PW) {
-            document.getElementById('lock').classList.add('hidden');
-            document.getElementById('app').classList.remove('hidden');
-            loadM3U();
+    function checkLogin() {
+        const pass = document.getElementById('pw').value;
+        if(pass === "1234") {
+            // Nascondi blocco e mostra app
+            document.getElementById('lock').style.display = 'none';
+            document.getElementById('app').style.display = 'block';
+            // Carica la lista solo dopo il successo
+            initApp();
+        } else {
+            alert("Password sbagliata");
         }
     }
 
-    async function loadM3U() {
-        const res = await fetch("./lista_privata.m3u");
-        const text = await res.text();
-        const entries = text.split('#KODIPROP').slice(1);
-        const grid = document.getElementById('grid');
+    async function initApp() {
+        try {
+            const res = await fetch("./lista_privata.m3u");
+            const data = await res.text();
+            parseM3U(data);
+        } catch(e) {
+            console.error("Errore caricamento lista:", e);
+        }
+    }
 
-        entries.forEach(entry => {
-            const kidKey = entry.match(/license_key=(.*)/)?.[1]?.split(':');
-            const ua = entry.match(/user-agent=(.*)/)?.[1]?.trim();
-            const name = entry.match(/#EXTINF.*,(.*)/)?.[1]?.trim();
-            const logo = entry.match(/tvg-logo="(.*?)"/)?.[1];
-            const group = entry.match(/group-title="(.*?)"/)?.[1];
-            const url = entry.match(/https?:\/\/\S+/)?.[0];
+    function parseM3U(text) {
+        const grid = document.getElementById('grid');
+        const items = text.split('#KODIPROP').slice(1);
+
+        items.forEach(item => {
+            const kidKey = item.match(/license_key=(.*)/)?.[1]?.split(':');
+            const ua = item.match(/user-agent=(.*)/)?.[1]?.trim();
+            const name = item.match(/#EXTINF.*,(.*)/)?.[1]?.trim();
+            const logo = item.match(/tvg-logo="(.*?)"/)?.[1];
+            const group = item.match(/group-title="(.*?)"/)?.[1];
+            const url = item.match(/https?:\/\/\S+/)?.[0];
 
             if(url) {
                 const card = document.createElement('div');
                 card.className = 'card';
-                card.onclick = () => openPlayer(url, name, group, kidKey?.[0], kidKey?.[1], ua);
-                card.innerHTML = `<div class="logo-box"><img src="${logo}"></div><div class="name">${name}</div><div class="sub">${group}</div>`;
+                card.onclick = () => play(url, name, kidKey?.[0], kidKey?.[1], ua);
+                card.innerHTML = `
+                    <div class="logo-box"><img src="${logo}"></div>
+                    <div class="name">${name}</div>
+                    <div class="sub">${group}</div>
+                `;
                 grid.appendChild(card);
             }
         });
     }
 
-    async function openPlayer(url, name, group, kid, key, ua) {
+    let player, ui;
+    async function play(url, name, kid, key, ua) {
         document.getElementById('player-overlay').style.display = 'flex';
         document.getElementById('p-name').innerText = name;
-        document.getElementById('p-sub').innerText = group;
 
         const video = document.getElementById('video');
         player = new shaka.Player(video);
         ui = new shaka.ui.Overlay(player, document.getElementById('video-container'), video);
         
-        // Passiamo attraverso la nostra API Proxy per evitare blocchi CORS
+        // Barra gialla e controlli
+        ui.configure({'controlPanelElements': ['play_pause', 'time_and_duration', 'spacer', 'mute', 'volume', 'fullscreen']});
+
+        // Proxy per bypassare il blocco dello User-Agent senza estensioni
         const proxiedUrl = `/api/proxy?url=${encodeURIComponent(url)}&ua=${encodeURIComponent(ua)}`;
 
-        player.configure({
-            drm: { clearKeys: { [kid.trim()]: key.trim() } }
-        });
+        player.configure({ drm: { clearKeys: { [kid.trim()]: key.trim() } } });
 
         try {
             await player.load(proxiedUrl);
         } catch(e) {
-            console.error("Errore:", e);
-            alert("Errore caricamento. Il proxy su Vercel potrebbe impiegare qualche secondo per attivarsi la prima volta.");
+            console.error("Errore Shaka:", e);
         }
     }
 
