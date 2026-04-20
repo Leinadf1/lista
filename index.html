@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="ISO-8859-1">
-<title>Dynamic Stream Player</title>
+<title>Single Stream Player</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
@@ -12,135 +12,77 @@ body {
 background-color: #262626;
 color: white;
 font-family: Arial, sans-serif;
-margin: 0;
-padding: 20px;
 }
 .center {
 margin: auto;
-width: 80%;
-max-width: 800px;
+width: 50%;
 text-align: center;
 }
 video {
 width: 100%;
 height: 100%;
 }
-/* Stile per la griglia canali */
-.grid {
-display: grid;
-grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-gap: 15px;
-margin-top: 30px;
-}
-.btn-channel {
-background: #333;
-border: 1px solid #444;
-color: white;
-padding: 15px;
-cursor: pointer;
-border-radius: 5px;
-font-weight: bold;
-transition: 0.3s;
-}
-.btn-channel:hover {
-background: #ffcc00;
-color: #000;
-}
-.hidden { display: none !important; }
+/* Ho aggiunto solo questo per i bottoni dei canali */
+.channel-list { margin-top: 20px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.chan-btn { background: #444; color: white; border: 1px solid #666; padding: 10px; cursor: pointer; border-radius: 4px; }
+.chan-btn:hover { background: #ffcc00; color: black; }
 </style>
 </head>
 
 <body>
-
-<div id="login-screen" class="center">
-    <h2>Accesso Riservato</h2>
-    <input type="password" id="pw" placeholder="Password" style="padding:10px; border-radius:5px; border:none;">
-    <button onclick="login()" style="padding:10px 20px; cursor:pointer;">Entra</button>
+<div class="center">
+<h2 id="title">Seleziona un Canale</h2>
 </div>
 
-<div id="main-content" class="hidden">
-    <div class="center">
-        <h2>Canale in onda: <span id="current-name">-</span></h2>
-    </div>
-
-    <div
-    class="center"
-    style="max-width:40em"
-    data-shaka-player-container
-    data-shaka-player-cast-receiver-id="07AEE832"
-    >
-        <video autoplay data-shaka-player id="video"></video>
-    </div>
-
-    <div id="channel-grid" class="grid center"></div>
+<div
+class="center"
+style="max-width:40em"
+data-shaka-player-container
+data-shaka-player-cast-receiver-id="07AEE832"
+>
+<video autoplay data-shaka-player id="video"></video>
 </div>
+
+<div class="center channel-list" id="list"></div>
 
 <script>
-let player;
-
-function login() {
-    if(document.getElementById('pw').value === "1234") {
-        document.getElementById('login-screen').classList.add('hidden');
-        document.getElementById('main-content').classList.remove('hidden');
-        loadPlaylist();
-    } else { alert("Password Errata"); }
-}
-
-async function loadPlaylist() {
-    try {
-        const res = await fetch("./lista_privata.m3u");
-        const data = await res.text();
-        const grid = document.getElementById('channel-grid');
-        
-        // Estraiamo i blocchi dalla lista
-        const blocks = data.split('#KODIPROP:inputstream.adaptive.license_type=clearkey');
-        
-        blocks.forEach(block => {
-            if (block.includes('#EXTINF')) {
-                const name = block.split(',').pop().split('\n')[0].trim();
-                const url = block.match(/https?:\/\/\S+/)?.[0];
-                const keys = block.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
-
-                if (url && keys) {
-                    const btn = document.createElement('button');
-                    btn.className = 'btn-channel';
-                    btn.innerText = name;
-                    btn.onclick = () => playStream(url, name, keys[1], keys[2]);
-                    grid.appendChild(btn);
-                }
-            }
-        });
-    } catch (e) { console.error("Errore lista:", e); }
-}
-
-async function playStream(manifestUrl, name, kid, key) {
-    document.getElementById('current-name').innerText = name;
-    
-    // Inizializzazione Shaka UI nativa
+async function init() {
     const video = document.getElementById('video');
     const ui = video['ui'];
     const controls = ui.getControls();
-    player = controls.getPlayer();
+    const player = controls.getPlayer();
 
-    // Configurazione ClearKey
-    player.configure({
-        drm: {
-            clearKeys: { [kid]: key }
+    // Carica la lista e crea i bottoni
+    const res = await fetch("./lista_privata.m3u");
+    const data = await res.text();
+    const blocks = data.split('#KODIPROP:inputstream.adaptive.license_type=clearkey');
+
+    blocks.forEach(block => {
+        if (block.includes('#EXTINF')) {
+            const name = block.split(',').pop().split('\n')[0].trim();
+            const url = block.match(/https?:\/\/\S+/)?.[0];
+            const keys = block.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
+
+            if (url && keys) {
+                const btn = document.createElement('button');
+                btn.className = 'chan-btn';
+                btn.innerText = name;
+                btn.onclick = async () => {
+                    document.getElementById('title').innerText = name;
+                    player.configure({ drm: { clearKeys: { [keys[1]]: keys[2] } } });
+                    try {
+                        await player.load(url);
+                    } catch (e) {
+                        alert("Errore 4000: Il browser blocca il flusso.");
+                    }
+                };
+                document.getElementById('list').appendChild(btn);
+            }
         }
     });
-
-    try {
-        await player.load(manifestUrl);
-        console.log('Canale caricato:', name);
-    } catch (e) {
-        console.error('Errore caricamento:', e);
-        alert("Errore 4000: Impossibile caricare il flusso. Potrebbe servire il proxy.");
-    }
 }
 
-document.addEventListener('shaka-ui-loaded', () => {
-    console.log("Shaka UI pronta");
-});
+document.addEventListener('shaka-ui-loaded', init);
 </script>
 </body>
 </html>
