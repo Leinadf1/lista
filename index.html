@@ -4,58 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CHANNELS PRO App</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.5/shaka-player.compiled.debug.js"></script>
+    <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
     <style>
         :root { --bg: #0b0e11; --card: #151921; --blue: #007bff; --text: #f0f0f0; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; overflow-x: hidden; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; padding: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; }
+        .card { background: var(--card); border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; border: 1px solid #1e232d; transition: 0.3s; }
+        .card:hover { border-color: var(--blue); transform: translateY(-5px); }
         
-        .header { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #222; margin-bottom: 30px; }
-        .header h1 { font-size: 22px; text-transform: uppercase; letter-spacing: 1px; }
-
-        /* GRIGLIA RIPRISTINATA */
-        .grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); 
-            gap: 20px; 
-            max-width: 1400px; 
-            margin: 0 auto;
-        }
-
-        .card { 
-            background: var(--card); 
-            border-radius: 12px; 
-            padding: 20px; 
-            text-align: center; 
-            cursor: pointer; 
-            transition: 0.3s; 
-            border: 1px solid #1e232d;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .card:hover { border-color: var(--blue); transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        /* Overlay Player */
+        #player-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; z-index: 10000; }
+        .player-wrap { width: 90%; max-width: 1000px; position: relative; }
+        .close-btn { position: absolute; top: -40px; right: 0; color: white; background: #ff4444; border: none; padding: 5px 15px; cursor: pointer; border-radius: 5px; }
         
-        .logo-box { width: 100%; height: 80px; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; }
-        .logo-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
-        
-        .name { font-size: 14px; font-weight: 600; color: #fff; }
-        .sub { font-size: 10px; color: var(--blue); text-transform: uppercase; margin-top: 5px; font-weight: bold; }
-
-        /* PLAYER OVERLAY STILE PRO */
-        #player-overlay { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.95); display: none; align-items: center; 
-            justify-content: center; z-index: 10000; 
-        }
-        .player-wrap { width: 90%; max-width: 1000px; position: relative; background: #000; border-radius: 8px; overflow: hidden; }
-        video { width: 100%; aspect-ratio: 16/9; display: block; }
-        
-        .close-btn { 
-            position: absolute; top: 10px; right: 10px; z-index: 10001;
-            background: #ff4444; color: white; border: none; padding: 8px 15px; 
-            cursor: pointer; border-radius: 5px; font-weight: bold;
-        }
-
         #lock { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10001; }
         .hidden { display: none !important; }
     </style>
@@ -63,9 +24,9 @@
 <body>
 
 <div id="lock">
-    <h2 style="margin-bottom:20px; letter-spacing:2px;">AREA RISERVATA</h2>
-    <input type="password" id="pw" placeholder="Password" style="padding:12px; border-radius:5px; border:1px solid #333; background:#1a1a20; color:white; text-align:center; margin-bottom:15px; width:250px;">
-    <button onclick="login()" style="padding:12px 40px; background:var(--blue); color:white; border:none; border-radius:5px; cursor:pointer; font-weight:bold;">ACCEDI</button>
+    <h2>AREA RISERVATA</h2>
+    <input type="password" id="pw" style="padding:10px; margin-bottom:10px;">
+    <button onclick="login()" style="padding:10px 20px; background:var(--blue); color:white; border:none;">ENTRA</button>
 </div>
 
 <div id="app" class="hidden">
@@ -76,20 +37,25 @@
 <div id="player-overlay">
     <div class="player-wrap">
         <button class="close-btn" onclick="closePlayer()">✕ CLOSE</button>
-        <video id="video" controls autoplay></video>
+        <video id="my-video" class="video-js vjs-default-skin vjs-big-play-centered" controls preload="auto" width="960" height="540"></video>
     </div>
 </div>
+
+<script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.5/shaka-player.compiled.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/videojs-shaka@1.1.1/dist/videojs-shaka.min.js"></script>
 
 <script>
     const PW_SECRET = "1234";
     const FILE_NAME = "lista_privata.m3u";
+    let vjsPlayer;
 
     function login() {
         if(document.getElementById('pw').value === PW_SECRET) {
             document.getElementById('lock').classList.add('hidden');
             document.getElementById('app').classList.remove('hidden');
             load();
-        } else { alert("Accesso Negato"); }
+        } else { alert("Password errata"); }
     }
 
     async function load() {
@@ -97,70 +63,48 @@
         const data = await res.text();
         const lines = data.split('\n');
         const container = document.getElementById('grid');
-        container.innerHTML = '';
 
         for (let i = 0; i < lines.length; i++) {
             if (lines[i].includes('#EXTINF')) {
                 const info = lines[i];
                 const name = info.split(',').pop().trim();
                 const url = lines[i+1]?.trim();
-                
-                if(!url || !url.startsWith('http')) continue;
+                if(!url) continue;
 
-                const logoMatch = info.match(/tvg-logo="([^"]+)"/);
-                const kidMatch = info.match(/#KID=([0-9a-fA-F]+)/);
-                const keyMatch = info.match(/#KEY=([0-9a-fA-F]+)/);
+                const kid = info.match(/#KID=([0-9a-fA-F]+)/)?.[1];
+                const key = info.match(/#KEY=([0-9a-fA-F]+)/)?.[1];
 
                 const card = document.createElement('div');
                 card.className = 'card';
-                card.onclick = () => openPlayer(url, kidMatch?.[1], keyMatch?.[1]);
-                
-                card.innerHTML = `
-                    <div class="logo-box">
-                        ${logoMatch ? `<img src="${logoMatch[1]}">` : `<div style="color:#333; font-weight:bold;">${name}</div>`}
-                    </div>
-                    <div class="name">${name}</div>
-                    <div class="sub">SKY IT INTRATTENIMENTO</div>
-                `;
+                card.onclick = () => openPlayer(url, kid, key);
+                card.innerHTML = `<div class="name">${name}</div>`;
                 container.appendChild(card);
             }
         }
     }
 
-    let shakaPlayer;
-
-    async function openPlayer(url, kid, key) {
+    function openPlayer(url, kid, key) {
         document.getElementById('player-overlay').style.display = 'flex';
-        const video = document.getElementById('video');
         
-        // Inizializza Shaka
-        shakaPlayer = new shaka.Player(video);
+        if (vjsPlayer) { vjsPlayer.dispose(); }
 
-        // Configura ClearKey se presenti ID e Chiave
-        if (kid && key) {
-            shakaPlayer.configure({
+        const playerOptions = {
+            autoplay: true,
+            controls: true,
+            techOrder: ['shaka'],
+            shaka: {
                 drm: {
-                    clearKeys: { [kid]: key }
+                    clearKeys: (kid && key) ? { [kid]: key } : {}
                 }
-            });
-        }
+            }
+        };
 
-        try {
-            await shakaPlayer.load(url);
-            console.log('Video caricato con successo!');
-        } catch (e) {
-            console.error('Errore Shaka:', e);
-            alert("Errore nel caricamento del flusso MPD. Controlla le chiavi.");
-        }
+        vjsPlayer = videojs('my-video', playerOptions);
+        vjsPlayer.src({ src: url, type: 'application/dash+xml' });
     }
 
     function closePlayer() {
-        const video = document.getElementById('video');
-        if (shakaPlayer) {
-            shakaPlayer.destroy();
-        }
-        video.pause();
-        video.src = "";
+        if (vjsPlayer) { vjsPlayer.pause(); }
         document.getElementById('player-overlay').style.display = 'none';
     }
 </script>
