@@ -3,27 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TV Dashboard PRO</title>
+    <title>TV Dashboard PRO – Mobile & PC Fix</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
     <style>
         body { background-color: #0d1117; color: #c9d1d9; font-family: sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         #header { width: 100%; max-width: 1200px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid #30363d; padding-bottom: 10px; }
         h1 { font-size: 24px; color: #58a6ff; margin: 0; }
+        #chan-count { color: #8b949e; font-weight: bold; }
         .player-container { width: 100%; max-width: 850px; background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 35px; border: 1px solid #30363d; }
         video { width: 100%; aspect-ratio: 16/9; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; width: 100%; max-width: 1200px; }
-        .card { background-color: #161b22; border: 1px solid #30363d; border-radius: 10px; cursor: pointer; transition: 0.2s; overflow: hidden; display: flex; flex-direction: column; text-align: center; }
-        .card:hover { border-color: #58a6ff; transform: translateY(-3px); }
-        .logo-box { width: 100%; height: 90px; display: flex; justify-content: center; align-items: center; background: #21262d; padding: 5px; box-sizing: border-box; }
+        .channel-card { background-color: #161b22; border: 1px solid #30363d; border-radius: 10px; cursor: pointer; transition: 0.2s; overflow: hidden; display: flex; flex-direction: column; }
+        .channel-card:hover { transform: translateY(-5px); border-color: #58a6ff; }
+        .channel-card.active { border: 2px solid #58a6ff; background-color: #21262d; }
+        .logo-box { width: 100%; height: 100px; display: flex; justify-content: center; align-items: center; background: #21262d; padding: 10px; box-sizing: border-box; }
         .logo-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
-        .name { padding: 10px; font-size: 12px; font-weight: bold; color: #f0f6fc; }
+        .info-box { padding: 12px; text-align: center; border-top: 1px solid #30363d; }
+        .name { font-size: 13px; font-weight: 600; color: #f0f6fc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     </style>
 </head>
 <body>
 
     <div id="header">
-        <h1>Dashboard Live</h1>
+        <h1>Dashboard</h1>
         <div id="chan-count">Sincronizzazione...</div>
     </div>
 
@@ -34,67 +37,93 @@
     <div id="list" class="grid"></div>
 
 <script>
-const SOURCE_URL = "/api/get-list";
+const SOURCE_URL = "https://nodrm.online/list/list2.m3u";
 
 const CANALI_FISSI = [
-    { name: "EUROSPORT 4K", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/thumb.prod.front.tim.cptech.pro/http/unsafe/filters:format(png):anamorphosis(640,480)/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020019/tim-ouah/CHN43FN/MONOGRAM_ESP4K_WHITE_V2-BjK0", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport4k)/manifest.mpd", keys: {"9ceae06c6ad34aada83ba86c0b511452":"406862beb4af1ef8fe04ba15d9936360","fcd924bd2e45470fa2ae50ef05e357c0":"266db84d3572bc889185274a90ff31df","dea135e33341468f8a4e8da806d8a6e6":"fb7423db39e6fab75056f8c83f415847","31911db90ee3410f8b38e45659d01fb1":"ac316ab7dfd2b50faf6d44633e4fedd5","a16f2a39adbb4974b8910cec8a651a09":"c2d55e0111af955f47214af209a2c468"} }
+    { name: "EUROSPORT 4K", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/thumb.prod.front.tim.cptech.pro/http/unsafe/filters:format(png):anamorphosis(640,480)/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020019/tim-ouah/CHN43FN/MONOGRAM_ESP4K_WHITE_V2-BjK0", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport4k)/manifest.mpd", keys: {"9ceae06c6ad34aada83ba86c0b511452":"406862beb4af1ef8fe04ba15d9936360","fcd924bd2e45470fa2ae50ef05e357c0":"266db84d3572bc889185274a90ff31df","dea135e33341468f8a4e8da806d8a6e6":"fb7423db39e6fab75056f8c83f415847","31911db90ee3410f8b38e45659d01fb1":"ac316ab7dfd2b50faf6d44633e4fedd5","a16f2a39adbb4974b8910cec8a651a09":"c2d55e0111af955f47214af209a2c468"} },
+    { name: "EUROSPORT 1", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/thumb.prod.front.tim.cptech.pro/http/unsafe/filters:format(png):anamorphosis(640,480)/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020000/tim-ouah/CHN43FN/MONOGRAM_ESP1_WHITE_V2-Lv2g", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport1)/manifest.mpd", kid: "46e559c2f9f645ce8d80c7fa20446bdb", key: "597d214d66342ee042bccffeb165e750" },
+    { name: "EUROSPORT 2", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/thumb.prod.front.tim.cptech.pro/http/unsafe/filters:format(png):anamorphosis(640,480)/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020001/tim-ouah/CHN43FN/MONOGRAM_ESP2_WHITE_V2-Zp7E", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport2)/manifest.mpd", kid: "e8372283a523444c84646c4172b1bc0f", key: "969a90e1a1a6424a68fe4b5d776368ec" },
+    { name: "EUROSPORT 3", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/thumb.prod.front.tim.cptech.pro/http/unsafe/filters:format(png):anamorphosis(640,480)/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020002/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-yiID", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport3)/manifest.mpd", kid: "1e2398b0eeb04829b4711e14b4a91244", key: "11e26659ebfecf6a22ed56da340448cd" },
+    { name: "EUROSPORT 4", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/thumb.prod.front.tim.cptech.pro/http/unsafe/filters:format(png):anamorphosis(640,480)/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020003/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-3YSY", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport4)/manifest.mpd", kid: "9dd7be79e44f4d08a91ec5d1553f17b8", key: "8a62369f81a4b6e5f2d4846f7bd5e7d1" },
+    { name: "EUROSPORT 5", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/thumb.prod.front.tim.cptech.pro/http/unsafe/filters:format(png):anamorphosis(640,480)/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020004/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-sv5m", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport5)/manifest.mpd", kid: "b48e7e6d96da479da65e435ce65faeb1", key: "48c703879ce4deedb5a2124a30a13bc4" },
+    { name: "EUROSPORT 6", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/thumb.prod.front.tim.cptech.pro/http/unsafe/filters:format(png):anamorphosis(640,480)/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020005/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-H53i", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport6)/manifest.mpd", kid: "ead1c567a3df48619799b2e78b18fdfa", key: "1de9d9af5651296aa67913979ad8c694" }
 ];
+
+async function fetchList() {
+    const proxies = [
+        "https://corsproxy.io/?", 
+        "https://api.allorigins.win/raw?url=",
+        "https://thingproxy.freeboard.io/fetch/",
+        "https://api.codetabs.com/v1/proxy/?quest="
+    ];
+
+    for (let proxy of proxies) {
+        try {
+            const controller = new AbortController();
+            const id = setTimeout(() => controller.abort(), 8000); 
+
+            const res = await fetch(proxy + encodeURIComponent(SOURCE_URL), { 
+                signal: controller.signal,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' } // Aiuta a bypassare alcuni blocchi mobile
+            });
+            const text = await res.text();
+            clearTimeout(id);
+
+            if (text && text.includes('#EXTM3U')) return text;
+        } catch (e) { console.warn("Fallito:", proxy); }
+    }
+    return null;
+}
 
 async function init() {
     const video = document.getElementById('video');
     const ui = video['ui'];
     const player = ui.getControls().getPlayer();
     const container = document.getElementById('list');
+    const countHeader = document.getElementById('chan-count');
 
-    player.configure({
-        streaming: { jumpLargeGaps: true },
-        drm: { retryParameters: { maxAttempts: 4, timeout: 8000 } }
-    });
+    player.configure({ streaming: { jumpLargeGaps: true } });
 
-    function createCard(name, logo, url, drmKeys) {
+    function createCard(name, logo, url, drmConfig) {
         const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `<div class="logo-box"><img src="${logo}"></div><div class="name">${name}</div>`;
-        
+        card.className = 'channel-card';
+        card.innerHTML = `<div class="logo-box"><img src="${logo}" alt=""></div><div class="info-box"><div class="name">${name}</div></div>`;
         card.onclick = async () => {
-            try {
-                await player.unload();
-                // Pulizia maniacale delle chiavi
-                const cleanKeys = {};
-                for (let k in drmKeys) {
-                    cleanKeys[k.replace(/\s/g, '').toLowerCase()] = drmKeys[k].replace(/\s/g, '').toLowerCase();
-                }
-                
-                player.configure({ drm: { clearKeys: cleanKeys } });
-                await player.load(url.trim());
-                window.scrollTo({top: 0, behavior: 'smooth'});
-            } catch(e) { console.error("Errore Shaka:", e.code); }
+            document.querySelectorAll('.channel-card').forEach(c => c.classList.remove('active'));
+            card.classList.add('active');
+            player.configure({ drm: { clearKeys: drmConfig } });
+            try { 
+                await player.load(url); 
+                window.scrollTo({top: 0, behavior: 'smooth'}); 
+            } catch(e) { console.error("Errore caricamento:", e); }
         };
         container.appendChild(card);
     }
 
-    try {
-        const res = await fetch(SOURCE_URL);
-        const text = await res.text();
-        const blocks = text.split('#EXTINF');
-        let count = 0;
+    let liveCount = 0;
+    const listData = await fetchList();
 
+    if (listData) {
+        const blocks = listData.split('#EXTINF');
         blocks.forEach(block => {
             const keyMatch = block.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
-            const urlMatch = block.match(/https?:\/\/[^\s"|]+\.mpd/i);
+            const urlMatch = block.match(/https?:\/\/[^\s"|]+\.mpd[^\s"|]*/i);
+            const logoMatch = block.match(/tvg-logo="([^"]+)"/i) || block.match(/tvg-logo=([^\s,]+)/i);
             const nameMatch = block.match(/,(.*)/);
 
             if (keyMatch && urlMatch && nameMatch) {
-                count++;
-                const logoMatch = block.match(/tvg-logo="([^"]+)"/i);
-                const keys = { [keyMatch[1]]: keyMatch[2] };
-                createCard(nameMatch[1].trim(), logoMatch ? logoMatch[1] : '', urlMatch[0], keys);
+                liveCount++;
+                const name = nameMatch[1].split('\n')[0].trim();
+                createCard(name, logoMatch ? logoMatch[1] : '', urlMatch[0], { [keyMatch[1]]: keyMatch[2] });
             }
         });
-        document.getElementById('chan-count').innerText = count + " CANALI CARICATI";
-    } catch (e) { document.getElementById('chan-count').innerText = "ERRORE API"; }
+    }
 
-    CANALI_FISSI.forEach(c => createCard(c.name, c.logo, c.url, c.keys));
+    CANALI_FISSI.forEach(ch => {
+        createCard(ch.name, ch.logo, ch.url, ch.keys ? ch.keys : { [ch.kid]: ch.key });
+    });
+
+    countHeader.innerText = (liveCount + CANALI_FISSI.length) + " CANALI CARICATI";
 }
 
 document.addEventListener('shaka-ui-loaded', init);
