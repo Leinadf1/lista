@@ -2,121 +2,118 @@
 <html>
 <head>
 <meta charset="ISO-8859-1">
-<title>TV CHANNELS</title>
+<title>Single Stream Player</title>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
-<style>
-    :root { --bg: #0b0e11; --card: #151921; --blue: #00d2ff; --border: #1e232d; }
-    body { background-color: var(--bg); color: white; font-family: sans-serif; margin: 0; padding: 0; }
-    
-    /* Login */
-    #lock { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; }
-    #lock input { background: #000; border: 1px solid #333; color: white; padding: 12px; border-radius: 4px; margin-bottom: 10px; text-align: center; }
-    #lock button { background: var(--blue); color: black; border: none; padding: 10px 30px; border-radius: 4px; cursor: pointer; font-weight: bold; }
 
-    /* Layout */
-    .container { padding: 20px; max-width: 1000px; margin: auto; text-align: center; }
-    .video-box { margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 100%; max-width: 800px; margin-left: auto; margin-right: auto; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
-    
-    .chan-card { 
-        background: var(--card); border: 1px solid var(--border); color: white; padding: 15px; 
-        cursor: pointer; border-radius: 4px; font-size: 12px; font-weight: bold; transition: 0.2s;
-    }
-    .chan-card:hover { border-color: var(--blue); background: #1c212a; }
-    .hidden { display: none !important; }
+<style>
+body { background-color: #262626; color: white; font-family: Arial, sans-serif; }
+.center { margin: auto; width: 50%; text-align: center; }
+video { width: 100%; height: 100%; }
+
+/* Stile per i bottoni dei canali */
+.channels-container { 
+    display: flex; 
+    flex-wrap: wrap; 
+    gap: 10px; 
+    justify-content: center; 
+    margin-top: 20px; 
+    padding: 20px;
+}
+.chan-btn { 
+    background: #444; 
+    color: white; 
+    border: 1px solid #666; 
+    padding: 10px 15px; 
+    cursor: pointer; 
+    border-radius: 4px; 
+}
+.chan-btn:hover { background: #666; }
 </style>
 </head>
+
 <body>
-
-<div id="lock">
-    <div style="margin-bottom: 20px; font-size: 18px; font-weight: bold; color: var(--blue);">CHANNELS ACCESS</div>
-    <input type="password" id="pw" placeholder="PASSWORD">
-    <button onclick="login()">ENTRA</button>
+<div class="center">
+    <h2 id="current-channel">Seleziona un canale</h2>
 </div>
 
-<div id="app" class="hidden">
-    <div class="container">
-        <h2 id="title" style="font-size: 16px; margin-bottom: 15px;">Seleziona Canale</h2>
-        
-        <div class="video-box">
-            <div data-shaka-player-container>
-                <video autoplay data-shaka-player id="video" style="width:100%; height:100%;"></video>
-            </div>
-        </div>
-
-        <div id="list" class="grid"></div>
-    </div>
+<div class="center" style="max-width:40em" data-shaka-player-container data-shaka-player-cast-receiver-id="07AEE832">
+    <video autoplay data-shaka-player id="video"></video>
 </div>
+
+<div id="list" class="channels-container"></div>
 
 <script>
-// USIAMO LA LOGICA CHE HA FUNZIONATO PER LA F1
+// Usiamo corsproxy per evitare blocchi sui flussi m3u
 const proxy = "https://corsproxy.io/?url=";
-
-function login() {
-    if(document.getElementById('pw').value === "1234") {
-        document.getElementById('lock').classList.add('hidden');
-        document.getElementById('app').classList.remove('hidden');
-    } else { alert("Sbagliata!"); }
-}
 
 async function init() {
     const video = document.getElementById('video');
     const ui = video['ui'];
-    const player = ui.getControls().getPlayer();
+    const controls = ui.getControls();
+    const player = controls.getPlayer();
+
+    player.addEventListener('error', e => console.error('Player error:', e.detail));
 
     try {
-        const res = await fetch('lista_privata.m3u');
-        const data = await res.text();
+        // Carichiamo la lista
+        const response = await fetch('lista_privata.m3u');
+        const data = await response.text();
         const container = document.getElementById('list');
-        
-        // Dividiamo esattamente come nel codice "buono"
-        const items = data.split('#EXTINF');
 
-        items.forEach(item => {
-            if (item.includes('license_key=')) {
-                // Estrazione nome: prendiamo solo ciò che serve ed evitiamo lo User-Agent
-                let name = item.split(',').pop().split('\n')[0].trim();
+        // Dividiamo la lista per blocchi (ogni blocco inizia con #EXTINF)
+        const entries = data.split('#EXTINF');
+
+        entries.forEach(entry => {
+            if (entry.includes('license_key=')) {
+                // Estraiamo il Nome
+                const name = entry.split(',').pop().split('\n')[0].trim();
                 
-                // Se il nome è troppo lungo (errore Gecko), lo puliamo
-                if (name.length > 50) {
-                    name = name.split(' ')[0]; 
-                }
+                // Estraiamo l'URL del video
+                const urlMatch = entry.match(/https?:\/\/[^\s"|]+/);
+                const url = urlMatch ? urlMatch[0] : null;
 
-                const url = item.match(/https?:\/\/[^\s"|]+/)?.[0];
-                const keys = item.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
+                // Estraiamo KID e KEY (license_key=KID:KEY)
+                const keyMatch = entry.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
+                
+                if (url && keyMatch) {
+                    const kid = keyMatch[1];
+                    const key = keyMatch[2];
 
-                if (url && keys) {
-                    const btn = document.createElement('div');
-                    btn.className = 'chan-card';
+                    // Creiamo il bottone
+                    const btn = document.createElement('button');
+                    btn.className = 'chan-btn';
                     btn.innerText = name;
-                    
+
                     btn.onclick = async () => {
-                        document.getElementById('title').innerText = "In riproduzione: " + name;
+                        document.getElementById('current-channel').innerText = name;
                         
-                        // Configurazione DRM IDENTICA allo screenshot F1
+                        // Configuriamo il player con le chiavi del canale cliccato
                         player.configure({
-                            drm: { clearKeys: { [keys[1]]: keys[2] } }
+                            drm: { clearKeys: { [kid]: key } }
                         });
 
                         try {
-                            // Carichiamo col proxy (stessa logica dello screen funzionante)
+                            // Carichiamo il flusso (usando il proxy come facevi prima per sicurezza)
                             await player.load(proxy + encodeURIComponent(url));
+                            console.log('Caricato:', name);
                         } catch (e) {
-                            // Se il proxy fallisce, proviamo diretto (come diceva lo screen "Caricato senza proxy")
-                            try { await player.load(url); } catch (e2) {
-                                document.getElementById('title').innerText = "Errore: " + e2.code;
-                            }
+                            console.error('Errore caricamento canale:', e);
                         }
                     };
                     container.appendChild(btn);
                 }
             }
         });
-    } catch (err) { console.error("Errore M3U"); }
+
+    } catch (err) {
+        console.error('Errore nel caricamento della lista m3u:', err);
+    }
 }
 
 document.addEventListener('shaka-ui-loaded', init);
+document.addEventListener('shaka-ui-load-failed', () => console.error('Errore caricamento Shaka UI'));
 </script>
 </body>
 </html>
