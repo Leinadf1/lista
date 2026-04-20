@@ -11,16 +11,22 @@
         #header { width: 100%; max-width: 1200px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid #30363d; padding-bottom: 10px; }
         h1 { font-size: 24px; color: #58a6ff; margin: 0; }
         #chan-count { color: #8b949e; font-weight: bold; }
+        
         .player-container { width: 100%; max-width: 850px; background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 35px; border: 1px solid #30363d; position: sticky; top: 10px; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         video { width: 100%; aspect-ratio: 16/9; }
+
         .category-container { width: 100%; max-width: 1200px; margin-bottom: 40px; }
         .category-title { font-size: 18px; color: #f1e05a; margin-bottom: 15px; font-weight: bold; text-transform: uppercase; border-left: 4px solid #58a6ff; padding-left: 10px; }
+
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
+        
         .channel-card { background-color: #161b22; border: 1px solid #30363d; border-radius: 10px; cursor: pointer; transition: 0.2s; overflow: hidden; display: flex; flex-direction: column; }
         .channel-card:hover { transform: translateY(-5px); border-color: #58a6ff; }
         .channel-card.active { border: 2px solid #58a6ff; background-color: #21262d; }
+        
         .logo-box { width: 100%; height: 100px; display: flex; justify-content: center; align-items: center; background: #21262d; padding: 10px; box-sizing: border-box; }
         .logo-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        
         .info-box { padding: 12px; text-align: center; border-top: 1px solid #30363d; background: #161b22; }
         .name { font-size: 13px; font-weight: 600; color: #f0f6fc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-transform: uppercase; }
     </style>
@@ -44,7 +50,11 @@ const SOURCE_URL = "https://raw.githubusercontent.com/Leinadf1/lista/main/lista_
 const CANALI_FISSI = [
     { name: "EUROSPORT 4K", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020019/tim-ouah/CHN43FN/MONOGRAM_ESP4K_WHITE_V2-BjK0", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport4k)/manifest.mpd", drm: {"9ceae06c6ad34aada83ba86c0b511452":"406862beb4af1ef8fe04ba15d9936360","fcd924bd2e45470fa2ae50ef05e357c0":"266db84d3572bc889185274a90ff31df","dea135e33341468f8a4e8da806d8a6e6":"fb7423db39e6fab75056f8c83f415847","31911db90ee3410f8b38e45659d01fb1":"ac316ab7dfd2b50faf6d44633e4fedd5","a16f2a39adbb4974b8910cec8a651a09":"c2d55e0111af955f47214af209a2c468"} },
     { name: "EUROSPORT 1", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020000/tim-ouah/CHN43FN/MONOGRAM_ESP1_WHITE_V2-Lv2g", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport1)/manifest.mpd", drm: {"46e559c2f9f645ce8d80c7fa20446bdb":"597d214d66342ee042bccffeb165e750"} },
-    { name: "EUROSPORT 2", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020001/tim-ouah/CHN43FN/MONOGRAM_ESP2_WHITE_V2-Zp7E", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport2)/manifest.mpd", drm: {"e8372283a523444c84646c4172b1bc0f":"969a90e1a1a6424a68fe4b5d776368ec"} }
+    { name: "EUROSPORT 2", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020001/tim-ouah/CHN43FN/MONOGRAM_ESP2_WHITE_V2-Zp7E", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport2)/manifest.mpd", drm: {"e8372283a523444c84646c4172b1bc0f":"969a90e1a1a6424a68fe4b5d776368ec"} },
+    { name: "EUROSPORT 3", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020002/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-yiID", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport3)/manifest.mpd", drm: {"1e2398b0eeb04829b4711e14b4a91244":"11e26659ebfecf6a22ed56da340448cd"} },
+    { name: "EUROSPORT 4", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020003/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-3YSY", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport4)/manifest.mpd", drm: {"9dd7be79e44f4d08a91ec5d1553f17b8":"8a62369f81a4b6e5f2d4846f7bd5e7d1"} },
+    { name: "EUROSPORT 5", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020004/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-sv5m", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport5)/manifest.mpd", drm: {"b48e7e6d96da479da65e435ce65faeb1":"48c703879ce4deedb5a2124a30a13bc4"} },
+    { name: "EUROSPORT 6", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020005/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-H53i", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport6)/manifest.mpd", drm: {"ead1c567a3df48619799b2e78b18fdfa":"1de9d9af5651296aa67913979ad8c694"} }
 ];
 
 async function init() {
@@ -74,13 +84,21 @@ async function init() {
         const grid = getCategoryGrid(ch.group);
         const card = document.createElement('div');
         card.className = 'channel-card';
-        card.innerHTML = `<div class="logo-box"><img src="${ch.logo}" onerror="this.src='https://via.placeholder.com/100x50?text=TV'"></div><div class="info-box"><div class="name">${ch.name}</div></div>`;
+        card.innerHTML = `
+            <div class="logo-box">
+                <img src="${ch.logo}" onerror="this.src='https://via.placeholder.com/100x50?text=TV'">
+            </div>
+            <div class="info-box">
+                <div class="name">${ch.name}</div>
+            </div>
+        `;
         
         card.onclick = async () => {
             document.querySelectorAll('.channel-card').forEach(c => c.classList.remove('active'));
             card.classList.add('active');
             try {
                 await player.unload();
+                // Configura il DRM solo se esistono chiavi, altrimenti svuota la config
                 player.configure({ drm: { clearKeys: ch.drm || {} } });
                 await player.load(ch.url);
                 window.scrollTo({top: 0, behavior: 'smooth'});
@@ -95,19 +113,21 @@ async function init() {
         const response = await fetch(SOURCE_URL + "?t=" + Date.now());
         const text = await response.text();
         
-        // RITORNO AL TUO VECCHIO METODO DI SPLIT (CHE FUNZIONAVA)
+        // MODIFICA: Split basato su #EXTINF invece del tag clearkey
+        // Questo permette di vedere TUTTI i canali della lista
         const sections = text.split('#EXTINF');
 
         sections.forEach(section => {
+            // Se la sezione non ha un link, la saltiamo
             if (!section.includes('http')) return;
 
-            // Regex originale per estrarre i dati
             const urlMatch = section.match(/https?:\/\/[^\s"|]+/i);
             const logoMatch = section.match(/tvg-logo="([^"]+)"/i);
             const groupMatch = section.match(/group-title="([^"]+)"/i);
-            const nameLine = section.match(/,(.*)/);
             
-            let channelName = nameLine ? nameLine[1].split('\n')[0].trim() : "Canale";
+            // Estrazione nome: prendiamo quello dopo l'ultima virgola
+            const nameMatch = section.match(/,(.*)/);
+            let channelName = nameMatch ? nameMatch[1].split('\n')[0].trim() : "Canale";
 
             let drmKeys = {};
             const jsonKeys = section.match(/license_key=({.*?})/s);
@@ -133,8 +153,15 @@ async function init() {
 
     } catch(e) { console.error("Errore lista:", e); }
 
+    // Carica Eurosport fissi
     CANALI_FISSI.forEach(ch => {
-        createCard({ name: ch.name, logo: ch.logo, url: ch.url, drm: ch.drm, group: "EUROSPORT" });
+        createCard({
+            name: ch.name,
+            logo: ch.logo,
+            url: ch.url,
+            drm: ch.drm,
+            group: "EUROSPORT"
+        });
     });
 
     countHeader.innerText = (loadedCount + CANALI_FISSI.length) + " CANALI PRONTI";
