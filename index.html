@@ -10,7 +10,7 @@
         body { background-color: #0d1117; color: #c9d1d9; font-family: sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         #header { width: 100%; max-width: 1200px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid #30363d; padding-bottom: 10px; }
         h1 { font-size: 24px; color: #58a6ff; margin: 0; }
-        #chan-count { color: #8b949e; font-size: 14px; text-align: right; line-height: 1.2; font-weight: bold; }
+        #chan-count { color: #8b949e; font-size: 14px; font-weight: bold; }
         .player-container { width: 100%; max-width: 850px; background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 35px; border: 1px solid #30363d; }
         video { width: 100%; aspect-ratio: 16/9; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; width: 100%; max-width: 1200px; }
@@ -20,7 +20,7 @@
         .logo-box { width: 100%; height: 100px; display: flex; justify-content: center; align-items: center; background: #21262d; padding: 10px; box-sizing: border-box; }
         .logo-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
         .info-box { padding: 12px; text-align: center; border-top: 1px solid #30363d; }
-        .name { font-size: 13px; font-weight: 600; color: #f0f6fc; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .name { font-size: 12px; font-weight: 600; color: #f0f6fc; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     </style>
 </head>
 <body>
@@ -37,17 +37,17 @@
     <div id="list" class="grid"></div>
 
 <script>
-const API_URL = "/api/get-list";
+const SOURCE_URL = "/api/get-list";
 
-// TUTTI I TUOI CANALI FISSI RECUPERATI
+// LA LISTA COMPLETA DEI FISSI
 const CANALI_FISSI = [
     { name: "EUROSPORT 4K", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/thumb.prod.front.tim.cptech.pro/http/unsafe/filters:format(png):anamorphosis(640,480)/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020019/tim-ouah/CHN43FN/MONOGRAM_ESP4K_WHITE_V2-BjK0", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport4k)/manifest.mpd", keys: {"9ceae06c6ad34aada83ba86c0b511452":"406862beb4af1ef8fe04ba15d9936360","fcd924bd2e45470fa2ae50ef05e357c0":"266db84d3572bc889185274a90ff31df","dea135e33341468f8a4e8da806d8a6e6":"fb7423db39e6fab75056f8c83f415847","31911db90ee3410f8b38e45659d01fb1":"ac316ab7dfd2b50faf6d44633e4fedd5","a16f2a39adbb4974b8910cec8a651a09":"c2d55e0111af955f47214af209a2c468"} },
     { name: "EUROSPORT 1", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/thumb.prod.front.tim.cptech.pro/http/unsafe/filters:format(png):anamorphosis(640,480)/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020000/tim-ouah/CHN43FN/MONOGRAM_ESP1_WHITE_V2-Lv2g", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport1)/manifest.mpd", kid: "46e559c2f9f645ce8d80c7fa20446bdb", key: "597d214d66342ee042bccffeb165e750" },
     { name: "EUROSPORT 2", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/thumb.prod.front.tim.cptech.pro/http/unsafe/filters:format(png):anamorphosis(640,480)/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020001/tim-ouah/CHN43FN/MONOGRAM_ESP2_WHITE_V2-Zp7E", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport2)/manifest.mpd", kid: "e8372283a523444c84646c4172b1bc0f", key: "969a90e1a1a6424a68fe4b5d776368ec" },
     { name: "EUROSPORT 3", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/thumb.prod.front.tim.cptech.pro/http/unsafe/filters:format(png):anamorphosis(640,480)/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020002/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-yiID", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport3)/manifest.mpd", kid: "1e2398b0eeb04829b4711e14b4a91244", key: "11e26659ebfecf6a22ed56da340448cd" },
     { name: "EUROSPORT 4", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/thumb.prod.front.tim.cptech.pro/http/unsafe/filters:format(png):anamorphosis(640,480)/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020003/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-3YSY", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport4)/manifest.mpd", kid: "9dd7be79e44f4d08a91ec5d1553f17b8", key: "8a62369f81a4b6e5f2d4846f7bd5e7d1" },
-    { name: "EUROSPORT 5", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/thumb.prod.front.tim.cptech.pro/http/unsafe/filters:format(png):anamorphosis(640,480)/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020004/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-sv5m", url: "https://timlivetu0.cb.tim.it/Content/DASH/Live/channel(eurosport5)/manifest.mpd", kid: "b48e7e6d96da479da65e435ce65faeb1", key: "48c703879ce4deedb5a2124a30a13bc4" },
-    { name: "EUROSPORT 6", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/thumb.prod.front.tim.cptech.pro/http/unsafe/filters:format(png):anamorphosis(640,480)/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020005/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-H53i", url: "https://timlivetu0.cb.tim.it/Content/DASH/Live/channel(eurosport6)/manifest.mpd", kid: "ead1c567a3df48619799b2e78b18fdfa", key: "1de9d9af5651296aa67913979ad8c694" }
+    { name: "EUROSPORT 5", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/thumb.prod.front.tim.cptech.pro/http/unsafe/filters:format(png):anamorphosis(640,480)/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020004/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-sv5m", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport5)/manifest.mpd", kid: "b48e7e6d96da479da65e435ce65faeb1", key: "48c703879ce4deedb5a2124a30a13bc4" },
+    { name: "EUROSPORT 6", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/thumb.prod.front.tim.cptech.pro/http/unsafe/filters:format(png):anamorphosis(640,480)/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020005/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-H53i", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport6)/manifest.mpd", kid: "ead1c567a3df48619799b2e78b18fdfa", key: "1de9d9af5651296aa67913979ad8c694" }
 ];
 
 async function init() {
@@ -55,13 +55,14 @@ async function init() {
     const ui = video['ui'];
     const player = ui.getControls().getPlayer();
     const container = document.getElementById('list');
+    const countHeader = document.getElementById('chan-count');
 
     player.configure({ streaming: { jumpLargeGaps: true } });
 
     function createCard(name, logo, url, drmConfig) {
         const card = document.createElement('div');
         card.className = 'card';
-        card.innerHTML = `<div class="logo-box"><img src="${logo}"></div>
+        card.innerHTML = `<div class="logo-box"><img src="${logo}" onerror="this.src='https://via.placeholder.com/100x60?text=TV'"></div>
                           <div class="info-box"><div class="name">${name}</div></div>`;
         
         card.onclick = async () => {
@@ -78,7 +79,7 @@ async function init() {
     }
 
     try {
-        const res = await fetch(API_URL + "?t=" + Date.now());
+        const res = await fetch(SOURCE_URL + "?t=" + Date.now());
         const data = await res.text();
         const entries = data.split(/#KODIPROP:inputstream\.adaptive\.license_type=clearkey/);
         let liveCount = 0;
@@ -89,31 +90,28 @@ async function init() {
             const keyMatch = entry.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
             const urlMatch = entry.match(/https?:\/\/[^\s"|]+\.mpd[^\s"|]*/i);
             
-            // LOGICA NOMI PULITI: Prendiamo il nome dopo l'ultima virgola, ma filtriamo lo sporco
+            // PULIZIA NOME: saltiamo le righe con "Gecko" o "Version"
             const parts = entry.split(',');
             let name = parts[parts.length - 1].split('\n')[0].trim();
-            
-            // Se il nome contiene "Gecko" o "Version/", saltiamo questo blocco o cerchiamo meglio
-            if (name.includes("Gecko") || name.includes("Version/")) {
-                const altMatch = entry.match(/tvg-id="([^"]+)"/);
-                name = altMatch ? altMatch[1].replace(/\./g, ' ') : "CANALE";
+            if (name.includes("Version/") || name.includes("Chrome")) {
+                const tvgMatch = entry.match(/tvg-id="([^"]+)"/i);
+                name = tvgMatch ? tvgMatch[1].replace(/\./g, ' ') : "CANALE TV";
             }
 
             if (keyMatch && urlMatch) {
                 liveCount++;
-                const keys = { [keyMatch[1].toLowerCase()]: keyMatch[2].toLowerCase() };
-                const logoMatch = entry.match(/tvg-logo="([^"]+)"/i);
-                createCard(name, logoMatch ? logoMatch[1] : '', urlMatch[0], keys);
+                const logoMatch = entry.match(/tvg-logo="([^"]+)"/i) || entry.match(/tvg-logo=([^\s,]+)/i);
+                const drm = { [keyMatch[1].toLowerCase()]: keyMatch[2].toLowerCase() };
+                createCard(name, logoMatch ? logoMatch[1] : '', urlMatch[0], drm);
             }
         });
 
-        // AGGIUNTA FISSI
         CANALI_FISSI.forEach(ch => {
             createCard(ch.name, ch.logo, ch.url, ch.keys ? ch.keys : { [ch.kid]: ch.key });
         });
 
-        document.getElementById('chan-count').innerHTML = `${liveCount + CANALI_FISSI.length} CANALI CARICATI<br>SISTEMA OK`;
-    } catch(e) { document.getElementById('chan-count').innerText = "ERRORE API"; }
+        countHeader.innerText = (liveCount + CANALI_FISSI.length) + " CANALI ONLINE";
+    } catch(e) { countHeader.innerText = "ERRORE API"; }
 }
 
 document.addEventListener('shaka-ui-loaded', init);
