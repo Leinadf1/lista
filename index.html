@@ -3,38 +3,60 @@
 <head>
 <meta charset="ISO-8859-1">
 <title>Single Stream Player</title>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
+
 <style>
-    body { background-color: #262626; color: white; font-family: Arial, sans-serif; }
-    .center { margin: auto; width: 50%; text-align: center; }
-    video { width: 100%; height: 100%; }
-    .grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 20px; }
-    .chan-btn { background: #444; color: white; border: 1px solid #666; padding: 10px; cursor: pointer; border-radius: 4px; font-size: 12px; }
-    .hidden { display: none !important; }
+body {
+background-color: #262626;
+color: white;
+font-family: Arial, sans-serif;
+}
+.center {
+margin: auto;
+width: 50%;
+text-align: center;
+}
+video {
+width: 100%;
+height: 100%;
+}
+.grid { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-top: 10px; }
+.chan-btn { background: #444; color: white; border: 1px solid #666; padding: 8px; cursor: pointer; border-radius: 4px; font-size: 11px; }
+.hidden { display: none !important; }
 </style>
 </head>
+
 <body>
 
-<div id="lock" class="center" style="margin-top: 100px;">
+<div id="lock" class="center" style="margin-top: 50px;">
     <h2>PASSWORD</h2>
     <input type="password" id="pw" style="padding:10px;">
-    <button onclick="login()" style="padding:10px 20px; cursor:pointer;">ENTRA</button>
+    <button onclick="login()" style="padding:10px; cursor:pointer;">ENTRA</button>
 </div>
 
 <div id="app" class="hidden">
-    <div class="center"><h2 id="title">Seleziona Canale</h2></div>
-    <div class="center" style="max-width:40em" data-shaka-player-container data-shaka-player-cast-receiver-id="07AEE832">
-        <video autoplay data-shaka-player id="video"></video>
-    </div>
-    <div id="list" class="grid center" style="max-width:40em"></div>
+<div class="center">
+<h2 id="title">Seleziona Canale</h2>
+</div>
+
+<div
+class="center"
+style="max-width:40em"
+data-shaka-player-container
+data-shaka-player-cast-receiver-id="07AEE832"
+>
+<video autoplay data-shaka-player id="video"></video>
+</div>
+
+<div id="list" class="grid center" style="max-width:40em"></div>
 </div>
 
 <script>
 const proxy = "https://corsproxy.io/?url=";
 let player;
 
-// Inizializzazione identica a quella che andava bene
 async function init() {
     const video = document.getElementById('video');
     const ui = video['ui'];
@@ -68,12 +90,8 @@ async function loadM3U() {
                 btn.innerText = name;
                 btn.onclick = async () => {
                     document.getElementById('title').innerText = name;
-                    
-                    // Configurazione ClearKey
                     player.configure({ drm: { clearKeys: { [keys[1]]: keys[2] } } });
-
                     try {
-                        // Caricamento con proxy confermato funzionante
                         await player.load(proxy + encodeURIComponent(url.trim()));
                     } catch (e) { console.error(e); }
                 };
