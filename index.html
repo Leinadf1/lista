@@ -3,25 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TV Dashboard PRO - Debug</title>
+    <title>TV Dashboard PRO - Ultra Parser</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
     <style>
         body { background-color: #0d1117; color: #c9d1d9; font-family: sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .player-container { width: 100%; max-width: 850px; background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 10px; border: 1px solid #30363d; position: sticky; top: 10px; z-index: 100; }
+        .player-container { width: 100%; max-width: 850px; background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 10px; border: 1px solid #30363d; position: sticky; top: 10px; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         video { width: 100%; aspect-ratio: 16/9; }
         #debug-box { 
-            width: 100%; max-width: 850px; background: rgba(255, 255, 0, 0.1); 
-            border: 2px solid yellow; border-radius: 8px; padding: 10px; 
-            margin-bottom: 20px; font-family: monospace; font-size: 12px; color: #f1e05a;
+            width: 100%; max-width: 850px; background: rgba(255, 255, 0, 0.05); 
+            border: 1px solid rgba(255, 255, 0, 0.5); border-radius: 8px; padding: 10px; 
+            margin-bottom: 20px; font-family: monospace; font-size: 11px; color: #f1e05a;
             word-break: break-all; white-space: pre-wrap;
         }
         .category-section { width: 100%; max-width: 1200px; margin-bottom: 40px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
-        .card { background-color: #161b22; border: 1px solid #30363d; border-radius: 10px; cursor: pointer; padding: 10px; text-align: center; }
-        .card.active { border-color: #58a6ff; background: #21262d; }
-        .card img { max-width: 100%; height: 60px; object-fit: contain; }
-        .card .name { font-size: 11px; margin-top: 10px; font-weight: bold; text-transform: uppercase; }
+        .category-title { font-size: 16px; color: #58a6ff; margin-bottom: 15px; font-weight: bold; border-left: 4px solid yellow; padding-left: 10px; text-transform: uppercase; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+        .card { background-color: #161b22; border: 1px solid #30363d; border-radius: 10px; cursor: pointer; transition: 0.2s; overflow: hidden; padding: 10px; text-align: center; }
+        .card:hover { border-color: #58a6ff; transform: translateY(-3px); }
+        .card.active { border: 2px solid yellow; background-color: #21262d; }
+        .card img { max-width: 100%; height: 50px; object-fit: contain; margin-bottom: 8px; }
+        .card .name { font-size: 10px; font-weight: bold; color: #f0f6fc; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     </style>
 </head>
 <body>
@@ -30,100 +32,120 @@
         <video autoplay data-shaka-player id="video"></video>
     </div>
 
-    <div id="debug-box">DEBUG: In attesa di selezione canale...</div>
+    <div id="debug-box">DEBUG: Seleziona un canale per i dettagli</div>
 
     <div id="categories-container"></div>
 
 <script>
 const SOURCE_URL = "https://raw.githubusercontent.com/Leinadf1/lista/main/lista_privata.m3u";
 
-function updateDebug(info) {
-    const box = document.getElementById('debug-box');
-    box.innerHTML = `DEBUG:\nCanale: ${info.name}\nURL: ${info.url}\nKID: ${info.kid}\nKEY: ${info.key}\nERROR: ${info.error || 'Nessuno'}`;
+// --- CANALI EUROSPORT FISSI ---
+const CANALI_FISSI = [
+    { name: "EUROSPORT 4K", group: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020019/tim-ouah/CHN43FN/MONOGRAM_ESP4K_WHITE_V2-BjK0", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport4k)/manifest.mpd", drm: {"9ceae06c6ad34aada83ba86c0b511452":"406862beb4af1ef8fe04ba15d9936360","fcd924bd2e45470fa2ae50ef05e357c0":"266db84d3572bc889185274a90ff31df","dea135e33341468f8a4e8da806d8a6e6":"fb7423db39e6fab75056f8c83f415847","31911db90ee3410f8b38e45659d01fb1":"ac316ab7dfd2b50faf6d44633e4fedd5","a16f2a39adbb4974b8910cec8a651a09":"c2d55e0111af955f47214af209a2c468"} },
+    { name: "EUROSPORT 1", group: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020000/tim-ouah/CHN43FN/MONOGRAM_ESP1_WHITE_V2-Lv2g", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport1)/manifest.mpd", drm: {"46e559c2f9f645ce8d80c7fa20446bdb":"597d214d66342ee042bccffeb165e750"} },
+    { name: "EUROSPORT 2", group: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020001/tim-ouah/CHN43FN/MONOGRAM_ESP2_WHITE_V2-Zp7E", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport2)/manifest.mpd", drm: {"e8372283a523444c84646c4172b1bc0f":"969a90e1a1a6424a68fe4b5d776368ec"} },
+    { name: "EUROSPORT 3", group: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020002/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-yiID", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport3)/manifest.mpd", drm: {"1e2398b0eeb04829b4711e14b4a91244":"11e26659ebfecf6a22ed56da340448cd"} },
+    { name: "EUROSPORT 4", group: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020003/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-3YSY", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport4)/manifest.mpd", drm: {"9dd7be79e44f4d08a91ec5d1553f17b8":"8a62369f81a4b6e5f2d4846f7bd5e7d1"} },
+    { name: "EUROSPORT 5", group: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020004/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-sv5m", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport5)/manifest.mpd", drm: {"b48e7e6d96da479da65e435ce65faeb1":"48c703879ce4deedb5a2124a30a13bc4"} },
+    { name: "EUROSPORT 6", group: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020005/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-H53i", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport6)/manifest.mpd", drm: {"ead1c567a3df48619799b2e78b18fdfa":"1de9d9af5651296aa67913979ad8c694"} }
+];
+
+function logDebug(info) {
+    document.getElementById('debug-box').innerHTML = `DEBUG:\nCanale: ${info.name}\nURL: ${info.url}\nDRM: ${JSON.stringify(info.drm)}\nERROR: ${info.error || '0 (OK)'}`;
 }
 
 async function init() {
     const video = document.getElementById('video');
     const ui = video['ui'];
     const player = ui.getControls().getPlayer();
-    const container = document.getElementById('categories-container');
+    const categoriesContainer = document.getElementById('categories-container');
 
     player.configure({ streaming: { jumpLargeGaps: true } });
 
     const categories = {};
 
-    function createCard(name, logo, url, drm, group, kid, key) {
-        const catId = (group || "TV").toUpperCase();
-        if (!categories[catId]) {
+    function getOrCreateCategory(name) {
+        const catName = (name || "TV").toUpperCase();
+        if (!categories[catName]) {
             const section = document.createElement('div');
             section.className = 'category-section';
-            section.innerHTML = `<div style="color:#58a6ff; margin-bottom:10px; font-weight:bold; border-left: 3px solid yellow; padding-left:10px;">${catId}</div><div class="grid" id="grid-${catId.replace(/\s+/g, '-')}"></div>`;
-            container.appendChild(section);
-            categories[catId] = document.getElementById(`grid-${catId.replace(/\s+/g, '-')}`);
+            section.innerHTML = `<div class="category-title">${catName}</div><div class="grid" id="grid-${catName.replace(/\s+/g, '-')}"></div>`;
+            categoriesContainer.appendChild(section);
+            categories[catName] = document.getElementById(`grid-${catName.replace(/\s+/g, '-')}`);
         }
+        return categories[catName];
+    }
 
+    function createCard(ch) {
+        const grid = getOrCreateCategory(ch.group);
         const card = document.createElement('div');
         card.className = 'card';
-        card.innerHTML = `<img src="${logo || 'https://via.placeholder.com/100x60?text=TV'}"><div class="name">${name}</div>`;
+        card.innerHTML = `<img src="${ch.logo}" onerror="this.src='https://via.placeholder.com/100x50?text=LOGO'"><div class="name">${ch.name}</div>`;
         
         card.onclick = async () => {
             document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
             card.classList.add('active');
-            updateDebug({ name, url, kid, key, error: 'Caricamento...' });
+            logDebug({...ch, error: 'Caricamento...'});
 
             try {
                 await player.unload();
-                player.configure({ drm: { clearKeys: drm } });
-                await player.load(url);
-                updateDebug({ name, url, kid, key, error: '0 (OK)' });
+                player.configure({ drm: { clearKeys: ch.drm } });
+                await player.load(ch.url);
+                logDebug(ch);
                 window.scrollTo({top: 0, behavior: 'smooth'});
             } catch(e) {
-                updateDebug({ name, url, kid, key, error: e.code });
+                logDebug({...ch, error: e.code});
             }
         };
-        categories[catId].appendChild(card);
+        grid.appendChild(card);
     }
 
+    // Carica Eurosport Fissi
+    CANALI_FISSI.forEach(createCard);
+
+    // Carica lista GitHub
     try {
         const res = await fetch(SOURCE_URL + "?t=" + Date.now());
         const text = await res.text();
-        
-        // Dividiamo per #EXTINF per isolare ogni blocco canale
         const blocks = text.split('#EXTINF');
 
         blocks.forEach(block => {
             if (!block.includes('.mpd')) return;
 
-            // 1. Cerchiamo l'URL .mpd
             const urlMatch = block.match(/https?:\/\/[^\s"|]+\.mpd[^\s"|]*/i);
             if (!urlMatch) return;
-            const url = urlMatch[0];
 
-            // 2. Cerchiamo le chiavi (Formato 1: nell'URL | Formato 2: in #KODIPROP)
-            let kid = "", key = "";
-            const keyMatchUrl = block.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
-            const keyMatchKodi = block.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i) || block.match(/inputstream\.adaptive\.license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
-
-            if (keyMatchUrl) {
-                kid = keyMatchUrl[1];
-                key = keyMatchUrl[2];
-            } else if (keyMatchKodi) {
-                kid = keyMatchKodi[1];
-                key = keyMatchKodi[2];
+            let drm = {};
+            // Caso 1: JSON in license_key
+            const jsonKeyMatch = block.match(/license_key=({.*?})/s);
+            if (jsonKeyMatch) {
+                try { drm = JSON.parse(jsonKeyMatch[1]); } catch(e) {}
+            } 
+            // Caso 2: Coppia KID:KEY classica o in URL
+            if (Object.keys(drm).length === 0) {
+                const keyMatch = block.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i) || 
+                                 block.match(/inputstream\.adaptive\.license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
+                if (keyMatch) {
+                    drm[keyMatch[1].toLowerCase()] = keyMatch[2].toLowerCase();
+                }
             }
 
-            // 3. Info Canale
             const nameMatch = block.match(/,(.*)/);
-            const name = nameMatch ? nameMatch[1].split('\n')[0].trim() : "Canale Sconosciuto";
+            const name = nameMatch ? nameMatch[1].split('\n')[0].trim() : "Unknown";
             const groupMatch = block.match(/group-title="([^"]+)"/i);
             const logoMatch = block.match(/tvg-logo="([^"]+)"/i);
 
-            if (kid && key) {
-                const drm = { [kid.toLowerCase()]: key.toLowerCase() };
-                createCard(name, logoMatch ? logoMatch[1] : '', url, drm, groupMatch ? groupMatch[1] : "TV", kid, key);
+            if (Object.keys(drm).length > 0) {
+                createCard({
+                    name: name,
+                    url: urlMatch[0],
+                    drm: drm,
+                    group: groupMatch ? groupMatch[1] : "ALTRI",
+                    logo: logoMatch ? logoMatch[1] : ""
+                });
             }
         });
-    } catch(e) { console.error("Errore lista:", e); }
+    } catch(e) { console.error(e); }
 }
 
 document.addEventListener('shaka-ui-loaded', init);
