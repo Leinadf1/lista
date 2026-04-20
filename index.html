@@ -31,41 +31,54 @@
     </div>
 
     <script>
-        const passSegreta = "1234"; // MODIFICA QUESTA PASSWORD
+        // CONFIGURAZIONE
+        const passSegreta = "1234"; // Cambia questa password come preferisci
         const idEstensione = "opmeopcambhflmffbomjgemehjkbbmji"; // L'ID della tua estensione
+        const nomeFileSegreto = "lista_privata.m3u"; // Il nuovo nome del file m3u
 
         function check() {
             if(document.getElementById('pw').value === passSegreta) {
                 document.getElementById('login-section').classList.add('hidden');
                 document.getElementById('main-section').classList.remove('hidden');
                 loadList();
-            } else { alert("Password errata"); }
+            } else { 
+                alert("Password errata"); 
+            }
         }
 
         async function loadList() {
-            const res = await fetch('lista.m3u');
-            const text = await res.text();
-            const lines = text.split('\n');
-            const btnContainer = document.getElementById('buttons');
+            try {
+                // Carica il file con il nuovo nome segreto
+                const res = await fetch(nomeFileSegreto);
+                if (!res.ok) throw new Error("File non trovato");
+                
+                const text = await res.text();
+                const lines = text.split('\n');
+                const btnContainer = document.getElementById('buttons');
+                btnContainer.innerHTML = ''; // Pulisce il contenitore
 
-            for (let i = 0; i < lines.length; i++) {
-                if (lines[i].startsWith('#EXTINF')) {
-                    const info = lines[i].split(',');
-                    const name = info[info.length - 1].trim();
-                    const streamUrl = lines[i+1].trim();
-                    
-                    // CREA IL LINK PER L'ESTENSIONE
-                    // Formato: chrome-extension://ID/player.html#URL_STREAM
-                    const extensionLink = `chrome-extension://${idEstensione}/iptv/player.html#${streamUrl}`;
+                for (let i = 0; i < lines.length; i++) {
+                    if (lines[i].startsWith('#EXTINF')) {
+                        // Estrae il nome del canale
+                        const info = lines[i].split(',');
+                        const name = info[info.length - 1].trim();
+                        // Prende l'URL dello stream dalla riga successiva
+                        const streamUrl = lines[i+1].trim();
+                        
+                        // Genera il link speciale per l'estensione Chrome
+                        const extensionLink = `chrome-extension://${idEstensione}/iptv/player.html#${streamUrl}`;
 
-                    let btn = document.createElement('button');
-                    btn.innerText = name;
-                    btn.onclick = () => { window.open(extensionLink, '_blank'); };
-                    btnContainer.appendChild(btn);
+                        let btn = document.createElement('button');
+                        btn.innerText = name;
+                        btn.onclick = () => { window.open(extensionLink, '_blank'); };
+                        btnContainer.appendChild(btn);
+                    }
                 }
+            } catch (err) {
+                console.error(err);
+                alert("Errore nel caricamento della lista. Assicurati che il file '" + nomeFileSegreto + "' esista su GitHub.");
             }
         }
     </script>
 </body>
-</html>
 </html>
