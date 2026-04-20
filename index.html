@@ -2,47 +2,90 @@
 <html>
 <head>
 <meta charset="ISO-8859-1">
-<title>Single Stream Player</title>
+<title>Single Stream Player PRO</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
 <style>
-    body { background-color: #121212; color: white; font-family: 'Segoe UI', sans-serif; padding: 20px; }
-    .center { margin: auto; width: 60%; text-align: center; }
-    video { width: 100%; height: 100%; border-radius: 8px; background: black; }
-    .channels { margin-top: 30px; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; justify-content: center; }
-    .btn { background: #2a2a2a; color: #eee; border: 1px solid #444; padding: 12px 5px; cursor: pointer; border-radius: 6px; font-size: 11px; font-weight: bold; transition: 0.2s; }
-    .btn:hover { background: #00d2ff; color: black; border-color: white; }
+    body { background-color: #121212; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; margin: 0; }
+    .center { margin: auto; width: 90%; max-width: 800px; text-align: center; }
+    
+    /* Contenitore Video */
+    .video-container { 
+        width: 100%; 
+        background: #000; 
+        border-radius: 12px; 
+        overflow: hidden; 
+        box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+        margin-bottom: 30px;
+    }
+    video { width: 100%; height: 100%; }
+
+    /* Titolo dinamico */
+    #title { color: #00d2ff; font-size: 20px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* Griglia Canali - Ottimizzata per Mobile e PC */
+    .channels { 
+        display: grid; 
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); 
+        gap: 10px; 
+        padding: 10px;
+    }
+
+    /* Bottoni Canali */
+    .btn { 
+        background: #2a2a2a; 
+        color: #efefef; 
+        border: 1px solid #444; 
+        padding: 15px 5px; 
+        cursor: pointer; 
+        border-radius: 8px; 
+        font-size: 11px; 
+        font-weight: 700; 
+        transition: all 0.2s ease;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+    .btn:hover { background: #00d2ff; color: #000; border-color: #fff; transform: translateY(-2px); }
+    .btn:active { transform: scale(0.95); }
+    .btn.active { background: #00d2ff; color: #000; border: 2px solid #fff; }
 </style>
 </head>
 <body>
 
 <div class="center">
-    <h2 id="title" style="color: #00d2ff; font-size: 1.2em;">Pronto</h2>
-</div>
+    <div id="title">Seleziona un Canale</div>
+    
+    <div class="video-container" data-shaka-player-container>
+        <video autoplay data-shaka-player id="video"></video>
+    </div>
 
-<div class="center" style="max-width:45em" data-shaka-player-container>
-    <video autoplay data-shaka-player id="video"></video>
+    <div id="list" class="channels"></div>
 </div>
-
-<div id="list" class="channels"></div>
 
 <script>
 async function init() {
     const video = document.getElementById('video');
     const ui = video['ui'];
     const player = ui.getControls().getPlayer();
+    const titleDisplay = document.getElementById('title');
+
+    // IL TUO PROXY PERSONALE SU CLOUDFLARE
+    const MIO_PROXY = "https://still-dawn-7cbdfd.miniclashroyale3636.workers.dev/?url=";
 
     try {
         const res = await fetch('lista_privata.m3u');
         const data = await res.text();
         const container = document.getElementById('list');
+        
+        // Dividiamo la lista per blocchi #EXTINF
         const items = data.split('#EXTINF');
 
         items.forEach(item => {
             if (item.includes('license_key=')) {
-                // Pulizia nome: cerca solo la parte finale dopo l'ultima virgola
-                let name = "Canale";
+                // ESTRAZIONE NOME: Puliamo il nome scartando le righe tecniche Gecko/Kodi
                 const lines = item.split('\n');
+                let name = "Canale";
                 for (let line of lines) {
                     if (line.includes(',') && !line.includes('license_key') && !line.includes('user-agent')) {
                         name = line.split(',').pop().trim();
@@ -50,8 +93,11 @@ async function init() {
                     }
                 }
 
+                // Estrazione URL del flusso (.mpd)
                 const urlMatch = item.match(/https?:\/\/[^\s"|]+/);
                 const url = urlMatch ? urlMatch[0] : null;
+
+                // Estrazione chiavi ClearKey
                 const keys = item.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
 
                 if (url && keys) {
@@ -60,48 +106,47 @@ async function init() {
                     btn.innerText = name;
                     
                     btn.onclick = async () => {
-                        document.getElementById('title').innerText = "Tentativo caricamento: " + name;
+                        // Rimuovi stato attivo dagli altri bottoni
+                        document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
                         
+                        titleDisplay.innerText = "Caricamento: " + name;
+                        
+                        // Configurazione DRM ClearKey
                         player.configure({
                             drm: { clearKeys: { [keys[1]]: keys[2] } }
                         });
 
-                        // Funzione di caricamento con rotazione proxy
-                        const tryLoad = async (proxyUrl) => {
-                            try {
-                                await player.load(proxyUrl + encodeURIComponent(url));
-                                return true;
-                            } catch (e) { return false; }
-                        };
-
-                        // Tentativo 1: Proxy Secondario (AllOrigins)
-                        let success = await tryLoad("https://api.allorigins.win/raw?url=");
-                        
-                        // Tentativo 2: Se fallisce, prova Proxy Primario (CorsProxy con bypass)
-                        if (!success) {
-                            success = await tryLoad("https://corsproxy.io/?url=");
-                        }
-
-                        // Tentativo 3: Se fallisce, prova caricamento diretto (come F1 screen)
-                        if (!success) {
-                            try {
-                                await player.load(url);
-                                success = true;
-                            } catch (e) { success = false; }
-                        }
-
-                        if (success) {
-                            document.getElementById('title').innerText = "In riproduzione: " + name;
-                        } else {
-                            document.getElementById('title').innerText = "Errore di connessione (403/1001)";
+                        try {
+                            // CARICAMENTO TRAMITE IL TUO PROXY CLOUDFLARE
+                            // Questo risolve l'errore 403 e permette la visione su Mobile
+                            await player.load(MIO_PROXY + encodeURIComponent(url));
+                            titleDisplay.innerText = "In riproduzione: " + name;
+                        } catch (e) {
+                            console.error("Errore Shaka:", e);
+                            titleDisplay.innerText = "Errore: " + e.code;
+                            
+                            // Fallback diretto se il proxy avesse problemi
+                            if (e.code === 1001 || e.code === 1002) {
+                                try {
+                                    await player.load(url);
+                                    titleDisplay.innerText = name;
+                                } catch (e2) {
+                                    titleDisplay.innerText = "Blocco Sorgente (403)";
+                                }
+                            }
                         }
                     };
                     container.appendChild(btn);
                 }
             }
         });
-    } catch (err) { console.error("Errore M3U"); }
+    } catch (err) {
+        titleDisplay.innerText = "Errore caricamento lista_privata.m3u";
+    }
 }
+
+// Avvio quando Shaka UI è pronta
 document.addEventListener('shaka-ui-loaded', init);
 </script>
 </body>
