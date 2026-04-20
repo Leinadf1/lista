@@ -3,98 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TV Channels</title>
+    <title>CHANNELS PRO</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.5/shaka-player.compiled.debug.js"></script>
     <style>
         :root { --bg: #0b0e11; --card: #151921; --blue: #007bff; --text: #f0f0f0; }
-        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding: 20px; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; padding: 20px; }
         
+        /* Griglia canali stile "App" */
         .header { display: flex; align-items: center; padding: 20px 0; border-bottom: 1px solid #222; margin-bottom: 30px; }
-        .header h1 { font-size: 22px; text-transform: uppercase; letter-spacing: 1px; color: #fff; margin: 0; }
-        .header h1 span { color: #a1a1a1; font-size: 14px; margin-left: 10px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
+        .card { background: var(--card); border-radius: 10px; padding: 15px; text-align: center; cursor: pointer; border: 1px solid #1e232d; transition: 0.2s; }
+        .card:hover { border-color: var(--blue); transform: translateY(-3px); }
+        .logo-box { height: 60px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+        .logo-box img { max-width: 100%; max-height: 100%; }
+        .name { font-size: 12px; font-weight: bold; }
 
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
-
-        .card { background: var(--card); border-radius: 10px; padding: 20px; text-align: center; cursor: pointer; 
-                transition: all 0.2s; border: 1px solid #1e232d; display: flex; flex-direction: column; align-items: center; }
-        .card:hover { border-color: var(--blue); transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
+        /* Player Overlay (quello che vedi nell'immagine del tuo amico) */
+        #player-overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.95); display: none; align-items: center; 
+            justify-content: center; z-index: 9999; 
+        }
+        .player-wrap { width: 90%; max-width: 960px; position: relative; }
+        video { width: 100%; border-radius: 8px; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
+        .close-btn { position: absolute; top: -40px; right: 0; color: white; background: none; border: 1px solid white; padding: 5px 15px; cursor: pointer; }
         
-        .logo-box { width: 100%; height: 80px; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; }
-        .logo-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
-        .logo-placeholder { font-weight: bold; color: #333; font-size: 10px; text-transform: uppercase; }
-
-        .name { font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
-        .category { font-size: 10px; color: var(--blue); text-transform: uppercase; font-weight: 700; }
-
-        /* Login Overlay */
-        #lock { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); 
-                display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; }
-        #lock input { background: #1c212a; border: 1px solid #333; color: #fff; padding: 12px; border-radius: 6px; 
-                      width: 260px; margin-bottom: 15px; text-align: center; font-size: 16px; }
-        #lock button { background: var(--blue); color: white; border: none; padding: 12px 30px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        #lock { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10001; }
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
 <div id="lock">
-    <h2 style="margin-bottom: 20px;">ACCESS CONTROL</h2>
-    <input type="password" id="pw" placeholder="Enter Password">
-    <button onclick="login()">LOGIN</button>
+    <h2>ACCESS CONTROL</h2>
+    <input type="password" id="pw" style="padding:10px; margin-bottom:10px;">
+    <button onclick="login()" style="padding:10px 20px; background:var(--blue); color:white; border:none;">LOGIN</button>
 </div>
 
 <div id="app" class="hidden">
-    <div class="header">
-        <h1>📺 CHANNELS <span id="count">0 CHANNELS</span></h1>
-    </div>
+    <div class="header"><h1>📺 CHANNELS</h1></div>
     <div id="grid" class="grid"></div>
+</div>
+
+<div id="player-overlay">
+    <div class="player-wrap">
+        <button class="close-btn" onclick="closePlayer()">✕ CLOSE</button>
+        <video id="video" controls autoplay></video>
+    </div>
 </div>
 
 <script>
     const PW_SECRET = "1234";
     const FILE_NAME = "lista_privata.m3u";
-    const EXT_ID = "opmeopcambhflmffbomjgemehjkbbmji";
 
     function login() {
         if(document.getElementById('pw').value === PW_SECRET) {
             document.getElementById('lock').classList.add('hidden');
             document.getElementById('app').classList.remove('hidden');
             load();
-        } else { alert("Access Denied"); }
+        } else { alert("Wrong Password"); }
     }
 
     async function load() {
-        try {
-            const res = await fetch("./" + FILE_NAME);
-            const data = await res.text();
-            const lines = data.split('\n');
-            const container = document.getElementById('grid');
-            let count = 0;
+        const res = await fetch("./" + FILE_NAME);
+        const data = await res.text();
+        const lines = data.split('\n');
+        const container = document.getElementById('grid');
 
-            for (let i = 0; i < lines.length; i++) {
-                if (lines[i].includes('#EXTINF')) {
-                    count++;
-                    const name = lines[i].split(',').pop().trim();
-                    const logoMatch = lines[i].match(/tvg-logo="([^"]+)"/);
-                    const logo = logoMatch ? logoMatch[1] : null;
-                    
-                    const listUrl = window.location.origin + "/" + FILE_NAME;
-                    const link = `chrome-extension://${EXT_ID}/iptv/player.html#${listUrl}`;
+        for (let i = 0; i < lines.length; i++) {
+            if (lines[i].includes('#EXTINF')) {
+                const info = lines[i];
+                const name = info.split(',').pop().trim();
+                const url = lines[i+1].trim(); // Prende la riga dopo l'info
+                
+                // Estraiamo le chiavi se presenti nella riga EXTINF (formato standard: #KID:KEY)
+                // Se la tua lista ha le chiavi altrove, dobbiamo adattare questa parte
+                let keyId = info.match(/#KID=([0-9a-fA-F]+)/);
+                let key = info.match(/#KEY=([0-9a-fA-F]+)/);
 
-                    const card = document.createElement('div');
-                    card.className = 'card';
-                    card.onclick = () => window.open(link, '_blank');
-                    card.innerHTML = `
-                        <div class="logo-box">
-                            ${logo ? `<img src="${logo}">` : `<div class="logo-placeholder">${name}</div>`}
-                        </div>
-                        <div class="name">${name}</div>
-                        <div class="category">IPTV LIVE</div>
-                    `;
-                    container.appendChild(card);
-                }
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.onclick = () => openPlayer(url, keyId ? keyId[1] : null, key ? key[1] : null);
+                card.innerHTML = `<div class="name">${name}</div>`;
+                container.appendChild(card);
             }
-            document.getElementById('count').innerText = count + " CHANNELS";
-        } catch (e) { alert("Error loading channels"); }
+        }
+    }
+
+    async function openPlayer(url, kid, key) {
+        document.getElementById('player-overlay').style.display = 'flex';
+        const video = document.getElementById('video');
+        const player = new shaka.Player(video);
+
+        // Configurazione chiavi MPD (ClearKey)
+        if (kid && key) {
+            player.configure({
+                drm: {
+                    clearKeys: { [kid]: key }
+                }
+            });
+        }
+
+        try {
+            await player.load(url);
+        } catch (e) { console.error('Error loading video', e); }
+    }
+
+    function closePlayer() {
+        location.reload(); // Il modo più veloce per distruggere il player e fermare il flusso
     }
 </script>
 </body>
