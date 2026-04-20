@@ -1,122 +1,89 @@
 <!DOCTYPE html>
-<html lang="it">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multi Stream Dashboard</title>
+    <title>TV Dashboard PRO</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
     <style>
-        body { background: #0f0f0f; color: #fff; font-family: sans-serif; margin: 0; padding: 20px; }
-        h1 { text-align: center; color: #00d2ff; }
-        /* Griglia dei player */
-        #streams-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-            gap: 20px;
+        body { background: #0f0f0f; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .player-container { width: 100%; max-width: 800px; background: #000; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 25px; }
+        #status { color: #00d2ff; font-size: 1.2rem; margin-bottom: 15px; font-weight: bold; text-transform: uppercase; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; width: 100%; max-width: 1000px; }
+        .btn { 
+            background: #252525; color: #ccc; border: 1px solid #333; padding: 15px 5px; cursor: pointer; border-radius: 8px; 
+            font-size: 11px; font-weight: bold; transition: 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
-        .stream-card {
-            background: #1a1a1a;
-            border-radius: 8px;
-            padding: 10px;
-            border: 1px solid #333;
-        }
-        .stream-title {
-            font-size: 14px;
-            font-weight: bold;
-            margin-bottom: 8px;
-            color: #00d2ff;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .video-wrapper {
-            width: 100%;
-            aspect-ratio: 16/9;
-            background: #000;
-            border-radius: 4px;
-            overflow: hidden;
-        }
-        video { width: 100%; height: 100%; }
-        @media (max-width: 500px) {
-            #streams-container { grid-template-columns: 1fr; }
-        }
+        .btn:hover { background: #00d2ff; color: #000; transform: translateY(-2px); }
+        .btn.active { background: #00d2ff; color: #000; border: 2px solid #fff; }
+        video { width: 100%; aspect-ratio: 16/9; }
     </style>
 </head>
 <body>
 
-    <h1>TV Dashboard</h1>
-    <div id="streams-container"></div>
+    <div id="status">Scegli un canale</div>
+
+    <div class="player-container" data-shaka-player-container>
+        <video autoplay data-shaka-player id="video"></video>
+    </div>
+
+    <div id="list" class="grid"></div>
 
 <script>
-async function initDashboard() {
-    const container = document.getElementById('streams-container');
-    
+async function init() {
+    const video = document.getElementById('video');
+    const ui = video['ui'];
+    const player = ui.getControls().getPlayer();
+    const status = document.getElementById('status');
+
     try {
-        const response = await fetch('lista_privata.m3u');
-        const text = await response.text();
-        const blocks = text.split('#EXTINF');
+        const res = await fetch('lista_privata.m3u');
+        const data = await res.text();
+        const items = data.split('#EXTINF');
 
-        blocks.forEach((block, index) => {
-            if (block.includes('license_key=')) {
-                // 1. Estrazione Nome
-                const lines = block.split('\n');
-                let name = "Canale " + index;
-                for (let line of lines) {
-                    if (line.includes(',') && !line.includes('license')) {
-                        name = line.split(',').pop().trim();
-                        break;
-                    }
-                }
+        items.forEach(item => {
+            if (item.includes('license_key=')) {
+                // Pulizia nome canale (scarta Gecko/Kodi)
+                const lines = item.split('\n');
+                let name = "Canale";
+                for (let l of lines) { if (l.includes(',') && !l.includes('license')) { name = l.split(',').pop().trim(); break; } }
 
-                // 2. Estrazione URL e Chiavi
-                const urlMatch = block.match(/https?:\/\/[^\s"|]+/);
-                const keysMatch = block.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
+                const url = item.match(/https?:\/\/[^\s"|]+/)?.[0];
+                const keys = item.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
 
-                if (urlMatch && keysMatch) {
-                    createPlayer(container, name, urlMatch[0], keysMatch[1], keysMatch[2], index);
+                if (url && keys) {
+                    const btn = document.createElement('button');
+                    btn.className = 'btn';
+                    btn.innerText = name;
+                    
+                    btn.onclick = async () => {
+                        // Estetica bottoni
+                        document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        status.innerText = "Caricamento: " + name;
+
+                        // Configurazione DRM
+                        player.configure({
+                            drm: { clearKeys: { [keys[1]]: keys[2] } },
+                            streaming: { retryParameters: { maxAttempts: 5 } }
+                        });
+
+                        try {
+                            await player.load(url);
+                            status.innerText = "In onda: " + name;
+                        } catch (e) {
+                            status.innerText = "Errore: " + e.code;
+                            console.error(e);
+                        }
+                    };
+                    document.getElementById('list').appendChild(btn);
                 }
             }
         });
-    } catch (err) {
-        console.error("Errore nel caricamento della lista M3U");
-    }
+    } catch (e) { status.innerText = "Errore caricamento lista.m3u"; }
 }
 
-function createPlayer(container, name, url, kid, key, index) {
-    // Crea la struttura HTML per ogni singolo canale
-    const card = document.createElement('div');
-    card.className = 'stream-card';
-    
-    card.innerHTML = `
-        <div class="stream-title">${name}</div>
-        <div class="video-wrapper" data-shaka-player-container>
-            <video data-shaka-player id="video-${index}" poster="https://via.placeholder.com/400x225/000/00d2ff?text=${encodeURIComponent(name)}"></video>
-        </div>
-    `;
-    
-    container.appendChild(card);
-
-    // Inizializza Shaka per questo specifico video
-    const video = document.getElementById(`video-${index}`);
-    const player = new shaka.Player(video);
-
-    // Configura DRM
-    player.configure({
-        drm: {
-            clearKeys: { [kid]: key }
-        }
-    });
-
-    // Carica lo stream
-    player.load(url).catch(error => {
-        console.warn(`Errore caricamento ${name}:`, error.code);
-        // Se fallisce, mettiamo un avviso nel titolo
-        card.querySelector('.stream-title').innerText += " (Errore: " + error.code + ")";
-    });
-}
-
-document.addEventListener('DOMContentLoaded', initDashboard);
+document.addEventListener('shaka-ui-loaded', init);
 </script>
 </body>
 </html>
