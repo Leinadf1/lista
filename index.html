@@ -5,79 +5,65 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Area Riservata TV</title>
     <style>
-        body { background: #0f0f0f; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 20px; }
+        body { background: #0f0f0f; color: white; font-family: sans-serif; text-align: center; padding: 20px; }
         .hidden { display: none; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; max-width: 1000px; margin: 30px auto; }
-        button { background: #1e1e1e; color: #efefef; border: 1px solid #333; padding: 15px; cursor: pointer; border-radius: 8px; transition: 0.3s; font-weight: bold; }
+        button { background: #1e1e1e; color: white; border: 1px solid #333; padding: 15px; cursor: pointer; border-radius: 8px; font-weight: bold; }
         button:hover { background: #333; border-color: #0078d4; }
-        input { autocomplete: off; padding: 12px; border-radius: 5px; border: 1px solid #333; background: #1e1e1e; color: white; margin-bottom: 10px; }
-        .notice { font-size: 0.8em; color: #888; margin-top: 20px; }
+        input { padding: 12px; border-radius: 5px; border: 1px solid #333; background: #1e1e1e; color: white; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
     <div id="login-section">
         <h1>🔐 Accesso Privato</h1>
-        <p>Inserisci la password per vedere i canali</p>
         <input type="password" id="pw" placeholder="Password"><br>
         <button onclick="check()">ENTRA</button>
     </div>
 
     <div id="main-section" class="hidden">
         <h1>📺 I Tuoi Canali</h1>
-        <p>Clicca su un canale per aprirlo nell'estensione</p>
         <div id="buttons" class="grid"></div>
-        <p class="notice">Richiede l'estensione "VideoPlayer MPD/M3U8" installata.</p>
     </div>
 
-<script>
-    const passSegreta = "1234"; 
-    const idEstensione = "opmeopcambhflmffbomjgemehjkbbmji"; 
+    <script>
+        const passSegreta = "1234"; 
+        const idEstensione = "opmeopcambhflmffbomjgemehjkbbmji";
+        // LINK DIRETTO RAW
+        const urlLista = "https://raw.githubusercontent.com/Leinadf1/lista/main/lista_privata.m3u";
 
-    function check() {
-        if(document.getElementById('pw').value === passSegreta) {
-            document.getElementById('login-section').classList.add('hidden');
-            document.getElementById('main-section').classList.remove('hidden');
-            loadList();
-        } else { 
-            alert("Password errata"); 
+        function check() {
+            if(document.getElementById('pw').value === passSegreta) {
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('main-section').classList.remove('hidden');
+                loadList();
+            } else { alert("Password errata"); }
         }
-    }
 
-    async function loadList() {
-        try {
-            // URL Assoluto per evitare ogni dubbio
-            const rawUrl = "https://raw.githubusercontent.com/Leinadf1/lista/main/lista_privata.m3u";
-            
-            console.log("Tentativo di caricamento lista da:", rawUrl);
+        async function loadList() {
+            try {
+                // Fetch direttamente dal link RAW per saltare i blocchi di GitHub Pages
+                const res = await fetch(urlLista);
+                const text = await res.text();
+                const lines = text.split('\n');
+                const btnContainer = document.getElementById('buttons');
+                btnContainer.innerHTML = ''; 
 
-            const res = await fetch(rawUrl);
-            if (!res.ok) throw new Error("Risposta server non OK");
-            
-            const text = await res.text();
-            console.log("File scaricato con successo. Righe:", text.split('\n').length);
+                for (let i = 0; i < lines.length; i++) {
+                    if (lines[i].startsWith('#EXTINF')) {
+                        const name = lines[i].split(',').pop().trim();
+                        const extensionLink = `chrome-extension://${idEstensione}/iptv/player.html#${urlLista}`;
 
-            const lines = text.split('\n');
-            const btnContainer = document.getElementById('buttons');
-            btnContainer.innerHTML = ''; 
-
-            for (let i = 0; i < lines.length; i++) {
-                if (lines[i].startsWith('#EXTINF')) {
-                    const info = lines[i].split(',');
-                    const name = info[info.length - 1].trim();
-                    const extensionLink = `chrome-extension://${idEstensione}/iptv/player.html#${rawUrl}`;
-
-                    let btn = document.createElement('button');
-                    btn.innerText = name;
-                    btn.onclick = () => { window.open(extensionLink, '_blank'); };
-                    btnContainer.appendChild(btn);
+                        let btn = document.createElement('button');
+                        btn.innerText = name;
+                        btn.onclick = () => { window.open(extensionLink, '_blank'); };
+                        btnContainer.appendChild(btn);
+                    }
                 }
+            } catch (err) {
+                alert("Errore nel caricamento. Controlla che il file lista_privata.m3u sia pubblico.");
             }
-        } catch (err) {
-            console.error("ERRORE CRITICO:", err);
-            alert("Errore nel caricamento dei canali. Controlla la console (F12).");
         }
-    }
-</script>
+    </script>
 </body>
 </html>
