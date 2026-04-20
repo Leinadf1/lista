@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TV Dashboard PRO - Fixed & Dynamic</title>
+    <title>TV Dashboard PRO - Stable</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
     <style>
@@ -110,13 +110,13 @@ async function init() {
         const blocks = text.split('#KODIPROP:inputstream.adaptive.license_type=clearkey');
 
         blocks.forEach(block => {
-            if (!block.includes('.mpd')) return;
+            if (!block.includes('http')) return;
 
-            // 1. Estrazione Nome Corretta (Tutto dopo l'ultima virgola della riga #EXTINF)
+            // 1. Estrazione Nome (Tutto dopo l'ultima virgola della riga #EXTINF)
             const nameLine = block.match(/#EXTINF:.*,(.*)/);
             let channelName = nameLine ? nameLine[1].split('\n')[0].trim() : "Canale Sconosciuto";
 
-            // 2. Estrazione Gruppo, Logo e URL (Regex migliorata per parametri lunghi)
+            // 2. Estrazione Gruppo, Logo e URL (Regex aggiornata per URL lunghi DAZN)
             const groupMatch = block.match(/group-title="([^"]+)"/i);
             const logoMatch = block.match(/tvg-logo="([^"]+)"/i);
             const urlMatch = block.match(/https?:\/\/[^\s"|]+/i);
@@ -129,7 +129,7 @@ async function init() {
             if (jsonKeys) { try { drmKeys = JSON.parse(jsonKeys[1]); } catch(e) {} }
             else if (stdKeys) { drmKeys[stdKeys[1].toLowerCase()] = stdKeys[2].toLowerCase(); }
 
-            if (urlMatch && Object.keys(drmKeys).length > 0) {
+            if (urlMatch) {
                 loadedCount++;
                 createCard({
                     name: channelName,
