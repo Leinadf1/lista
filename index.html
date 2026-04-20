@@ -2,31 +2,25 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>TV Dashboard PRO</title>
+    <title>TV Dashboard Fix</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
     <style>
-        body { background: #0f0f0f; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .player-container { width: 100%; max-width: 800px; background: #000; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 25px; }
-        #status { color: #00d2ff; font-size: 1.2rem; margin-bottom: 15px; font-weight: bold; text-transform: uppercase; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; width: 100%; max-width: 1000px; }
-        .btn { 
-            background: #252525; color: #ccc; border: 1px solid #333; padding: 15px 5px; cursor: pointer; border-radius: 8px; 
-            font-size: 11px; font-weight: bold; transition: 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-        .btn:hover { background: #00d2ff; color: #000; transform: translateY(-2px); }
-        .btn.active { background: #00d2ff; color: #000; border: 2px solid #fff; }
+        body { background: #121212; color: white; font-family: sans-serif; padding: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-top: 20px; }
+        .btn { background: #2a2a2a; color: white; border: 1px solid #444; padding: 12px 5px; cursor: pointer; border-radius: 6px; font-size: 11px; font-weight: bold; }
+        .btn:hover { background: #00d2ff; color: black; }
+        .video-container { width: 100%; max-width: 800px; margin: 0 auto; background: #000; border-radius: 12px; overflow: hidden; }
         video { width: 100%; aspect-ratio: 16/9; }
+        #status { text-align: center; color: #00d2ff; font-size: 18px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
-    <div id="status">Scegli un canale</div>
-
-    <div class="player-container" data-shaka-player-container>
+    <div id="status">Seleziona Canale</div>
+    <div class="video-container" data-shaka-player-container>
         <video autoplay data-shaka-player id="video"></video>
     </div>
-
     <div id="list" class="grid"></div>
 
 <script>
@@ -34,7 +28,17 @@ async function init() {
     const video = document.getElementById('video');
     const ui = video['ui'];
     const player = ui.getControls().getPlayer();
-    const status = document.getElementById('status');
+
+    // CONFIGURAZIONE ANTI-BLOCCO: Evita richieste HEAD che causano l'errore 1002
+    player.configure({
+        streaming: {
+            jumpLargeGaps: true,
+            dispatchAllEmsgBoxes: true
+        },
+        manifest: {
+            dash: { clockSyncUri: '' }
+        }
+    });
 
     try {
         const res = await fetch('lista_privata.m3u');
@@ -43,7 +47,7 @@ async function init() {
 
         items.forEach(item => {
             if (item.includes('license_key=')) {
-                // Pulizia nome canale (scarta Gecko/Kodi)
+                // Estrazione nome pulito
                 const lines = item.split('\n');
                 let name = "Canale";
                 for (let l of lines) { if (l.includes(',') && !l.includes('license')) { name = l.split(',').pop().trim(); break; } }
@@ -57,30 +61,31 @@ async function init() {
                     btn.innerText = name;
                     
                     btn.onclick = async () => {
-                        // Estetica bottoni
-                        document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
-                        btn.classList.add('active');
-                        status.innerText = "Caricamento: " + name;
-
-                        // Configurazione DRM
+                        document.getElementById('status').innerText = "Caricamento: " + name;
+                        
+                        // Applichiamo le chiavi DRM
                         player.configure({
-                            drm: { clearKeys: { [keys[1]]: keys[2] } },
-                            streaming: { retryParameters: { maxAttempts: 5 } }
+                            drm: { clearKeys: { [keys[1]]: keys[2] } }
                         });
 
                         try {
+                            // Carichiamo il flusso DIRETTAMENTE
                             await player.load(url);
-                            status.innerText = "In onda: " + name;
+                            document.getElementById('status').innerText = "In onda: " + name;
                         } catch (e) {
-                            status.innerText = "Errore: " + e.code;
-                            console.error(e);
+                            document.getElementById('status').innerText = "Errore: " + e.code;
+                            // Se fallisce, proviamo col tuo proxy Cloudflare come ultima spiaggia
+                            if (e.code === 1002) {
+                                const proxyUrl = "https://still-dawn-7cbdfd.miniclashroyale3636.workers.dev/?url=" + encodeURIComponent(url);
+                                await player.load(proxyUrl);
+                            }
                         }
                     };
                     document.getElementById('list').appendChild(btn);
                 }
             }
         });
-    } catch (e) { status.innerText = "Errore caricamento lista.m3u"; }
+    } catch (e) { console.error("Errore lista"); }
 }
 
 document.addEventListener('shaka-ui-loaded', init);
