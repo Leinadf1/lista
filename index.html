@@ -1,167 +1,146 @@
 <!DOCTYPE html>
-<html lang="it">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CHANNELS</title>
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.6/controls.min.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.6/shaka-player.ui.js"></script>
+<meta charset="ISO-8859-1">
+<title>Dynamic Stream Player</title>
 
-    <style>
-        :root { --bg: #0b0e11; --card: #151921; --blue: #00d2ff; }
-        body { background: var(--bg); color: #fff; font-family: sans-serif; margin: 0; padding: 20px; }
-        
-        /* Header nodrm */
-        .header { display: flex; align-items: baseline; border-bottom: 1px solid #1e232d; margin-bottom: 25px; padding-bottom: 15px; }
-        .header h1 { font-size: 20px; text-transform: uppercase; margin: 0; font-weight: 900; }
-        .header .count { color: #3a4454; font-size: 11px; margin-left: 10px; font-weight: bold; }
+<script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
 
-        /* Griglia nodrm con loghi */
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
-        .card { 
-            background: var(--card); border-radius: 4px; padding: 15px; text-align: left; 
-            cursor: pointer; border: 1px solid #1e232d; transition: 0.2s;
-            display: flex; flex-direction: column; min-height: 140px;
-        }
-        .card:hover { border-color: #333; background: #1a1f29; }
-        
-        .logo-box { height: 60px; width: 100%; display: flex; align-items: center; justify-content: flex-start; margin-bottom: 15px; }
-        .logo-box img { max-width: 80%; max-height: 100%; object-fit: contain; }
-        
-        .name { font-size: 13px; font-weight: bold; margin-bottom: 2px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .sub { font-size: 9px; color: var(--blue); font-weight: bold; text-transform: uppercase; }
-
-        /* Player Overlay nodrm */
-        #player-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.98); display: none; align-items: center; justify-content: center; z-index: 10000; }
-        .player-container { width: 95%; max-width: 900px; }
-        
-        .player-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .player-title-wrap { display: flex; align-items: center; gap: 10px; }
-        .player-title-wrap h3 { font-size: 15px; margin: 0; }
-        .player-title-wrap .cat { font-size: 10px; color: var(--blue); font-weight: bold; text-transform: uppercase; }
-        
-        .close-btn { background: rgba(255,255,255,0.05); color: #777; border: 1px solid #333; padding: 4px 10px; cursor: pointer; border-radius: 3px; font-size: 10px; font-weight: bold; }
-        
-        /* Shaka UI Container */
-        .shaka-video-container { width: 100%; aspect-ratio: 16/9; border-radius: 2px; overflow: hidden; }
-        video { width: 100%; height: 100%; }
-        
-        /* Barra gialla shaka */
-        .shaka-range-element { color: #ffcc00 !important; }
-
-        #lock { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10001; }
-        input { background: #000; border: 1px solid #222; color: white; padding: 12px; border-radius: 4px; text-align: center; width: 220px; margin-bottom: 10px; }
-        .hidden { display: none !important; }
-    </style>
+<style>
+body {
+background-color: #262626;
+color: white;
+font-family: Arial, sans-serif;
+margin: 0;
+padding: 20px;
+}
+.center {
+margin: auto;
+width: 80%;
+max-width: 800px;
+text-align: center;
+}
+video {
+width: 100%;
+height: 100%;
+}
+/* Stile per la griglia canali */
+.grid {
+display: grid;
+grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+gap: 15px;
+margin-top: 30px;
+}
+.btn-channel {
+background: #333;
+border: 1px solid #444;
+color: white;
+padding: 15px;
+cursor: pointer;
+border-radius: 5px;
+font-weight: bold;
+transition: 0.3s;
+}
+.btn-channel:hover {
+background: #ffcc00;
+color: #000;
+}
+.hidden { display: none !important; }
+</style>
 </head>
+
 <body>
 
-<div id="lock">
-    <input type="password" id="pw" placeholder="PASSWORD">
-    <button onclick="login()" style="background:var(--blue); color:#000; border:none; padding:10px 30px; border-radius:4px; cursor:pointer; font-weight:900;">ACCEDI</button>
+<div id="login-screen" class="center">
+    <h2>Accesso Riservato</h2>
+    <input type="password" id="pw" placeholder="Password" style="padding:10px; border-radius:5px; border:none;">
+    <button onclick="login()" style="padding:10px 20px; cursor:pointer;">Entra</button>
 </div>
 
-<div id="app" class="hidden">
-    <div class="header"><h1>📺 CHANNELS</h1> <div class="count" id="count">0 CHANNELS</div></div>
-    <div id="grid" class="grid"></div>
-</div>
-
-<div id="player-overlay">
-    <div class="player-container">
-        <div class="player-nav">
-            <div class="player-title-wrap">
-                <h3 id="playing-name">CANALE</h3>
-                <span class="cat">SKY IT INTRATTENIMENTO</span>
-            </div>
-            <button class="close-btn" onclick="closePlayer()">✕ CLOSE</button>
-        </div>
-        <div id="video-container" class="shaka-video-container">
-            <video id="video" autoplay></video>
-        </div>
+<div id="main-content" class="hidden">
+    <div class="center">
+        <h2>Canale in onda: <span id="current-name">-</span></h2>
     </div>
+
+    <div
+    class="center"
+    style="max-width:40em"
+    data-shaka-player-container
+    data-shaka-player-cast-receiver-id="07AEE832"
+    >
+        <video autoplay data-shaka-player id="video"></video>
+    </div>
+
+    <div id="channel-grid" class="grid center"></div>
 </div>
 
 <script>
-    const PW_SECRET = "1234";
-    const FILE_NAME = "lista_privata.m3u";
-    let player, ui;
+let player;
 
-    function login() {
-        if(document.getElementById('pw').value === PW_SECRET) {
-            document.getElementById('lock').classList.add('hidden');
-            document.getElementById('app').classList.remove('hidden');
-            load();
-        } else { alert("Password Errata"); }
-    }
+function login() {
+    if(document.getElementById('pw').value === "1234") {
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('main-content').classList.remove('hidden');
+        loadPlaylist();
+    } else { alert("Password Errata"); }
+}
 
-    async function load() {
-        const res = await fetch("./" + FILE_NAME);
+async function loadPlaylist() {
+    try {
+        const res = await fetch("./lista_privata.m3u");
         const data = await res.text();
-        const lines = data.split('\n');
-        const container = document.getElementById('grid');
-        let count = 0;
+        const grid = document.getElementById('channel-grid');
+        
+        // Estraiamo i blocchi dalla lista
+        const blocks = data.split('#KODIPROP:inputstream.adaptive.license_type=clearkey');
+        
+        blocks.forEach(block => {
+            if (block.includes('#EXTINF')) {
+                const name = block.split(',').pop().split('\n')[0].trim();
+                const url = block.match(/https?:\/\/\S+/)?.[0];
+                const keys = block.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
 
-        for (let i = 0; i < lines.length; i++) {
-            if (lines[i].startsWith('#EXTINF')) {
-                count++;
-                const info = lines[i];
-                const name = info.split(',').pop().trim();
-                const logo = info.match(/tvg-logo="([^"]+)"/)?.[1] || "";
-                
-                let kid = "", key = "", url = "";
-                for(let j=1; j<=4; j++){
-                    let line = lines[i+j]?.trim() || "";
-                    if(line.includes('license_key=')){
-                        const val = line.split('license_key=')[1];
-                        [kid, key] = val.split(':');
-                    }
-                    if(line.startsWith('http')) url = line;
+                if (url && keys) {
+                    const btn = document.createElement('button');
+                    btn.className = 'btn-channel';
+                    btn.innerText = name;
+                    btn.onclick = () => playStream(url, name, keys[1], keys[2]);
+                    grid.appendChild(btn);
                 }
-
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.onclick = () => openPlayer(url, name, kid, key);
-                card.innerHTML = `
-                    <div class="logo-box"><img src="${logo}"></div>
-                    <div class="name">${name}</div>
-                    <div class="sub">SKY IT INTRATTENIMENTO</div>
-                `;
-                container.appendChild(card);
             }
+        });
+    } catch (e) { console.error("Errore lista:", e); }
+}
+
+async function playStream(manifestUrl, name, kid, key) {
+    document.getElementById('current-name').innerText = name;
+    
+    // Inizializzazione Shaka UI nativa
+    const video = document.getElementById('video');
+    const ui = video['ui'];
+    const controls = ui.getControls();
+    player = controls.getPlayer();
+
+    // Configurazione ClearKey
+    player.configure({
+        drm: {
+            clearKeys: { [kid]: key }
         }
-        document.getElementById('count').innerText = count + " CHANNELS";
+    });
+
+    try {
+        await player.load(manifestUrl);
+        console.log('Canale caricato:', name);
+    } catch (e) {
+        console.error('Errore caricamento:', e);
+        alert("Errore 4000: Impossibile caricare il flusso. Potrebbe servire il proxy.");
     }
+}
 
-    async function openPlayer(url, name, kid, key) {
-        document.getElementById('player-overlay').style.display = 'flex';
-        document.getElementById('playing-name').innerText = name;
-        
-        const video = document.getElementById('video');
-        const videoContainer = document.getElementById('video-container');
-
-        player = new shaka.Player(video);
-        ui = new shaka.ui.Overlay(player, videoContainer, video);
-        
-        ui.configure({ 'controlPanelElements': ['play_pause', 'time_and_duration', 'spacer', 'mute', 'volume', 'fullscreen'] });
-
-        if (kid && key) {
-            player.configure({ drm: { clearKeys: { [kid]: key.trim() } } });
-        }
-
-        try {
-            await player.load(url);
-        } catch (e) {
-            alert("Errore nel caricamento del flusso MPD. Verifica la chiave.");
-            closePlayer();
-        }
-    }
-
-    function closePlayer() {
-        if (ui) ui.destroy();
-        if (player) player.destroy();
-        document.getElementById('player-overlay').style.display = 'none';
-    }
+document.addEventListener('shaka-ui-loaded', () => {
+    console.log("Shaka UI pronta");
+});
 </script>
 </body>
 </html>
