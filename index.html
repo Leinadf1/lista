@@ -15,6 +15,7 @@
         .player-container { width: 100%; max-width: 850px; background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 35px; border: 1px solid #30363d; position: sticky; top: 10px; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         video { width: 100%; aspect-ratio: 16/9; }
 
+        /* Stile Categorie */
         .category-container { width: 100%; max-width: 1200px; margin-bottom: 40px; }
         .category-title { font-size: 18px; color: #f1e05a; margin-bottom: 15px; font-weight: bold; text-transform: uppercase; border-left: 4px solid #58a6ff; padding-left: 10px; }
 
@@ -69,15 +70,13 @@ async function init() {
     const categories = {};
 
     function getCategoryGrid(groupName) {
-        const name = (groupName || "ALTRI").toUpperCase().trim();
+        const name = (groupName || "ALTRI").toUpperCase();
         if (!categories[name]) {
             const container = document.createElement('div');
             container.className = 'category-container';
-            // Sostituito il replace per gestire ID più puliti
-            const cleanId = name.replace(/[^A-Z0-9]/g, '-');
-            container.innerHTML = `<div class="category-title">${name}</div><div class="grid" id="grid-${cleanId}"></div>`;
+            container.innerHTML = `<div class="category-title">${name}</div><div class="grid" id="grid-${name.replace(/\s+/g, '-')}"></div>`;
             mainList.appendChild(container);
-            categories[name] = document.getElementById(`grid-${cleanId}`);
+            categories[name] = document.getElementById(`grid-${name.replace(/\s+/g, '-')}`);
         }
         return categories[name];
     }
@@ -113,23 +112,19 @@ async function init() {
     try {
         const response = await fetch(SOURCE_URL + "?t=" + Date.now());
         const text = await response.text();
-        
-        // MODIFICA 1: Dividiamo per #EXTINF per prendere ogni blocco singolarmente
-        const sections = text.split('#EXTINF');
+        const sections = text.split('#KODIPROP:inputstream.adaptive.license_type=clearkey');
 
         sections.forEach(section => {
-            if (!section.includes('http')) return;
+            if (!section.includes('.mpd')) return;
 
-            // MODIFICA 2: Regex URL più flessibile per parametri lunghi
-            const urlMatch = section.match(/https?:\/\/[^\s"|]+/i);
+            const urlMatch = section.match(/https?:\/\/[^\s"|]+\.mpd[^\s"|]*/i);
             const logoMatch = section.match(/tvg-logo="([^"]+)"/i);
             const groupMatch = section.match(/group-title="([^"]+)"/i);
+            const extinfLine = section.match(/#EXTINF:[^,]+,(.*)/);
             
-            // Estrazione nome pulita
-            const namePart = section.match(/,(.*)/);
             let channelName = "Canale";
-            if (namePart) {
-                channelName = namePart[1].split('\n')[0].trim();
+            if (extinfLine) {
+                channelName = extinfLine[1].split('\n')[0].split(',').pop().trim();
             }
 
             let drmKeys = {};
@@ -142,8 +137,7 @@ async function init() {
                 drmKeys[standardKeys[1].toLowerCase()] = standardKeys[2].toLowerCase();
             }
 
-            // Aggiungiamo il canale se ha un URL e delle chiavi (o se è un MPD)
-            if (urlMatch) {
+            if (urlMatch && Object.keys(drmKeys).length > 0) {
                 loadedCount++;
                 createCard({
                     name: channelName,
