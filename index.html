@@ -1,26 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="ISO-8859-1">
-    <title>TV Dashboard – Final Version</title>
+    <meta charset="UTF-8">
+    <title>TV Dashboard PRO – Sky Fix</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
     <style>
-        body { background-color: #262626; color: white; font-family: Arial, sans-serif; padding: 20px; text-align: center; }
-        .center { margin: auto; width: 60%; }
-        video { width: 100%; aspect-ratio: 16/9; background: black; border-radius: 8px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-top: 30px; }
-        .btn { background: #3d3d3d; color: white; border: 1px solid #555; padding: 15px 5px; cursor: pointer; border-radius: 5px; font-size: 11px; font-weight: bold; transition: 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .btn:hover { background: #00d2ff; color: black; }
-        .btn.active { background: #00d2ff; color: black; border: 2px solid white; }
-        #status { color: #00d2ff; margin-bottom: 15px; font-weight: bold; font-size: 1.2em; }
+        body { background-color: #1a1a1a; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; text-align: center; }
+        .center { margin: auto; width: 80%; max-width: 800px; }
+        video { width: 100%; aspect-ratio: 16/9; background: black; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; margin-top: 30px; }
+        .btn { background: #333; color: #ccc; border: 1px solid #444; padding: 15px 5px; cursor: pointer; border-radius: 8px; font-size: 12px; font-weight: 600; transition: all 0.3s; }
+        .btn:hover { background: #00d2ff; color: #000; transform: translateY(-2px); }
+        .btn.active { background: #00d2ff; color: #000; border: 2px solid #fff; box-shadow: 0 0 15px rgba(0,210,255,0.5); }
+        #status { color: #00d2ff; margin-bottom: 20px; font-size: 1.1em; text-transform: uppercase; letter-spacing: 1px; }
     </style>
 </head>
 <body>
 
-    <div id="status">Caricamento canali...</div>
+    <div id="status">Caricamento canali in corso...</div>
 
-    <div class="center" style="max-width:40em" data-shaka-player-container>
+    <div class="center" data-shaka-player-container>
         <video autoplay data-shaka-player id="video"></video>
     </div>
 
@@ -36,43 +36,42 @@ async function init() {
     const statusHeader = document.getElementById('status');
     const container = document.getElementById('list');
 
-    // Configurazione anti-blocco identica a Eurosport
+    // Configurazione per bypassare blocchi server (come Errore 1002)
     player.configure({
         streaming: { jumpLargeGaps: true },
         manifest: { dash: { clockSyncUri: '' } }
     });
 
+    // Aggiungiamo lo User-Agent specifico richiesto dalla tua lista
+    player.getNetworkingEngine().registerRequestFilter((type, request) => {
+        request.headers['User-Agent'] = 'Mozilla/5.0 (Linux; Android 9; AFTKA Build/PS7702.4965N; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/136.0.7103.125 Mobile Safari/537.36';
+    });
+
     try {
         const res = await fetch(LISTA_URL);
-        if (!res.ok) throw new Error("File M3U non trovato");
+        const text = await res.text();
         
-        const data = await res.text();
-        const items = data.split('#EXTINF');
-        statusHeader.innerText = "Seleziona un Canale";
+        // Dividiamo la lista per blocchi corretti basandoci sulla tua struttura
+        const blocks = text.split('#KODIPROP:inputstream.adaptive.license_type=clearkey');
+        statusHeader.innerText = "Scegli un canale";
 
-        items.forEach(item => {
-            if (item.includes('license_key=')) {
-                // 1. Estrazione Nome
-                const lines = item.split('\n');
-                let name = "Canale";
-                for (let l of lines) { 
-                    if (l.includes(',') && !l.includes('license')) { 
-                        name = l.split(',').pop().trim(); 
-                        break; 
-                    } 
-                }
+        blocks.forEach(block => {
+            if (block.includes('license_key=')) {
+                // 1. Estrazione Chiavi (KID:KEY)
+                const keyMatch = block.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
+                
+                // 2. Estrazione URL (.mpd)
+                const urlMatch = block.match(/https?:\/\/[^\s"|]+\.mpd[^\s"|]*/i);
+                
+                // 3. Estrazione Nome (dopo la virgola in EXTINF)
+                const nameMatch = block.match(/#EXTINF:.*,(.*)/);
 
-                // 2. Filtro URL: Cerca l'MPD ed evita i loghi NowTV/Sky
-                const urls = item.match(/https?:\/\/[^\s"|]+/g);
-                let videoUrl = null;
-                if (urls) {
-                    videoUrl = urls.find(u => u.includes('.mpd') || (u.includes('/channel(') && !u.includes('logo')));
-                }
+                if (keyMatch && urlMatch && nameMatch) {
+                    const kid = keyMatch[1];
+                    const key = keyMatch[2];
+                    const url = urlMatch[0];
+                    const name = nameMatch[1].trim();
 
-                // 3. Estrazione Chiavi KID:KEY
-                const keys = item.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
-
-                if (videoUrl && keys) {
                     const btn = document.createElement('button');
                     btn.className = 'btn';
                     btn.innerText = name;
@@ -80,24 +79,17 @@ async function init() {
                     btn.onclick = async () => {
                         document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
                         btn.classList.add('active');
-                        statusHeader.innerText = "Verifica licenza: " + name;
+                        statusHeader.innerText = "In riproduzione: " + name;
 
-                        // Configurazione DRM ClearKey
                         player.configure({
-                            drm: { clearKeys: { [keys[1]]: keys[2] } }
+                            drm: { clearKeys: { [kid]: key } }
                         });
 
                         try {
-                            await player.load(videoUrl);
-                            statusHeader.innerText = "In onda: " + name;
+                            await player.load(url);
                         } catch (e) {
-                            // Diagnostica specifica per chiavi errate
-                            if (e.code == 6007 || e.code == 6008) {
-                                statusHeader.innerText = "ERRORE: CHIAVI SCADUTE O ERRATE";
-                            } else {
-                                statusHeader.innerText = "Errore: " + e.code;
-                            }
-                            console.error("Dettaglio errore:", e);
+                            statusHeader.innerText = "Errore: " + e.code;
+                            console.error("Dettaglio:", e);
                         }
                     };
                     container.appendChild(btn);
@@ -105,7 +97,7 @@ async function init() {
             }
         });
     } catch (err) {
-        statusHeader.innerText = "Errore caricamento lista.m3u";
+        statusHeader.innerText = "Errore caricamento file m3u";
     }
 }
 
