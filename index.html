@@ -2,25 +2,111 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>TV Dashboard PRO – Sky Fix</title>
+    <title>TV Dashboard PRO – Visual</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
     <style>
-        body { background-color: #1a1a1a; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; text-align: center; }
-        .center { margin: auto; width: 80%; max-width: 800px; }
-        video { width: 100%; aspect-ratio: 16/9; background: black; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; margin-top: 30px; }
-        .btn { background: #333; color: #ccc; border: 1px solid #444; padding: 15px 5px; cursor: pointer; border-radius: 8px; font-size: 12px; font-weight: 600; transition: all 0.3s; }
-        .btn:hover { background: #00d2ff; color: #000; transform: translateY(-2px); }
-        .btn.active { background: #00d2ff; color: #000; border: 2px solid #fff; box-shadow: 0 0 15px rgba(0,210,255,0.5); }
-        #status { color: #00d2ff; margin-bottom: 20px; font-size: 1.1em; text-transform: uppercase; letter-spacing: 1px; }
+        /* --- STILE GENERALE (Ispirato a nodrm.online) --- */
+        body { 
+            background-color: #0d1117; 
+            color: #c9d1d9; 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #header {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #30363d;
+        }
+
+        #header h1 { font-size: 24px; color: #58a6ff; margin: 0; text-transform: uppercase; letter-spacing: 1px; }
+        #chan-count { color: #8b949e; font-size: 14px; margin-top: 5px; }
+
+        /* --- PLAYER --- */
+        .player-container {
+            width: 100%;
+            max-width: 900px;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            margin-bottom: 30px;
+            border: 1px solid #30363d;
+        }
+        video { width: 100%; aspect-ratio: 16/9; }
+
+        /* --- GRIGLIA VISIVA (Le schede) --- */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 15px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        /* La scheda del canale */
+        .channel-card {
+            background-color: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* Immagine del logo (ridimensionamento intelligente) */
+        .card-logo-container {
+            width: 100%;
+            height: 90px; /* Altezza fissa per coerenza */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            background: #21262d; /* Sfondo leggermente diverso per far risaltare il logo */
+        }
+        .channel-card img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain; /* Mantiene le proporzioni del logo */
+        }
+
+        /* Testo sotto il logo */
+        .card-info {
+            width: 100%;
+            padding: 10px;
+            text-align: left;
+            border-top: 1px solid #30363d;
+        }
+        .card-info .name { font-size: 14px; font-weight: 600; color: #f0f6fc; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .card-info .group { font-size: 11px; color: #8b949e; }
+
+        /* Effetti hover e attivo */
+        .channel-card:hover { background-color: #21262d; transform: translateY(-3px); border-color: #58a6ff; }
+        .channel-card.active { border: 2px solid #58a6ff; box-shadow: 0 0 20px rgba(88,166,255,0.4); }
+
     </style>
 </head>
 <body>
 
-    <div id="status">Caricamento canali in corso...</div>
+    <div id="header">
+        <h1>Dashboard</h1>
+        <div id="chan-count">Caricamento...</div>
+    </div>
 
-    <div class="center" data-shaka-player-container>
+    <div class="player-container" data-shaka-player-container>
         <video autoplay data-shaka-player id="video"></video>
     </div>
 
@@ -33,16 +119,16 @@ async function init() {
     const video = document.getElementById('video');
     const ui = video['ui'];
     const player = ui.getControls().getPlayer();
-    const statusHeader = document.getElementById('status');
     const container = document.getElementById('list');
+    const countHeader = document.getElementById('chan-count');
 
-    // Configurazione per bypassare blocchi server (come Errore 1002)
+    // Configurazione anti-blocco identica a Eurosport
     player.configure({
         streaming: { jumpLargeGaps: true },
         manifest: { dash: { clockSyncUri: '' } }
     });
 
-    // Aggiungiamo lo User-Agent specifico richiesto dalla tua lista
+    // Aggiungiamo lo User-Agent specifico richiesto dai server
     player.getNetworkingEngine().registerRequestFilter((type, request) => {
         request.headers['User-Agent'] = 'Mozilla/5.0 (Linux; Android 9; AFTKA Build/PS7702.4965N; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/136.0.7103.125 Mobile Safari/537.36';
     });
@@ -51,35 +137,64 @@ async function init() {
         const res = await fetch(LISTA_URL);
         const text = await res.text();
         
-        // Dividiamo la lista per blocchi corretti basandoci sulla tua struttura
+        // Dividiamo la lista per blocchi corretti partendo da KODIPROP
         const blocks = text.split('#KODIPROP:inputstream.adaptive.license_type=clearkey');
-        statusHeader.innerText = "Scegli un canale";
+        let channelsCount = 0;
 
         blocks.forEach(block => {
             if (block.includes('license_key=')) {
-                // 1. Estrazione Chiavi (KID:KEY)
+                
+                // 1. Estrazione Chiavi KID:KEY
                 const keyMatch = block.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
                 
                 // 2. Estrazione URL (.mpd)
                 const urlMatch = block.match(/https?:\/\/[^\s"|]+\.mpd[^\s"|]*/i);
                 
-                // 3. Estrazione Nome (dopo la virgola in EXTINF)
-                const nameMatch = block.match(/#EXTINF:.*,(.*)/);
+                // 3. Estrazione Nome e Logo (dall'EXTINF)
+                const extinfMatch = block.match(/#EXTINF:.*tvg-logo="(.*?)".*group-title="(.*?)".*,(.*)/);
 
-                if (keyMatch && urlMatch && nameMatch) {
+                if (keyMatch && urlMatch && extinfMatch) {
+                    channelsCount++;
                     const kid = keyMatch[1];
                     const key = keyMatch[2];
                     const url = urlMatch[0];
-                    const name = nameMatch[1].trim();
+                    const logoUrl = extinfMatch[1];
+                    const groupTitle = extinfMatch[2];
+                    const name = extinfMatch[3].trim();
 
-                    const btn = document.createElement('button');
-                    btn.className = 'btn';
-                    btn.innerText = name;
-                    
-                    btn.onclick = async () => {
-                        document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
-                        btn.classList.add('active');
-                        statusHeader.innerText = "In riproduzione: " + name;
+                    // --- CREAZIONE DELLA SCHEDA VISIVA (CARD) ---
+                    const card = document.createElement('div');
+                    card.className = 'channel-card';
+
+                    // Contenitore del logo
+                    const logoContainer = document.createElement('div');
+                    logoContainer.className = 'card-logo-container';
+                    const img = document.createElement('img');
+                    img.src = logoUrl;
+                    img.alt = name;
+                    img.onerror = () => img.src = 'https://via.placeholder.com/150x80?text=No+Logo'; // Fallback se il logo non carica
+                    logoContainer.appendChild(img);
+                    card.appendChild(logoContainer);
+
+                    // Contenitore delle informazioni (Nome e Gruppo)
+                    const info = document.createElement('div');
+                    info.className = 'card-info';
+                    const nameDiv = document.createElement('div');
+                    nameDiv.className = 'name';
+                    nameDiv.innerText = name;
+                    const groupDiv = document.createElement('div');
+                    groupDiv.className = 'group';
+                    groupDiv.innerText = groupTitle;
+                    info.appendChild(nameDiv);
+                    info.appendChild(groupDiv);
+                    card.appendChild(info);
+
+                    // --- AZIONE AL CLICK ---
+                    card.onclick = async () => {
+                        // Gestione grafica schede attive
+                        document.querySelectorAll('.channel-card').forEach(c => c.classList.remove('active'));
+                        card.classList.add('active');
+                        // statusHeader non serve più, usiamo l'interfaccia visiva
 
                         player.configure({
                             drm: { clearKeys: { [kid]: key } }
@@ -88,16 +203,20 @@ async function init() {
                         try {
                             await player.load(url);
                         } catch (e) {
-                            statusHeader.innerText = "Errore: " + e.code;
+                            // Se fallisce, mostriamo un errore temporaneo nel nome
+                            nameDiv.innerText = "ERRORE: " + e.code;
                             console.error("Dettaglio:", e);
                         }
                     };
-                    container.appendChild(btn);
+                    container.appendChild(card);
                 }
             }
         });
+        countHeader.innerText = channelsCount + " CANALI";
+
     } catch (err) {
-        statusHeader.innerText = "Errore caricamento file m3u";
+        countHeader.innerText = "ERRORE LISTA";
+        console.error(err);
     }
 }
 
