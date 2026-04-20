@@ -10,14 +10,14 @@
 
     <style>
         :root { --bg: #0b0e11; --card: #151921; --blue: #00d2ff; }
-        body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
+        body { background: var(--bg); color: #fff; font-family: sans-serif; margin: 0; padding: 20px; }
         
-        /* HEADER NODRM */
+        /* Header identico a nodrm */
         .header { display: flex; align-items: baseline; border-bottom: 1px solid #1e232d; margin-bottom: 25px; padding-bottom: 15px; }
         .header h1 { font-size: 20px; text-transform: uppercase; margin: 0; font-weight: 900; }
         .header .count { color: #3a4454; font-size: 11px; margin-left: 10px; font-weight: bold; }
 
-        /* GRIGLIA NODRM CON LOGHI */
+        /* Griglia Canali */
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
         .card { 
             background: var(--card); border-radius: 4px; padding: 15px; text-align: left; 
@@ -32,23 +32,16 @@
         .name { font-size: 13px; font-weight: bold; margin-bottom: 2px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .sub { font-size: 9px; color: var(--blue); font-weight: bold; text-transform: uppercase; }
 
-        /* PLAYER OVERLAY */
+        /* Player Overlay */
         #player-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.98); display: none; align-items: center; justify-content: center; z-index: 10000; }
         .player-container { width: 95%; max-width: 900px; }
-        
         .player-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .player-title-wrap { display: flex; align-items: center; gap: 10px; }
-        .player-title-wrap h3 { font-size: 15px; margin: 0; }
-        .player-title-wrap .cat { font-size: 10px; color: var(--blue); font-weight: bold; text-transform: uppercase; }
-        
         .close-btn { background: rgba(255,255,255,0.05); color: #777; border: 1px solid #333; padding: 4px 10px; cursor: pointer; border-radius: 3px; font-size: 10px; font-weight: bold; }
         
-        /* CONTAINER SHAKA UI PER BARRA GIALLA */
-        .shaka-video-container { width: 100%; aspect-ratio: 16/9; border-radius: 2px; overflow: hidden; }
+        /* Shaka UI Custom - Barra Gialla */
+        .shaka-video-container { width: 100%; aspect-ratio: 16/9; border-radius: 2px; overflow: hidden; background: #000; }
         video { width: 100%; height: 100%; }
-        
-        /* BARRA GIALLA */
-        .shaka-range-element { color: #ffcc00 !important; }
+        .shaka-range-element { color: #ffcc00 !important; } /* Colore giallo nodrm */
 
         #lock { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10001; }
         input { background: #000; border: 1px solid #222; color: white; padding: 12px; border-radius: 4px; text-align: center; width: 220px; margin-bottom: 10px; }
@@ -70,9 +63,9 @@
 <div id="player-overlay">
     <div class="player-container">
         <div class="player-nav">
-            <div class="player-title-wrap">
-                <h3 id="playing-name">CANALE</h3>
-                <span id="playing-cat" class="cat">SKY IT</span>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <h3 id="p-name" style="margin:0; font-size:15px;"></h3>
+                <span id="p-sub" style="font-size:10px; color:var(--blue); font-weight:bold; text-transform:uppercase;">SKY IT</span>
             </div>
             <button class="close-btn" onclick="closePlayer()">✕ CLOSE</button>
         </div>
@@ -96,72 +89,67 @@
     }
 
     async function loadList() {
-        const res = await fetch("./" + FILE_NAME);
-        const data = await res.text();
-        const lines = data.split('\n');
-        const container = document.getElementById('grid');
-        let count = 0;
+        try {
+            const res = await fetch("./" + FILE_NAME);
+            const data = await res.text();
+            const lines = data.split('\n');
+            const grid = document.getElementById('grid');
+            let count = 0;
 
-        for (let i = 0; i < lines.length; i++) {
-            if (lines[i].startsWith('#EXTINF')) {
-                count++;
-                const name = lines[i].split(',').pop().trim();
-                const logo = lines[i].match(/tvg-logo="([^"]+)"/)?.[1] || "";
-                const group = lines[i].match(/group-title="([^"]+)"/)?.[1] || "SKY IT";
-                
-                let kid = "", key = "", url = "";
-                // Estrazione KODIPROP
-                for(let j=1; j<=5; j++){
-                    let line = lines[i+j]?.trim() || "";
-                    if(line.includes('license_key=')){
-                        const val = line.split('license_key=')[1];
-                        [kid, key] = val.split(':');
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].includes('#EXTINF')) {
+                    count++;
+                    const name = lines[i].split(',').pop().trim();
+                    const logo = lines[i].match(/tvg-logo="([^"]+)"/)?.[1] || "";
+                    const group = lines[i].match(/group-title="([^"]+)"/)?.[1] || "SKY IT";
+                    
+                    let kid = "", key = "", url = "";
+                    for(let j=1; j<6; j++){
+                        let line = lines[i+j]?.trim() || "";
+                        if(line.includes('license_key=')){
+                            const val = line.split('license_key=')[1];
+                            [kid, key] = val.split(':');
+                        }
+                        if(line.startsWith('http')) url = line;
                     }
-                    if(line.startsWith('http')) url = line;
-                }
 
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.onclick = () => openPlayer(url, name, group, kid, key);
-                card.innerHTML = `
-                    <div class="logo-box"><img src="${logo}"></div>
-                    <div class="name">${name}</div>
-                    <div class="sub">${group}</div>
-                `;
-                container.appendChild(card);
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.onclick = () => openPlayer(url, name, group, kid, key);
+                    card.innerHTML = `
+                        <div class="logo-box"><img src="${logo}"></div>
+                        <div class="name">${name}</div>
+                        <div class="sub">${group}</div>
+                    `;
+                    grid.appendChild(card);
+                }
             }
-        }
-        document.getElementById('count').innerText = count + " CHANNELS";
+            document.getElementById('count').innerText = count + " CHANNELS";
+        } catch (e) { console.error("Errore lista:", e); }
     }
 
     async function openPlayer(url, name, group, kid, key) {
         document.getElementById('player-overlay').style.display = 'flex';
-        document.getElementById('playing-name').innerText = name;
-        document.getElementById('playing-cat').innerText = group;
+        document.getElementById('p-name').innerText = name;
+        document.getElementById('p-sub').innerText = group;
         
         const video = document.getElementById('video');
-        const videoContainer = document.getElementById('video-container');
+        const container = document.getElementById('video-container');
 
         player = new shaka.Player(video);
-        ui = new shaka.ui.Overlay(player, videoContainer, video);
+        ui = new shaka.ui.Overlay(player, container, video);
         
-        // UI Gialla identica a nodrm
-        ui.configure({ 
-            'controlPanelElements': ['play_pause', 'time_and_duration', 'spacer', 'mute', 'volume', 'fullscreen'] 
-        });
+        ui.configure({ 'controlPanelElements': ['play_pause', 'time_and_duration', 'spacer', 'mute', 'volume', 'fullscreen'] });
 
-        // Configurazione per forzare il caricamento anche con problemi di certificati o CORS
-        player.configure({
-            drm: { clearKeys: { [kid.trim()]: key.trim() } },
-            streaming: { bufferingGoal: 30 }
-        });
+        if (kid && key) {
+            player.configure({ drm: { clearKeys: { [kid.trim()]: key.trim() } } });
+        }
 
         try {
-            await player.load(url);
+            await player.load(url.trim());
         } catch (e) {
-            console.error("Errore:", e.code);
-            // Se fallisce qui, il server dell'MPD sta rifiutando Vercel (CORS)
-            alert("Il video non parte. Il server remoto blocca Vercel. Senza estensione CORS non funzionerà su questo dominio.");
+            console.error("Shaka Error:", e.code);
+            alert("Errore: " + e.code + ". Se il video non parte, è un blocco CORS del server.");
             closePlayer();
         }
     }
