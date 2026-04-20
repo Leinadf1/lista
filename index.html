@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TV Dashboard PRO – Final Fix</title>
+    <title>TV Dashboard PRO – Full Fix</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
     <style>
@@ -27,7 +27,7 @@
 
     <div id="header">
         <h1>Dashboard</h1>
-        <div id="chan-count">Sincronizzazione in corso...</div>
+        <div id="chan-count">Sincronizzazione...</div>
     </div>
 
     <div class="player-container" data-shaka-player-container>
@@ -52,32 +52,40 @@ async function init() {
     const container = document.getElementById('list');
     const countHeader = document.getElementById('chan-count');
 
-    // Configurazione Player ottimizzata per DRM
+    // Configurazione base
     player.configure({
-        streaming: { jumpLargeGaps: true },
-        drm: { retryParameters: { maxAttempts: 5, baseDelay: 1000, backoffFactor: 2 } }
+        streaming: { jumpLargeGaps: true }
     });
 
     function createCard(name, logo, url, drmConfig) {
         const card = document.createElement('div');
         card.className = 'channel-card';
         card.innerHTML = `<div class="logo-box"><img src="${logo}" onerror="this.src='https://via.placeholder.com/100x60?text=TV'"></div><div class="info-box"><div class="name">${name}</div></div>`;
+        
         card.onclick = async () => {
             document.querySelectorAll('.channel-card').forEach(c => c.classList.remove('active'));
             card.classList.add('active');
-            
-            // Applichiamo la configurazione DRM (ClearKeys)
-            player.configure({ drm: { clearKeys: drmConfig } });
-            
-            try { 
-                await player.load(url); 
-                window.scrollTo({top: 0, behavior: 'smooth'}); 
-            } catch(e) { console.error("Errore caricamento canale:", e); }
+
+            try {
+                // RESET TOTALE: Svuota il player prima del nuovo caricamento
+                await player.unload();
+                
+                // Forza il settaggio ClearKey pulito
+                player.configure({
+                    drm: {
+                        clearKeys: drmConfig,
+                        retryParameters: { maxAttempts: 3, timeout: 5000 }
+                    }
+                });
+
+                await player.load(url);
+                window.scrollTo({top: 0, behavior: 'smooth'});
+            } catch(e) {
+                console.error("Errore Shaka:", e.code, e);
+            }
         };
         container.appendChild(card);
     }
-
-    let liveCount = 0;
 
     try {
         const res = await fetch(SOURCE_URL);
@@ -86,31 +94,25 @@ async function init() {
         if (listData && listData.includes('#EXTM3U')) {
             const blocks = listData.split('#EXTINF');
             blocks.forEach(block => {
-                // Estrazione KID e KEY (forziamo minuscolo per compatibilità shaka)
                 const keyMatch = block.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
                 const urlMatch = block.match(/https?:\/\/[^\s"|]+\.mpd/i);
                 const nameMatch = block.match(/,(.*)/);
 
                 if (keyMatch && urlMatch && nameMatch) {
-                    liveCount++;
                     const name = nameMatch[1].split('\n')[0].trim();
                     const logoMatch = block.match(/tvg-logo="([^"]+)"/i) || block.match(/tvg-logo=([^\s,]+)/i);
-                    
-                    // Configurazione DRM pulita
                     const drmConfig = { [keyMatch[1].toLowerCase()]: keyMatch[2].toLowerCase() };
-                    
                     createCard(name, logoMatch ? logoMatch[1] : '', urlMatch[0], drmConfig);
                 }
             });
         }
-    } catch (e) { console.error("Errore API:", e); }
+    } catch (e) { console.error("API Error:", e); }
 
-    // Canali fissi (sempre funzionanti)
     CANALI_FISSI.forEach(ch => {
         createCard(ch.name, ch.logo, ch.url, ch.keys ? ch.keys : { [ch.kid]: ch.key });
     });
 
-    countHeader.innerText = (liveCount + CANALI_FISSI.length) + " CANALI CARICATI";
+    countHeader.innerText = "DASHBOARD PRONTA";
 }
 
 document.addEventListener('shaka-ui-loaded', init);
