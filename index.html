@@ -12,12 +12,12 @@
         :root { --bg: #0b0e11; --card: #151921; --blue: #00d2ff; }
         body { background: var(--bg); color: #fff; font-family: sans-serif; margin: 0; padding: 20px; }
         
-        /* Header nodrm */
+        /* Stile Header nodrm */
         .header { display: flex; align-items: baseline; border-bottom: 1px solid #1e232d; margin-bottom: 25px; padding-bottom: 15px; }
         .header h1 { font-size: 20px; text-transform: uppercase; margin: 0; font-weight: 900; }
         .header .count { color: #3a4454; font-size: 11px; margin-left: 10px; font-weight: bold; }
 
-        /* Griglia nodrm con loghi */
+        /* Griglia Canali identica a nodrm */
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
         .card { 
             background: var(--card); border-radius: 4px; padding: 15px; text-align: left; 
@@ -32,7 +32,7 @@
         .name { font-size: 13px; font-weight: bold; margin-bottom: 2px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .sub { font-size: 9px; color: var(--blue); font-weight: bold; text-transform: uppercase; }
 
-        /* Player Overlay nodrm */
+        /* Overlay Player */
         #player-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.98); display: none; align-items: center; justify-content: center; z-index: 10000; }
         .player-container { width: 95%; max-width: 900px; }
         
@@ -43,11 +43,11 @@
         
         .close-btn { background: rgba(255,255,255,0.05); color: #777; border: 1px solid #333; padding: 4px 10px; cursor: pointer; border-radius: 3px; font-size: 10px; font-weight: bold; }
         
-        /* Shaka UI Container */
+        /* Container Shaka UI */
         .shaka-video-container { width: 100%; aspect-ratio: 16/9; border-radius: 2px; overflow: hidden; }
         video { width: 100%; height: 100%; }
         
-        /* Barra gialla shaka */
+        /* Forza Barra Gialla */
         .shaka-range-element { color: #ffcc00 !important; }
 
         #lock { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10001; }
@@ -92,48 +92,52 @@
             document.getElementById('lock').classList.add('hidden');
             document.getElementById('app').classList.remove('hidden');
             load();
-        } else { alert("Password Errata"); }
+        } else { alert("Accesso Negato"); }
     }
 
     async function load() {
-        const res = await fetch("./" + FILE_NAME);
-        const data = await res.text();
-        const lines = data.split('\n');
-        const container = document.getElementById('grid');
-        let count = 0;
+        try {
+            const res = await fetch("./" + FILE_NAME);
+            const data = await res.text();
+            const lines = data.split('\n');
+            const container = document.getElementById('grid');
+            let count = 0;
 
-        for (let i = 0; i < lines.length; i++) {
-            if (lines[i].startsWith('#EXTINF')) {
-                count++;
-                const info = lines[i];
-                const name = info.split(',').pop().trim();
-                const logo = info.match(/tvg-logo="([^"]+)"/)?.[1] || "";
-                
-                let kid = "", key = "", url = "";
-                for(let j=1; j<=4; j++){
-                    let line = lines[i+j]?.trim() || "";
-                    if(line.includes('license_key=')){
-                        const val = line.split('license_key=')[1];
-                        [kid, key] = val.split(':');
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].startsWith('#EXTINF')) {
+                    count++;
+                    const info = lines[i];
+                    const name = info.split(',').pop().trim();
+                    const logo = info.match(/tvg-logo="([^"]+)"/)?.[1] || "";
+                    
+                    let kid = "", key = "", url = "";
+                    // Estrazione KID e KEY da KODIPROP
+                    for(let j=1; j<=4; j++){
+                        let line = lines[i+j]?.trim() || "";
+                        if(line.includes('license_key=')){
+                            const val = line.split('license_key=')[1];
+                            [kid, key] = val.split(':');
+                        }
+                        if(line.startsWith('http')) url = line;
                     }
-                    if(line.startsWith('http')) url = line;
-                }
 
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.onclick = () => openPlayer(url, name, kid, key);
-                card.innerHTML = `
-                    <div class="logo-box"><img src="${logo}"></div>
-                    <div class="name">${name}</div>
-                    <div class="sub">SKY IT INTRATTENIMENTO</div>
-                `;
-                container.appendChild(card);
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.onclick = () => openPlayer(url, name, kid, key);
+                    card.innerHTML = `
+                        <div class="logo-box"><img src="${logo}"></div>
+                        <div class="name">${name}</div>
+                        <div class="sub">SKY IT INTRATTENIMENTO</div>
+                    `;
+                    container.appendChild(card);
+                }
             }
-        }
-        document.getElementById('count').innerText = count + " CHANNELS";
+            document.getElementById('count').innerText = count + " CHANNELS";
+        } catch (e) { console.error("Errore caricamento lista", e); }
     }
 
     async function openPlayer(url, name, kid, key) {
+        if(!url) return;
         document.getElementById('player-overlay').style.display = 'flex';
         document.getElementById('playing-name').innerText = name;
         
@@ -143,16 +147,21 @@
         player = new shaka.Player(video);
         ui = new shaka.ui.Overlay(player, videoContainer, video);
         
-        ui.configure({ 'controlPanelElements': ['play_pause', 'time_and_duration', 'spacer', 'mute', 'volume', 'fullscreen'] });
+        // Configurazione UI identica a nodrm
+        ui.configure({ 
+            'controlPanelElements': ['play_pause', 'time_and_duration', 'spacer', 'mute', 'volume', 'fullscreen'],
+            'seekBarColors': { base: 'rgba(255,255,255,.2)', buffered: 'rgba(255,255,255,.4)', played: '#ffcc00' }
+        });
 
         if (kid && key) {
-            player.configure({ drm: { clearKeys: { [kid]: key.trim() } } });
+            player.configure({ drm: { clearKeys: { [kid.trim()]: key.trim() } } });
         }
 
         try {
             await player.load(url);
         } catch (e) {
-            alert("Errore nel caricamento del flusso MPD. Verifica la chiave.");
+            console.error("Errore Shaka:", e);
+            alert("Errore caricamento MPD. Controlla chiavi o restrizioni CORS.");
             closePlayer();
         }
     }
