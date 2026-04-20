@@ -1,76 +1,42 @@
-<script>
-const SOURCE_URL = "https://nodrm.online/list/list2.m3u";
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TV Dashboard PRO – Mobile & PC Fix</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
+    <style>
+        body { background-color: #0d1117; color: #c9d1d9; font-family: sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        #header { width: 100%; max-width: 1200px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid #30363d; padding-bottom: 10px; }
+        h1 { font-size: 24px; color: #58a6ff; margin: 0; }
+        #chan-count { color: #8b949e; font-weight: bold; }
+        .player-container { width: 100%; max-width: 850px; background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 35px; border: 1px solid #30363d; }
+        video { width: 100%; aspect-ratio: 16/9; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; width: 100%; max-width: 1200px; }
+        .channel-card { background-color: #161b22; border: 1px solid #30363d; border-radius: 10px; cursor: pointer; transition: 0.2s; overflow: hidden; display: flex; flex-direction: column; }
+        .channel-card:hover { transform: translateY(-5px); border-color: #58a6ff; }
+        .channel-card.active { border: 2px solid #58a6ff; background-color: #21262d; }
+        .logo-box { width: 100%; height: 100px; display: flex; justify-content: center; align-items: center; background: #21262d; padding: 10px; box-sizing: border-box; }
+        .logo-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .info-box { padding: 12px; text-align: center; border-top: 1px solid #30363d; }
+        .name { font-size: 13px; font-weight: 600; color: #f0f6fc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    </style>
+</head>
+<body>
 
-async function fetchList() {
-    // Ho messo per primi i proxy che passano meglio su mobile
-    const proxies = [
-        "https://api.codetabs.com/v1/proxy/?quest=",
-        "https://cors-proxy.htmldriven.com/?url=",
-        "https://api.allorigins.win/raw?url="
-    ];
+    <div id="header">
+        <h1>Dashboard</h1>
+        <div id="chan-count">Sincronizzazione...</div>
+    </div>
 
-    for (let proxy of proxies) {
-        try {
-            console.log("Provando proxy:", proxy);
-            const res = await fetch(proxy + encodeURIComponent(SOURCE_URL));
-            const text = await res.text();
-            if (text && text.includes('#EXTM3U')) {
-                console.log("Sincronizzazione riuscita con:", proxy);
-                return text;
-            }
-        } catch (e) { console.warn("Proxy fallito:", proxy); }
-    }
-    return null;
-}
+    <div class="player-container" data-shaka-player-container>
+        <video autoplay data-shaka-player id="video"></video>
+    </div>
 
-// ... il resto della funzione init() rimane identico a prima ...
-async function init() {
-    const video = document.getElementById('video');
-    const ui = video['ui'];
-    const player = ui.getControls().getPlayer();
-    const container = document.getElementById('list');
-    const countHeader = document.getElementById('chan-count');
-    player.configure({ streaming: { jumpLargeGaps: true } });
-
-    function createCard(name, logo, url, drmConfig) {
-        const card = document.createElement('div');
-        card.className = 'channel-card';
-        card.innerHTML = `<div class="logo-box"><img src="${logo}"></div><div class="info-box"><div class="name">${name}</div></div>`;
-        card.onclick = async () => {
-            player.configure({ drm: { clearKeys: drmConfig } });
-            await player.load(url);
-            window.scrollTo({top: 0, behavior: 'smooth'});
-        };
-        container.appendChild(card);
-    }
-
-    const listData = await fetchList();
-    let liveCount = 0;
-
-    if (listData) {
-        const blocks = listData.split('#EXTINF');
-        blocks.forEach(block => {
-            const keyMatch = block.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
-            const urlMatch = block.match(/https?:\/\/[^\s"|]+\.mpd/i);
-            const nameMatch = block.match(/,(.*)/);
-            if (keyMatch && urlMatch && nameMatch) {
-                liveCount++;
-                const logoMatch = block.match(/tvg-logo="([^"]+)"/i);
-                createCard(nameMatch[1].trim(), logoMatch ? logoMatch[1] : '', urlMatch[0], { [keyMatch[1]]: keyMatch[2] });
-            }
-        });
-    }
-
-    // Qui aggiungi i tuoi 7 canali fissi (EUROSPORT ecc.)
-    // ...
-    countHeader.innerText = (liveCount + 7) + " CANALI CARICATI";
-}
-document.addEventListener('shaka-ui-loaded', init);
-</script>    <div id="list" class="grid"></div>
+    <div id="list" class="grid"></div>
 
 <script>
-// --- CONFIGURAZIONE PROXY PERSONALE ---
-const MY_PROXY = "https://mute-truth-9733.miniclashroyale.workers.dev/?url=";
 const SOURCE_URL = "https://nodrm.online/list/list2.m3u";
 
 const CANALI_FISSI = [
@@ -78,10 +44,36 @@ const CANALI_FISSI = [
     { name: "EUROSPORT 1", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/thumb.prod.front.tim.cptech.pro/http/unsafe/filters:format(png):anamorphosis(640,480)/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020000/tim-ouah/CHN43FN/MONOGRAM_ESP1_WHITE_V2-Lv2g", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport1)/manifest.mpd", kid: "46e559c2f9f645ce8d80c7fa20446bdb", key: "597d214d66342ee042bccffeb165e750" },
     { name: "EUROSPORT 2", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/thumb.prod.front.tim.cptech.pro/http/unsafe/filters:format(png):anamorphosis(640,480)/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020001/tim-ouah/CHN43FN/MONOGRAM_ESP2_WHITE_V2-Zp7E", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport2)/manifest.mpd", kid: "e8372283a523444c84646c4172b1bc0f", key: "969a90e1a1a6424a68fe4b5d776368ec" },
     { name: "EUROSPORT 3", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/thumb.prod.front.tim.cptech.pro/http/unsafe/filters:format(png):anamorphosis(640,480)/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020002/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-yiID", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport3)/manifest.mpd", kid: "1e2398b0eeb04829b4711e14b4a91244", key: "11e26659ebfecf6a22ed56da340448cd" },
-    { name: "EUROSPORT 4", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/thumb.prod.front.tim.cptech.pro/http/unsafe/filters:format(png):anamorphosis(640,480)/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020003/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-3YSY", url: "https://timlivetu0.cb.tim.it/Content/DASH/Live/channel(eurosport4)/manifest.mpd", kid: "9dd7be79e44f4d08a91ec5d1553f17b8", key: "8a62369f81a4b6e5f2d4846f7bd5e7d1" },
+    { name: "EUROSPORT 4", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/thumb.prod.front.tim.cptech.pro/http/unsafe/filters:format(png):anamorphosis(640,480)/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020003/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-3YSY", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport4)/manifest.mpd", kid: "9dd7be79e44f4d08a91ec5d1553f17b8", key: "8a62369f81a4b6e5f2d4846f7bd5e7d1" },
     { name: "EUROSPORT 5", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/thumb.prod.front.tim.cptech.pro/http/unsafe/filters:format(png):anamorphosis(640,480)/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020004/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-sv5m", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport5)/manifest.mpd", kid: "b48e7e6d96da479da65e435ce65faeb1", key: "48c703879ce4deedb5a2124a30a13bc4" },
     { name: "EUROSPORT 6", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/thumb.prod.front.tim.cptech.pro/http/unsafe/filters:format(png):anamorphosis(640,480)/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020005/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-H53i", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport6)/manifest.mpd", kid: "ead1c567a3df48619799b2e78b18fdfa", key: "1de9d9af5651296aa67913979ad8c694" }
 ];
+
+async function fetchList() {
+    const proxies = [
+        "https://corsproxy.io/?", 
+        "https://api.allorigins.win/raw?url=",
+        "https://thingproxy.freeboard.io/fetch/",
+        "https://api.codetabs.com/v1/proxy/?quest="
+    ];
+
+    for (let proxy of proxies) {
+        try {
+            const controller = new AbortController();
+            const id = setTimeout(() => controller.abort(), 8000); 
+
+            const res = await fetch(proxy + encodeURIComponent(SOURCE_URL), { 
+                signal: controller.signal,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' } // Aiuta a bypassare alcuni blocchi mobile
+            });
+            const text = await res.text();
+            clearTimeout(id);
+
+            if (text && text.includes('#EXTM3U')) return text;
+        } catch (e) { console.warn("Fallito:", proxy); }
+    }
+    return null;
+}
 
 async function init() {
     const video = document.getElementById('video');
@@ -109,32 +101,24 @@ async function init() {
     }
 
     let liveCount = 0;
+    const listData = await fetchList();
 
-    try {
-        // Richiesta tramite il TUO proxy Cloudflare personale
-        const res = await fetch(MY_PROXY + encodeURIComponent(SOURCE_URL));
-        const text = await res.text();
+    if (listData) {
+        const blocks = listData.split('#EXTINF');
+        blocks.forEach(block => {
+            const keyMatch = block.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
+            const urlMatch = block.match(/https?:\/\/[^\s"|]+\.mpd[^\s"|]*/i);
+            const logoMatch = block.match(/tvg-logo="([^"]+)"/i) || block.match(/tvg-logo=([^\s,]+)/i);
+            const nameMatch = block.match(/,(.*)/);
 
-        if (text && text.includes('#EXTM3U')) {
-            const blocks = text.split('#EXTINF');
-            blocks.forEach(block => {
-                const keyMatch = block.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
-                const urlMatch = block.match(/https?:\/\/[^\s"|]+\.mpd[^\s"|]*/i);
-                const logoMatch = block.match(/tvg-logo="([^"]+)"/i) || block.match(/tvg-logo=([^\s,]+)/i);
-                const nameMatch = block.match(/,(.*)/);
-
-                if (keyMatch && urlMatch && nameMatch) {
-                    liveCount++;
-                    const name = nameMatch[1].split('\n')[0].trim();
-                    createCard(name, logoMatch ? logoMatch[1] : '', urlMatch[0], { [keyMatch[1]]: keyMatch[2] });
-                }
-            });
-        }
-    } catch (e) { 
-        console.error("Errore proxy Cloudflare:", e); 
+            if (keyMatch && urlMatch && nameMatch) {
+                liveCount++;
+                const name = nameMatch[1].split('\n')[0].trim();
+                createCard(name, logoMatch ? logoMatch[1] : '', urlMatch[0], { [keyMatch[1]]: keyMatch[2] });
+            }
+        });
     }
 
-    // Aggiunta canali fissi
     CANALI_FISSI.forEach(ch => {
         createCard(ch.name, ch.logo, ch.url, ch.keys ? ch.keys : { [ch.kid]: ch.key });
     });
