@@ -7,113 +7,118 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
 <style>
     :root { --bg: #0b0e11; --card: #151921; --blue: #00d2ff; --border: #1e232d; }
-    body { background-color: var(--bg); color: white; font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+    body { background-color: var(--bg); color: white; font-family: Arial, sans-serif; margin: 0; padding: 0; }
     
-    /* Login Screen */
+    /* Login */
     #lock { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; }
     #lock input { background: #000; border: 1px solid #333; color: white; padding: 12px; border-radius: 4px; margin-bottom: 10px; text-align: center; }
     #lock button { background: var(--blue); color: black; border: none; padding: 10px 30px; border-radius: 4px; cursor: pointer; font-weight: bold; }
 
     /* Layout */
-    .center { margin: auto; width: 60%; text-align: center; }
+    .container { padding: 20px; max-width: 1000px; margin: auto; text-align: center; }
     video { width: 100%; height: 100%; border-radius: 4px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-top: 20px; }
-    .card { background: var(--card); border: 1px solid var(--border); padding: 12px; cursor: pointer; border-radius: 4px; text-align: center; font-size: 11px; font-weight: bold; transition: 0.2s; height: 100%; display: flex; align-items: center; justify-content: center; }
-    .card:hover { border-color: var(--blue); background: #1c212a; }
+    .video-box { margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    
+    /* Griglia canali stile nodrm */
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+    .btn-chan { 
+        background: var(--card); border: 1px solid var(--border); color: white; padding: 12px; 
+        cursor: pointer; border-radius: 4px; font-size: 11px; font-weight: bold; transition: 0.2s;
+    }
+    .btn-chan:hover { border-color: var(--blue); background: #1c212a; }
     .hidden { display: none !important; }
 </style>
 </head>
 <body>
 
 <div id="lock">
-    <div style="margin-bottom: 20px; font-size: 18px; font-weight: bold; color: var(--blue);">AREA RISERVATA</div>
+    <div style="margin-bottom: 20px; font-size: 18px; font-weight: bold; color: var(--blue);">CHANNELS ACCESS</div>
     <input type="password" id="pw" placeholder="PASSWORD">
     <button onclick="login()">ENTRA</button>
 </div>
 
 <div id="app" class="hidden">
-    <div class="center"><h2 id="title" style="font-size: 16px; color: var(--blue); margin-bottom: 15px;">Seleziona Canale</h2></div>
-    <div class="center" style="max-width:40em" data-shaka-player-container data-shaka-player-cast-receiver-id="07AEE832">
-        <video autoplay data-shaka-player id="video"></video>
+    <div class="container">
+        <h2 id="title" style="font-size: 16px; color: var(--blue); margin-bottom: 15px;">Seleziona Canale</h2>
+        
+        <div class="video-box center">
+            <div data-shaka-player-container data-shaka-player-cast-receiver-id="07AEE832">
+                <video autoplay data-shaka-player id="video"></video>
+            </div>
+        </div>
+
+        <div id="list" class="grid"></div>
     </div>
-    <div id="list" class="grid center" style="max-width:60em"></div>
 </div>
 
 <script>
-const proxy = "https://corsproxy.io/?url=";
-let playerGlobal;
-
-// 1. Inizializzazione stabile
-async function init() {
-    const video = document.getElementById('video');
-    const ui = video['ui'];
-    const controls = ui.getControls();
-    playerGlobal = controls.getPlayer();
-}
-
+// Password check
 function login() {
     if(document.getElementById('pw').value === "1234") {
         document.getElementById('lock').classList.add('hidden');
         document.getElementById('app').classList.remove('hidden');
-        loadList();
-    }
+        initApp();
+    } else { alert("Sbagliata"); }
 }
 
-async function loadList() {
+async function initApp() {
+    const video = document.getElementById('video');
+    const ui = video['ui'];
+    const player = ui.getControls().getPlayer();
+
     try {
         const res = await fetch('lista_privata.m3u');
         const data = await res.text();
         const container = document.getElementById('list');
         
-        // Dividiamo la lista per blocchi corretti
+        // Logica di split identica a quella che ti funzionava
         const items = data.split('#EXTINF');
 
         items.forEach(item => {
             if (item.includes('license_key=')) {
-                // Estrazione Nome pulita
-                const lines = item.trim().split('\n');
-                let name = lines[0].split(',').pop().trim();
-                
-                // Fix per il bug "Gecko/Chrome"
-                if (name.includes("Version/") || name.length > 50) {
-                   const possibleName = lines.find(l => !l.startsWith('#') && !l.startsWith('http') && !l.includes('Version/'));
-                   if (possibleName) name = possibleName.trim();
-                }
-
-                // Estrazione URL e Chiavi (Logica infallibile)
-                const urlMatch = item.match(/https?:\/\/[^\s"|]+/);
-                const url = urlMatch ? urlMatch[0] : null;
+                // Estrazione dati IDENTICA al tuo messaggio precedente
+                const name = item.split(',').pop().split('\n')[0].trim();
+                const url = item.match(/https?:\/\/[^\s"|]+/)?.[0];
                 const keys = item.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
 
                 if (url && keys) {
-                    const card = document.createElement('div');
-                    card.className = 'card';
-                    card.innerText = name;
+                    const btn = document.createElement('button');
+                    btn.className = 'btn-chan';
+                    btn.innerText = name;
                     
-                    card.onclick = async () => {
-                        document.getElementById('title').innerText = "In riproduzione: " + name;
+                    btn.onclick = async () => {
+                        document.getElementById('title').innerText = "Caricamento: " + name;
                         
-                        // Configurazione DRM (KID:KEY)
-                        playerGlobal.configure({
+                        // Configurazione DRM Eurosport
+                        player.configure({
                             drm: { clearKeys: { [keys[1]]: keys[2] } }
                         });
 
                         try {
-                            // Caricamento con Proxy
-                            await playerGlobal.load(proxy + encodeURIComponent(url));
+                            // Tentativo 1: Proxy (risolve errore 4000)
+                            await player.load("https://corsproxy.io/?url=" + encodeURIComponent(url));
+                            document.getElementById('title').innerText = name;
                         } catch (e) {
-                            // Fallback senza proxy
-                            try { await playerGlobal.load(url); } catch (e2) {}
+                            // Tentativo 2: Fallback manuale
+                            try {
+                                await player.load(url);
+                                document.getElementById('title').innerText = name;
+                            } catch (e2) {
+                                document.getElementById('title').innerText = "Errore: " + e2.code;
+                            }
                         }
                     };
-                    container.appendChild(card);
+                    container.appendChild(btn);
                 }
             }
         });
-    } catch (e) { console.error("Errore lista"); }
+    } catch (err) { console.error("Errore M3U"); }
 }
 
-document.addEventListener('shaka-ui-loaded', init);
+// Inizializzazione Shaka UI
+document.addEventListener('shaka-ui-loaded', () => {
+    // Il player viene preparato ma la lista carica solo dopo login
+});
 </script>
 </body>
 </html>
