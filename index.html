@@ -2,43 +2,29 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>TV Dashboard Fix</title>
+    <title>TV Simple</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
     <style>
-        body { background: #121212; color: white; font-family: sans-serif; padding: 20px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-top: 20px; }
-        .btn { background: #2a2a2a; color: white; border: 1px solid #444; padding: 12px 5px; cursor: pointer; border-radius: 6px; font-size: 11px; font-weight: bold; }
-        .btn:hover { background: #00d2ff; color: black; }
-        .video-container { width: 100%; max-width: 800px; margin: 0 auto; background: #000; border-radius: 12px; overflow: hidden; }
-        video { width: 100%; aspect-ratio: 16/9; }
-        #status { text-align: center; color: #00d2ff; font-size: 18px; margin-bottom: 10px; }
+        body { background: #121212; color: white; font-family: sans-serif; text-align: center; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; padding: 20px; }
+        .btn { background: #333; color: #00d2ff; border: 1px solid #444; padding: 10px 2px; cursor: pointer; border-radius: 4px; font-size: 10px; font-weight: bold; }
+        .btn:hover { background: #00d2ff; color: #000; }
+        .video-win { width: 100%; max-width: 700px; margin: auto; aspect-ratio: 16/9; background: #000; }
+        video { width: 100%; height: 100%; }
     </style>
 </head>
 <body>
-
-    <div id="status">Seleziona Canale</div>
-    <div class="video-container" data-shaka-player-container>
+    <div id="chan-name">Seleziona Canale</div>
+    <div class="video-win" data-shaka-player-container>
         <video autoplay data-shaka-player id="video"></video>
     </div>
     <div id="list" class="grid"></div>
 
 <script>
-async function init() {
+async function start() {
     const video = document.getElementById('video');
-    const ui = video['ui'];
-    const player = ui.getControls().getPlayer();
-
-    // CONFIGURAZIONE ANTI-BLOCCO: Evita richieste HEAD che causano l'errore 1002
-    player.configure({
-        streaming: {
-            jumpLargeGaps: true,
-            dispatchAllEmsgBoxes: true
-        },
-        manifest: {
-            dash: { clockSyncUri: '' }
-        }
-    });
+    const player = video['ui'].getControls().getPlayer();
 
     try {
         const res = await fetch('lista_privata.m3u');
@@ -47,11 +33,9 @@ async function init() {
 
         items.forEach(item => {
             if (item.includes('license_key=')) {
-                // Estrazione nome pulito
                 const lines = item.split('\n');
                 let name = "Canale";
                 for (let l of lines) { if (l.includes(',') && !l.includes('license')) { name = l.split(',').pop().trim(); break; } }
-
                 const url = item.match(/https?:\/\/[^\s"|]+/)?.[0];
                 const keys = item.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
 
@@ -59,36 +43,18 @@ async function init() {
                     const btn = document.createElement('button');
                     btn.className = 'btn';
                     btn.innerText = name;
-                    
                     btn.onclick = async () => {
-                        document.getElementById('status').innerText = "Caricamento: " + name;
-                        
-                        // Applichiamo le chiavi DRM
-                        player.configure({
-                            drm: { clearKeys: { [keys[1]]: keys[2] } }
-                        });
-
-                        try {
-                            // Carichiamo il flusso DIRETTAMENTE
-                            await player.load(url);
-                            document.getElementById('status').innerText = "In onda: " + name;
-                        } catch (e) {
-                            document.getElementById('status').innerText = "Errore: " + e.code;
-                            // Se fallisce, proviamo col tuo proxy Cloudflare come ultima spiaggia
-                            if (e.code === 1002) {
-                                const proxyUrl = "https://still-dawn-7cbdfd.miniclashroyale3636.workers.dev/?url=" + encodeURIComponent(url);
-                                await player.load(proxyUrl);
-                            }
-                        }
+                        document.getElementById('chan-name').innerText = name;
+                        player.configure({ drm: { clearKeys: { [keys[1]]: keys[2] } } });
+                        try { await player.load(url); } catch (e) { alert("Errore: " + e.code); }
                     };
                     document.getElementById('list').appendChild(btn);
                 }
             }
         });
-    } catch (e) { console.error("Errore lista"); }
+    } catch (e) { console.error("Lista non trovata"); }
 }
-
-document.addEventListener('shaka-ui-loaded', init);
+document.addEventListener('shaka-ui-loaded', start);
 </script>
 </body>
 </html>
