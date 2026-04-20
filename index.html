@@ -3,85 +3,68 @@
 <head>
 <meta charset="ISO-8859-1">
 <title>Single Stream Player</title>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
-
 <style>
-body { background-color: #262626; color: white; font-family: Arial, sans-serif; }
-.center { margin: auto; width: 50%; text-align: center; }
-video { width: 100%; height: 100%; }
-/* Stile per i tasti canali sotto al video */
-.channels { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
-.chan-btn { background: #444; color: #fff; border: 1px solid #666; padding: 10px; cursor: pointer; border-radius: 4px; font-size: 12px; }
-.chan-btn:hover { background: #ffcc00; color: #000; }
+    body { background-color: #262626; color: white; font-family: Arial, sans-serif; }
+    .center { margin: auto; width: 50%; text-align: center; }
+    video { width: 100%; height: 100%; }
+    .chan-list { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+    .chan-btn { background: #444; color: white; border: 1px solid #666; padding: 10px; cursor: pointer; border-radius: 4px; }
 </style>
 </head>
-
 <body>
-<div class="center">
-<h2 id="channel-title">Seleziona un Canale</h2>
-</div>
-
+<div class="center"><h2 id="current-chan">Seleziona Canale</h2></div>
 <div class="center" style="max-width:40em" data-shaka-player-container data-shaka-player-cast-receiver-id="07AEE832">
     <video autoplay data-shaka-player id="video"></video>
 </div>
-
-<div class="center channels" id="buttons-container"></div>
+<div class="center chan-list" id="list-container"></div>
 
 <script>
+// IL TRUCCO: Questo proxy permette di caricare i link della lista senza errori 4000
+const proxy = "https://corsproxy.io/?url=";
+
+async function playChannel(player, manifest, kid, key, name) {
+    document.getElementById('current-chan').innerText = name;
+    
+    player.configure({ drm: { clearKeys: { [kid]: key } } });
+
+    // Aggiungiamo il proxy all'URL solo al momento del caricamento
+    try {
+        await player.load(proxy + encodeURIComponent(manifest));
+    } catch (e) {
+        alert("Errore caricamento flusso.");
+    }
+}
+
 async function init() {
     const video = document.getElementById('video');
     const ui = video['ui'];
-    const controls = ui.getControls();
-    const player = controls.getPlayer();
+    const player = ui.getControls().getPlayer();
 
-    // Carichiamo la lista .m3u
     try {
         const response = await fetch('lista_privata.m3u');
         const data = await response.text();
-        
-        // Dividiamo la lista per blocchi ClearKey
+        const container = document.getElementById('list-container');
         const blocks = data.split('#KODIPROP:inputstream.adaptive.license_type=clearkey');
-        const container = document.getElementById('buttons-container');
 
         blocks.forEach(block => {
             if (block.includes('#EXTINF')) {
-                // Estraiamo Nome, URL e Chiavi
                 const name = block.split(',').pop().split('\n')[0].trim();
-                const url = block.match(/https?:\/\/\S+/)?.[0];
-                const keyMatch = block.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
+                const manifest = block.match(/https?:\/\/\S+/)?.[0];
+                const keys = block.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
 
-                if (url && keyMatch) {
+                if (manifest && keys) {
                     const btn = document.createElement('button');
                     btn.className = 'chan-btn';
                     btn.innerText = name;
-                    
-                    btn.onclick = async () => {
-                        document.getElementById('channel-title').innerText = "Caricamento: " + name;
-                        
-                        // Configurazione DRM
-                        player.configure({
-                            drm: { clearKeys: { [keyMatch[1]]: keyMatch[2] } }
-                        });
-
-                        try {
-                            await player.load(url);
-                            document.getElementById('channel-title').innerText = name;
-                        } catch (e) {
-                            console.error('Errore caricamento:', e);
-                            alert("Errore 4000: Flusso bloccato o non disponibile.");
-                        }
-                    };
+                    btn.onclick = () => playChannel(player, manifest, keys[1], keys[2], name);
                     container.appendChild(btn);
                 }
             }
         });
-    } catch (e) {
-        console.error('Errore nel caricamento della lista m3u:', e);
-    }
+    } catch (err) { console.error("Errore lista"); }
 }
-
 document.addEventListener('shaka-ui-loaded', init);
 </script>
 </body>
