@@ -3,23 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TV Dashboard – DEBUG MODE</title>
+    <title>TV Dashboard – Fix Chiavi Incrociate</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
     <style>
         body { background-color: #0d1117; color: #c9d1d9; font-family: sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .player-container { width: 100%; max-width: 850px; background: #000; border-radius: 12px; overflow: hidden; border: 1px solid #30363d; }
         video { width: 100%; aspect-ratio: 16/9; }
-        
-        /* BOX DEBUG */
-        #debug-box { width: 100%; max-width: 850px; background: #161b22; border: 1px solid #f1e05a; border-radius: 8px; margin: 15px 0; padding: 10px; font-family: monospace; font-size: 11px; color: #f1e05a; overflow-wrap: break-word; }
-        
+        #debug-box { width: 100%; max-width: 850px; background: #1c2128; border: 1px solid #f1e05a; border-radius: 8px; margin: 15px 0; padding: 10px; font-family: monospace; font-size: 11px; color: #f1e05a; white-space: pre-wrap; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; width: 100%; max-width: 1200px; }
-        .channel-card { background-color: #161b22; border: 1px solid #30363d; border-radius: 10px; cursor: pointer; overflow: hidden; display: flex; flex-direction: column; text-align: center; }
-        .channel-card:hover { border-color: #58a6ff; }
-        .logo-box { width: 100%; height: 80px; display: flex; justify-content: center; align-items: center; background: #21262d; }
-        .logo-box img { max-height: 60px; max-width: 90%; }
-        .name { padding: 8px; font-size: 12px; font-weight: bold; }
+        .card { background-color: #161b22; border: 1px solid #30363d; border-radius: 10px; cursor: pointer; text-align: center; padding: 10px; }
+        .card img { max-height: 50px; margin-bottom: 8px; }
+        .name { font-size: 12px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -28,12 +23,12 @@
         <video autoplay data-shaka-player id="video"></video>
     </div>
 
-    <div id="debug-box">Clicca su un canale per vedere i dati MPD e KEY...</div>
+    <div id="debug-box">Seleziona un canale...</div>
 
     <div id="list" class="grid"></div>
 
 <script>
-const SOURCE_URL = "/api/get-list";
+const API_URL = "/api/get-list";
 
 async function init() {
     const video = document.getElementById('video');
@@ -44,47 +39,46 @@ async function init() {
 
     player.configure({ streaming: { jumpLargeGaps: true } });
 
-    function createCard(name, logo, url, drmConfig) {
-        const card = document.createElement('div');
-        card.className = 'channel-card';
-        card.innerHTML = `<div class="logo-box"><img src="${logo}"></div><div class="name">${name}</div>`;
-        
-        card.onclick = async () => {
-            // MOSTRA I DATI NEL BOX GIALLO
-            const keyString = JSON.stringify(drmConfig, null, 2);
-            debugBox.innerHTML = `<strong>CANALE:</strong> ${name}<br>
-                                  <strong>MPD:</strong> ${url}<br>
-                                  <strong>KEYS:</strong> ${keyString}`;
-
-            try {
-                await player.unload();
-                player.configure({ drm: { clearKeys: drmConfig } });
-                await player.load(url.trim());
-            } catch(e) { 
-                debugBox.innerHTML += `<br><span style="color:red"><strong>ERRORE SHAKA:</strong> ${e.code}</span>`;
-            }
-        };
-        container.appendChild(card);
-    }
-
     try {
-        const res = await fetch(SOURCE_URL + "?t=" + Date.now());
-        const text = await res.text();
-        const blocks = text.split('#EXTINF');
+        const res = await fetch(API_URL + "?t=" + Date.now());
+        const data = await res.text();
 
-        blocks.forEach(block => {
-            const keyMatch = block.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
-            const urlMatch = block.match(/https?:\/\/[^\s"|]+\.mpd[^\s"|]*/i);
-            const nameMatch = block.match(/,(.*)/);
-            const logoMatch = block.match(/tvg-logo="([^"]+)"/i);
+        // LOGICA NUOVA: Dividiamo la lista in base a dove iniziano i gruppi di chiavi
+        // Cerchiamo i blocchi che contengono le info e l'URL
+        const entries = data.split(/#KODIPROP:inputstream\.adaptive\.license_type=clearkey/);
+        
+        entries.forEach(entry => {
+            if (!entry.includes('.mpd')) return;
+
+            // Estraiamo KID e KEY dal blocco attuale
+            const keyMatch = entry.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
+            const urlMatch = entry.match(/https?:\/\/[^\s"|]+\.mpd[^\s"|]*/i);
+            const nameMatch = entry.match(/,(.*)/);
+            const logoMatch = entry.match(/tvg-logo="([^"]+)"/i);
 
             if (keyMatch && urlMatch && nameMatch) {
                 const name = nameMatch[1].split('\n')[0].trim();
-                const keys = { [keyMatch[1].toLowerCase()]: keyMatch[2].toLowerCase() };
-                createCard(name, logoMatch ? logoMatch[1] : '', urlMatch[0], keys);
+                const kid = keyMatch[1].toLowerCase().trim();
+                const key = keyMatch[2].toLowerCase().trim();
+                const url = urlMatch[0].trim();
+                const drm = { [kid]: key };
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `<img src="${logoMatch ? logoMatch[1] : ''}"><div class="name">${name}</div>`;
+                
+                card.onclick = async () => {
+                    debugBox.innerHTML = `DEBUG:\nCanale: ${name}\nURL: ${url}\nKID: ${kid}\nKEY: ${key}`;
+                    try {
+                        await player.unload();
+                        player.configure({ drm: { clearKeys: drm } });
+                        await player.load(url);
+                    } catch(e) { debugBox.innerHTML += `\nERROR: ${e.code}`; }
+                };
+                container.appendChild(card);
             }
         });
-    } catch (e) { debugBox.innerText = "Errore caricamento API"; }
+    } catch(e) { debugBox.innerText = "Errore caricamento API"; }
 }
 
 document.addEventListener('shaka-ui-loaded', init);
