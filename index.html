@@ -13,26 +13,26 @@
     
     /* Login */
     #lock { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
-    #lock input { background: #000; border: 1px solid #333; color: white; padding: 10px; margin-bottom: 10px; text-align: center; border-radius: 4px; }
-    #lock button { background: var(--blue); border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; border-radius: 4px; }
+    #lock input { background: #000; border: 1px solid #333; color: white; padding: 12px; border-radius: 4px; margin-bottom: 10px; text-align: center; }
+    #lock button { background: var(--blue); border: none; padding: 10px 25px; cursor: pointer; font-weight: bold; border-radius: 4px; color: black; }
 
-    /* Griglia nodrm */
+    /* Griglia */
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; margin-top: 20px; }
     .card { background: var(--card); border: 1px solid var(--border); padding: 15px; cursor: pointer; border-radius: 4px; text-align: center; font-size: 12px; font-weight: bold; transition: 0.2s; }
-    .card:hover { border-color: #444; background: #1c212a; color: var(--blue); }
+    .card:hover { border-color: var(--blue); background: #1c212a; }
     .hidden { display: none !important; }
 </style>
 </head>
 <body>
 
 <div id="lock">
-    <h2 style="font-size: 14px; letter-spacing: 2px;">PASSWORD RICHIESTA</h2>
+    <h2 style="font-size: 14px; letter-spacing: 2px; color: var(--blue);">ACCESSO RISERVATO</h2>
     <input type="password" id="pw" placeholder="Inserisci Password">
     <button onclick="login()">ENTRA</button>
 </div>
 
 <div id="app" class="hidden">
-    <div class="center"><h2 id="title" style="font-size: 18px;">Seleziona Canale</h2></div>
+    <div class="center"><h2 id="title" style="font-size: 18px; color: var(--blue);">Canale</h2></div>
     <div class="center" style="max-width:40em" data-shaka-player-container data-shaka-player-cast-receiver-id="07AEE832">
         <video autoplay data-shaka-player id="video"></video>
     </div>
@@ -55,7 +55,7 @@ function login() {
         document.getElementById('lock').classList.add('hidden');
         document.getElementById('app').classList.remove('hidden');
         loadList();
-    }
+    } else { alert("Password Sbagliata"); }
 }
 
 async function loadList() {
@@ -67,16 +67,19 @@ async function loadList() {
 
         items.forEach(item => {
             if (item.includes('license_key=')) {
-                // ESTRAZIONE NOME PULITA (Risolve il bug dello screenshot)
-                let name = item.split(',').pop().split('\n')[0].trim();
+                // ESTRAZIONE NOME: Cerchiamo l'ultima riga che NON sia un URL o un parametro tecnico
+                const lines = item.split('\n').map(l => l.trim()).filter(l => l !== "");
+                let name = lines[0].split(',').pop().trim(); // Prova standard
                 
-                // Se il nome contiene "Gecko" o è troppo lungo, lo puliamo prendendo l'ultima parte
-                if (name.includes("Version/") || name.length > 60) {
-                    const parts = item.split(',');
-                    name = parts[parts.length - 1].split('\n')[0].trim();
+                // Se il nome contiene "Gecko" o parametri lunghi, cerchiamo meglio
+                if (name.includes("Version/") || name.length > 50) {
+                   const cleanLine = lines.find(l => !l.startsWith('#') && !l.startsWith('http') && !l.includes('Version/'));
+                   if (cleanLine) name = cleanLine;
                 }
 
+                // URL: prende la riga che inizia con http
                 const url = item.match(/https?:\/\/[^\s"|]+/)?.[0];
+                // KEY: prende KID:KEY
                 const keys = item.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
 
                 if (url && keys) {
@@ -84,7 +87,9 @@ async function loadList() {
                     card.className = 'card';
                     card.innerText = name;
                     card.onclick = async () => {
-                        document.getElementById('title').innerText = name;
+                        document.getElementById('title').innerText = "In riproduzione: " + name;
+                        
+                        // LOGICA PLAYER ORIGINALE
                         playerGlobal.configure({ drm: { clearKeys: { [keys[1]]: keys[2] } } });
                         try {
                             await playerGlobal.load(proxy + encodeURIComponent(url));
