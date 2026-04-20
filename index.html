@@ -3,45 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CHANNELS</title>
+    <title>CHANNELS PLAYER</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.6/controls.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.6/shaka-player.ui.js"></script>
 
     <style>
         :root { --bg: #0b0e11; --card: #151921; --blue: #00d2ff; --yellow: #ffcc00; }
-        body { background: var(--bg); color: #fff; font-family: sans-serif; margin: 0; padding: 20px; }
+        body { background: var(--bg); color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; }
         
-        /* Schermata di blocco */
-        #lock { 
-            position: fixed; inset: 0; background: var(--bg); 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            z-index: 9999; 
-        }
-        #lock input { padding: 12px; background: #000; border: 1px solid #333; color: #fff; border-radius: 4px; margin-bottom: 10px; width: 200px; text-align: center; }
-        #lock button { padding: 10px 30px; background: var(--blue); border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        /* Schermata Login */
+        #lock { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
+        #lock input { padding: 12px; background: #000; border: 1px solid #333; color: #fff; border-radius: 4px; margin-bottom: 10px; width: 220px; text-align: center; font-size: 16px; }
+        #lock button { padding: 10px 40px; background: var(--blue); border: none; border-radius: 4px; font-weight: 900; cursor: pointer; color: #000; }
 
-        /* App e Griglia */
+        /* Header stile nodrm */
         #app { display: none; }
-        .header { border-bottom: 1px solid #1e232d; margin-bottom: 25px; padding-bottom: 15px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
-        .card { background: var(--card); border-radius: 4px; padding: 15px; border: 1px solid #1e232d; cursor: pointer; }
-        .logo-box { height: 60px; margin-bottom: 10px; }
-        .logo-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
-        .name { font-size: 13px; font-weight: bold; }
-        .sub { font-size: 9px; color: var(--blue); text-transform: uppercase; }
+        .header { display: flex; align-items: baseline; border-bottom: 1px solid #1e232d; margin-bottom: 25px; padding-bottom: 15px; }
+        .header h1 { font-size: 20px; text-transform: uppercase; margin: 0; font-weight: 900; }
+        
+        /* Griglia Canali */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+        .card { 
+            background: var(--card); border-radius: 6px; padding: 15px; border: 1px solid #1e232d; 
+            cursor: pointer; transition: 0.3s; display: flex; flex-direction: column; min-height: 150px; 
+        }
+        .card:hover { border-color: #3a4454; background: #1c222d; }
+        .logo-box { height: 70px; margin-bottom: 12px; display: flex; align-items: center; justify-content: flex-start; }
+        .logo-box img { max-width: 90%; max-height: 100%; object-fit: contain; }
+        .name { font-size: 14px; font-weight: bold; color: #fff; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .sub { font-size: 10px; color: var(--blue); text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px; }
 
-        /* Player */
-        #player-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; z-index: 1000; align-items: center; justify-content: center; }
-        .player-container { width: 90%; max-width: 800px; }
-        .shaka-video-container { width: 100%; aspect-ratio: 16/9; }
-        .shaka-range-element { color: var(--yellow) !important; } /* Barra Gialla */
+        /* Player Overlay */
+        #player-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.98); display: none; z-index: 10000; align-items: center; justify-content: center; }
+        .player-container { width: 95%; max-width: 1000px; }
+        .player-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .close-btn { background: rgba(255,255,255,0.1); color: #ccc; border: 1px solid #444; padding: 6px 12px; cursor: pointer; font-size: 11px; font-weight: bold; border-radius: 3px; }
+        
+        /* Custom Shaka UI (Barra Gialla) */
+        .shaka-video-container { width: 100%; aspect-ratio: 16/9; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .shaka-range-element { color: var(--yellow) !important; } 
+        video { width: 100%; height: 100%; background: #000; }
     </style>
 </head>
 <body>
 
 <div id="lock">
-    <input type="password" id="pw" placeholder="PASSWORD">
+    <input type="password" id="pw" placeholder="INSERISCI PASSWORD">
     <button onclick="checkLogin()">ENTRA</button>
 </div>
 
@@ -52,9 +60,12 @@
 
 <div id="player-overlay">
     <div class="player-container">
-        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-            <h3 id="p-name" style="margin:0"></h3>
-            <button onclick="closePlayer()" style="color:#fff; background:none; border:1px solid #333; cursor:pointer;">✕ CLOSE</button>
+        <div class="player-nav">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <h3 id="p-name" style="margin:0; font-size:18px;">Canale</h3>
+                <span id="p-sub" class="sub"></span>
+            </div>
+            <button class="close-btn" onclick="closePlayer()">✕ CLOSE</button>
         </div>
         <div id="video-container" class="shaka-video-container">
             <video id="video" autoplay crossorigin="anonymous"></video>
@@ -63,76 +74,82 @@
 </div>
 
 <script>
+    let player, ui;
+
     function checkLogin() {
-        const pass = document.getElementById('pw').value;
-        if(pass === "1234") {
-            // Nascondi blocco e mostra app
+        if(document.getElementById('pw').value === "1234") {
             document.getElementById('lock').style.display = 'none';
             document.getElementById('app').style.display = 'block';
-            // Carica la lista solo dopo il successo
-            initApp();
+            loadChannels();
         } else {
-            alert("Password sbagliata");
+            alert("Password Errata!");
         }
     }
 
-    async function initApp() {
+    async function loadChannels() {
         try {
             const res = await fetch("./lista_privata.m3u");
             const data = await res.text();
-            parseM3U(data);
-        } catch(e) {
-            console.error("Errore caricamento lista:", e);
-        }
+            const grid = document.getElementById('grid');
+            
+            // Parsing avanzato per blocco KODIPROP
+            const blocks = data.split('#KODIPROP:inputstream.adaptive.license_type=clearkey');
+            
+            blocks.forEach(block => {
+                if (block.includes('#EXTINF')) {
+                    const keyMatch = block.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
+                    const uaMatch = block.match(/user-agent=(.*?)\n/i);
+                    const urlMatch = block.match(/https?:\/\/\S+/);
+                    
+                    if (keyMatch && urlMatch) {
+                        const name = block.split(',').pop().split('\n')[0].trim();
+                        const logo = block.match(/tvg-logo="(.*?)"/)?.[1] || "";
+                        const group = block.match(/group-title="(.*?)"/)?.[1] || "WEB TV";
+                        
+                        const card = document.createElement('div');
+                        card.className = 'card';
+                        card.onclick = () => startPlayer(urlMatch[0], name, group, keyMatch[1], keyMatch[2], uaMatch ? uaMatch[1].trim() : "");
+                        card.innerHTML = `
+                            <div class="logo-box"><img src="${logo}"></div>
+                            <div class="name">${name}</div>
+                            <div class="sub">${group}</div>
+                        `;
+                        grid.appendChild(card);
+                    }
+                }
+            });
+        } catch(e) { console.error("Errore lista:", e); }
     }
 
-    function parseM3U(text) {
-        const grid = document.getElementById('grid');
-        const items = text.split('#KODIPROP').slice(1);
-
-        items.forEach(item => {
-            const kidKey = item.match(/license_key=(.*)/)?.[1]?.split(':');
-            const ua = item.match(/user-agent=(.*)/)?.[1]?.trim();
-            const name = item.match(/#EXTINF.*,(.*)/)?.[1]?.trim();
-            const logo = item.match(/tvg-logo="(.*?)"/)?.[1];
-            const group = item.match(/group-title="(.*?)"/)?.[1];
-            const url = item.match(/https?:\/\/\S+/)?.[0];
-
-            if(url) {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.onclick = () => play(url, name, kidKey?.[0], kidKey?.[1], ua);
-                card.innerHTML = `
-                    <div class="logo-box"><img src="${logo}"></div>
-                    <div class="name">${name}</div>
-                    <div class="sub">${group}</div>
-                `;
-                grid.appendChild(card);
-            }
-        });
-    }
-
-    let player, ui;
-    async function play(url, name, kid, key, ua) {
+    async function startPlayer(url, name, group, kid, key, ua) {
         document.getElementById('player-overlay').style.display = 'flex';
         document.getElementById('p-name').innerText = name;
+        document.getElementById('p-sub').innerText = group;
 
         const video = document.getElementById('video');
+        if (player) await player.destroy();
+        
         player = new shaka.Player(video);
         ui = new shaka.ui.Overlay(player, document.getElementById('video-container'), video);
-        
-        // Barra gialla e controlli
         ui.configure({'controlPanelElements': ['play_pause', 'time_and_duration', 'spacer', 'mute', 'volume', 'fullscreen']});
 
-        // Proxy per bypassare il blocco dello User-Agent senza estensioni
-        const proxiedUrl = `/api/proxy?url=${encodeURIComponent(url)}&ua=${encodeURIComponent(ua)}`;
+        // Configurazione Chiavi DRM
+        player.configure({
+            drm: { clearKeys: { [kid]: key } }
+        });
 
-        player.configure({ drm: { clearKeys: { [kid.trim()]: key.trim() } } });
-
+        // Prova caricamento (Usa proxy se fallisce per CORS/User-Agent)
         try {
-            await player.load(proxiedUrl);
+            await player.load(url);
         } catch(e) {
-            console.error("Errore Shaka:", e);
+            console.log("Tentativo con Proxy...");
+            const proxiedUrl = `/api/proxy?url=${encodeURIComponent(url)}&ua=${encodeURIComponent(ua)}`;
+            try {
+                await player.load(proxiedUrl);
+            } catch(err) {
+                alert("Errore: " + err.code + ". Verifica il file api/proxy.js");
+                closePlayer();
+            }
         }
     }
 
@@ -142,5 +159,6 @@
         document.getElementById('player-overlay').style.display = 'none';
     }
 </script>
+
 </body>
 </html>
