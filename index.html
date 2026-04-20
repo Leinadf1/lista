@@ -1,89 +1,91 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="ISO-8859-1">
-<title>Stream Player PRO</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
-<style>
-    body { background-color: #121212; color: white; font-family: sans-serif; padding: 20px; margin: 0; }
-    .center { margin: auto; width: 95%; max-width: 800px; text-align: center; }
-    .video-container { width: 100%; background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
-    #title { color: #00d2ff; font-size: 18px; margin-bottom: 15px; }
-    .channels { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
-    .btn { background: #2a2a2a; color: #eee; border: 1px solid #444; padding: 12px 5px; cursor: pointer; border-radius: 6px; font-size: 11px; font-weight: bold; }
-    .btn.active { background: #00d2ff; color: black; border: 2px solid white; }
-</style>
+    <meta charset="UTF-8">
+    <title>Stream Player Alternative</title>
+    <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
+    <style>
+        body { background: #121212; color: white; font-family: sans-serif; padding: 20px; text-align: center; }
+        .container { max-width: 900px; margin: auto; }
+        .video-box { width: 100%; margin-bottom: 20px; border-radius: 10px; overflow: hidden; background: #000; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        .channels { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+        .btn { background: #2a2a2a; color: white; border: 1px solid #444; padding: 12px 5px; cursor: pointer; border-radius: 6px; font-size: 11px; font-weight: bold; transition: 0.3s; }
+        .btn:hover { background: #00d2ff; color: black; }
+        #status { color: #00d2ff; margin-bottom: 10px; font-size: 18px; }
+    </style>
 </head>
 <body>
 
-<div class="center">
-    <div id="title">Seleziona Canale</div>
-    <div class="video-container" data-shaka-player-container>
-        <video autoplay data-shaka-player id="video"></video>
+<div class="container">
+    <div id="status">Seleziona Canale</div>
+    <div class="video-box">
+        <video id="my-video" class="video-js vjs-big-play-centered vjs-16-9" controls preload="auto"></video>
     </div>
     <div id="list" class="channels"></div>
 </div>
 
+<script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/videojs-contrib-eme@5.2.0/dist/videojs-contrib-eme.min.js"></script>
+
 <script>
-async function init() {
-    const video = document.getElementById('video');
-    const ui = video['ui'];
-    const player = ui.getControls().getPlayer();
-    const titleDisplay = document.getElementById('title');
-
     const MIO_PROXY = "https://still-dawn-7cbdfd.miniclashroyale3636.workers.dev/?url=";
+    const player = videojs('my-video');
+    player.eme();
 
-    player.getNetworkingEngine().registerRequestFilter((type, request) => {
-        if (!request.uris[0].includes('workers.dev')) {
-            request.uris[0] = MIO_PROXY + encodeURIComponent(request.uris[0]);
-        }
-    });
+    async function loadChannels() {
+        try {
+            const res = await fetch('lista_privata.m3u');
+            const data = await res.text();
+            const container = document.getElementById('list');
+            const items = data.split('#EXTINF');
 
-    try {
-        const res = await fetch('lista_privata.m3u');
-        const data = await res.text();
-        const items = data.split('#EXTINF');
+            items.forEach(item => {
+                if (item.includes('license_key=')) {
+                    const lines = item.split('\n');
+                    let name = "Canale";
+                    for (let l of lines) { if (l.includes(',') && !l.includes('license')) { name = l.split(',').pop().trim(); break; } }
+                    
+                    const url = item.match(/https?:\/\/[^\s"|]+/)?.[0];
+                    const keys = item.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
 
-        items.forEach(item => {
-            if (item.includes('license_key=')) {
-                const lines = item.split('\n');
-                let name = "Canale";
-                for (let l of lines) { if (l.includes(',') && !l.includes('license')) { name = l.split(',').pop().trim(); break; } }
+                    if (url && keys) {
+                        const btn = document.createElement('button');
+                        btn.className = 'btn';
+                        btn.innerText = name;
+                        btn.onclick = () => playStream(name, url, keys[1], keys[2]);
+                        container.appendChild(btn);
+                    }
+                }
+            });
+        } catch (e) { console.error("Errore lista"); }
+    }
 
-                const url = item.match(/https?:\/\/[^\s"|]+/)?.[0];
-                const keys = item.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
-
-                if (url && keys) {
-                    const btn = document.createElement('button');
-                    btn.className = 'btn';
-                    btn.innerText = name;
-                    btn.onclick = async () => {
-                        titleDisplay.innerText = "Caricamento: " + name;
-                        
-                        player.configure({
-                            drm: { clearKeys: { [keys[1]]: keys[2] } },
-                            manifest: { dash: { ignoreMinBufferTime: true } },
-                            streaming: { 
-                                rebufferingGoal: 2,
-                                failureCallback: () => player.retryStreaming()
-                            }
-                        });
-
-                        try {
-                            await player.load(url);
-                            titleDisplay.innerText = "In riproduzione: " + name;
-                        } catch (e) {
-                            titleDisplay.innerText = "Errore: " + e.code;
-                        }
-                    };
-                    document.getElementById('list').appendChild(btn);
+    function playStream(name, url, kid, key) {
+        document.getElementById('status').innerText = "Caricamento: " + name;
+        
+        // Trasformiamo le chiavi in formato binario per Video.js
+        const hexToUint8 = (hex) => new Uint8Array(hex.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+        
+        player.src({
+            src: MIO_PROXY + encodeURIComponent(url),
+            type: 'application/dash+xml',
+            keySystems: {
+                'org.w3.clearkey': {
+                    videoRobustness: '',
+                    audioRobustness: '',
+                    clearkeys: { [kid]: key }
                 }
             }
         });
-    } catch (e) { titleDisplay.innerText = "Errore Lista"; }
-}
-document.addEventListener('shaka-ui-loaded', init);
+
+        player.play().then(() => {
+            document.getElementById('status').innerText = "In riproduzione: " + name;
+        }).catch(e => {
+            document.getElementById('status').innerText = "Errore Riproduzione";
+        });
+    }
+
+    loadChannels();
 </script>
 </body>
 </html>
