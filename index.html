@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="ISO-8859-1">
-    <title>TV Dashboard – Fix URL</title>
+    <title>TV Dashboard – FINAL FIX</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
     <style>
@@ -10,15 +10,15 @@
         .center { margin: auto; width: 60%; }
         video { width: 100%; aspect-ratio: 16/9; background: black; border-radius: 8px; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-top: 30px; }
-        .btn { background: #3d3d3d; color: white; border: 1px solid #555; padding: 15px 5px; cursor: pointer; border-radius: 5px; font-size: 11px; font-weight: bold; transition: 0.2s; }
+        .btn { background: #3d3d3d; color: white; border: 1px solid #555; padding: 15px 5px; cursor: pointer; border-radius: 5px; font-size: 11px; font-weight: bold; }
         .btn:hover { background: #00d2ff; color: black; }
         .btn.active { background: #00d2ff; color: black; border: 2px solid white; }
-        #status { color: #00d2ff; margin-bottom: 15px; font-weight: bold; }
+        #status { color: #00d2ff; margin-bottom: 15px; font-weight: bold; font-size: 1.2em; }
     </style>
 </head>
 <body>
 
-    <div id="status">Seleziona un Canale</div>
+    <div id="status">Seleziona Canale</div>
 
     <div class="center" style="max-width:40em" data-shaka-player-container>
         <video autoplay data-shaka-player id="video"></video>
@@ -36,8 +36,9 @@ async function init() {
     const statusHeader = document.getElementById('status');
     const container = document.getElementById('list');
 
+    // Configurazione identica a Eurosport per massima compatibilità
     player.configure({
-        streaming: { dispatchAllEmsgBoxes: false, jumpLargeGaps: true },
+        streaming: { jumpLargeGaps: true },
         manifest: { dash: { clockSyncUri: '' } }
     });
 
@@ -48,9 +49,8 @@ async function init() {
 
         items.forEach(item => {
             if (item.includes('license_key=')) {
+                // 1. Estrazione Nome
                 const lines = item.split('\n');
-                
-                // 1. Nome Canale
                 let name = "Canale";
                 for (let l of lines) { 
                     if (l.includes(',') && !l.includes('license')) { 
@@ -59,13 +59,15 @@ async function init() {
                     } 
                 }
 
-                // 2. FILTRO URL: Prende l'URL che NON contiene "logo" e "pixel"
+                // 2. FILTRO URL RIGIDO: Prende solo l'MPD (Video) e ignora i loghi
                 const urls = item.match(/https?:\/\/[^\s"|]+/g);
                 let videoUrl = null;
                 if (urls) {
-                    videoUrl = urls.find(u => !u.includes('logo') && !u.includes('pixel.disco'));
+                    // Cerchiamo l'URL che contiene .mpd o channel(
+                    videoUrl = urls.find(u => u.includes('.mpd') || (u.includes('/channel(') && !u.includes('logo')));
                 }
 
+                // 3. Estrazione Chiavi
                 const keys = item.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
 
                 if (videoUrl && keys) {
@@ -76,7 +78,7 @@ async function init() {
                     btn.onclick = async () => {
                         document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
                         btn.classList.add('active');
-                        statusHeader.innerText = "Caricamento: " + name;
+                        statusHeader.innerText = "In onda: " + name;
 
                         player.configure({
                             drm: { clearKeys: { [keys[1]]: keys[2] } }
@@ -84,9 +86,9 @@ async function init() {
 
                         try {
                             await player.load(videoUrl);
-                            statusHeader.innerText = "In onda: " + name;
                         } catch (e) {
                             statusHeader.innerText = "Errore: " + e.code;
+                            console.error("Errore caricamento MPD:", videoUrl);
                         }
                     };
                     container.appendChild(btn);
@@ -94,7 +96,7 @@ async function init() {
             }
         });
     } catch (err) {
-        statusHeader.innerText = "Errore caricamento lista";
+        statusHeader.innerText = "Errore lista";
     }
 }
 
