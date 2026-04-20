@@ -11,29 +11,49 @@
     video { width: 100%; height: 100%; }
     .chan-list { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
     .chan-btn { background: #444; color: white; border: 1px solid #666; padding: 10px; cursor: pointer; border-radius: 4px; }
+    #debug { color: #ff5555; font-size: 12px; margin-top: 10px; }
 </style>
 </head>
 <body>
-<div class="center"><h2 id="current-chan">Seleziona Canale</h2></div>
-<div class="center" style="max-width:40em" data-shaka-player-container data-shaka-player-cast-receiver-id="07AEE832">
+<div class="center">
+    <h2 id="current-chan">Seleziona Canale</h2>
+    <div id="debug"></div>
+</div>
+<div class="center" style="max-width:40em" data-shaka-player-container>
     <video autoplay data-shaka-player id="video"></video>
 </div>
 <div class="center chan-list" id="list-container"></div>
 
 <script>
-// IL TRUCCO: Questo proxy permette di caricare i link della lista senza errori 4000
 const proxy = "https://corsproxy.io/?url=";
 
 async function playChannel(player, manifest, kid, key, name) {
+    const debug = document.getElementById('debug');
+    debug.innerText = "Caricamento in corso...";
     document.getElementById('current-chan').innerText = name;
     
-    player.configure({ drm: { clearKeys: { [kid]: key } } });
+    // Pulizia estrema delle chiavi
+    const cleanKid = kid.trim().toLowerCase();
+    const cleanKey = key.trim().toLowerCase();
+    const cleanManifest = manifest.trim();
 
-    // Aggiungiamo il proxy all'URL solo al momento del caricamento
+    player.configure({
+        drm: { clearKeys: { [cleanKid]: cleanKey } }
+    });
+
     try {
-        await player.load(proxy + encodeURIComponent(manifest));
+        // Proviamo prima col proxy, se fallisce proviamo senza
+        await player.load(proxy + encodeURIComponent(cleanManifest));
+        debug.innerText = "OK: In riproduzione";
     } catch (e) {
-        alert("Errore caricamento flusso.");
+        console.error(e);
+        debug.innerText = "ERRORE: " + e.code + " - Tentativo senza proxy...";
+        try {
+            await player.load(cleanManifest);
+            debug.innerText = "OK: Caricato senza proxy";
+        } catch (e2) {
+            debug.innerText = "FALLITO: " + e2.code;
+        }
     }
 }
 
@@ -46,24 +66,37 @@ async function init() {
         const response = await fetch('lista_privata.m3u');
         const data = await response.text();
         const container = document.getElementById('list-container');
-        const blocks = data.split('#KODIPROP:inputstream.adaptive.license_type=clearkey');
+        
+        // Parsing riga per riga invece che per blocchi (più sicuro)
+        const lines = data.split('\n');
+        let currentName = "", currentKid = "", currentKey = "";
 
-        blocks.forEach(block => {
-            if (block.includes('#EXTINF')) {
-                const name = block.split(',').pop().split('\n')[0].trim();
-                const manifest = block.match(/https?:\/\/\S+/)?.[0];
-                const keys = block.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
-
-                if (manifest && keys) {
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+            
+            if (line.includes('#EXTINF')) {
+                currentName = line.split(',').pop().trim();
+            }
+            if (line.includes('license_key=')) {
+                const keys = line.split('license_key=')[1].split(':');
+                currentKid = keys[0].trim();
+                currentKey = keys[1].split(' ')[0].trim(); // Prende solo la chiave prima di eventuali spazi
+            }
+            if (line.startsWith('http')) {
+                const manifest = line;
+                if (currentKid && currentKey) {
                     const btn = document.createElement('button');
                     btn.className = 'chan-btn';
-                    btn.innerText = name;
-                    btn.onclick = () => playChannel(player, manifest, keys[1], keys[2], name);
+                    btn.innerText = currentName || "Canale";
+                    const k = currentKid, ky = currentKey, n = currentName;
+                    btn.onclick = () => playChannel(player, manifest, k, ky, n);
                     container.appendChild(btn);
                 }
+                // Reset per il prossimo canale
+                currentKid = ""; currentKey = "";
             }
-        });
-    } catch (err) { console.error("Errore lista"); }
+        }
+    } catch (err) { document.getElementById('debug').innerText = "M3U non trovata!"; }
 }
 document.addEventListener('shaka-ui-loaded', init);
 </script>
