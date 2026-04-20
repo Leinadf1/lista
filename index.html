@@ -6,50 +6,47 @@
     <title>CHANNELS</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.5/shaka-player.compiled.js"></script>
     <style>
-        :root { --bg: #0b0e11; --card: #151921; --blue: #007bff; --accent: #ffcc00; }
-        body { background: var(--bg); color: #fff; font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; }
+        :root { --bg: #0b0e11; --card: #151921; --blue: #007bff; --accent: #e5e5e5; }
+        body { background: var(--bg); color: #fff; font-family: sans-serif; margin: 0; padding: 20px; }
         
-        /* Header nodrm */
-        .header { display: flex; align-items: center; padding-bottom: 15px; border-bottom: 1px solid #222; margin-bottom: 25px; }
-        .header h1 { font-size: 22px; text-transform: uppercase; margin: 0; display: flex; align-items: center; }
-        .header span { color: #555; font-size: 13px; margin-left: 10px; text-transform: lowercase; }
+        /* Header stile nodrm */
+        .header { display: flex; align-items: center; border-bottom: 1px solid #222; margin-bottom: 25px; padding-bottom: 10px; }
+        .header h1 { font-size: 20px; text-transform: uppercase; margin: 0; }
+        .header span { color: #444; font-size: 12px; margin-left: 10px; text-transform: lowercase; }
 
-        /* Griglia nodrm */
+        /* Griglia identica a nodrm */
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
         .card { 
-            background: var(--card); border-radius: 8px; padding: 15px; text-align: center; 
+            background: var(--card); border-radius: 6px; padding: 15px; text-align: center; 
             cursor: pointer; border: 1px solid #1e232d; transition: 0.2s;
             display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 140px;
         }
-        .card:hover { border-color: var(--blue); transform: translateY(-3px); }
-        .logo-box { height: 65px; width: 100%; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
-        .logo-box img { max-width: 90%; max-height: 100%; object-fit: contain; }
-        .name { font-size: 13px; font-weight: bold; margin-bottom: 4px; display: block; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .sub { font-size: 9px; color: var(--blue); font-weight: 800; text-transform: uppercase; }
+        .card:hover { border-color: var(--blue); background: #1a1f29; }
+        .logo-box { height: 60px; width: 100%; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; }
+        .logo-box img { max-width: 85%; max-height: 100%; object-fit: contain; }
+        .name { font-size: 13px; font-weight: bold; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; }
+        .sub { font-size: 9px; color: var(--blue); font-weight: bold; text-transform: uppercase; }
 
-        /* Player Overlay nodrm */
-        #player-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; z-index: 10000; }
-        .player-container { width: 95%; max-width: 960px; position: relative; }
-        .player-info { position: absolute; top: -35px; left: 0; width: 100%; display: flex; justify-content: space-between; align-items: center; }
-        .player-info h3 { font-size: 14px; margin: 0; color: #fff; }
-        .close-btn { background: #222; color: #fff; border: 1px solid #444; padding: 4px 12px; cursor: pointer; border-radius: 4px; font-size: 11px; }
+        /* Player Overlay stile nodrm */
+        #player-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.96); display: none; align-items: center; justify-content: center; z-index: 10000; }
+        .player-container { width: 95%; max-width: 900px; position: relative; }
+        .player-header { position: absolute; top: -30px; left: 0; width: 100%; display: flex; justify-content: space-between; align-items: center; }
+        .player-header h3 { font-size: 14px; margin: 0; color: #fff; }
+        .close-btn { background: #111; color: #777; border: 1px solid #333; padding: 3px 10px; cursor: pointer; border-radius: 4px; font-size: 10px; text-transform: uppercase; }
         
-        video { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 4px; box-shadow: 0 0 40px rgba(0,0,0,0.7); }
-        
-        /* ProgressBar Gialla tipo nodrm */
-        video::-webkit-media-controls-timeline { background-color: var(--accent); }
+        video { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 2px; box-shadow: 0 0 50px rgba(0,0,0,1); }
 
         #lock { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10001; }
-        input { background: #1a1e26; border: 1px solid #333; color: white; padding: 12px; border-radius: 4px; text-align: center; width: 250px; margin-bottom: 10px; }
+        input { background: #111; border: 1px solid #222; color: white; padding: 12px; border-radius: 4px; text-align: center; width: 240px; margin-bottom: 10px; outline: none; }
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
 <div id="lock">
-    <h2 style="font-size:16px; letter-spacing:2px; color:#555;">PROTECTED AREA</h2>
-    <input type="password" id="pw" placeholder="Password">
-    <button onclick="login()" style="background:var(--blue); color:white; border:none; padding:12px 40px; border-radius:4px; cursor:pointer; font-weight:bold;">LOGIN</button>
+    <h2 style="font-size:14px; letter-spacing:2px; color:#444; margin-bottom:20px;">TV ACCESS</h2>
+    <input type="password" id="pw" placeholder="Enter Password">
+    <button onclick="login()" style="background:var(--blue); color:white; border:none; padding:12px 40px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:12px;">ACCEDI</button>
 </div>
 
 <div id="app" class="hidden">
@@ -59,7 +56,7 @@
 
 <div id="player-overlay">
     <div class="player-container">
-        <div class="player-info">
+        <div class="player-header">
             <h3 id="playing-title">LIVE</h3>
             <button class="close-btn" onclick="closePlayer()">✕ CLOSE</button>
         </div>
@@ -76,7 +73,7 @@
             document.getElementById('lock').classList.add('hidden');
             document.getElementById('app').classList.remove('hidden');
             load();
-        } else { alert("Access Denied"); }
+        } else { alert("Password Errata"); }
     }
 
     async function load() {
@@ -87,24 +84,22 @@
         let count = 0;
 
         for (let i = 0; i < lines.length; i++) {
-            if (lines[i].includes('#EXTINF')) {
+            if (lines[i].startsWith('#EXTINF')) {
                 count++;
                 const info = lines[i];
                 const name = info.split(',').pop().trim();
                 const logoMatch = info.match(/tvg-logo="([^"]+)"/);
                 
-                // Cerchiamo la chiave nella riga KODIPROP successiva o precedente
-                let kid = "", key = "";
-                let streamUrl = "";
+                let kid = "", key = "", streamUrl = "";
                 
-                // Scansiona le righe successive per trovare KODIPROP e URL
-                for(let j=1; j<=3; j++) {
-                    let nextLine = lines[i+j] || "";
-                    if(nextLine.includes('license_key=')) {
-                        let fullKey = nextLine.split('license_key=')[1].trim();
-                        [kid, key] = fullKey.split(':');
+                // Cerca nelle riga successive per estrarre chiavi e URL
+                for(let j=1; j<=4; j++){
+                    let nextLine = lines[i+j] ? lines[i+j].trim() : "";
+                    if(nextLine.includes('license_key=')){
+                        const keyPart = nextLine.split('license_key=')[1];
+                        [kid, key] = keyPart.split(':');
                     }
-                    if(nextLine.startsWith('http')) streamUrl = nextLine.trim();
+                    if(nextLine.startsWith('http')) streamUrl = nextLine;
                 }
 
                 const card = document.createElement('div');
@@ -112,7 +107,7 @@
                 card.onclick = () => openPlayer(streamUrl, name, kid, key);
                 card.innerHTML = `
                     <div class="logo-box">
-                        ${logoMatch ? `<img src="${logoMatch[1]}">` : `<div style="font-size:10px; color:#333;">${name}</div>`}
+                        ${logoMatch ? `<img src="${logoMatch[1]}">` : `<div style="font-size:24px;">📺</div>`}
                     </div>
                     <span class="name">${name}</span>
                     <span class="sub">SKY IT INTRATTENIMENTO</span>
@@ -126,6 +121,7 @@
     let shakaInstance;
 
     async function openPlayer(url, name, kid, key) {
+        if(!url) return;
         document.getElementById('player-overlay').style.display = 'flex';
         document.getElementById('playing-title').innerText = name;
         const video = document.getElementById('video');
@@ -134,14 +130,16 @@
 
         if (kid && key) {
             shakaInstance.configure({
-                drm: { clearKeys: { [kid]: key } }
+                drm: {
+                    clearKeys: { [kid]: key }
+                }
             });
         }
 
         try {
             await shakaInstance.load(url);
         } catch (e) {
-            console.error(e);
+            console.error('Errore Shaka:', e);
             alert("Errore caricamento MPD. Verifica la chiave!");
             closePlayer();
         }
