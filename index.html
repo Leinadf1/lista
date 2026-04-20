@@ -3,70 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Area Riservata TV</title>
+    <title>TV Channels</title>
     <style>
-        body { background: #0f0f0f; color: white; font-family: sans-serif; text-align: center; padding: 20px; }
-        .hidden { display: none; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; max-width: 1000px; margin: 30px auto; }
-        button { background: #1e1e1e; color: white; border: 1px solid #333; padding: 15px; cursor: pointer; border-radius: 8px; font-weight: bold; transition: 0.2s; }
-        button:hover { background: #0078d4; border-color: white; }
-        input { padding: 12px; border-radius: 5px; border: 1px solid #333; background: #1e1e1e; color: white; margin-bottom: 10px; text-align: center; }
+        :root { --bg: #0b0e11; --card: #151921; --blue: #007bff; --text: #f0f0f0; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding: 20px; }
+        
+        .header { display: flex; align-items: center; padding: 20px 0; border-bottom: 1px solid #222; margin-bottom: 30px; }
+        .header h1 { font-size: 22px; text-transform: uppercase; letter-spacing: 1px; color: #fff; margin: 0; }
+        .header h1 span { color: #a1a1a1; font-size: 14px; margin-left: 10px; }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
+
+        .card { background: var(--card); border-radius: 10px; padding: 20px; text-align: center; cursor: pointer; 
+                transition: all 0.2s; border: 1px solid #1e232d; display: flex; flex-direction: column; align-items: center; }
+        .card:hover { border-color: var(--blue); transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
+        
+        .logo-box { width: 100%; height: 80px; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; }
+        .logo-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .logo-placeholder { font-weight: bold; color: #333; font-size: 10px; text-transform: uppercase; }
+
+        .name { font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
+        .category { font-size: 10px; color: var(--blue); text-transform: uppercase; font-weight: 700; }
+
+        /* Login Overlay */
+        #lock { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); 
+                display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; }
+        #lock input { background: #1c212a; border: 1px solid #333; color: #fff; padding: 12px; border-radius: 6px; 
+                      width: 260px; margin-bottom: 15px; text-align: center; font-size: 16px; }
+        #lock button { background: var(--blue); color: white; border: none; padding: 12px 30px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <div id="login-section">
-        <h1>🔐 Accesso Privato</h1>
-        <input type="password" id="pw" placeholder="Password"><br>
-        <button onclick="check()">ENTRA</button>
+<div id="lock">
+    <h2 style="margin-bottom: 20px;">ACCESS CONTROL</h2>
+    <input type="password" id="pw" placeholder="Enter Password">
+    <button onclick="login()">LOGIN</button>
+</div>
+
+<div id="app" class="hidden">
+    <div class="header">
+        <h1>📺 CHANNELS <span id="count">0 CHANNELS</span></h1>
     </div>
+    <div id="grid" class="grid"></div>
+</div>
 
-    <div id="main-section" class="hidden">
-        <h1>📺 I Tuoi Canali</h1>
-        <div id="buttons" class="grid"></div>
-    </div>
+<script>
+    const PW_SECRET = "1234";
+    const FILE_NAME = "lista_privata.m3u";
+    const EXT_ID = "opmeopcambhflmffbomjgemehjkbbmji";
 
-    <script>
-        const passSegreta = "1234"; // La tua password
-        const idEstensione = "opmeopcambhflmffbomjgemehjkbbmji";
-        const nomeFile = "lista_privata.m3u"; 
+    function login() {
+        if(document.getElementById('pw').value === PW_SECRET) {
+            document.getElementById('lock').classList.add('hidden');
+            document.getElementById('app').classList.remove('hidden');
+            load();
+        } else { alert("Access Denied"); }
+    }
 
-        function check() {
-            if(document.getElementById('pw').value === passSegreta) {
-                document.getElementById('login-section').classList.add('hidden');
-                document.getElementById('main-section').classList.remove('hidden');
-                loadList();
-            } else { alert("Password errata"); }
-        }
+    async function load() {
+        try {
+            const res = await fetch("./" + FILE_NAME);
+            const data = await res.text();
+            const lines = data.split('\n');
+            const container = document.getElementById('grid');
+            let count = 0;
 
-        async function loadList() {
-            try {
-                // Legge il file direttamente dalla cartella di Vercel
-                const res = await fetch("./" + nomeFile);
-                const text = await res.text();
-                
-                const lines = text.split('\n');
-                const btnContainer = document.getElementById('buttons');
-                btnContainer.innerHTML = ''; 
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].includes('#EXTINF')) {
+                    count++;
+                    const name = lines[i].split(',').pop().trim();
+                    const logoMatch = lines[i].match(/tvg-logo="([^"]+)"/);
+                    const logo = logoMatch ? logoMatch[1] : null;
+                    
+                    const listUrl = window.location.origin + "/" + FILE_NAME;
+                    const link = `chrome-extension://${EXT_ID}/iptv/player.html#${listUrl}`;
 
-                for (let i = 0; i < lines.length; i++) {
-                    if (lines[i].includes('#EXTINF')) {
-                        const name = lines[i].split(',').pop().trim();
-                        
-                        // Genera il link per l'estensione
-                        const urlCompletoLista = window.location.origin + "/" + nomeFile;
-                        const extensionLink = `chrome-extension://${idEstensione}/iptv/player.html#${urlCompletoLista}`;
-
-                        let btn = document.createElement('button');
-                        btn.innerText = name;
-                        btn.onclick = () => { window.open(extensionLink, '_blank'); };
-                        btnContainer.appendChild(btn);
-                    }
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.onclick = () => window.open(link, '_blank');
+                    card.innerHTML = `
+                        <div class="logo-box">
+                            ${logo ? `<img src="${logo}">` : `<div class="logo-placeholder">${name}</div>`}
+                        </div>
+                        <div class="name">${name}</div>
+                        <div class="category">IPTV LIVE</div>
+                    `;
+                    container.appendChild(card);
                 }
-            } catch (err) {
-                alert("Errore nel caricamento. Assicurati che il file si chiami lista_privata.m3u");
             }
-        }
-    </script>
+            document.getElementById('count').innerText = count + " CHANNELS";
+        } catch (e) { alert("Error loading channels"); }
+    }
+</script>
 </body>
 </html>
