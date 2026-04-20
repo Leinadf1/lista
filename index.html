@@ -10,7 +10,7 @@
         body { background-color: #0d1117; color: #c9d1d9; font-family: sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         #header { width: 100%; max-width: 1200px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid #30363d; padding-bottom: 10px; }
         h1 { font-size: 24px; color: #58a6ff; margin: 0; }
-        #chan-count { color: #8b949e; font-size: 14px; text-align: right; line-height: 1.2; }
+        #chan-count { color: #8b949e; font-size: 14px; text-align: right; line-height: 1.2; font-weight: bold; }
         .player-container { width: 100%; max-width: 850px; background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 35px; border: 1px solid #30363d; }
         video { width: 100%; aspect-ratio: 16/9; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; width: 100%; max-width: 1200px; }
@@ -20,14 +20,14 @@
         .logo-box { width: 100%; height: 100px; display: flex; justify-content: center; align-items: center; background: #21262d; padding: 10px; box-sizing: border-box; }
         .logo-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
         .info-box { padding: 12px; text-align: center; border-top: 1px solid #30363d; }
-        .name { font-size: 13px; font-weight: 600; color: #f0f6fc; text-transform: uppercase; }
+        .name { font-size: 13px; font-weight: 600; color: #f0f6fc; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     </style>
 </head>
 <body>
 
     <div id="header">
         <h1>Dashboard</h1>
-        <div id="chan-count">CARICAMENTO...</div>
+        <div id="chan-count">SINCRONIZZAZIONE...</div>
     </div>
 
     <div class="player-container" data-shaka-player-container>
@@ -39,6 +39,13 @@
 <script>
 const API_URL = "/api/get-list";
 
+// REINSERITI I TUOI CANALI FISSI
+const CANALI_FISSI = [
+    { name: "EUROSPORT 4K", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/thumb.prod.front.tim.cptech.pro/http/unsafe/filters:format(png):anamorphosis(640,480)/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020019/tim-ouah/CHN43FN/MONOGRAM_ESP4K_WHITE_V2-BjK0", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport4k)/manifest.mpd", keys: {"9ceae06c6ad34aada83ba86c0b511452":"406862beb4af1ef8fe04ba15d9936360","fcd924bd2e45470fa2ae50ef05e357c0":"266db84d3572bc889185274a90ff31df","dea135e33341468f8a4e8da806d8a6e6":"fb7423db39e6fab75056f8c83f415847","31911db90ee3410f8b38e45659d01fb1":"ac316ab7dfd2b50faf6d44633e4fedd5","a16f2a39adbb4974b8910cec8a651a09":"c2d55e0111af955f47214af209a2c468"} },
+    { name: "EUROSPORT 1", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/thumb.prod.front.tim.cptech.pro/http/unsafe/filters:format(png):anamorphosis(640,480)/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020000/tim-ouah/CHN43FN/MONOGRAM_ESP1_WHITE_V2-Lv2g", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport1)/manifest.mpd", kid: "46e559c2f9f645ce8d80c7fa20446bdb", key: "597d214d66342ee042bccffeb165e750" },
+    { name: "EUROSPORT 2", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/thumb.prod.front.tim.cptech.pro/http/unsafe/filters:format(png):anamorphosis(640,480)/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020001/tim-ouah/CHN43FN/MONOGRAM_ESP2_WHITE_V2-Zp7E", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport2)/manifest.mpd", kid: "e8372283a523444c84646c4172b1bc0f", key: "969a90e1a1a6424a68fe4b5d776368ec" }
+];
+
 async function init() {
     const video = document.getElementById('video');
     const ui = video['ui'];
@@ -47,11 +54,30 @@ async function init() {
 
     player.configure({ streaming: { jumpLargeGaps: true } });
 
+    function createCard(name, logo, url, drmConfig) {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `<div class="logo-box"><img src="${logo}"></div>
+                          <div class="info-box"><div class="name">${name}</div></div>`;
+        
+        card.onclick = async () => {
+            document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+            card.classList.add('active');
+            try {
+                await player.unload();
+                player.configure({ drm: { clearKeys: drmConfig } });
+                await player.load(url);
+                window.scrollTo({top: 0, behavior: 'smooth'});
+            } catch(e) { console.error("Errore:", e.code); }
+        };
+        container.appendChild(card);
+    }
+
     try {
         const res = await fetch(API_URL + "?t=" + Date.now());
         const data = await res.text();
         const entries = data.split(/#KODIPROP:inputstream\.adaptive\.license_type=clearkey/);
-        let count = 0;
+        let liveCount = 0;
 
         entries.forEach(entry => {
             if (!entry.includes('.mpd')) return;
@@ -59,35 +85,24 @@ async function init() {
             const keyMatch = entry.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
             const urlMatch = entry.match(/https?:\/\/[^\s"|]+\.mpd[^\s"|]*/i);
             
-            // Fix Nome: prendiamo solo l'ultima parte dopo la virgola, ignorando lo sporco
-            const nameMatch = entry.match(/,(?!.*,)(.*)/); 
-            const logoMatch = entry.match(/tvg-logo="([^"]+)"/i);
+            // Logica nomi: prende tutto quello che c'è dopo l'ultima virgola del blocco
+            const nameLines = entry.split(',');
+            const rawName = nameLines[nameLines.length - 1].split('\n')[0].trim();
 
-            if (keyMatch && urlMatch && nameMatch) {
-                count++;
-                const rawName = nameMatch[1].split('\n')[0].trim();
-                // Pulizia ulteriore: se il nome è troppo lungo o contiene "Gecko", è spazzatura
-                const finalName = rawName.includes("Version/") ? "CANALE " + count : rawName;
-
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.innerHTML = `<div class="logo-box"><img src="${logoMatch ? logoMatch[1] : ''}"></div>
-                                  <div class="info-box"><div class="name">${finalName}</div></div>`;
-                
-                card.onclick = async () => {
-                    document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
-                    card.classList.add('active');
-                    try {
-                        await player.unload();
-                        player.configure({ drm: { clearKeys: { [keyMatch[1].toLowerCase()]: keyMatch[2].toLowerCase() } } });
-                        await player.load(urlMatch[0].trim());
-                        window.scrollTo({top: 0, behavior: 'smooth'});
-                    } catch(e) { console.error("Errore Shaka:", e.code); }
-                };
-                container.appendChild(card);
+            if (keyMatch && urlMatch && rawName) {
+                liveCount++;
+                const keys = { [keyMatch[1].toLowerCase()]: keyMatch[2].toLowerCase() };
+                const logoMatch = entry.match(/tvg-logo="([^"]+)"/i);
+                createCard(rawName, logoMatch ? logoMatch[1] : '', urlMatch[0], keys);
             }
         });
-        document.getElementById('chan-count').innerHTML = `${count} CANALI CARICATI<br>AUTOMATICAMENTE`;
+
+        // Aggiunta canali fissi alla fine
+        CANALI_FISSI.forEach(ch => {
+            createCard(ch.name, ch.logo, ch.url, ch.keys ? ch.keys : { [ch.kid]: ch.key });
+        });
+
+        document.getElementById('chan-count').innerHTML = `${liveCount + CANALI_FISSI.length} CANALI CARICATI<br>AUTOMATICAMENTE`;
     } catch(e) { document.getElementById('chan-count').innerText = "ERRORE API"; }
 }
 
