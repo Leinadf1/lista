@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="ISO-8859-1">
-    <title>TV Dashboard – GitHub Auto</title>
+    <title>TV Dashboard PRO</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
     <style>
@@ -10,7 +10,7 @@
         .center { margin: auto; width: 60%; }
         video { width: 100%; aspect-ratio: 16/9; background: black; border-radius: 8px; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-top: 30px; }
-        .btn { background: #3d3d3d; color: white; border: 1px solid #555; padding: 15px 5px; cursor: pointer; border-radius: 5px; font-size: 11px; font-weight: bold; transition: 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .btn { background: #3d3d3d; color: white; border: 1px solid #555; padding: 15px 5px; cursor: pointer; border-radius: 5px; font-size: 11px; font-weight: bold; transition: 0.2s; }
         .btn:hover { background: #00d2ff; color: black; }
         .btn.active { background: #00d2ff; color: black; border: 2px solid white; }
         #status { color: #00d2ff; margin-bottom: 15px; font-weight: bold; font-size: 1.2em; }
@@ -18,7 +18,7 @@
 </head>
 <body>
 
-    <div id="status">Caricamento canali...</div>
+    <div id="status">Caricamento in corso...</div>
 
     <div class="center" style="max-width:40em" data-shaka-player-container>
         <video autoplay data-shaka-player id="video"></video>
@@ -27,7 +27,6 @@
     <div id="list" class="grid"></div>
 
 <script>
-// Carichiamo la lista dallo stesso server (Vercel) per evitare errori CORS
 const LISTA_URL = "lista_privata.m3u";
 
 async function init() {
@@ -37,21 +36,31 @@ async function init() {
     const statusHeader = document.getElementById('status');
     const container = document.getElementById('list');
 
-    player.addEventListener('error', e => console.error('Player error:', e.detail));
+    // --- CONFIGURAZIONE ANTI-BLOCCO (PER EVITARE ERRORE 1002) ---
+    player.configure({
+        streaming: {
+            // Disattiva i messaggi extra che fanno arrabbiare il server
+            dispatchAllEmsgBoxes: false,
+            jumpLargeGaps: true,
+        },
+        manifest: {
+            dash: {
+                // Impedisce le richieste HEAD per l'aggiornamento dell'ora
+                clockSyncUri: ''
+            }
+        }
+    });
 
     try {
-        // Fetch locale: Vercel legge il file che hai caricato su GitHub
         const res = await fetch(LISTA_URL);
-        if (!res.ok) throw new Error("File M3U non trovato nella cartella");
+        if (!res.ok) throw new Error("File M3U non trovato");
         
         const data = await res.text();
         const items = data.split('#EXTINF');
-
         statusHeader.innerText = "Seleziona un Canale";
 
         items.forEach(item => {
             if (item.includes('license_key=')) {
-                // Estrazione nome pulito (come Eurosport)
                 const lines = item.split('\n');
                 let name = "Canale";
                 for (let l of lines) { 
@@ -61,7 +70,6 @@ async function init() {
                     } 
                 }
 
-                // Estrazione URL e Chiavi
                 const url = item.match(/https?:\/\/[^\s"|]+/)?.[0];
                 const keys = item.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
 
@@ -73,21 +81,19 @@ async function init() {
                     btn.onclick = async () => {
                         document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
                         btn.classList.add('active');
-                        statusHeader.innerText = name;
+                        statusHeader.innerText = "Caricamento: " + name;
 
-                        // Configurazione DRM (Identica al tuo script Eurosport)
                         player.configure({
-                            drm: {
-                                clearKeys: { [keys[1]]: keys[2] }
-                            }
+                            drm: { clearKeys: { [keys[1]]: keys[2] } }
                         });
 
                         try {
-                            // Caricamento diretto dello stream (niente proxy = niente errore 4000)
                             await player.load(url);
+                            statusHeader.innerText = "In onda: " + name;
                         } catch (e) {
-                            console.error('Errore:', e.code);
+                            // Se fallisce ancora con 1002, il server ha bannato temporaneamente l'IP di Vercel
                             statusHeader.innerText = "Errore: " + e.code;
+                            console.error('Dettaglio errore:', e);
                         }
                     };
                     container.appendChild(btn);
@@ -95,8 +101,7 @@ async function init() {
             }
         });
     } catch (err) {
-        statusHeader.innerText = "Errore: " + err.message;
-        console.error(err);
+        statusHeader.innerText = "Errore caricamento lista";
     }
 }
 
