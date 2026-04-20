@@ -4,93 +4,167 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CHANNELS PRO</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.6/controls.min.css">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.6/controls.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.6/shaka-player.ui.js"></script>
+
     <style>
-        :root { --bg: #0b0e11; --accent: #ffcc00; }
-        body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; overflow-x: hidden; }
-        #login { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 999; }
-        input { padding: 12px; background: #1a1d23; border: 1px solid #333; color: white; border-radius: 5px; margin-bottom: 10px; text-align: center; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; padding: 20px; }
-        .card { background: #1a1d23; border-radius: 10px; padding: 15px; text-align: center; cursor: pointer; border: 1px solid #2d3139; }
-        .card img { max-width: 100%; height: 60px; object-fit: contain; }
-        #player-layer { position: fixed; inset: 0; background: black; display: none; z-index: 100; flex-direction: column; }
-        .shaka-range-element { color: var(--accent) !important; }
+        :root { --bg: #0b0e11; --card: #151921; --blue: #00d2ff; }
+        body { background: var(--bg); color: #fff; font-family: sans-serif; margin: 0; padding: 20px; }
+        
+        .header { display: flex; align-items: baseline; border-bottom: 1px solid #1e232d; margin-bottom: 25px; padding-bottom: 15px; }
+        .header h1 { font-size: 20px; text-transform: uppercase; margin: 0; font-weight: 900; }
+        .header .count { color: #3a4454; font-size: 11px; margin-left: 10px; font-weight: bold; }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+        .card { 
+            background: var(--card); border-radius: 4px; padding: 15px; text-align: left; 
+            cursor: pointer; border: 1px solid #1e232d; transition: 0.2s;
+            display: flex; flex-direction: column; min-height: 140px;
+        }
+        .card:hover { border-color: #333; background: #1a1f29; }
+        
+        .logo-box { height: 60px; width: 100%; display: flex; align-items: center; justify-content: flex-start; margin-bottom: 15px; }
+        .logo-box img { max-width: 80%; max-height: 100%; object-fit: contain; }
+        
+        .name { font-size: 13px; font-weight: bold; margin-bottom: 2px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sub { font-size: 9px; color: var(--blue); font-weight: bold; text-transform: uppercase; }
+
+        #player-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.98); display: none; align-items: center; justify-content: center; z-index: 10000; }
+        .player-container { width: 95%; max-width: 900px; }
+        
+        .player-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .player-title-wrap { display: flex; align-items: center; gap: 10px; }
+        .player-title-wrap h3 { font-size: 15px; margin: 0; }
+        .player-title-wrap .cat { font-size: 10px; color: var(--blue); font-weight: bold; text-transform: uppercase; }
+        
+        .close-btn { background: rgba(255,255,255,0.05); color: #777; border: 1px solid #333; padding: 4px 10px; cursor: pointer; border-radius: 3px; font-size: 10px; font-weight: bold; }
+        
+        .shaka-video-container { width: 100%; aspect-ratio: 16/9; border-radius: 2px; overflow: hidden; }
+        .shaka-range-element { color: #ffcc00 !important; }
+
+        #lock { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10001; }
+        input { background: #000; border: 1px solid #222; color: white; padding: 12px; border-radius: 4px; text-align: center; width: 220px; margin-bottom: 10px; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-<div id="login">
-    <h2 style="color:var(--accent)">CHANNELS LOGIN</h2>
-    <input type="password" id="pass" placeholder="Inserisci Password">
-    <button onclick="check()" style="padding:10px 30px; background:var(--accent); border:none; font-weight:bold; border-radius:5px; cursor:pointer;">ENTRA</button>
+<div id="lock">
+    <input type="password" id="pw" placeholder="PASSWORD">
+    <button onclick="login()" style="background:var(--blue); color:#000; border:none; padding:10px 30px; border-radius:4px; cursor:pointer; font-weight:900;">ACCEDI</button>
 </div>
 
-<div id="grid" class="grid"></div>
+<div id="app" class="hidden">
+    <div class="header"><h1>📺 CHANNELS</h1> <div class="count" id="count">0 CHANNELS</div></div>
+    <div id="grid" class="grid"></div>
+</div>
 
-<div id="player-layer">
-    <div style="padding:15px; display:flex; justify-content:space-between; background:#111;">
-        <span id="chan-name" style="font-weight:bold">Canale</span>
-        <button onclick="location.reload()" style="color:red; background:none; border:none; font-weight:bold; cursor:pointer;">CHIUDI ✕</button>
+<div id="player-overlay">
+    <div class="player-container">
+        <div class="player-nav">
+            <div class="player-title-wrap">
+                <h3 id="playing-name">CANALE</h3>
+                <span class="cat" id="playing-cat">SKY IT</span>
+            </div>
+            <button class="close-btn" onclick="closePlayer()">✕ CLOSE</button>
+        </div>
+        <div id="video-container" class="shaka-video-container">
+            <video id="video" autoplay crossorigin="anonymous"></video>
+        </div>
     </div>
-    <div id="video-container" style="width:100%; height:100%;"><video id="video" autoplay style="width:100%; height:100%;"></video></div>
 </div>
 
 <script>
-    let player;
-    // Usiamo un proxy pubblico professionale per evitare l'errore 1001 e 4000
-    const P = "https://corsproxy.io/?url=";
+    const PW_SECRET = "1234";
+    const FILE_NAME = "lista_privata.m3u";
+    // Proxy esterno per bypassare i blocchi
+    const PROXY = "https://corsproxy.io/?url=";
+    let player, ui;
 
-    function check() {
-        if(document.getElementById('pass').value === "1234") {
-            document.getElementById('login').style.display = 'none';
-            loadList();
-        } else { alert("Sbagliata!"); }
+    function login() {
+        if(document.getElementById('pw').value === PW_SECRET) {
+            document.getElementById('lock').classList.add('hidden');
+            document.getElementById('app').classList.remove('hidden');
+            load();
+        } else { alert("Password Errata"); }
     }
 
-    async function loadList() {
-        const res = await fetch("./lista_privata.m3u");
-        const text = await res.text();
-        const blocks = text.split('#KODIPROP:inputstream.adaptive.license_type=clearkey');
-        
-        blocks.forEach(b => {
-            if (b.includes('#EXTINF')) {
-                const url = b.match(/https?:\/\/\S+/)?.[0];
-                const key = b.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
-                const name = b.split(',').pop().split('\n')[0].trim();
-                const logo = b.match(/tvg-logo="(.*?)"/)?.[1] || "";
-                const ua = b.match(/user-agent=(.*?)\n/i)?.[1]?.trim() || "";
+    async function load() {
+        try {
+            const res = await fetch("./" + FILE_NAME);
+            const data = await res.text();
+            const container = document.getElementById('grid');
+            
+            // Logica di parsing migliorata per catturare anche lo User-Agent
+            const blocks = data.split('#KODIPROP:inputstream.adaptive.license_type=clearkey');
+            let count = 0;
 
-                if (url && key) {
-                    const div = document.createElement('div');
-                    div.className = 'card';
-                    div.innerHTML = `<img src="${logo}"><div>${name}</div>`;
-                    div.onclick = () => start(url, name, key[1], key[2], ua);
-                    document.getElementById('grid').appendChild(div);
+            blocks.forEach(block => {
+                if (block.includes('#EXTINF')) {
+                    count++;
+                    const name = block.split(',').pop().split('\n')[0].trim();
+                    const logo = block.match(/tvg-logo="([^"]+)"/)?.[1] || "";
+                    const url = block.match(/https?:\/\/\S+/)?.[0];
+                    const keyMatch = block.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
+                    const uaMatch = block.match(/user-agent=(.*?)\n/i);
+                    const group = block.match(/group-title="([^"]+)"/)?.[1] || "SKY IT";
+
+                    if (url && keyMatch) {
+                        const card = document.createElement('div');
+                        card.className = 'card';
+                        card.onclick = () => openPlayer(url, name, keyMatch[1], keyMatch[2], uaMatch ? uaMatch[1].trim() : "", group);
+                        card.innerHTML = `
+                            <div class="logo-box"><img src="${logo}"></div>
+                            <div class="name">${name}</div>
+                            <div class="sub">${group}</div>
+                        `;
+                        container.appendChild(card);
+                    }
                 }
-            }
-        });
+            });
+            document.getElementById('count').innerText = count + " CHANNELS";
+        } catch(e) { alert("Errore caricamento lista M3U"); }
     }
 
-    async function start(url, name, kid, key, ua) {
-        document.getElementById('player-layer').style.display = 'flex';
-        document.getElementById('chan-name').innerText = name;
-        const v = document.getElementById('video');
-        player = new shaka.Player(v);
-        const ui = new shaka.ui.Overlay(player, document.getElementById('video-container'), v);
+    async function openPlayer(url, name, kid, key, ua, group) {
+        document.getElementById('player-overlay').style.display = 'flex';
+        document.getElementById('playing-name').innerText = name;
+        document.getElementById('playing-cat').innerText = group;
         
+        const video = document.getElementById('video');
+        const videoContainer = document.getElementById('video-container');
+
+        if (player) await player.destroy();
+        player = new shaka.Player(video);
+        
+        ui = new shaka.ui.Overlay(player, videoContainer, video);
+        ui.configure({ 'controlPanelElements': ['play_pause', 'time_and_duration', 'spacer', 'mute', 'volume', 'fullscreen'] });
+
+        // Configurazione DRM
         player.configure({ drm: { clearKeys: { [kid]: key } } });
 
+        // MOTORE DI RETE: Passa tutto dal proxy per evitare Errori 4000/1001
         player.getNetworkingEngine().registerRequestFilter((type, request) => {
-            const original = request.uris[0];
-            if (!original.includes('corsproxy.io')) {
-                request.uris = [P + encodeURIComponent(original)];
-                if(ua) request.headers['User-Agent'] = ua;
+            const originalUrl = request.uris[0];
+            if (!originalUrl.includes('corsproxy.io')) {
+                request.uris = [PROXY + encodeURIComponent(originalUrl)];
+                if (ua) request.headers['User-Agent'] = ua;
             }
         });
 
-        try { await player.load(url); } 
-        catch(e) { alert("Errore caricamento: " + e.code); }
+        try {
+            await player.load(url);
+        } catch (e) {
+            console.error("Errore Shaka:", e.code);
+            alert("Errore caricamento. Verifica che i link nella lista non siano scaduti.");
+            closePlayer();
+        }
+    }
+
+    function closePlayer() {
+        if (player) player.destroy();
+        document.getElementById('player-overlay').style.display = 'none';
     }
 </script>
 </body>
