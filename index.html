@@ -15,7 +15,6 @@
         .player-container { width: 100%; max-width: 850px; background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 35px; border: 1px solid #30363d; position: sticky; top: 10px; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         video { width: 100%; aspect-ratio: 16/9; }
 
-        /* Stile Categorie */
         .category-container { width: 100%; max-width: 1200px; margin-bottom: 40px; }
         .category-title { font-size: 18px; color: #f1e05a; margin-bottom: 15px; font-weight: bold; text-transform: uppercase; border-left: 4px solid #58a6ff; padding-left: 10px; }
 
@@ -99,7 +98,6 @@ async function init() {
             card.classList.add('active');
             try {
                 await player.unload();
-                // Gestione DRM: se presenti chiavi ClearKey le applica, altrimenti pulisce config precedente
                 if (ch.drm && Object.keys(ch.drm).length > 0) {
                     player.configure({ drm: { clearKeys: ch.drm } });
                 } else {
@@ -118,28 +116,25 @@ async function init() {
         const response = await fetch(SOURCE_URL + "?t=" + Date.now());
         const text = await response.text();
         
-        // Divisione per riga EXTINF (standard M3U) per non saltare nessun canale
-        const sections = text.split('#EXTINF:');
+        // Dividiamo per riga EXTINF per isolare i canali
+        const entries = text.split('#EXTINF:');
 
-        sections.forEach(section => {
-            // Cerca URL video (mpd, m3u8 o flv/ts)
-            const urlMatch = section.match(/https?:\/\/[^\s"|]+\.(mpd|m3u8|ts|flv)[^\s"|]*/i);
+        entries.forEach(entry => {
+            // Cerchiamo l'URL del flusso
+            const urlMatch = entry.match(/https?:\/\/[^\s"|]+\.(mpd|m3u8|ts|flv)[^\s"|]*/i);
             if (!urlMatch) return;
 
-            const logoMatch = section.match(/tvg-logo="([^"]+)"/i);
-            const groupMatch = section.match(/group-title="([^"]+)"/i);
+            const logoMatch = entry.match(/tvg-logo="([^"]+)"/i);
+            const groupMatch = entry.match(/group-title="([^"]+)"/i);
             
-            // Estrazione nome canale dopo la virgola
-            const nameLine = section.match(/,(.*)/);
-            let channelName = "Canale";
-            if (nameLine) {
-                channelName = nameLine[1].split('\n')[0].trim();
-            }
+            // Il nome è dopo la virgola nella prima riga dell'entry
+            const nameLine = entry.match(/,(.*)/);
+            let channelName = nameLine ? nameLine[1].split('\n')[0].trim() : "Canale";
 
-            // Estrazione chiavi DRM (se presenti)
+            // Cerchiamo le chiavi DRM solo all'interno di questa specifica entry
             let drmKeys = {};
-            const jsonKeys = section.match(/license_key=({.*?})/s);
-            const standardKeys = section.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
+            const jsonKeys = entry.match(/license_key=({.*?})/s);
+            const standardKeys = entry.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
 
             if (jsonKeys) {
                 try { drmKeys = JSON.parse(jsonKeys[1]); } catch(e) {}
@@ -159,7 +154,6 @@ async function init() {
 
     } catch(e) { console.error("Errore lista:", e); }
 
-    // Carica canali fissi EUROSPORT
     CANALI_FISSI.forEach(ch => {
         createCard({
             name: ch.name,
