@@ -9,10 +9,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Download
-        run: curl -s https://nodrm.online/list/list2.m3u -o lista.m3u
+        run: curl -s https://nodrm.online/list/list2.m3u -o lista_privata.m3u
       - name: Save
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add lista.m3u
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Update" && git push)
+          git add lista_privata.m3u
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Update segreto" && git push)
