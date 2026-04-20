@@ -30,57 +30,54 @@
         <p class="notice">Richiede l'estensione "VideoPlayer MPD/M3U8" installata.</p>
     </div>
 
-    <script>
-        // --- CONFIGURAZIONE ---
-        const passSegreta = "1234"; 
-        const usernameGithub = "Leinadf1"; 
-        const repoName = "lista";
-        const nomeFileSegreto = "lista_privata.m3u"; 
-        const idEstensione = "opmeopcambhflmffbomjgemehjkbbmji"; 
+<script>
+    const passSegreta = "1234"; 
+    const idEstensione = "opmeopcambhflmffbomjgemehjkbbmji"; 
 
-        function check() {
-            if(document.getElementById('pw').value === passSegreta) {
-                document.getElementById('login-section').classList.add('hidden');
-                document.getElementById('main-section').classList.remove('hidden');
-                loadList();
-            } else { 
-                alert("Password errata"); 
-            }
+    function check() {
+        if(document.getElementById('pw').value === passSegreta) {
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('main-section').classList.remove('hidden');
+            loadList();
+        } else { 
+            alert("Password errata"); 
         }
+    }
 
-        async function loadList() {
-            try {
-                // Link RAW per far leggere i dati puri all'estensione
-                const rawUrl = `https://raw.githubusercontent.com/${usernameGithub}/${repoName}/main/${nomeFileSegreto}`;
-                
-                // Carichiamo il file per generare i bottoni nella pagina
-                const res = await fetch(nomeFileSegreto);
-                if (!res.ok) throw new Error("File non trovato");
-                
-                const text = await res.text();
-                const lines = text.split('\n');
-                const btnContainer = document.getElementById('buttons');
-                btnContainer.innerHTML = ''; 
+    async function loadList() {
+        try {
+            // URL Assoluto per evitare ogni dubbio
+            const rawUrl = "https://raw.githubusercontent.com/Leinadf1/lista/main/lista_privata.m3u";
+            
+            console.log("Tentativo di caricamento lista da:", rawUrl);
 
-                for (let i = 0; i < lines.length; i++) {
-                    if (lines[i].startsWith('#EXTINF')) {
-                        const info = lines[i].split(',');
-                        const name = info[info.length - 1].trim();
-                        
-                        // Il link che passiamo all'estensione scavalca la grafica di GitHub
-                        const extensionLink = `chrome-extension://${idEstensione}/iptv/player.html#${rawUrl}`;
+            const res = await fetch(rawUrl);
+            if (!res.ok) throw new Error("Risposta server non OK");
+            
+            const text = await res.text();
+            console.log("File scaricato con successo. Righe:", text.split('\n').length);
 
-                        let btn = document.createElement('button');
-                        btn.innerText = name;
-                        btn.onclick = () => { window.open(extensionLink, '_blank'); };
-                        btnContainer.appendChild(btn);
-                    }
+            const lines = text.split('\n');
+            const btnContainer = document.getElementById('buttons');
+            btnContainer.innerHTML = ''; 
+
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].startsWith('#EXTINF')) {
+                    const info = lines[i].split(',');
+                    const name = info[info.length - 1].trim();
+                    const extensionLink = `chrome-extension://${idEstensione}/iptv/player.html#${rawUrl}`;
+
+                    let btn = document.createElement('button');
+                    btn.innerText = name;
+                    btn.onclick = () => { window.open(extensionLink, '_blank'); };
+                    btnContainer.appendChild(btn);
                 }
-            } catch (err) {
-                console.error(err);
-                alert("Errore: il file '" + nomeFileSegreto + "' non è ancora pronto su GitHub.");
             }
+        } catch (err) {
+            console.error("ERRORE CRITICO:", err);
+            alert("Errore nel caricamento dei canali. Controlla la console (F12).");
         }
-    </script>
+    }
+</script>
 </body>
 </html>
