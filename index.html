@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TV Dashboard PRO – Mobile & PC Fix</title>
+    <title>TV Dashboard PRO – Serverless Fix</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
     <style>
@@ -27,7 +27,7 @@
 
     <div id="header">
         <h1>Dashboard</h1>
-        <div id="chan-count">Sincronizzazione...</div>
+        <div id="chan-count">Sincronizzazione API...</div>
     </div>
 
     <div class="player-container" data-shaka-player-container>
@@ -37,7 +37,8 @@
     <div id="list" class="grid"></div>
 
 <script>
-const SOURCE_URL = "https://nodrm.online/list/list2.m3u";
+// --- MODIFICA DEFINITIVA: PUNTA ALLA TUA API VERCEL ---
+const SOURCE_URL = "/api/get-list";
 
 const CANALI_FISSI = [
     { name: "EUROSPORT 4K", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/thumb.prod.front.tim.cptech.pro/http/unsafe/filters:format(png):anamorphosis(640,480)/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020019/tim-ouah/CHN43FN/MONOGRAM_ESP4K_WHITE_V2-BjK0", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport4k)/manifest.mpd", keys: {"9ceae06c6ad34aada83ba86c0b511452":"406862beb4af1ef8fe04ba15d9936360","fcd924bd2e45470fa2ae50ef05e357c0":"266db84d3572bc889185274a90ff31df","dea135e33341468f8a4e8da806d8a6e6":"fb7423db39e6fab75056f8c83f415847","31911db90ee3410f8b38e45659d01fb1":"ac316ab7dfd2b50faf6d44633e4fedd5","a16f2a39adbb4974b8910cec8a651a09":"c2d55e0111af955f47214af209a2c468"} },
@@ -48,32 +49,6 @@ const CANALI_FISSI = [
     { name: "EUROSPORT 5", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/thumb.prod.front.tim.cptech.pro/http/unsafe/filters:format(png):anamorphosis(640,480)/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020004/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-sv5m", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport5)/manifest.mpd", kid: "b48e7e6d96da479da65e435ce65faeb1", key: "48c703879ce4deedb5a2124a30a13bc4" },
     { name: "EUROSPORT 6", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/thumb.prod.front.tim.cptech.pro/http/unsafe/filters:format(png):anamorphosis(640,480)/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020005/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-H53i", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport6)/manifest.mpd", kid: "ead1c567a3df48619799b2e78b18fdfa", key: "1de9d9af5651296aa67913979ad8c694" }
 ];
-
-async function fetchList() {
-    const proxies = [
-        "https://corsproxy.io/?", 
-        "https://api.allorigins.win/raw?url=",
-        "https://thingproxy.freeboard.io/fetch/",
-        "https://api.codetabs.com/v1/proxy/?quest="
-    ];
-
-    for (let proxy of proxies) {
-        try {
-            const controller = new AbortController();
-            const id = setTimeout(() => controller.abort(), 8000); 
-
-            const res = await fetch(proxy + encodeURIComponent(SOURCE_URL), { 
-                signal: controller.signal,
-                headers: { 'X-Requested-With': 'XMLHttpRequest' } // Aiuta a bypassare alcuni blocchi mobile
-            });
-            const text = await res.text();
-            clearTimeout(id);
-
-            if (text && text.includes('#EXTM3U')) return text;
-        } catch (e) { console.warn("Fallito:", proxy); }
-    }
-    return null;
-}
 
 async function init() {
     const video = document.getElementById('video');
@@ -101,29 +76,37 @@ async function init() {
     }
 
     let liveCount = 0;
-    const listData = await fetchList();
+    
+    try {
+        // Fetch diretto verso la tua API locale
+        const res = await fetch(SOURCE_URL);
+        const listData = await res.text();
 
-    if (listData) {
-        const blocks = listData.split('#EXTINF');
-        blocks.forEach(block => {
-            const keyMatch = block.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
-            const urlMatch = block.match(/https?:\/\/[^\s"|]+\.mpd[^\s"|]*/i);
-            const logoMatch = block.match(/tvg-logo="([^"]+)"/i) || block.match(/tvg-logo=([^\s,]+)/i);
-            const nameMatch = block.match(/,(.*)/);
+        if (listData && listData.includes('#EXTM3U')) {
+            const blocks = listData.split('#EXTINF');
+            blocks.forEach(block => {
+                const keyMatch = block.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
+                const urlMatch = block.match(/https?:\/\/[^\s"|]+\.mpd[^\s"|]*/i);
+                const logoMatch = block.match(/tvg-logo="([^"]+)"/i) || block.match(/tvg-logo=([^\s,]+)/i);
+                const nameMatch = block.match(/,(.*)/);
 
-            if (keyMatch && urlMatch && nameMatch) {
-                liveCount++;
-                const name = nameMatch[1].split('\n')[0].trim();
-                createCard(name, logoMatch ? logoMatch[1] : '', urlMatch[0], { [keyMatch[1]]: keyMatch[2] });
-            }
-        });
+                if (keyMatch && urlMatch && nameMatch) {
+                    liveCount++;
+                    const name = nameMatch[1].split('\n')[0].trim();
+                    createCard(name, logoMatch ? logoMatch[1] : '', urlMatch[0], { [keyMatch[1]]: keyMatch[2] });
+                }
+            });
+        }
+    } catch (e) {
+        console.error("Errore nel recupero della lista tramite API locale:", e);
     }
 
+    // Caricamento canali fissi
     CANALI_FISSI.forEach(ch => {
         createCard(ch.name, ch.logo, ch.url, ch.keys ? ch.keys : { [ch.kid]: ch.key });
     });
 
-    countHeader.innerText = (liveCount + CANALI_FISSI.length) + " CANALI CARICATI";
+    countHeader.innerText = (liveCount + CANALI_FISSI.length) + " CANALI CARICATI AUTOMATICAMENTE";
 }
 
 document.addEventListener('shaka-ui-loaded', init);
