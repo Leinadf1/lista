@@ -31,7 +31,7 @@
     </div>
 
     <script>
-        // --- CONFIGURAZIONE UTENTE ---
+        // --- CONFIGURAZIONE ---
         const passSegreta = "1234"; 
         const usernameGithub = "Leinadf1"; 
         const repoName = "lista";
@@ -50,7 +50,10 @@
 
         async function loadList() {
             try {
-                // Carichiamo il file locale per generare i bottoni
+                // Link RAW per far leggere i dati puri all'estensione
+                const rawUrl = `https://raw.githubusercontent.com/${usernameGithub}/${repoName}/main/${nomeFileSegreto}`;
+                
+                // Carichiamo il file per generare i bottoni nella pagina
                 const res = await fetch(nomeFileSegreto);
                 if (!res.ok) throw new Error("File non trovato");
                 
@@ -59,27 +62,23 @@
                 const btnContainer = document.getElementById('buttons');
                 btnContainer.innerHTML = ''; 
 
-                // Costruiamo il link RAW corretto per l'estensione
-                const rawUrl = `https://raw.githubusercontent.com/${usernameGithub}/${repoName}/main/${nomeFileSegreto}`;
-
                 for (let i = 0; i < lines.length; i++) {
                     if (lines[i].startsWith('#EXTINF')) {
                         const info = lines[i].split(',');
                         const name = info[info.length - 1].trim();
                         
-                        // Generiamo il comando per l'estensione usando il link RAW
+                        // Il link che passiamo all'estensione scavalca la grafica di GitHub
                         const extensionLink = `chrome-extension://${idEstensione}/iptv/player.html#${rawUrl}`;
 
                         let btn = document.createElement('button');
                         btn.innerText = name;
-                        // Al click apre l'estensione puntando al file RAW
                         btn.onclick = () => { window.open(extensionLink, '_blank'); };
                         btnContainer.appendChild(btn);
                     }
                 }
             } catch (err) {
                 console.error(err);
-                alert("Errore: assicurati che il file '" + nomeFileSegreto + "' sia presente su GitHub.");
+                alert("Errore: il file '" + nomeFileSegreto + "' non è ancora pronto su GitHub.");
             }
         }
     </script>
