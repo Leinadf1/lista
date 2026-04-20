@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="ISO-8859-1">
-    <title>TV Dashboard – FINAL FIX</title>
+    <title>TV Dashboard – Final Version</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
     <style>
@@ -10,7 +10,7 @@
         .center { margin: auto; width: 60%; }
         video { width: 100%; aspect-ratio: 16/9; background: black; border-radius: 8px; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-top: 30px; }
-        .btn { background: #3d3d3d; color: white; border: 1px solid #555; padding: 15px 5px; cursor: pointer; border-radius: 5px; font-size: 11px; font-weight: bold; }
+        .btn { background: #3d3d3d; color: white; border: 1px solid #555; padding: 15px 5px; cursor: pointer; border-radius: 5px; font-size: 11px; font-weight: bold; transition: 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .btn:hover { background: #00d2ff; color: black; }
         .btn.active { background: #00d2ff; color: black; border: 2px solid white; }
         #status { color: #00d2ff; margin-bottom: 15px; font-weight: bold; font-size: 1.2em; }
@@ -18,7 +18,7 @@
 </head>
 <body>
 
-    <div id="status">Seleziona Canale</div>
+    <div id="status">Caricamento canali...</div>
 
     <div class="center" style="max-width:40em" data-shaka-player-container>
         <video autoplay data-shaka-player id="video"></video>
@@ -36,7 +36,7 @@ async function init() {
     const statusHeader = document.getElementById('status');
     const container = document.getElementById('list');
 
-    // Configurazione identica a Eurosport per massima compatibilità
+    // Configurazione anti-blocco identica a Eurosport
     player.configure({
         streaming: { jumpLargeGaps: true },
         manifest: { dash: { clockSyncUri: '' } }
@@ -44,8 +44,11 @@ async function init() {
 
     try {
         const res = await fetch(LISTA_URL);
+        if (!res.ok) throw new Error("File M3U non trovato");
+        
         const data = await res.text();
         const items = data.split('#EXTINF');
+        statusHeader.innerText = "Seleziona un Canale";
 
         items.forEach(item => {
             if (item.includes('license_key=')) {
@@ -59,15 +62,14 @@ async function init() {
                     } 
                 }
 
-                // 2. FILTRO URL RIGIDO: Prende solo l'MPD (Video) e ignora i loghi
+                // 2. Filtro URL: Cerca l'MPD ed evita i loghi NowTV/Sky
                 const urls = item.match(/https?:\/\/[^\s"|]+/g);
                 let videoUrl = null;
                 if (urls) {
-                    // Cerchiamo l'URL che contiene .mpd o channel(
                     videoUrl = urls.find(u => u.includes('.mpd') || (u.includes('/channel(') && !u.includes('logo')));
                 }
 
-                // 3. Estrazione Chiavi
+                // 3. Estrazione Chiavi KID:KEY
                 const keys = item.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
 
                 if (videoUrl && keys) {
@@ -78,17 +80,24 @@ async function init() {
                     btn.onclick = async () => {
                         document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
                         btn.classList.add('active');
-                        statusHeader.innerText = "In onda: " + name;
+                        statusHeader.innerText = "Verifica licenza: " + name;
 
+                        // Configurazione DRM ClearKey
                         player.configure({
                             drm: { clearKeys: { [keys[1]]: keys[2] } }
                         });
 
                         try {
                             await player.load(videoUrl);
+                            statusHeader.innerText = "In onda: " + name;
                         } catch (e) {
-                            statusHeader.innerText = "Errore: " + e.code;
-                            console.error("Errore caricamento MPD:", videoUrl);
+                            // Diagnostica specifica per chiavi errate
+                            if (e.code == 6007 || e.code == 6008) {
+                                statusHeader.innerText = "ERRORE: CHIAVI SCADUTE O ERRATE";
+                            } else {
+                                statusHeader.innerText = "Errore: " + e.code;
+                            }
+                            console.error("Dettaglio errore:", e);
                         }
                     };
                     container.appendChild(btn);
@@ -96,7 +105,7 @@ async function init() {
             }
         });
     } catch (err) {
-        statusHeader.innerText = "Errore lista";
+        statusHeader.innerText = "Errore caricamento lista.m3u";
     }
 }
 
