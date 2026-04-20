@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="ISO-8859-1">
-    <title>TV Dashboard PRO</title>
+    <title>TV Dashboard – Fix URL</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
     <style>
@@ -13,12 +13,12 @@
         .btn { background: #3d3d3d; color: white; border: 1px solid #555; padding: 15px 5px; cursor: pointer; border-radius: 5px; font-size: 11px; font-weight: bold; transition: 0.2s; }
         .btn:hover { background: #00d2ff; color: black; }
         .btn.active { background: #00d2ff; color: black; border: 2px solid white; }
-        #status { color: #00d2ff; margin-bottom: 15px; font-weight: bold; font-size: 1.2em; }
+        #status { color: #00d2ff; margin-bottom: 15px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div id="status">Caricamento in corso...</div>
+    <div id="status">Seleziona un Canale</div>
 
     <div class="center" style="max-width:40em" data-shaka-player-container>
         <video autoplay data-shaka-player id="video"></video>
@@ -36,32 +36,21 @@ async function init() {
     const statusHeader = document.getElementById('status');
     const container = document.getElementById('list');
 
-    // --- CONFIGURAZIONE ANTI-BLOCCO (PER EVITARE ERRORE 1002) ---
     player.configure({
-        streaming: {
-            // Disattiva i messaggi extra che fanno arrabbiare il server
-            dispatchAllEmsgBoxes: false,
-            jumpLargeGaps: true,
-        },
-        manifest: {
-            dash: {
-                // Impedisce le richieste HEAD per l'aggiornamento dell'ora
-                clockSyncUri: ''
-            }
-        }
+        streaming: { dispatchAllEmsgBoxes: false, jumpLargeGaps: true },
+        manifest: { dash: { clockSyncUri: '' } }
     });
 
     try {
         const res = await fetch(LISTA_URL);
-        if (!res.ok) throw new Error("File M3U non trovato");
-        
         const data = await res.text();
         const items = data.split('#EXTINF');
-        statusHeader.innerText = "Seleziona un Canale";
 
         items.forEach(item => {
             if (item.includes('license_key=')) {
                 const lines = item.split('\n');
+                
+                // 1. Nome Canale
                 let name = "Canale";
                 for (let l of lines) { 
                     if (l.includes(',') && !l.includes('license')) { 
@@ -70,10 +59,16 @@ async function init() {
                     } 
                 }
 
-                const url = item.match(/https?:\/\/[^\s"|]+/)?.[0];
+                // 2. FILTRO URL: Prende l'URL che NON contiene "logo" e "pixel"
+                const urls = item.match(/https?:\/\/[^\s"|]+/g);
+                let videoUrl = null;
+                if (urls) {
+                    videoUrl = urls.find(u => !u.includes('logo') && !u.includes('pixel.disco'));
+                }
+
                 const keys = item.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
 
-                if (url && keys) {
+                if (videoUrl && keys) {
                     const btn = document.createElement('button');
                     btn.className = 'btn';
                     btn.innerText = name;
@@ -88,12 +83,10 @@ async function init() {
                         });
 
                         try {
-                            await player.load(url);
+                            await player.load(videoUrl);
                             statusHeader.innerText = "In onda: " + name;
                         } catch (e) {
-                            // Se fallisce ancora con 1002, il server ha bannato temporaneamente l'IP di Vercel
                             statusHeader.innerText = "Errore: " + e.code;
-                            console.error('Dettaglio errore:', e);
                         }
                     };
                     container.appendChild(btn);
