@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TV Dashboard PRO</title>
+    <title>TV Dashboard PRO - Categorie</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
     <style>
@@ -15,7 +15,11 @@
         .player-container { width: 100%; max-width: 850px; background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 35px; border: 1px solid #30363d; position: sticky; top: 10px; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         video { width: 100%; aspect-ratio: 16/9; }
 
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; width: 100%; max-width: 1200px; margin-bottom: 50px; }
+        /* Stile Categorie */
+        .category-container { width: 100%; max-width: 1200px; margin-bottom: 40px; }
+        .category-title { font-size: 18px; color: #f1e05a; margin-bottom: 15px; font-weight: bold; text-transform: uppercase; border-left: 4px solid #58a6ff; padding-left: 10px; }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
         
         .channel-card { background-color: #161b22; border: 1px solid #30363d; border-radius: 10px; cursor: pointer; transition: 0.2s; overflow: hidden; display: flex; flex-direction: column; }
         .channel-card:hover { transform: translateY(-5px); border-color: #58a6ff; }
@@ -26,21 +30,20 @@
         
         .info-box { padding: 12px; text-align: center; border-top: 1px solid #30363d; background: #161b22; }
         .name { font-size: 13px; font-weight: 600; color: #f0f6fc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-transform: uppercase; }
-        .group-name { font-size: 10px; color: #8b949e; margin-top: 4px; display: block; }
     </style>
 </head>
 <body>
 
     <div id="header">
         <h1>Dashboard</h1>
-        <div id="chan-count">Caricamento canali...</div>
+        <div id="chan-count">Caricamento...</div>
     </div>
 
     <div class="player-container" data-shaka-player-container>
         <video autoplay data-shaka-player id="video"></video>
     </div>
 
-    <div id="list" class="grid"></div>
+    <div id="main-list"></div>
 
 <script>
 const SOURCE_URL = "https://raw.githubusercontent.com/Leinadf1/lista/main/lista_privata.m3u";
@@ -59,12 +62,27 @@ async function init() {
     const video = document.getElementById('video');
     const ui = video['ui'];
     const player = ui.getControls().getPlayer();
-    const container = document.getElementById('list');
+    const mainList = document.getElementById('main-list');
     const countHeader = document.getElementById('chan-count');
 
     player.configure({ streaming: { jumpLargeGaps: true } });
 
+    const categories = {};
+
+    function getCategoryGrid(groupName) {
+        const name = (groupName || "ALTRI").toUpperCase();
+        if (!categories[name]) {
+            const container = document.createElement('div');
+            container.className = 'category-container';
+            container.innerHTML = `<div class="category-title">${name}</div><div class="grid" id="grid-${name.replace(/\s+/g, '-')}"></div>`;
+            mainList.appendChild(container);
+            categories[name] = document.getElementById(`grid-${name.replace(/\s+/g, '-')}`);
+        }
+        return categories[name];
+    }
+
     function createCard(ch) {
+        const grid = getCategoryGrid(ch.group);
         const card = document.createElement('div');
         card.className = 'channel-card';
         card.innerHTML = `
@@ -73,7 +91,6 @@ async function init() {
             </div>
             <div class="info-box">
                 <div class="name">${ch.name}</div>
-                <span class="group-name">${ch.group || 'CANALE'}</span>
             </div>
         `;
         
@@ -85,40 +102,31 @@ async function init() {
                 player.configure({ drm: { clearKeys: ch.drm } });
                 await player.load(ch.url);
                 window.scrollTo({top: 0, behavior: 'smooth'});
-            } catch(e) { console.error("Errore caricamento:", e.code); }
+            } catch(e) { console.error("Errore Shaka:", e.code); }
         };
-        container.appendChild(card);
+        grid.appendChild(card);
     }
 
     let loadedCount = 0;
 
     try {
-        // Aggiunto timestamp per evitare cache
         const response = await fetch(SOURCE_URL + "?t=" + Date.now());
         const text = await response.text();
-        
-        // Dividiamo la lista in blocchi basandoci sulla licenza clearkey
         const sections = text.split('#KODIPROP:inputstream.adaptive.license_type=clearkey');
 
         sections.forEach(section => {
             if (!section.includes('.mpd')) return;
 
-            // Trova l'URL manifest
             const urlMatch = section.match(/https?:\/\/[^\s"|]+\.mpd[^\s"|]*/i);
-            // Trova il logo
             const logoMatch = section.match(/tvg-logo="([^"]+)"/i);
-            // Trova il gruppo
             const groupMatch = section.match(/group-title="([^"]+)"/i);
-            
-            // Estrazione nome pulito (prende l'ultima parte dopo la virgola nella riga EXTINF)
             const extinfLine = section.match(/#EXTINF:[^,]+,(.*)/);
+            
             let channelName = "Canale";
             if (extinfLine) {
-                // Pulizia estrema del nome
                 channelName = extinfLine[1].split('\n')[0].split(',').pop().trim();
             }
 
-            // Parsing DRM
             let drmKeys = {};
             const jsonKeys = section.match(/license_key=({.*?})/s);
             const standardKeys = section.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
@@ -136,17 +144,14 @@ async function init() {
                     url: urlMatch[0].trim(),
                     drm: drmKeys,
                     logo: logoMatch ? logoMatch[1] : "",
-                    group: groupMatch ? groupMatch[1] : ""
+                    group: groupMatch ? groupMatch[1] : "ALTRI"
                 });
             }
         });
 
-    } catch(e) { 
-        console.error("Errore recupero lista:", e); 
-        countHeader.innerText = "ERRORE CARICAMENTO LISTA";
-    }
+    } catch(e) { console.error("Errore lista:", e); }
 
-    // Carica Eurosport fissi alla fine
+    // Carica Eurosport fissi SEMPRE per ultimi
     CANALI_FISSI.forEach(ch => {
         createCard({
             name: ch.name,
