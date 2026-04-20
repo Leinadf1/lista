@@ -3,27 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TV Dashboard PRO - Ultra Parser</title>
+    <title>TV Dashboard PRO - Fix Finale</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
     <style>
         body { background-color: #0d1117; color: #c9d1d9; font-family: sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .player-container { width: 100%; max-width: 850px; background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 10px; border: 1px solid #30363d; position: sticky; top: 10px; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .player-container { width: 100%; max-width: 850px; background: #000; border-radius: 12px; overflow: hidden; border: 1px solid #30363d; position: sticky; top: 10px; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         video { width: 100%; aspect-ratio: 16/9; }
-        #debug-box { 
-            width: 100%; max-width: 850px; background: rgba(255, 255, 0, 0.05); 
-            border: 1px solid rgba(255, 255, 0, 0.5); border-radius: 8px; padding: 10px; 
-            margin-bottom: 20px; font-family: monospace; font-size: 11px; color: #f1e05a;
-            word-break: break-all; white-space: pre-wrap;
-        }
-        .category-section { width: 100%; max-width: 1200px; margin-bottom: 40px; }
-        .category-title { font-size: 16px; color: #58a6ff; margin-bottom: 15px; font-weight: bold; border-left: 4px solid yellow; padding-left: 10px; text-transform: uppercase; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
-        .card { background-color: #161b22; border: 1px solid #30363d; border-radius: 10px; cursor: pointer; transition: 0.2s; overflow: hidden; padding: 10px; text-align: center; }
+        #debug-box { width: 100%; max-width: 850px; background: rgba(28, 33, 40, 0.9); border: 1px solid #f1e05a; border-radius: 8px; margin: 15px 0; padding: 10px; font-family: monospace; font-size: 11px; color: #f1e05a; white-space: pre-wrap; word-break: break-all; }
+        .category-section { width: 100%; max-width: 1200px; margin-bottom: 30px; }
+        .category-title { font-size: 18px; color: #58a6ff; margin-bottom: 15px; font-weight: bold; border-left: 4px solid #f1e05a; padding-left: 10px; text-transform: uppercase; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
+        .card { background-color: #161b22; border: 1px solid #30363d; border-radius: 10px; cursor: pointer; padding: 10px; text-align: center; transition: 0.2s; }
         .card:hover { border-color: #58a6ff; transform: translateY(-3px); }
-        .card.active { border: 2px solid yellow; background-color: #21262d; }
-        .card img { max-width: 100%; height: 50px; object-fit: contain; margin-bottom: 8px; }
-        .card .name { font-size: 10px; font-weight: bold; color: #f0f6fc; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .card.active { border: 2px solid #f1e05a; background: #21262d; }
+        .card img { max-height: 50px; max-width: 100%; margin-bottom: 8px; object-fit: contain; }
+        .name { font-size: 11px; font-weight: bold; text-transform: uppercase; }
     </style>
 </head>
 <body>
@@ -32,14 +27,15 @@
         <video autoplay data-shaka-player id="video"></video>
     </div>
 
-    <div id="debug-box">DEBUG: Seleziona un canale per i dettagli</div>
+    <div id="debug-box">DEBUG: In attesa di selezione...</div>
 
     <div id="categories-container"></div>
 
 <script>
+// CONFIGURAZIONE
 const SOURCE_URL = "https://raw.githubusercontent.com/Leinadf1/lista/main/lista_privata.m3u";
 
-// --- CANALI EUROSPORT FISSI ---
+// EUROSPORT FISSI (Sempre presenti)
 const CANALI_FISSI = [
     { name: "EUROSPORT 4K", group: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020019/tim-ouah/CHN43FN/MONOGRAM_ESP4K_WHITE_V2-BjK0", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport4k)/manifest.mpd", drm: {"9ceae06c6ad34aada83ba86c0b511452":"406862beb4af1ef8fe04ba15d9936360","fcd924bd2e45470fa2ae50ef05e357c0":"266db84d3572bc889185274a90ff31df","dea135e33341468f8a4e8da806d8a6e6":"fb7423db39e6fab75056f8c83f415847","31911db90ee3410f8b38e45659d01fb1":"ac316ab7dfd2b50faf6d44633e4fedd5","a16f2a39adbb4974b8910cec8a651a09":"c2d55e0111af955f47214af209a2c468"} },
     { name: "EUROSPORT 1", group: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020000/tim-ouah/CHN43FN/MONOGRAM_ESP1_WHITE_V2-Lv2g", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport1)/manifest.mpd", drm: {"46e559c2f9f645ce8d80c7fa20446bdb":"597d214d66342ee042bccffeb165e750"} },
@@ -50,22 +46,19 @@ const CANALI_FISSI = [
     { name: "EUROSPORT 6", group: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020005/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-H53i", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport6)/manifest.mpd", drm: {"ead1c567a3df48619799b2e78b18fdfa":"1de9d9af5651296aa67913979ad8c694"} }
 ];
 
-function logDebug(info) {
-    document.getElementById('debug-box').innerHTML = `DEBUG:\nCanale: ${info.name}\nURL: ${info.url}\nDRM: ${JSON.stringify(info.drm)}\nERROR: ${info.error || '0 (OK)'}`;
-}
-
 async function init() {
     const video = document.getElementById('video');
     const ui = video['ui'];
     const player = ui.getControls().getPlayer();
     const categoriesContainer = document.getElementById('categories-container');
+    const debugBox = document.getElementById('debug-box');
 
     player.configure({ streaming: { jumpLargeGaps: true } });
 
     const categories = {};
 
-    function getOrCreateCategory(name) {
-        const catName = (name || "TV").toUpperCase();
+    function createCard(ch) {
+        const catName = (ch.group || "TV").toUpperCase();
         if (!categories[catName]) {
             const section = document.createElement('div');
             section.className = 'category-section';
@@ -73,11 +66,7 @@ async function init() {
             categoriesContainer.appendChild(section);
             categories[catName] = document.getElementById(`grid-${catName.replace(/\s+/g, '-')}`);
         }
-        return categories[catName];
-    }
 
-    function createCard(ch) {
-        const grid = getOrCreateCategory(ch.group);
         const card = document.createElement('div');
         card.className = 'card';
         card.innerHTML = `<img src="${ch.logo}" onerror="this.src='https://via.placeholder.com/100x50?text=LOGO'"><div class="name">${ch.name}</div>`;
@@ -85,67 +74,59 @@ async function init() {
         card.onclick = async () => {
             document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
             card.classList.add('active');
-            logDebug({...ch, error: 'Caricamento...'});
+            debugBox.innerHTML = `DEBUG:\nCanale: ${ch.name}\nURL: ${ch.url}\nDRM: ${JSON.stringify(ch.drm)}`;
 
             try {
                 await player.unload();
                 player.configure({ drm: { clearKeys: ch.drm } });
                 await player.load(ch.url);
-                logDebug(ch);
                 window.scrollTo({top: 0, behavior: 'smooth'});
-            } catch(e) {
-                logDebug({...ch, error: e.code});
-            }
+            } catch(e) { debugBox.innerHTML += `\nERROR: ${e.code}`; }
         };
-        grid.appendChild(card);
+        categories[catName].appendChild(card);
     }
 
-    // Carica Eurosport Fissi
+    // Aggiungi fissi
     CANALI_FISSI.forEach(createCard);
 
-    // Carica lista GitHub
+    // Carica lista esterna
     try {
         const res = await fetch(SOURCE_URL + "?t=" + Date.now());
-        const text = await res.text();
-        const blocks = text.split('#EXTINF');
+        const data = await res.text();
 
-        blocks.forEach(block => {
-            if (!block.includes('.mpd')) return;
+        // LOGICA DI DIVISIONE OTTIMIZZATA
+        const entries = data.split(/#KODIPROP:inputstream\.adaptive\.license_type=clearkey/);
+        
+        entries.forEach(entry => {
+            if (!entry.includes('.mpd')) return;
 
-            const urlMatch = block.match(/https?:\/\/[^\s"|]+\.mpd[^\s"|]*/i);
-            if (!urlMatch) return;
+            const urlMatch = entry.match(/https?:\/\/[^\s"|]+\.mpd[^\s"|]*/i);
+            const nameMatch = entry.match(/,(.*)/);
+            const logoMatch = entry.match(/tvg-logo="([^"]+)"/i);
+            const groupMatch = entry.match(/group-title="([^"]+)"/i);
 
+            // Estrazione DRM flessibile (JSON o Standard)
             let drm = {};
-            // Caso 1: JSON in license_key
-            const jsonKeyMatch = block.match(/license_key=({.*?})/s);
+            const jsonKeyMatch = entry.match(/license_key=({.*?})/s);
+            const stdKeyMatch = entry.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
+
             if (jsonKeyMatch) {
                 try { drm = JSON.parse(jsonKeyMatch[1]); } catch(e) {}
-            } 
-            // Caso 2: Coppia KID:KEY classica o in URL
-            if (Object.keys(drm).length === 0) {
-                const keyMatch = block.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i) || 
-                                 block.match(/inputstream\.adaptive\.license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
-                if (keyMatch) {
-                    drm[keyMatch[1].toLowerCase()] = keyMatch[2].toLowerCase();
-                }
+            } else if (stdKeyMatch) {
+                drm[stdKeyMatch[1].toLowerCase().trim()] = stdKeyMatch[2].toLowerCase().trim();
             }
 
-            const nameMatch = block.match(/,(.*)/);
-            const name = nameMatch ? nameMatch[1].split('\n')[0].trim() : "Unknown";
-            const groupMatch = block.match(/group-title="([^"]+)"/i);
-            const logoMatch = block.match(/tvg-logo="([^"]+)"/i);
-
-            if (Object.keys(drm).length > 0) {
+            if (urlMatch && nameMatch && Object.keys(drm).length > 0) {
                 createCard({
-                    name: name,
-                    url: urlMatch[0],
+                    name: nameMatch[1].split('\n')[0].trim(),
+                    url: urlMatch[0].trim(),
                     drm: drm,
-                    group: groupMatch ? groupMatch[1] : "ALTRI",
-                    logo: logoMatch ? logoMatch[1] : ""
+                    logo: logoMatch ? logoMatch[1] : "",
+                    group: groupMatch ? groupMatch[1] : "ALTRI"
                 });
             }
         });
-    } catch(e) { console.error(e); }
+    } catch(e) { debugBox.innerText = "Errore caricamento lista GitHub"; }
 }
 
 document.addEventListener('shaka-ui-loaded', init);
