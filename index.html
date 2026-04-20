@@ -6,18 +6,18 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
 <style>
-    body { background-color: #262626; color: white; font-family: Arial, sans-serif; }
-    .center { margin: auto; width: 50%; text-align: center; }
-    video { width: 100%; height: 100%; }
-    .channels { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
-    .btn { background: #444; color: white; border: 1px solid #666; padding: 10px; cursor: pointer; border-radius: 4px; font-size: 12px; font-weight: bold; }
-    .btn:hover { background: #666; }
+    body { background-color: #262626; color: white; font-family: Arial, sans-serif; padding: 20px; }
+    .center { margin: auto; width: 60%; text-align: center; }
+    video { width: 100%; height: 100%; border-radius: 5px; }
+    .channels { margin-top: 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; justify-content: center; }
+    .btn { background: #444; color: white; border: 1px solid #666; padding: 12px 5px; cursor: pointer; border-radius: 4px; font-size: 11px; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .btn:hover { background: #00d2ff; color: black; border-color: white; }
 </style>
 </head>
 <body>
-<div class="center"><h2 id="title">Seleziona Canale</h2></div>
-<div class="center" style="max-width:40em" data-shaka-player-container><video autoplay data-shaka-player id="video"></video></div>
-<div class="center channels" id="list"></div>
+<div class="center"><h2 id="title" style="font-size: 18px;">Seleziona Canale</h2></div>
+<div class="center" style="max-width:42em" data-shaka-player-container><video autoplay data-shaka-player id="video"></video></div>
+<div id="list" class="channels"></div>
 
 <script>
 async function init() {
@@ -29,18 +29,19 @@ async function init() {
         const res = await fetch('lista_privata.m3u');
         const data = await res.text();
         const container = document.getElementById('list');
-        
-        // Dividiamo la lista
         const items = data.split('#EXTINF');
 
         items.forEach(item => {
             if (item.includes('license_key=')) {
-                // Estrazione nome
-                const name = item.split(',').pop().split('\n')[0].trim();
+                // ESTRAZIONE NOME: Prendiamo l'ultima parte dopo la virgola
+                let rawName = item.split(',').pop().split('\n')[0].trim();
                 
-                // --- FILTRO NOMI SPORCHI ---
-                // Se il nome contiene lo User-Agent (Gecko/Chrome), lo saltiamo
-                if (name.includes("Gecko") || name.includes("Version/")) return;
+                // PULIZIA: Se il nome contiene "Gecko" o Chrome, cerchiamo di prendere solo il pezzo finale
+                let cleanName = rawName;
+                if (rawName.includes("Safari/")) {
+                    cleanName = rawName.split('"').pop().trim(); 
+                    if (!cleanName) cleanName = rawName.split(' ').pop().trim();
+                }
 
                 const url = item.match(/https?:\/\/[^\s"|]+/)?.[0];
                 const keys = item.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
@@ -48,26 +49,25 @@ async function init() {
                 if (url && keys) {
                     const btn = document.createElement('button');
                     btn.className = 'btn';
-                    btn.innerText = name;
+                    btn.innerText = cleanName;
+                    btn.title = cleanName; // Mostra nome intero al passaggio del mouse
                     
                     btn.onclick = async () => {
-                        document.getElementById('title').innerText = "Caricamento: " + name;
+                        document.getElementById('title').innerText = "Caricamento: " + cleanName;
                         
-                        player.configure({
-                            drm: { clearKeys: { [keys[1]]: keys[2] } }
-                        });
+                        player.configure({ drm: { clearKeys: { [keys[1]]: keys[2] } } });
 
+                        // PROVIAMO UN ALTRO PROXY (AllOrigins) perché corsproxy è in 403 Forbidden
+                        const proxy = "https://api.allorigins.win/raw?url=";
+                        
                         try {
-                            // --- NUOVO PROXY (AllOrigins) ---
-                            // Sostituiamo corsproxy che dava errore 403
-                            const proxy = "https://api.allorigins.win/raw?url=";
                             await player.load(proxy + encodeURIComponent(url));
-                            document.getElementById('title').innerText = "In riproduzione: " + name;
+                            document.getElementById('title').innerText = cleanName;
                         } catch (e) {
-                            // Fallback senza proxy (come nello screenshot F1 funzionante)
+                            // Fallback diretto (quello che funzionava nello screen F1)
                             try {
                                 await player.load(url);
-                                document.getElementById('title').innerText = "In riproduzione: " + name;
+                                document.getElementById('title').innerText = cleanName;
                             } catch (e2) {
                                 document.getElementById('title').innerText = "Errore: " + e2.code;
                             }
