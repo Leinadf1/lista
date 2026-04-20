@@ -29,13 +29,16 @@ async function init() {
         const data = await res.text();
         const container = document.getElementById('list');
         
-        // Dividiamo la lista in base a come è scritta (molto importante)
         const items = data.split('#EXTINF');
 
         items.forEach(item => {
             if (item.includes('license_key=')) {
-                // Estrazione pulita dei dati
+                // Estrazione nome
                 const name = item.split(',').pop().split('\n')[0].trim();
+                
+                // --- MODIFICA CHIRURGICA: Se il nome è "sporco" (Gecko/Chrome), saltalo ---
+                if (name.includes("Version/") || name.includes("Gecko")) return;
+
                 const url = item.match(/https?:\/\/[^\s"|]+/)?.[0];
                 const keys = item.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
 
@@ -47,17 +50,16 @@ async function init() {
                     btn.onclick = async () => {
                         document.getElementById('title').innerText = "Caricamento: " + name;
                         
-                        // Applichiamo le chiavi esattamente come nel tuo esempio Eurosport
                         player.configure({
                             drm: { clearKeys: { [keys[1]]: keys[2] } }
                         });
 
                         try {
-                            // Usiamo corsproxy.io per evitare il blocco 4000
+                            // Primo tentativo col proxy
                             await player.load("https://corsproxy.io/?url=" + encodeURIComponent(url));
                             document.getElementById('title').innerText = name;
                         } catch (e) {
-                            // Se fallisce col proxy, tentiamo l'ultima volta senza nulla (come a mano)
+                            // Secondo tentativo diretto (quello che andava nello screen F1)
                             try {
                                 await player.load(url);
                                 document.getElementById('title').innerText = name;
