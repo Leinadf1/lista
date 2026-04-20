@@ -3,22 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TV Dashboard PRO - Fix Finale</title>
+    <title>TV Dashboard PRO</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
     <style>
         body { background-color: #0d1117; color: #c9d1d9; font-family: sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .player-container { width: 100%; max-width: 850px; background: #000; border-radius: 12px; overflow: hidden; border: 1px solid #30363d; position: sticky; top: 10px; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .player-container { width: 100%; max-width: 850px; background: #000; border-radius: 12px; overflow: hidden; border: 1px solid #30363d; position: sticky; top: 10px; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 30px; }
         video { width: 100%; aspect-ratio: 16/9; }
-        #debug-box { width: 100%; max-width: 850px; background: rgba(28, 33, 40, 0.9); border: 1px solid #f1e05a; border-radius: 8px; margin: 15px 0; padding: 10px; font-family: monospace; font-size: 11px; color: #f1e05a; white-space: pre-wrap; word-break: break-all; }
         .category-section { width: 100%; max-width: 1200px; margin-bottom: 30px; }
         .category-title { font-size: 18px; color: #58a6ff; margin-bottom: 15px; font-weight: bold; border-left: 4px solid #f1e05a; padding-left: 10px; text-transform: uppercase; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
-        .card { background-color: #161b22; border: 1px solid #30363d; border-radius: 10px; cursor: pointer; padding: 10px; text-align: center; transition: 0.2s; }
+        .card { background-color: #161b22; border: 1px solid #30363d; border-radius: 10px; cursor: pointer; padding: 15px; text-align: center; transition: 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 120px; }
         .card:hover { border-color: #58a6ff; transform: translateY(-3px); }
         .card.active { border: 2px solid #f1e05a; background: #21262d; }
-        .card img { max-height: 50px; max-width: 100%; margin-bottom: 8px; object-fit: contain; }
-        .name { font-size: 11px; font-weight: bold; text-transform: uppercase; }
+        .card img { max-height: 55px; max-width: 100%; margin-bottom: 10px; object-fit: contain; }
+        .name { font-size: 11px; font-weight: bold; text-transform: uppercase; line-height: 1.2; color: #f0f6fc; }
     </style>
 </head>
 <body>
@@ -27,15 +26,11 @@
         <video autoplay data-shaka-player id="video"></video>
     </div>
 
-    <div id="debug-box">DEBUG: In attesa di selezione...</div>
-
     <div id="categories-container"></div>
 
 <script>
-// CONFIGURAZIONE
 const SOURCE_URL = "https://raw.githubusercontent.com/Leinadf1/lista/main/lista_privata.m3u";
 
-// EUROSPORT FISSI (Sempre presenti)
 const CANALI_FISSI = [
     { name: "EUROSPORT 4K", group: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020019/tim-ouah/CHN43FN/MONOGRAM_ESP4K_WHITE_V2-BjK0", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport4k)/manifest.mpd", drm: {"9ceae06c6ad34aada83ba86c0b511452":"406862beb4af1ef8fe04ba15d9936360","fcd924bd2e45470fa2ae50ef05e357c0":"266db84d3572bc889185274a90ff31df","dea135e33341468f8a4e8da806d8a6e6":"fb7423db39e6fab75056f8c83f415847","31911db90ee3410f8b38e45659d01fb1":"ac316ab7dfd2b50faf6d44633e4fedd5","a16f2a39adbb4974b8910cec8a651a09":"c2d55e0111af955f47214af209a2c468"} },
     { name: "EUROSPORT 1", group: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020000/tim-ouah/CHN43FN/MONOGRAM_ESP1_WHITE_V2-Lv2g", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport1)/manifest.mpd", drm: {"46e559c2f9f645ce8d80c7fa20446bdb":"597d214d66342ee042bccffeb165e750"} },
@@ -51,7 +46,6 @@ async function init() {
     const ui = video['ui'];
     const player = ui.getControls().getPlayer();
     const categoriesContainer = document.getElementById('categories-container');
-    const debugBox = document.getElementById('debug-box');
 
     player.configure({ streaming: { jumpLargeGaps: true } });
 
@@ -74,38 +68,33 @@ async function init() {
         card.onclick = async () => {
             document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
             card.classList.add('active');
-            debugBox.innerHTML = `DEBUG:\nCanale: ${ch.name}\nURL: ${ch.url}\nDRM: ${JSON.stringify(ch.drm)}`;
-
             try {
                 await player.unload();
                 player.configure({ drm: { clearKeys: ch.drm } });
                 await player.load(ch.url);
                 window.scrollTo({top: 0, behavior: 'smooth'});
-            } catch(e) { debugBox.innerHTML += `\nERROR: ${e.code}`; }
+            } catch(e) { console.error("Error Code:", e.code); }
         };
         categories[catName].appendChild(card);
     }
 
-    // Aggiungi fissi
-    CANALI_FISSI.forEach(createCard);
-
-    // Carica lista esterna
     try {
         const res = await fetch(SOURCE_URL + "?t=" + Date.now());
         const data = await res.text();
-
-        // LOGICA DI DIVISIONE OTTIMIZZATA
         const entries = data.split(/#KODIPROP:inputstream\.adaptive\.license_type=clearkey/);
         
         entries.forEach(entry => {
             if (!entry.includes('.mpd')) return;
 
             const urlMatch = entry.match(/https?:\/\/[^\s"|]+\.mpd[^\s"|]*/i);
-            const nameMatch = entry.match(/,(.*)/);
             const logoMatch = entry.match(/tvg-logo="([^"]+)"/i);
             const groupMatch = entry.match(/group-title="([^"]+)"/i);
+            
+            // Estrazione nome pulito (prende solo quello dopo la virgola)
+            const nameMatch = entry.match(/,(.*)/);
+            let rawName = nameMatch ? nameMatch[1].split('\n')[0].trim() : "Unknown";
+            let cleanName = rawName.split(',').pop().trim(); 
 
-            // Estrazione DRM flessibile (JSON o Standard)
             let drm = {};
             const jsonKeyMatch = entry.match(/license_key=({.*?})/s);
             const stdKeyMatch = entry.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
@@ -116,9 +105,9 @@ async function init() {
                 drm[stdKeyMatch[1].toLowerCase().trim()] = stdKeyMatch[2].toLowerCase().trim();
             }
 
-            if (urlMatch && nameMatch && Object.keys(drm).length > 0) {
+            if (urlMatch && Object.keys(drm).length > 0) {
                 createCard({
-                    name: nameMatch[1].split('\n')[0].trim(),
+                    name: cleanName,
                     url: urlMatch[0].trim(),
                     drm: drm,
                     logo: logoMatch ? logoMatch[1] : "",
@@ -126,7 +115,11 @@ async function init() {
                 });
             }
         });
-    } catch(e) { debugBox.innerText = "Errore caricamento lista GitHub"; }
+
+        // Aggiunge Eurosport in fondo alla pagina
+        CANALI_FISSI.forEach(createCard);
+
+    } catch(e) { console.error("Load error"); }
 }
 
 document.addEventListener('shaka-ui-loaded', init);
