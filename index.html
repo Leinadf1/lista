@@ -69,7 +69,7 @@ async function init() {
     const categories = {};
 
     function getCategoryGrid(groupName) {
-        const name = (groupName || "ALTRI").toUpperCase();
+        const name = (groupName || "ALTRI").toUpperCase().trim();
         if (!categories[name]) {
             const container = document.createElement('div');
             container.className = 'category-container';
@@ -99,8 +99,11 @@ async function init() {
             card.classList.add('active');
             try {
                 await player.unload();
-                // Se non ci sono chiavi, carichiamo il flusso "puro"
-                player.configure({ drm: { clearKeys: ch.drm || {} } });
+                if (ch.drm && Object.keys(ch.drm).length > 0) {
+                    player.configure({ drm: { clearKeys: ch.drm } });
+                } else {
+                    player.configure({ drm: { clearKeys: {} } });
+                }
                 await player.load(ch.url);
                 window.scrollTo({top: 0, behavior: 'smooth'});
             } catch(e) { console.error("Errore Shaka:", e.code); }
@@ -112,62 +115,3 @@ async function init() {
 
     try {
         const response = await fetch(SOURCE_URL + "?t=" + Date.now());
-        const text = await response.text();
-        
-        // MODIFICA FONDAMENTALE: Dividiamo per #EXTINF così non perdiamo nulla
-        const sections = text.split('#EXTINF');
-
-        sections.forEach(section => {
-            if (!section.includes('http')) return;
-
-            // Regex migliorata per prendere l'URL completo (mpd o m3u8)
-            const urlMatch = section.match(/https?:\/\/[^\s"|]+/i);
-            const logoMatch = section.match(/tvg-logo="([^"]+)"/i);
-            const groupMatch = section.match(/group-title="([^"]+)"/i);
-            
-            // Estrazione nome pulita (quello dopo l'ultima virgola prima dell'URL)
-            const nameLine = section.match(/,(.*)/);
-            let channelName = nameLine ? nameLine[1].split('\n')[0].trim() : "Canale";
-
-            let drmKeys = {};
-            const jsonKeys = section.match(/license_key=({.*?})/s);
-            const standardKeys = section.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
-
-            if (jsonKeys) {
-                try { drmKeys = JSON.parse(jsonKeys[1]); } catch(e) {}
-            } else if (standardKeys) {
-                drmKeys[standardKeys[1].toLowerCase()] = standardKeys[2].toLowerCase();
-            }
-
-            if (urlMatch) {
-                loadedCount++;
-                createCard({
-                    name: channelName,
-                    url: urlMatch[0].trim(),
-                    drm: drmKeys,
-                    logo: logoMatch ? logoMatch[1] : "",
-                    group: groupMatch ? groupMatch[1] : "ALTRI"
-                });
-            }
-        });
-
-    } catch(e) { console.error("Errore lista:", e); }
-
-    // Carica Eurosport fissi
-    CANALI_FISSI.forEach(ch => {
-        createCard({
-            name: ch.name,
-            logo: ch.logo,
-            url: ch.url,
-            drm: ch.drm,
-            group: "EUROSPORT"
-        });
-    });
-
-    countHeader.innerText = (loadedCount + CANALI_FISSI.length) + " CANALI PRONTI";
-}
-
-document.addEventListener('shaka-ui-loaded', init);
-</script>
-</body>
-</html>
