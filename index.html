@@ -3,82 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CHANNELS PRO</title>
+    <title>CHANNELS</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.6/controls.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.6/shaka-player.ui.js"></script>
 
     <style>
-        /* IL TUO STILE ORIGINALE - NON TOCCATO */
-        :root { --bg: #0b0e11; --card: #151921; --blue: #007bff; --text: #f0f0f0; }
-        body { background-color: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; padding: 20px; }
+        :root { --bg: #0b0e11; --card: #151921; --blue: #00d2ff; }
+        body { background: var(--bg); color: #fff; font-family: sans-serif; margin: 0; padding: 20px; }
         
-        .header { display: flex; align-items: center; margin-bottom: 20px; }
-        .header h1 { font-size: 28px; letter-spacing: 1px; margin: 0; }
-        
-        .grid { display: flex; flex-direction: column; gap: 10px; }
+        /* Header nodrm */
+        .header { display: flex; align-items: baseline; border-bottom: 1px solid #1e232d; margin-bottom: 25px; padding-bottom: 15px; }
+        .header h1 { font-size: 20px; text-transform: uppercase; margin: 0; font-weight: 900; }
+        .header .count { color: #3a4454; font-size: 11px; margin-left: 10px; font-weight: bold; }
+
+        /* Griglia nodrm con loghi */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
         .card { 
-            background-color: #1a1e26; 
-            border-radius: 8px; 
-            padding: 20px; 
-            text-align: center; 
-            cursor: pointer; 
-            border: 1px solid #2d3440;
-            font-size: 16px;
-            transition: 0.3s;
+            background: var(--card); border-radius: 4px; padding: 15px; text-align: left; 
+            cursor: pointer; border: 1px solid #1e232d; transition: 0.2s;
+            display: flex; flex-direction: column; min-height: 140px;
         }
-        .card:hover { border-color: var(--blue); background-color: #202632; }
-
-        /* OVERLAY PLAYER STILE NODRM */
-        #player-overlay { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.95); display: none; align-items: center; 
-            justify-content: center; z-index: 10000; 
-        }
-        .player-wrap { width: 95%; max-width: 1000px; position: relative; }
+        .card:hover { border-color: #333; background: #1a1f29; }
         
-        .player-header { 
-            display: flex; justify-content: space-between; align-items: center; 
-            margin-bottom: 8px; color: white;
-        }
-        .player-header h3 { font-size: 14px; margin: 0; font-weight: bold; }
+        .logo-box { height: 60px; width: 100%; display: flex; align-items: center; justify-content: flex-start; margin-bottom: 15px; }
+        .logo-box img { max-width: 80%; max-height: 100%; object-fit: contain; }
         
-        .close-btn { 
-            background: #222; color: #ccc; border: 1px solid #444; 
-            padding: 4px 12px; cursor: pointer; border-radius: 4px; font-size: 11px; 
-        }
+        .name { font-size: 13px; font-weight: bold; margin-bottom: 2px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sub { font-size: 9px; color: var(--blue); font-weight: bold; text-transform: uppercase; }
 
-        /* Container per Shaka UI */
-        .shaka-video-container { width: 100%; aspect-ratio: 16/9; border-radius: 4px; overflow: hidden; }
+        /* Player Overlay nodrm */
+        #player-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.98); display: none; align-items: center; justify-content: center; z-index: 10000; }
+        .player-container { width: 95%; max-width: 900px; }
+        
+        .player-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .player-title-wrap { display: flex; align-items: center; gap: 10px; }
+        .player-title-wrap h3 { font-size: 15px; margin: 0; }
+        .player-title-wrap .cat { font-size: 10px; color: var(--blue); font-weight: bold; text-transform: uppercase; }
+        
+        .close-btn { background: rgba(255,255,255,0.05); color: #777; border: 1px solid #333; padding: 4px 10px; cursor: pointer; border-radius: 3px; font-size: 10px; font-weight: bold; }
+        
+        /* Shaka UI Container */
+        .shaka-video-container { width: 100%; aspect-ratio: 16/9; border-radius: 2px; overflow: hidden; }
         video { width: 100%; height: 100%; }
-
-        /* Colore Giallo per la barra Shaka (come nodrm) */
+        
+        /* Barra gialla shaka */
         .shaka-range-element { color: #ffcc00 !important; }
 
         #lock { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10001; }
-        #lock input { padding: 12px; background: #1a1e26; color: white; border: 1px solid #2d3440; border-radius: 5px; margin-bottom: 10px; width: 250px; text-align: center; }
+        input { background: #000; border: 1px solid #222; color: white; padding: 12px; border-radius: 4px; text-align: center; width: 220px; margin-bottom: 10px; }
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
 <div id="lock">
-    <h2 style="margin-bottom:20px; font-size: 18px; color: #555;">ACCESS CONTROL</h2>
-    <input type="password" id="pw" placeholder="Password">
-    <button onclick="login()" style="padding:12px 35px; background:var(--blue); color:white; border:none; border-radius:5px; cursor:pointer; font-weight:bold;">LOGIN</button>
+    <input type="password" id="pw" placeholder="PASSWORD">
+    <button onclick="login()" style="background:var(--blue); color:#000; border:none; padding:10px 30px; border-radius:4px; cursor:pointer; font-weight:900;">ACCEDI</button>
 </div>
 
 <div id="app" class="hidden">
-    <div class="header">
-        <h1>📺 CHANNELS</h1>
-    </div>
+    <div class="header"><h1>📺 CHANNELS</h1> <div class="count" id="count">0 CHANNELS</div></div>
     <div id="grid" class="grid"></div>
 </div>
 
 <div id="player-overlay">
-    <div class="player-wrap">
-        <div class="player-header">
-            <h3 id="playing-title">LIVE</h3>
+    <div class="player-container">
+        <div class="player-nav">
+            <div class="player-title-wrap">
+                <h3 id="playing-name">CANALE</h3>
+                <span class="cat">SKY IT INTRATTENIMENTO</span>
+            </div>
             <button class="close-btn" onclick="closePlayer()">✕ CLOSE</button>
         </div>
         <div id="video-container" class="shaka-video-container">
@@ -90,8 +85,7 @@
 <script>
     const PW_SECRET = "1234";
     const FILE_NAME = "lista_privata.m3u";
-    let player;
-    let ui;
+    let player, ui;
 
     function login() {
         if(document.getElementById('pw').value === PW_SECRET) {
@@ -106,18 +100,19 @@
         const data = await res.text();
         const lines = data.split('\n');
         const container = document.getElementById('grid');
+        let count = 0;
 
         for (let i = 0; i < lines.length; i++) {
-            if (lines[i].includes('#EXTINF')) {
+            if (lines[i].startsWith('#EXTINF')) {
+                count++;
                 const info = lines[i];
                 const name = info.split(',').pop().trim();
+                const logo = info.match(/tvg-logo="([^"]+)"/)?.[1] || "";
                 
                 let kid = "", key = "", url = "";
-                
-                // Cerca chiavi KODIPROP e URL nelle righe successive
-                for(let j=1; j<=4; j++) {
-                    let line = lines[i+j] ? lines[i+j].trim() : "";
-                    if(line.includes('license_key=')) {
+                for(let j=1; j<=4; j++){
+                    let line = lines[i+j]?.trim() || "";
+                    if(line.includes('license_key=')){
                         const val = line.split('license_key=')[1];
                         [kid, key] = val.split(':');
                     }
@@ -127,43 +122,37 @@
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.onclick = () => openPlayer(url, name, kid, key);
-                card.innerHTML = name;
+                card.innerHTML = `
+                    <div class="logo-box"><img src="${logo}"></div>
+                    <div class="name">${name}</div>
+                    <div class="sub">SKY IT INTRATTENIMENTO</div>
+                `;
                 container.appendChild(card);
             }
         }
+        document.getElementById('count').innerText = count + " CHANNELS";
     }
 
     async function openPlayer(url, name, kid, key) {
-        if(!url) return;
         document.getElementById('player-overlay').style.display = 'flex';
-        document.getElementById('playing-title').innerText = name;
+        document.getElementById('playing-name').innerText = name;
         
         const video = document.getElementById('video');
         const videoContainer = document.getElementById('video-container');
 
-        // Inizializza Shaka UI
         player = new shaka.Player(video);
         ui = new shaka.ui.Overlay(player, videoContainer, video);
         
-        // Configura controlli (identici a nodrm)
-        const config = {
-            'controlPanelElements': ['play_pause', 'time_and_duration', 'spacer', 'mute', 'volume', 'fullscreen'],
-            'addLanguageControls': false
-        };
-        ui.configure(config);
+        ui.configure({ 'controlPanelElements': ['play_pause', 'time_and_duration', 'spacer', 'mute', 'volume', 'fullscreen'] });
 
-        // Applica chiavi ClearKey
         if (kid && key) {
-            player.configure({
-                drm: { clearKeys: { [kid]: key.trim() } }
-            });
+            player.configure({ drm: { clearKeys: { [kid]: key.trim() } } });
         }
 
         try {
             await player.load(url);
         } catch (e) {
-            console.error("Errore Shaka:", e);
-            alert("Errore MPD: Verifica le chiavi nella lista.");
+            alert("Errore nel caricamento del flusso MPD. Verifica la chiave.");
             closePlayer();
         }
     }
