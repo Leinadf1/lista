@@ -35,15 +35,14 @@
         h1 { font-size: 22px; font-weight: 700; color: #58a6ff; margin: 0; letter-spacing: -0.5px; }
         #chan-count { font-size: 14px; color: #8b949e; font-weight: 600; background: #21262d; padding: 4px 12px; border-radius: 20px; }
         
-        /* PLAYER: Rimosso bordo, arrotondamento e ombra */
         .player-container { 
             width: 100%; 
             max-width: 900px; 
             background: #000; 
             margin-bottom: 40px; 
-            border: none; /* Rimosso bordo grigio */
-            border-radius: 0; /* Rimosso arrotondamento */
-            box-shadow: none; /* Rimossa ombra */
+            border: none; 
+            border-radius: 0; 
+            box-shadow: none; 
             z-index: 10; 
         }
         video { width: 100%; aspect-ratio: 16/9; display: block; }
@@ -166,18 +165,19 @@ async function init() {
 
     player.configure({ streaming: { jumpLargeGaps: true } });
 
-    const categories = {};
-
     function getCategoryGrid(groupName) {
         const name = (groupName || "ALTRI").toUpperCase().trim();
-        if (!categories[name]) {
+        let gridId = `grid-${name.replace(/[^a-z0-9]/gi, '-')}`;
+        let grid = document.getElementById(gridId);
+        
+        if (!grid) {
             const container = document.createElement('div');
             container.className = 'category-container';
-            container.innerHTML = `<div class="category-title">${name}</div><div class="grid" id="grid-${name.replace(/[^a-z0-9]/gi, '-')}"></div>`;
+            container.innerHTML = `<div class="category-title">${name}</div><div class="grid" id="${gridId}"></div>`;
             mainList.appendChild(container);
-            categories[name] = document.getElementById(`grid-${name.replace(/[^a-z0-9]/gi, '-')}`);
+            grid = document.getElementById(gridId);
         }
-        return categories[name];
+        return grid;
     }
 
     function createCard(ch) {
@@ -196,6 +196,10 @@ async function init() {
                 await player.unload();
                 player.configure({ drm: { clearKeys: (ch.drm && Object.keys(ch.drm).length > 0) ? ch.drm : {} } });
                 await player.load(ch.url);
+                
+                // RITORNO DELLO SCROLL AUTOMATICO VERSO IL PLAYER
+                window.scrollTo({top: 0, behavior: 'smooth'});
+                
             } catch(e) { console.error("Errore Shaka:", e.code); }
         };
         grid.appendChild(card);
