@@ -3,28 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TV Dashboard DEBUG</title>
+    <title>TV Dashboard PRO - Debug</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
     <style>
         body { background-color: #0d1117; color: #c9d1d9; font-family: sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .player-container { width: 100%; max-width: 850px; background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 10px; border: 1px solid #30363d; position: sticky; top: 10px; z-index: 100; }
         video { width: 100%; aspect-ratio: 16/9; }
-        
-        /* IL TUO BOX DI DEBUG */
         #debug-box { 
             width: 100%; max-width: 850px; background: rgba(255, 255, 0, 0.1); 
             border: 2px solid yellow; border-radius: 8px; padding: 10px; 
             margin-bottom: 20px; font-family: monospace; font-size: 12px; color: #f1e05a;
             word-break: break-all; white-space: pre-wrap;
         }
-
         .category-section { width: 100%; max-width: 1200px; margin-bottom: 40px; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
         .card { background-color: #161b22; border: 1px solid #30363d; border-radius: 10px; cursor: pointer; padding: 10px; text-align: center; }
         .card.active { border-color: #58a6ff; background: #21262d; }
         .card img { max-width: 100%; height: 60px; object-fit: contain; }
-        .card .name { font-size: 11px; margin-top: 10px; font-weight: bold; }
+        .card .name { font-size: 11px; margin-top: 10px; font-weight: bold; text-transform: uppercase; }
     </style>
 </head>
 <body>
@@ -33,17 +30,13 @@
         <video autoplay data-shaka-player id="video"></video>
     </div>
 
-    <div id="debug-box">
-DEBUG:
-In attesa di selezione canale...
-    </div>
+    <div id="debug-box">DEBUG: In attesa di selezione canale...</div>
 
     <div id="categories-container"></div>
 
 <script>
 const SOURCE_URL = "https://raw.githubusercontent.com/Leinadf1/lista/main/lista_privata.m3u";
 
-// Funzione per aggiornare il riquadro giallo
 function updateDebug(info) {
     const box = document.getElementById('debug-box');
     box.innerHTML = `DEBUG:\nCanale: ${info.name}\nURL: ${info.url}\nKID: ${info.kid}\nKEY: ${info.key}\nERROR: ${info.error || 'Nessuno'}`;
@@ -60,12 +53,13 @@ async function init() {
     const categories = {};
 
     function createCard(name, logo, url, drm, group, kid, key) {
-        if (!categories[group]) {
+        const catId = (group || "TV").toUpperCase();
+        if (!categories[catId]) {
             const section = document.createElement('div');
             section.className = 'category-section';
-            section.innerHTML = `<div style="color:yellow; margin-bottom:10px;">${group}</div><div class="grid" id="grid-${group}"></div>`;
+            section.innerHTML = `<div style="color:#58a6ff; margin-bottom:10px; font-weight:bold; border-left: 3px solid yellow; padding-left:10px;">${catId}</div><div class="grid" id="grid-${catId.replace(/\s+/g, '-')}"></div>`;
             container.appendChild(section);
-            categories[group] = document.getElementById(`grid-${group}`);
+            categories[catId] = document.getElementById(`grid-${catId.replace(/\s+/g, '-')}`);
         }
 
         const card = document.createElement('div');
@@ -75,8 +69,6 @@ async function init() {
         card.onclick = async () => {
             document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
             card.classList.add('active');
-            
-            // Pulisce e aggiorna debug all'inizio
             updateDebug({ name, url, kid, key, error: 'Caricamento...' });
 
             try {
@@ -84,36 +76,54 @@ async function init() {
                 player.configure({ drm: { clearKeys: drm } });
                 await player.load(url);
                 updateDebug({ name, url, kid, key, error: '0 (OK)' });
+                window.scrollTo({top: 0, behavior: 'smooth'});
             } catch(e) {
                 updateDebug({ name, url, kid, key, error: e.code });
-                console.error("Errore Shaka:", e);
             }
         };
-        categories[group].appendChild(card);
+        categories[catId].appendChild(card);
     }
 
     try {
         const res = await fetch(SOURCE_URL + "?t=" + Date.now());
         const text = await res.text();
+        
+        // Dividiamo per #EXTINF per isolare ogni blocco canale
         const blocks = text.split('#EXTINF');
 
         blocks.forEach(block => {
             if (!block.includes('.mpd')) return;
-            const keyMatch = block.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
+
+            // 1. Cerchiamo l'URL .mpd
             const urlMatch = block.match(/https?:\/\/[^\s"|]+\.mpd[^\s"|]*/i);
+            if (!urlMatch) return;
+            const url = urlMatch[0];
+
+            // 2. Cerchiamo le chiavi (Formato 1: nell'URL | Formato 2: in #KODIPROP)
+            let kid = "", key = "";
+            const keyMatchUrl = block.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
+            const keyMatchKodi = block.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i) || block.match(/inputstream\.adaptive\.license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
+
+            if (keyMatchUrl) {
+                kid = keyMatchUrl[1];
+                key = keyMatchUrl[2];
+            } else if (keyMatchKodi) {
+                kid = keyMatchKodi[1];
+                key = keyMatchKodi[2];
+            }
+
+            // 3. Info Canale
             const nameMatch = block.match(/,(.*)/);
+            const name = nameMatch ? nameMatch[1].split('\n')[0].trim() : "Canale Sconosciuto";
             const groupMatch = block.match(/group-title="([^"]+)"/i);
             const logoMatch = block.match(/tvg-logo="([^"]+)"/i);
 
-            if (keyMatch && urlMatch && nameMatch) {
-                const kid = keyMatch[1];
-                const key = keyMatch[2];
+            if (kid && key) {
                 const drm = { [kid.toLowerCase()]: key.toLowerCase() };
-                const name = nameMatch[1].split('\n')[0].trim();
-                createCard(name, logoMatch ? logoMatch[1] : '', urlMatch[0], drm, groupMatch ? groupMatch[1] : "TV", kid, key);
+                createCard(name, logoMatch ? logoMatch[1] : '', url, drm, groupMatch ? groupMatch[1] : "TV", kid, key);
             }
         });
-    } catch(e) { console.error(e); }
+    } catch(e) { console.error("Errore lista:", e); }
 }
 
 document.addEventListener('shaka-ui-loaded', init);
