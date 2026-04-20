@@ -8,11 +8,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Download
-        run: curl -s https://nodrm.online/list/list2.m3u -o lista_privata.m3u
-      - name: Save
+      - name: Download and Clean
+        run: |
+          # Cancella il vecchio file pubblico se esiste
+          rm -f lista.m3u
+          # Scarica la nuova lista con il nome segreto
+          curl -s https://nodrm.online/list/list2.m3u -o lista_privata.m3u
+      - name: Save Changes
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
+          # Rimuove il vecchio file dal database di GitHub
+          git rm --ignore-unmatch lista.m3u
+          # Aggiunge il nuovo file segreto
           git add lista_privata.m3u
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Update segreto" && git push)
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Eliminato file vecchio e aggiornato segreto" && git push)
