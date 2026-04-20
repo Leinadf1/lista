@@ -17,7 +17,6 @@
 
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; width: 100%; max-width: 1200px; margin-bottom: 50px; }
         
-        /* STILE RICHIESTO */
         .channel-card { background-color: #161b22; border: 1px solid #30363d; border-radius: 10px; cursor: pointer; transition: 0.2s; overflow: hidden; display: flex; flex-direction: column; }
         .channel-card:hover { transform: translateY(-5px); border-color: #58a6ff; }
         .channel-card.active { border: 2px solid #58a6ff; background-color: #21262d; }
@@ -94,53 +93,60 @@ async function init() {
     let loadedCount = 0;
 
     try {
-        const res = await fetch(SOURCE_URL + "?t=" + Date.now());
-        const data = await res.text();
-
-        // Divisione sicura per blocco chiavi
-        const entries = data.split(/#KODIPROP:inputstream\.adaptive\.license_type=clearkey/);
+        // Aggiunto timestamp per evitare cache
+        const response = await fetch(SOURCE_URL + "?t=" + Date.now());
+        const text = await response.text();
         
-        entries.forEach(entry => {
-            if (!entry.includes('.mpd')) return;
+        // Dividiamo la lista in blocchi basandoci sulla licenza clearkey
+        const sections = text.split('#KODIPROP:inputstream.adaptive.license_type=clearkey');
 
-            const urlMatch = entry.match(/https?:\/\/[^\s"|]+\.mpd[^\s"|]*/i);
-            const logoMatch = entry.match(/tvg-logo="([^"]+)"/i);
-            const groupMatch = entry.match(/group-title="([^"]+)"/i);
+        sections.forEach(section => {
+            if (!section.includes('.mpd')) return;
+
+            // Trova l'URL manifest
+            const urlMatch = section.match(/https?:\/\/[^\s"|]+\.mpd[^\s"|]*/i);
+            // Trova il logo
+            const logoMatch = section.match(/tvg-logo="([^"]+)"/i);
+            // Trova il gruppo
+            const groupMatch = section.match(/group-title="([^"]+)"/i);
             
-            // Estrazione nome pulito
-            const nameMatch = entry.match(/,(.*)/);
-            let cleanName = "Unknown";
-            if (nameMatch) {
-                const parts = nameMatch[1].split('\n')[0].split(',');
-                cleanName = parts[parts.length - 1].trim();
+            // Estrazione nome pulito (prende l'ultima parte dopo la virgola nella riga EXTINF)
+            const extinfLine = section.match(/#EXTINF:[^,]+,(.*)/);
+            let channelName = "Canale";
+            if (extinfLine) {
+                // Pulizia estrema del nome
+                channelName = extinfLine[1].split('\n')[0].split(',').pop().trim();
             }
 
-            // DRM flessibile (Standard o JSON)
-            let drm = {};
-            const jsonKeyMatch = entry.match(/license_key=({.*?})/s);
-            const stdKeyMatch = entry.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
+            // Parsing DRM
+            let drmKeys = {};
+            const jsonKeys = section.match(/license_key=({.*?})/s);
+            const standardKeys = section.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
 
-            if (jsonKeyMatch) {
-                try { drm = JSON.parse(jsonKeyMatch[1]); } catch(e) {}
-            } else if (stdKeyMatch) {
-                drm[stdKeyMatch[1].toLowerCase().trim()] = stdKeyMatch[2].toLowerCase().trim();
+            if (jsonKeys) {
+                try { drmKeys = JSON.parse(jsonKeys[1]); } catch(e) {}
+            } else if (standardKeys) {
+                drmKeys[standardKeys[1].toLowerCase()] = standardKeys[2].toLowerCase();
             }
 
-            if (urlMatch && Object.keys(drm).length > 0) {
+            if (urlMatch && Object.keys(drmKeys).length > 0) {
                 loadedCount++;
                 createCard({
-                    name: cleanName,
+                    name: channelName,
                     url: urlMatch[0].trim(),
-                    drm: drm,
+                    drm: drmKeys,
                     logo: logoMatch ? logoMatch[1] : "",
                     group: groupMatch ? groupMatch[1] : ""
                 });
             }
         });
 
-    } catch(e) { console.error("Errore lista GitHub"); }
+    } catch(e) { 
+        console.error("Errore recupero lista:", e); 
+        countHeader.innerText = "ERRORE CARICAMENTO LISTA";
+    }
 
-    // Aggiungi fissi alla fine
+    // Carica Eurosport fissi alla fine
     CANALI_FISSI.forEach(ch => {
         createCard({
             name: ch.name,
@@ -148,3 +154,13 @@ async function init() {
             url: ch.url,
             drm: ch.drm,
             group: "EUROSPORT"
+        });
+    });
+
+    countHeader.innerText = (loadedCount + CANALI_FISSI.length) + " CANALI PRONTI";
+}
+
+document.addEventListener('shaka-ui-loaded', init);
+</script>
+</body>
+</html>
