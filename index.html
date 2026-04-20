@@ -3,47 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CHANNELS PRO App</title>
+    <title>CHANNELS</title>
     <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
+    <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.5/shaka-player.compiled.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/videojs-shaka@1.1.1/dist/videojs-shaka.min.js"></script>
     <style>
-        :root { --bg: #0b0e11; --card: #151921; --blue: #007bff; --text: #f0f0f0; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; padding: 20px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; }
-        .card { background: var(--card); border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; border: 1px solid #1e232d; transition: 0.3s; }
-        .card:hover { border-color: var(--blue); transform: translateY(-5px); }
+        /* IL TUO STILE ATTUALE */
+        body { background-color: #0b0e11; color: white; font-family: sans-serif; margin: 0; padding: 20px; }
+        .header { display: flex; align-items: center; margin-bottom: 20px; }
+        .header img { width: 40px; margin-right: 15px; }
+        .header h1 { font-size: 28px; letter-spacing: 1px; margin: 0; }
         
-        /* Overlay Player */
-        #player-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; z-index: 10000; }
-        .player-wrap { width: 90%; max-width: 1000px; position: relative; }
-        .close-btn { position: absolute; top: -40px; right: 0; color: white; background: #ff4444; border: none; padding: 5px 15px; cursor: pointer; border-radius: 5px; }
-        
-        #lock { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10001; }
+        .grid { display: flex; flex-direction: column; gap: 10px; }
+        .card { 
+            background-color: #1a1e26; 
+            border-radius: 8px; 
+            padding: 20px; 
+            text-align: center; 
+            cursor: pointer; 
+            border: 1px solid #2d3440;
+            font-size: 16px;
+        }
+
+        /* OVERLAY PLAYER (STILE AMICO) */
+        #player-overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.9); display: none; align-items: center; 
+            justify-content: center; z-index: 10000; 
+        }
+        .player-wrap { width: 95%; max-width: 900px; position: relative; }
+        .close-btn { 
+            position: absolute; top: -40px; right: 0; color: white; 
+            background: #444; border: none; padding: 5px 15px; cursor: pointer; border-radius: 4px;
+        }
+
+        #lock { position: fixed; inset: 0; background: #0b0e11; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10001; }
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
 <div id="lock">
-    <h2>AREA RISERVATA</h2>
-    <input type="password" id="pw" style="padding:10px; margin-bottom:10px;">
-    <button onclick="login()" style="padding:10px 20px; background:var(--blue); color:white; border:none;">ENTRA</button>
+    <h2 style="margin-bottom:20px;">ACCESS CONTROL</h2>
+    <input type="password" id="pw" style="padding:12px; background:#1a1e26; color:white; border:1px solid #2d3440; border-radius:5px; text-align:center; margin-bottom:15px; width:250px;">
+    <button onclick="login()" style="padding:12px 30px; background:#007bff; color:white; border:none; border-radius:5px; cursor:pointer; font-weight:bold;">LOGIN</button>
 </div>
 
 <div id="app" class="hidden">
-    <div class="header"><h1>📺 CHANNELS</h1></div>
+    <div class="header">
+        <h1>📺 CHANNELS</h1>
+    </div>
     <div id="grid" class="grid"></div>
 </div>
 
 <div id="player-overlay">
     <div class="player-wrap">
         <button class="close-btn" onclick="closePlayer()">✕ CLOSE</button>
-        <video id="my-video" class="video-js vjs-default-skin vjs-big-play-centered" controls preload="auto" width="960" height="540"></video>
+        <video id="my-video" class="video-js vjs-default-skin vjs-16-9 vjs-big-play-centered" controls preload="auto"></video>
     </div>
 </div>
-
-<script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.5/shaka-player.compiled.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/videojs-shaka@1.1.1/dist/videojs-shaka.min.js"></script>
 
 <script>
     const PW_SECRET = "1234";
@@ -55,7 +74,7 @@
             document.getElementById('lock').classList.add('hidden');
             document.getElementById('app').classList.remove('hidden');
             load();
-        } else { alert("Password errata"); }
+        } else { alert("Access Denied"); }
     }
 
     async function load() {
@@ -77,7 +96,7 @@
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.onclick = () => openPlayer(url, kid, key);
-                card.innerHTML = `<div class="name">${name}</div>`;
+                card.innerHTML = name;
                 container.appendChild(card);
             }
         }
@@ -86,8 +105,10 @@
     function openPlayer(url, kid, key) {
         document.getElementById('player-overlay').style.display = 'flex';
         
+        // Se il player esiste già, lo distruggiamo per resettarlo
         if (vjsPlayer) { vjsPlayer.dispose(); }
 
+        // Configurazione per MPD e Chiavi ClearKey
         const playerOptions = {
             autoplay: true,
             controls: true,
@@ -99,6 +120,7 @@
             }
         };
 
+        // Creiamo il nuovo player
         vjsPlayer = videojs('my-video', playerOptions);
         vjsPlayer.src({ src: url, type: 'application/dash+xml' });
     }
