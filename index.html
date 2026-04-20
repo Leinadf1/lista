@@ -3,26 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TV Dashboard – Fix Totale</title>
+    <title>TV Dashboard – Debug Mode</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
     <style>
         body { background-color: #0d1117; color: #c9d1d9; font-family: sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        #header { width: 100%; max-width: 1200px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid #30363d; padding-bottom: 10px; }
-        .player-container { width: 100%; max-width: 850px; background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 35px; border: 1px solid #30363d; }
+        .player-container { width: 100%; max-width: 850px; background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 30px; border: 1px solid #30363d; }
         video { width: 100%; aspect-ratio: 16/9; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; width: 100%; max-width: 1200px; }
-        .channel-card { background-color: #161b22; border: 1px solid #30363d; border-radius: 10px; cursor: pointer; padding: 10px; text-align: center; }
-        .channel-card img { max-width: 100%; height: 60px; object-fit: contain; }
-        .name { font-size: 12px; margin-top: 8px; font-weight: bold; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; width: 100%; max-width: 1200px; }
+        .card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 10px; cursor: pointer; text-align: center; font-size: 12px; }
+        .card:hover { border-color: #58a6ff; }
+        .card img { max-width: 100%; height: 50px; object-fit: contain; margin-bottom: 5px; }
     </style>
 </head>
 <body>
-
-    <div id="header">
-        <h1>Dashboard Live</h1>
-        <div id="chan-count">Caricamento...</div>
-    </div>
 
     <div class="player-container" data-shaka-player-container>
         <video autoplay data-shaka-player id="video"></video>
@@ -31,12 +25,7 @@
     <div id="list" class="grid"></div>
 
 <script>
-// USIAMO L'API DI VERCEL CHE HAI CREATO
 const API_URL = "/api/get-list";
-
-const CANALI_FISSI = [
-    { name: "EUROSPORT 4K", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/thumb.prod.front.tim.cptech.pro/http/unsafe/filters:format(png):anamorphosis(640,480)/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020019/tim-ouah/CHN43FN/MONOGRAM_ESP4K_WHITE_V2-BjK0", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport4k)/manifest.mpd", keys: {"9ceae06c6ad34aada83ba86c0b511452":"406862beb4af1ef8fe04ba15d9936360","fcd924bd2e45470fa2ae50ef05e357c0":"266db84d3572bc889185274a90ff31df","dea135e33341468f8a4e8da806d8a6e6":"fb7423db39e6fab75056f8c83f415847","31911db90ee3410f8b38e45659d01fb1":"ac316ab7dfd2b50faf6d44633e4fedd5","a16f2a39adbb4974b8910cec8a651a09":"c2d55e0111af955f47214af209a2c468"} }
-];
 
 async function init() {
     const video = document.getElementById('video');
@@ -46,48 +35,44 @@ async function init() {
 
     player.configure({ streaming: { jumpLargeGaps: true } });
 
-    function addCard(name, logo, url, drmKeys) {
-        const div = document.createElement('div');
-        div.className = 'channel-card';
-        div.innerHTML = `<img src="${logo}"><div class="name">${name}</div>`;
-        div.onclick = async () => {
-            try {
-                await player.unload();
-                player.configure({ drm: { clearKeys: drmKeys } });
-                await player.load(url.trim());
-                window.scrollTo({top: 0, behavior: 'smooth'});
-            } catch(e) { alert("Errore canale: " + e.code); }
-        };
-        container.appendChild(div);
+    async function play(url, keys) {
+        try {
+            await player.unload();
+            // Pulizia estrema delle chiavi: rimuoviamo ogni possibile spazio o carattere strano
+            const cleanKeys = {};
+            for (let k in keys) {
+                cleanKeys[k.trim().toLowerCase()] = keys[k].trim().toLowerCase();
+            }
+            player.configure({ drm: { clearKeys: cleanKeys } });
+            await player.load(url.trim());
+        } catch(e) { console.error("Error Code:", e.code); }
     }
 
     try {
-        const response = await fetch(API_URL);
-        const data = await response.text();
-        
-        if (data.includes('#EXTM3U')) {
-            const items = data.split('#EXTINF');
-            let count = 0;
-            items.forEach(item => {
-                const m3uKey = item.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
-                const m3uUrl = item.match(/https?:\/\/[^\s"|]+\.mpd/i);
-                const m3uName = item.match(/,(.*)/);
-                
-                if (m3uKey && m3uUrl && m3uName) {
-                    count++;
-                    const logo = item.match(/tvg-logo="([^"]+)"/i);
-                    const keys = { [m3uKey[1].toLowerCase()]: m3uKey[2].toLowerCase() };
-                    addCard(m3uName[1].trim(), logo ? logo[1] : '', m3uUrl[0], keys);
-                }
-            });
-            document.getElementById('chan-count').innerText = count + " Canali OK";
-        }
-    } catch(err) {
-        document.getElementById('chan-count').innerText = "Errore API";
-    }
+        const res = await fetch(API_URL);
+        const text = await res.text();
+        const blocks = text.split('#EXTINF');
 
-    // Aggiungi fissi
-    CANALI_FISSI.forEach(f => addCard(f.name, f.logo, f.url, f.keys));
+        blocks.forEach(block => {
+            const keyMatch = block.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
+            const urlMatch = block.match(/https?:\/\/[^\s"|]+\.mpd/i);
+            const nameMatch = block.match(/,(.*)/);
+            const logoMatch = block.match(/tvg-logo="([^"]+)"/i);
+
+            if (keyMatch && urlMatch && nameMatch) {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `<img src="${logoMatch ? logoMatch[1] : ''}"><div>${nameMatch[1].trim()}</div>`;
+                
+                const drm = { [keyMatch[1]]: keyMatch[2] };
+                card.onclick = () => {
+                    play(urlMatch[0], drm);
+                    window.scrollTo({top: 0, behavior: "smooth"});
+                };
+                container.appendChild(card);
+            }
+        });
+    } catch(e) { console.error("API Error"); }
 }
 
 document.addEventListener('shaka-ui-loaded', init);
