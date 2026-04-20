@@ -117,43 +117,40 @@ async function init() {
         const text = await response.text();
         
         // Dividiamo la lista per blocchi logici (licenza o estinf)
-        // Questo cattura i casi dove KODIPROP è prima di EXTINF
-        const blocks = text.split(/(?=#KODIPROP|#EXTINF)/);
+        const rawBlocks = text.split('#KODIPROP:inputstream.adaptive.license_type=clearkey');
+        
+        rawBlocks.forEach(block => {
+            if (!block.trim()) return;
 
-        let currentDrm = {};
+            // Cerchiamo l'URL del flusso
+            const urlMatch = block.match(/https?:\/\/[^\s"|]+\.(mpd|m3u8|ts|flv)[^\s"|]*/i);
+            if (!urlMatch) return;
 
-        blocks.forEach(block => {
-            // Aggiorna le chiavi DRM se presenti in questo blocco
+            // Cerchiamo chiavi DRM, logo e gruppo in tutto il blocco
+            const logoMatch = block.match(/tvg-logo="([^"]+)"/i);
+            const groupMatch = block.match(/group-title="([^"]+)"/i);
+            const nameMatch = block.match(/#EXTINF:.*?,(.*)/);
+            
+            let channelName = nameMatch ? nameMatch[1].split('\n')[0].trim() : "Canale";
+
+            let drmKeys = {};
             const jsonKeys = block.match(/license_key=({.*?})/s);
             const standardKeys = block.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
 
             if (jsonKeys) {
-                try { currentDrm = JSON.parse(jsonKeys[1]); } catch(e) {}
+                try { drmKeys = JSON.parse(jsonKeys[1]); } catch(e) {}
             } else if (standardKeys) {
-                currentDrm = {};
-                currentDrm[standardKeys[1].toLowerCase()] = standardKeys[2].toLowerCase();
+                drmKeys[standardKeys[1].toLowerCase()] = standardKeys[2].toLowerCase();
             }
 
-            // Se il blocco contiene un URL, crea il canale
-            const urlMatch = block.match(/https?:\/\/[^\s"|]+\.(mpd|m3u8|ts|flv)[^\s"|]*/i);
-            if (urlMatch) {
-                const logoMatch = block.match(/tvg-logo="([^"]+)"/i);
-                const groupMatch = block.match(/group-title="([^"]+)"/i);
-                const nameMatch = block.match(/#EXTINF:.*?,(.*)/);
-                
-                let channelName = nameMatch ? nameMatch[1].split('\n')[0].trim() : "Canale";
-
-                createCard({
-                    name: channelName,
-                    url: urlMatch[0].trim(),
-                    drm: { ...currentDrm }, // Copia le ultime chiavi trovate
-                    logo: logoMatch ? logoMatch[1] : "",
-                    group: groupMatch ? groupMatch[1] : "ALTRI"
-                });
-                loadedCount++;
-                // Resetta DRM dopo l'uso per evitare che passi al canale dopo se quello non ne ha
-                currentDrm = {};
-            }
+            createCard({
+                name: channelName,
+                url: urlMatch[0].trim(),
+                drm: drmKeys,
+                logo: logoMatch ? logoMatch[1] : "",
+                group: groupMatch ? groupMatch[1] : "ALTRI"
+            });
+            loadedCount++;
         });
 
     } catch(e) { console.error("Errore lista:", e); }
