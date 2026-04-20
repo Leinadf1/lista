@@ -377,3 +377,13 @@ https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1776708004~exp%3D1776794404~acl%3D%2
 
 #EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/48uyejzq9wn6qdzhe2aw2uou5_image-header_pIt_1775834964000/fill/none/top/none/100/1280/720/png/image",Lecce - Fiorentina (CH)
 https://zh4-7-dash-live.zahs.tv/HD_dazn_event_5_ch/m.mpd?z32=MF2WI2LPL5RW6ZDFMNZT2YLBMMTGG43JMQ6TCOCBHAYTMNCCGE3DMMJXGRDDGLJWHA2TENCGGJDEIRBXGIYDCNKDEZSHE3J5MV4HA2LSMF2GS33OHIYTONZXGI4TSMZWGQTGS3TJORUWC3DSMF2GKPJSGAYDAMBGNVQXQ4TBORST2MRQGAYDAJTNNFXHEYLUMU6TCMBQGATHA4TFMZSXE4TFMRPWYYLOM52WCZ3FHVSW4JTTNFTT2MRQL43DQN3DGUZDAOBUMRQTONRSHAYDKNZYMZRDKZJXMRRGGN3EGQ3DIJTTOVRHI2LUNRSXGPLINFSGIZLOFVZWI2BGOVZWK4S7NFSD243LPFPWG2B2HIZDCMZTGI2TCJTWHUYA
+
+#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/2id0nfjg31o8pyzy45gf1ecc8_image-header_pIt_1759159202000/fill/none/top/none/100/1280/720/png/image",Ventitreesima puntata | 4-3-2-1
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=0c486ac4749951a2a15cfebedddcec87:4332631c684b4e3ff54d0f7fc12bfe05
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1776717905~exp%3D1776804305~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Df878e071b1b977ee1d3c73509ad57150cb3c7e7ce332fc28c2b7c91c60b56f5e%23wm%3D0~hmac%3D8cd580385446f847a2243bc59a7decc0a4aa16b15203cf6f3b2d64726f6c2898/1vti7db3pc7zc16qpyszy1fzwo/web/stream.mpd?channel=1347&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/48uyejzq9wn6qdzhe2aw2uou5_image-header_pIt_1775834964000/fill/none/top/none/100/1280/720/png/image",Lecce - Fiorentina | Post-partita con 4-3-2-1
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=f5e39abf2a5c5894bc29aff792038a06:4e02f8b268e1f1a3fdb6900e983fcef0
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1776718204~exp%3D1776804604~acl%3D%2F*~id%3DHjBL5BodKG5pE6gKE9zUTY7wsPhLSGKTep-ZgGvjYQt2vf9lu473erqGJHO4qlTK~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Df20705c8d78a946a841def3a51516739bfaa17b1096638f1896868a222e8d2ad%23wm%3D1%23wmd%3D1152~hmac%3De0b3dab411684d199e3b06244a527546c2a16521a1e1c2af76d5ff3c875d4fb8/12bbvd99269ro1oju3xwsf0lpm/web/stream.mpd?channel=1381&mta=it&outlet=dazn-italy&plang=it
