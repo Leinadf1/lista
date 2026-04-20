@@ -8,17 +8,17 @@
     <style>
         body { background-color: #262626; color: white; font-family: Arial, sans-serif; padding: 20px; text-align: center; }
         .center { margin: auto; width: 60%; }
-        video { width: 100%; aspect-ratio: 16/9; background: black; }
+        video { width: 100%; aspect-ratio: 16/9; background: black; border-radius: 8px; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-top: 30px; }
-        .btn { background: #3d3d3d; color: white; border: 1px solid #555; padding: 15px 5px; cursor: pointer; border-radius: 5px; font-size: 11px; font-weight: bold; transition: 0.2s; }
+        .btn { background: #3d3d3d; color: white; border: 1px solid #555; padding: 15px 5px; cursor: pointer; border-radius: 5px; font-size: 11px; font-weight: bold; transition: 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .btn:hover { background: #00d2ff; color: black; }
         .btn.active { background: #00d2ff; color: black; border: 2px solid white; }
-        #status { color: #00d2ff; margin-bottom: 15px; font-weight: bold; }
+        #status { color: #00d2ff; margin-bottom: 15px; font-weight: bold; font-size: 1.2em; }
     </style>
 </head>
 <body>
 
-    <div id="status">Caricamento lista da GitHub...</div>
+    <div id="status">Caricamento canali...</div>
 
     <div class="center" style="max-width:40em" data-shaka-player-container>
         <video autoplay data-shaka-player id="video"></video>
@@ -27,9 +27,8 @@
     <div id="list" class="grid"></div>
 
 <script>
-// --- CONFIGURAZIONE GITHUB ---
-// Usa l'URL "raw" del tuo file m3u su GitHub
-const GITHUB_M3U_URL = "https://raw.githubusercontent.com/Leinadf1/lista/main/lista_privata.m3u";
+// Carichiamo la lista dallo stesso server (Vercel) per evitare errori CORS
+const LISTA_URL = "lista_privata.m3u";
 
 async function init() {
     const video = document.getElementById('video');
@@ -41,9 +40,9 @@ async function init() {
     player.addEventListener('error', e => console.error('Player error:', e.detail));
 
     try {
-        // Scarica la lista direttamente da GitHub
-        const res = await fetch(GITHUB_M3U_URL);
-        if (!res.ok) throw new Error("Errore GitHub: " + res.status);
+        // Fetch locale: Vercel legge il file che hai caricato su GitHub
+        const res = await fetch(LISTA_URL);
+        if (!res.ok) throw new Error("File M3U non trovato nella cartella");
         
         const data = await res.text();
         const items = data.split('#EXTINF');
@@ -52,7 +51,7 @@ async function init() {
 
         items.forEach(item => {
             if (item.includes('license_key=')) {
-                // Pulizia nome (scarta tag inutili come Gecko/Kodi)
+                // Estrazione nome pulito (come Eurosport)
                 const lines = item.split('\n');
                 let name = "Canale";
                 for (let l of lines) { 
@@ -62,7 +61,7 @@ async function init() {
                     } 
                 }
 
-                // Estrazione URL e Chiavi (KID:KEY)
+                // Estrazione URL e Chiavi
                 const url = item.match(/https?:\/\/[^\s"|]+/)?.[0];
                 const keys = item.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
 
@@ -74,9 +73,9 @@ async function init() {
                     btn.onclick = async () => {
                         document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
                         btn.classList.add('active');
-                        statusHeader.innerText = "In riproduzione: " + name;
+                        statusHeader.innerText = name;
 
-                        // Applica DRM (Identico a Eurosport)
+                        // Configurazione DRM (Identica al tuo script Eurosport)
                         player.configure({
                             drm: {
                                 clearKeys: { [keys[1]]: keys[2] }
@@ -84,10 +83,10 @@ async function init() {
                         });
 
                         try {
-                            // Carica lo stream diretto (senza proxy)
+                            // Caricamento diretto dello stream (niente proxy = niente errore 4000)
                             await player.load(url);
                         } catch (e) {
-                            console.error('Errore caricamento:', e);
+                            console.error('Errore:', e.code);
                             statusHeader.innerText = "Errore: " + e.code;
                         }
                     };
@@ -96,7 +95,7 @@ async function init() {
             }
         });
     } catch (err) {
-        statusHeader.innerText = "Errore: impossibile caricare la lista da GitHub";
+        statusHeader.innerText = "Errore: " + err.message;
         console.error(err);
     }
 }
