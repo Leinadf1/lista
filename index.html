@@ -29,7 +29,7 @@
 
     <div id="header">
         <h1>Dashboard</h1>
-        <div id="chan-count">ACCESSO RICHIESTO</div>
+        <div id="chan-count">SINCRONIZZAZIONE...</div>
     </div>
 
     <div class="player-container" data-shaka-player-container>
@@ -39,9 +39,8 @@
     <div id="categories-container"></div>
 
 <script>
-// --- CONFIGURAZIONE PASSWORD ---
-const PASSWORD_CORRETTA = "1234"; // Cambiala con quella che vuoi
-// -------------------------------
+// IMPOSTA QUI LA TUA PASSWORD
+const ACCESS_PASSWORD = "1234"; 
 
 const SOURCE_URL = "/api/get-list";
 
@@ -52,15 +51,14 @@ const CANALI_FISSI = [
     { name: "EUROSPORT 3", group: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/thumb.prod.front.tim.cptech.pro/http/unsafe/filters:format(png):anamorphosis(640,480)/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020002/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-yiID", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport3)/manifest.mpd", kid: "1e2398b0eeb04829b4711e14b4a91244", key: "11e26659ebfecf6a22ed56da340448cd" },
     { name: "EUROSPORT 4", group: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/thumb.prod.front.tim.cptech.pro/http/unsafe/filters:format(png):anamorphosis(640,480)/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020003/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-3YSY", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport4)/manifest.mpd", kid: "9dd7be79e44f4d08a91ec5d1553f17b8", key: "8a62369f81a4b6e5f2d4846f7bd5e7d1" },
     { name: "EUROSPORT 5", group: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/thumb.prod.front.tim.cptech.pro/http/unsafe/filters:format(png):anamorphosis(640,480)/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020004/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-sv5m", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport5)/manifest.mpd", kid: "b48e7e6d96da479da65e435ce65faeb1", key: "48c703879ce4deedb5a2124a30a13bc4" },
-    { name: "EUROSPORT 6", group: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/thumb.prod.front.tim.cptech.pro/http/unsafe/filters:format(png):anamorphosis(640,480)/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020005/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-H53i", url: "https://timlivetu0.cb.tim.it/Content/DASH/Live/channel(eurosport6)/manifest.mpd", kid: "ead1c567a3df48619799b2e78b18fdfa", key: "1de9d9af5651296aa67913979ad8c694" }
+    { name: "EUROSPORT 6", group: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/thumb.prod.front.tim.cptech.pro/http/unsafe/filters:format(png):anamorphosis(640,480)/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020005/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-H53i", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport6)/manifest.mpd", kid: "ead1c567a3df48619799b2e78b18fdfa", key: "1de9d9af5651296aa67913979ad8c694" }
 ];
 
 async function init() {
-    // Controllo Password all'inizio
-    const pass = prompt("Inserisci la password per accedere:");
-    if (pass !== PASSWORD_CORRETTA) {
-        alert("Password errata!");
-        document.body.innerHTML = "<h1 style='color:red; text-align:center; margin-top:100px;'>ACCESSO NEGATO</h1>";
+    // BLOCCO PASSWORD
+    const userPass = prompt("Inserisci Password:");
+    if (userPass !== ACCESS_PASSWORD) {
+        document.body.innerHTML = "<h1 style='text-align:center; margin-top:50px;'>ACCESSO NEGATO</h1>";
         return;
     }
 
@@ -99,7 +97,7 @@ async function init() {
                 player.configure({ drm: { clearKeys: drmConfig } });
                 await player.load(url);
                 window.scrollTo({top: 0, behavior: 'smooth'});
-            } catch(e) { console.error("Errore Shaka:", e.code); }
+            } catch(e) { console.error("Errore:", e.code); }
         };
         grid.appendChild(card);
     }
@@ -107,6 +105,7 @@ async function init() {
     try {
         const res = await fetch(SOURCE_URL + "?t=" + Date.now());
         const text = await res.text();
+        
         const blocks = text.split('#EXTINF');
         let totalCount = 0;
 
@@ -124,16 +123,16 @@ async function init() {
                 const name = nameMatch[1].split('\n')[0].trim();
                 const drm = { [keyMatch[1].toLowerCase()]: keyMatch[2].toLowerCase() };
                 const group = groupMatch ? groupMatch[1] : "ALTRO";
+                
                 createCard(name, logoMatch ? logoMatch[1] : '', urlMatch[0], drm, group);
             }
         });
 
-        // Aggiunta Canali Eurosport (Gruppo rinominato)
         CANALI_FISSI.forEach(ch => {
             createCard(ch.name, ch.logo, ch.url, ch.keys ? ch.keys : { [ch.kid]: ch.key }, ch.group);
         });
 
-        document.getElementById('chan-count').innerText = (totalCount + CANALI_FISSI.length) + " CANALI SBLOCCATI";
+        document.getElementById('chan-count').innerText = (totalCount + CANALI_FISSI.length) + " CANALI DISPONIBILI";
     } catch(e) { console.error(e); }
 }
 
