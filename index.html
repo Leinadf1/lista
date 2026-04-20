@@ -17,7 +17,7 @@
         .card:hover { border-color: #58a6ff; transform: translateY(-3px); }
         .card.active { border: 2px solid #f1e05a; background: #21262d; }
         .card img { max-height: 55px; max-width: 100%; margin-bottom: 10px; object-fit: contain; }
-        .name { font-size: 11px; font-weight: bold; text-transform: uppercase; line-height: 1.2; color: #f0f6fc; }
+        .name { font-size: 12px; font-weight: bold; text-transform: uppercase; line-height: 1.2; color: #f0f6fc; }
     </style>
 </head>
 <body>
@@ -81,6 +81,8 @@ async function init() {
     try {
         const res = await fetch(SOURCE_URL + "?t=" + Date.now());
         const data = await res.text();
+        
+        // Dividiamo per il pattern KODIPROP specifico per evitare sovrapposizioni
         const entries = data.split(/#KODIPROP:inputstream\.adaptive\.license_type=clearkey/);
         
         entries.forEach(entry => {
@@ -90,10 +92,15 @@ async function init() {
             const logoMatch = entry.match(/tvg-logo="([^"]+)"/i);
             const groupMatch = entry.match(/group-title="([^"]+)"/i);
             
-            // Estrazione nome pulito (prende solo quello dopo la virgola)
-            const nameMatch = entry.match(/,(.*)/);
-            let rawName = nameMatch ? nameMatch[1].split('\n')[0].trim() : "Unknown";
-            let cleanName = rawName.split(',').pop().trim(); 
+            // LOGICA NOME PULITO: Ignora le righe KODIPROP e prende solo il nome dopo l'ultima virgola
+            const lines = entry.split('\n');
+            let cleanName = "Canale Sconosciuto";
+            for (let line of lines) {
+                if (line.includes('#EXTINF') && line.includes(',')) {
+                    cleanName = line.split(',').pop().trim();
+                    break;
+                }
+            }
 
             let drm = {};
             const jsonKeyMatch = entry.match(/license_key=({.*?})/s);
@@ -116,7 +123,7 @@ async function init() {
             }
         });
 
-        // Aggiunge Eurosport in fondo alla pagina
+        // Aggiunge Eurosport FISSI rigorosamente in fondo
         CANALI_FISSI.forEach(createCard);
 
     } catch(e) { console.error("Load error"); }
