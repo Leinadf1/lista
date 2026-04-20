@@ -7,7 +7,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
     <style>
-        /* --- STILE SCHERMATA LOGIN --- */
+        body { background-color: #0d1117; color: #c9d1d9; font-family: sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        
+        /* SCHERMATA LOGIN */
         #gatekeeper {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: #0d1117; display: flex; justify-content: center;
@@ -17,21 +19,18 @@
             background: #161b22; padding: 40px; border-radius: 15px;
             border: 1px solid #30363d; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
-        .login-card h2 { color: #58a6ff; margin-bottom: 25px; font-family: sans-serif; }
         #psw-field {
             padding: 12px; width: 200px; border-radius: 8px; border: 1px solid #30363d;
             background: #0d1117; color: white; font-size: 16px; outline: none; margin-bottom: 20px;
         }
-        #psw-field:focus { border-color: #58a6ff; }
         #entry-btn {
             padding: 12px 30px; background: #238636; color: white; border: none;
-            border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.2s;
+            border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px;
         }
-        #entry-btn:hover { background: #2ea043; }
-        #err-msg { color: #f85149; font-size: 14px; margin-top: 15px; font-family: sans-serif; height: 18px; }
 
-        /* --- I TUOI STILI ORIGINALI --- */
-        body { background-color: #0d1117; color: #c9d1d9; font-family: sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        /* DASHBOARD (inizialmente nascosta) */
+        #main-content { display: none; width: 100%; flex-direction: column; align-items: center; }
+        
         #header { width: 100%; max-width: 1200px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid #30363d; padding-bottom: 10px; }
         h1 { font-size: 24px; color: #58a6ff; margin: 0; }
         #chan-count { color: #8b949e; font-weight: bold; }
@@ -51,49 +50,40 @@
 
     <div id="gatekeeper">
         <div class="login-card">
-            <h2>Dashboard Privata</h2>
-            <input type="password" id="psw-field" placeholder="Password di accesso">
+            <h2 style="color: #58a6ff;">Accesso Riservato</h2>
+            <input type="password" id="psw-field" placeholder="Password">
             <br>
-            <button id="entry-btn" onclick="checkPsw()">SBLOCCA</button>
-            <div id="err-msg"></div>
+            <button id="entry-btn" onclick="checkPsw()">ENTRA</button>
+            <div id="err-msg" style="color: #f85149; margin-top: 15px;"></div>
         </div>
     </div>
 
-    <div id="header">
-        <h1>Dashboard</h1>
-        <div id="chan-count">In attesa di sblocco...</div>
+    <div id="main-content">
+        <div id="header">
+            <h1>Dashboard</h1>
+            <div id="chan-count">Caricamento...</div>
+        </div>
+        <div class="player-container" data-shaka-player-container>
+            <video autoplay data-shaka-player id="video"></video>
+        </div>
+        <div id="list" class="grid"></div>
     </div>
-
-    <div class="player-container" data-shaka-player-container>
-        <video autoplay data-shaka-player id="video"></video>
-    </div>
-
-    <div id="list" class="grid"></div>
 
 <script>
-// --- IMPOSTA QUI LA TUA PASSWORD ---
-const MY_SECRET_PSW = "1234"; 
+const MY_SECRET_PSW = "1234"; // <--- CAMBIA QUI LA TUA PASSWORD
 
 function checkPsw() {
     const val = document.getElementById('psw-field').value;
-    const msg = document.getElementById('err-msg');
-    
     if (val === MY_SECRET_PSW) {
-        document.getElementById('gatekeeper').style.display = 'none';
-        // Solo ora che la password è corretta, facciamo partire la sincronizzazione
-        init(); 
+        document.getElementById('gatekeeper').remove(); // Rimuove completamente il login
+        document.getElementById('main-content').style.display = 'flex'; // Mostra la dashboard
+        init(); // Avvia il caricamento canali
     } else {
-        msg.innerText = "Password errata!";
+        document.getElementById('err-msg').innerText = "Password errata!";
     }
 }
 
-// Permette di premere "Invio" per entrare
-document.getElementById('psw-field').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') checkPsw();
-});
-
-
-// --- LA TUA LOGICA ORIGINALE NON TOCCATA ---
+// Logica originale
 const SOURCE_URL = "https://nodrm.online/list/list2.m3u";
 const PROXY_URL = "https://api.allorigins.win/raw?url=" + encodeURIComponent(SOURCE_URL);
 
@@ -108,13 +98,17 @@ const CANALI_FISSI = [
 ];
 
 async function init() {
+    // Inizializzazione Shaka UI manuale
+    await shaka.Polyfill.installAll();
     const video = document.getElementById('video');
-    const ui = video['ui'];
-    const player = ui.getControls().getPlayer();
-    const container = document.getElementById('list');
+    const container = document.querySelector('.player-container');
+    const player = new shaka.Player(video);
+    const ui = new shaka.ui.Overlay(player, container, video);
+    
+    const listContainer = document.getElementById('list');
     const countHeader = document.getElementById('chan-count');
 
-    player.configure({ streaming: { jumpLargeGaps: true }, manifest: { dash: { clockSyncUri: '' } } });
+    player.configure({ streaming: { jumpLargeGaps: true } });
 
     player.getNetworkingEngine().registerRequestFilter((type, request) => {
         request.headers['User-Agent'] = 'Mozilla/5.0 (Linux; Android 9; AFTKA Build/PS7702.4965N; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/136.0.7103.125 Mobile Safari/537.36';
@@ -130,7 +124,7 @@ async function init() {
             player.configure({ drm: { clearKeys: drmConfig } });
             try { await player.load(url); window.scrollTo({top:0, behavior:'smooth'}); } catch(e){ console.error(e); }
         };
-        container.appendChild(card);
+        listContainer.appendChild(card);
     }
 
     let liveCount = 0;
@@ -152,9 +146,7 @@ async function init() {
                 }
             }
         });
-    } catch (err) {
-        console.error("Errore sincronizzazione live:", err);
-    }
+    } catch (err) { console.error(err); }
 
     CANALI_FISSI.forEach(ch => {
         const drm = ch.keys ? ch.keys : { [ch.kid]: ch.key };
@@ -163,8 +155,6 @@ async function init() {
 
     countHeader.innerText = (CANALI_FISSI.length + liveCount) + " CANALI CARICATI";
 }
-
-// Importante: ho tolto l'evento automatico per farlo gestire dal pulsante SBLOCCA
 </script>
 </body>
 </html>
