@@ -1,66 +1,71 @@
 <!DOCTYPE html>
-<html>
+<html lang="it">
 <head>
-    <title>TV Privata</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Area Riservata TV</title>
     <style>
-        body { background: #000; color: #fff; font-family: sans-serif; text-align: center; }
+        body { background: #0f0f0f; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 20px; }
         .hidden { display: none; }
-        #player { width: 100%; max-width: 700px; margin: 20px auto; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; padding: 20px; }
-        button { background: #222; color: #fff; border: 1px solid #444; padding: 10px; cursor: pointer; border-radius: 5px; }
-        input { padding: 10px; border-radius: 5px; border: none; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; max-width: 1000px; margin: 30px auto; }
+        button { background: #1e1e1e; color: #efefef; border: 1px solid #333; padding: 15px; cursor: pointer; border-radius: 8px; transition: 0.3s; font-weight: bold; }
+        button:hover { background: #333; border-color: #0078d4; }
+        input { autocomplete: off; padding: 12px; border-radius: 5px; border: 1px solid #333; background: #1e1e1e; color: white; margin-bottom: 10px; }
+        .notice { font-size: 0.8em; color: #888; margin-top: 20px; }
     </style>
 </head>
 <body>
+
     <div id="login-section">
-        <h2>Inserisci Accesso</h2>
-        <input type="password" id="pw" placeholder="Password">
-        <button onclick="check()">Entra</button>
+        <h1>🔐 Accesso Privato</h1>
+        <p>Inserisci la password per vedere i canali</p>
+        <input type="password" id="pw" placeholder="Password"><br>
+        <button onclick="check()">ENTRA</button>
     </div>
 
     <div id="main-section" class="hidden">
-        <video id="video" controls autoplay></video>
+        <h1>📺 I Tuoi Canali</h1>
+        <p>Clicca su un canale per aprirlo nell'estensione</p>
         <div id="buttons" class="grid"></div>
+        <p class="notice">Richiede l'estensione "VideoPlayer MPD/M3U8" installata.</p>
     </div>
 
     <script>
-        const passSegreta = "1234"; // CAMBIA QUESTA PASSWORD!
-        const fileUrl = "lista.m3u";
+        const passSegreta = "1234"; // MODIFICA QUESTA PASSWORD
+        const idEstensione = "opmeopcambhflmffbomjgemehjkbbmji"; // L'ID della tua estensione
 
         function check() {
             if(document.getElementById('pw').value === passSegreta) {
                 document.getElementById('login-section').classList.add('hidden');
                 document.getElementById('main-section').classList.remove('hidden');
                 loadList();
-            }
+            } else { alert("Password errata"); }
         }
 
         async function loadList() {
-            const res = await fetch(fileUrl);
+            const res = await fetch('lista.m3u');
             const text = await res.text();
             const lines = text.split('\n');
             const btnContainer = document.getElementById('buttons');
-            const video = document.getElementById('video');
 
             for (let i = 0; i < lines.length; i++) {
                 if (lines[i].startsWith('#EXTINF')) {
-                    const name = lines[i].split(',')[1];
-                    const url = lines[i+1];
+                    const info = lines[i].split(',');
+                    const name = info[info.length - 1].trim();
+                    const streamUrl = lines[i+1].trim();
+                    
+                    // CREA IL LINK PER L'ESTENSIONE
+                    // Formato: chrome-extension://ID/player.html#URL_STREAM
+                    const extensionLink = `chrome-extension://${idEstensione}/iptv/player.html#${streamUrl}`;
+
                     let btn = document.createElement('button');
                     btn.innerText = name;
-                    btn.onclick = () => {
-                        if (Hls.isSupported()) {
-                            var hls = new Hls();
-                            hls.loadSource(url);
-                            hls.attachMedia(video);
-                        } else { video.src = url; }
-                    };
+                    btn.onclick = () => { window.open(extensionLink, '_blank'); };
                     btnContainer.appendChild(btn);
                 }
             }
         }
     </script>
 </body>
+</html>
 </html>
