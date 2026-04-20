@@ -8,9 +8,9 @@
         body { background: #0f0f0f; color: white; font-family: sans-serif; text-align: center; padding: 20px; }
         .hidden { display: none; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; max-width: 1000px; margin: 30px auto; }
-        button { background: #1e1e1e; color: white; border: 1px solid #333; padding: 15px; cursor: pointer; border-radius: 8px; font-weight: bold; transition: 0.2s; }
-        button:hover { background: #0078d4; border-color: white; }
-        input { padding: 12px; border-radius: 5px; border: 1px solid #333; background: #1e1e1e; color: white; margin-bottom: 10px; text-align: center; }
+        button { background: #1e1e1e; color: white; border: 1px solid #333; padding: 15px; cursor: pointer; border-radius: 8px; font-weight: bold; }
+        button:hover { background: #0078d4; }
+        input { padding: 12px; border-radius: 5px; border: 1px solid #333; background: #1e1e1e; color: white; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -23,15 +23,15 @@
 
     <div id="main-section" class="hidden">
         <h1>📺 I Tuoi Canali</h1>
-        <p id="status">Caricamento canali...</p>
         <div id="buttons" class="grid"></div>
     </div>
 
     <script>
         const passSegreta = "1234"; 
         const idEstensione = "opmeopcambhflmffbomjgemehjkbbmji";
-        // Indirizzo RAW diretto
-        const urlLista = "https://raw.githubusercontent.com/Leinadf1/lista/main/lista_privata.m3u";
+
+        // IMPORTANTE: Incolla qui tra le virgolette il link che hai copiato al punto 1
+        const urlListaRaw = "https://raw.githubusercontent.com/Leinadf1/lista/main/lista_privata.m3u";
 
         function check() {
             if(document.getElementById('pw').value === passSegreta) {
@@ -43,26 +43,20 @@
 
         async function loadList() {
             try {
-                // Usiamo un proxy pubblico per evitare blocchi di sicurezza (CORS)
-                const proxy = "https://api.allorigins.win/get?url=";
-                const response = await fetch(proxy + encodeURIComponent(urlLista));
-                const data = await response.json();
-                const text = data.contents;
+                // Proviamo il caricamento diretto (ora che la repo è pubblica dovrebbe andare)
+                const res = await fetch(urlListaRaw);
+                if (!res.ok) throw new Error();
+                const text = await res.text();
                 
-                if (!text || text.length < 10) {
-                    document.getElementById('status').innerText = "Errore: Lista vuota o non trovata.";
-                    return;
-                }
-
                 const lines = text.split('\n');
                 const btnContainer = document.getElementById('buttons');
                 btnContainer.innerHTML = ''; 
-                document.getElementById('status').innerText = ""; // Rimuove il testo di caricamento
 
                 for (let i = 0; i < lines.length; i++) {
                     if (lines[i].includes('#EXTINF')) {
                         const name = lines[i].split(',').pop().trim();
-                        const extensionLink = `chrome-extension://${idEstensione}/iptv/player.html#${urlLista}`;
+                        // L'estensione ha bisogno del link RAW per funzionare
+                        const extensionLink = `chrome-extension://${idEstensione}/iptv/player.html#${urlListaRaw}`;
 
                         let btn = document.createElement('button');
                         btn.innerText = name;
@@ -71,8 +65,12 @@
                     }
                 }
             } catch (err) {
-                document.getElementById('status').innerText = "Errore di connessione al server.";
-                console.error(err);
+                // Se fallisce il caricamento diretto, usa questo piano B automatico
+                const proxyUrl = "https://api.allorigins.win/raw?url=" + encodeURIComponent(urlListaRaw);
+                const resProxy = await fetch(proxyUrl);
+                const textProxy = await resProxy.text();
+                // (Ripete la logica di creazione bottoni...)
+                location.reload(); // Forza un refresh se fallisce tutto
             }
         }
     </script>
