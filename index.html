@@ -3,90 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CHANNELS WEB</title>
+    <title>CHANNELS PRO</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.6/controls.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.6/shaka-player.ui.js"></script>
     <style>
-        :root { --bg: #0f1218; --accent: #ffcc00; }
-        body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; padding: 15px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
-        .card { background: #1c212a; border-radius: 8px; padding: 12px; border: 1px solid #2d3440; cursor: pointer; text-align: center; }
-        .card img { max-width: 100%; height: 50px; object-fit: contain; }
-        #player-overlay { position: fixed; inset: 0; background: black; display: none; z-index: 10000; flex-direction: column; }
+        :root { --bg: #0b0e11; --accent: #ffcc00; }
+        body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; overflow-x: hidden; }
+        #login { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 999; }
+        input { padding: 12px; background: #1a1d23; border: 1px solid #333; color: white; border-radius: 5px; margin-bottom: 10px; text-align: center; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; padding: 20px; }
+        .card { background: #1a1d23; border-radius: 10px; padding: 15px; text-align: center; cursor: pointer; border: 1px solid #2d3139; }
+        .card img { max-width: 100%; height: 60px; object-fit: contain; }
+        #player-layer { position: fixed; inset: 0; background: black; display: none; z-index: 100; flex-direction: column; }
         .shaka-range-element { color: var(--accent) !important; }
     </style>
 </head>
 <body>
 
+<div id="login">
+    <h2 style="color:var(--accent)">CHANNELS LOGIN</h2>
+    <input type="password" id="pass" placeholder="Inserisci Password">
+    <button onclick="check()" style="padding:10px 30px; background:var(--accent); border:none; font-weight:bold; border-radius:5px; cursor:pointer;">ENTRA</button>
+</div>
+
 <div id="grid" class="grid"></div>
 
-<div id="player-overlay">
-    <div style="padding:10px; background:#111; display:flex; justify-content:space-between; align-items:center;">
-        <span id="p-name" style="font-weight:bold">Canale</span>
-        <button onclick="location.reload()" style="background:red; color:white; border:none; padding:5px 15px; cursor:pointer; border-radius:4px;">CHIUDI</button>
+<div id="player-layer">
+    <div style="padding:15px; display:flex; justify-content:space-between; background:#111;">
+        <span id="chan-name" style="font-weight:bold">Canale</span>
+        <button onclick="location.reload()" style="color:red; background:none; border:none; font-weight:bold; cursor:pointer;">CHIUDI ✕</button>
     </div>
     <div id="video-container" style="width:100%; height:100%;"><video id="video" autoplay style="width:100%; height:100%;"></video></div>
 </div>
 
 <script>
     let player;
-    // Questo è il segreto: un proxy che "finge" di essere un browser autorizzato
-    const PROXY = "https://corsproxy.io/?"; 
+    // Usiamo un proxy pubblico professionale per evitare l'errore 1001 e 4000
+    const P = "https://corsproxy.io/?url=";
 
-    async function init() {
+    function check() {
+        if(document.getElementById('pass').value === "1234") {
+            document.getElementById('login').style.display = 'none';
+            loadList();
+        } else { alert("Sbagliata!"); }
+    }
+
+    async function loadList() {
         const res = await fetch("./lista_privata.m3u");
-        const data = await res.text();
-        const blocks = data.split('#KODIPROP:inputstream.adaptive.license_type=clearkey');
+        const text = await res.text();
+        const blocks = text.split('#KODIPROP:inputstream.adaptive.license_type=clearkey');
+        
+        blocks.forEach(b => {
+            if (b.includes('#EXTINF')) {
+                const url = b.match(/https?:\/\/\S+/)?.[0];
+                const key = b.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
+                const name = b.split(',').pop().split('\n')[0].trim();
+                const logo = b.match(/tvg-logo="(.*?)"/)?.[1] || "";
+                const ua = b.match(/user-agent=(.*?)\n/i)?.[1]?.trim() || "";
 
-        blocks.forEach(block => {
-            if (block.includes('#EXTINF')) {
-                const url = block.match(/https?:\/\/\S+/)?.[0];
-                const key = block.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
-                const name = block.split(',').pop().split('\n')[0].trim();
-                const logo = block.match(/tvg-logo="(.*?)"/)?.[1] || "";
-                const ua = block.match(/user-agent=(.*?)\n/i)?.[1]?.trim() || "";
-                
                 if (url && key) {
-                    const card = document.createElement('div');
-                    card.className = 'card';
-                    card.innerHTML = `<img src="${logo}"><div>${name}</div>`;
-                    card.onclick = () => play(url, name, key[1], key[2], ua);
-                    document.getElementById('grid').appendChild(card);
+                    const div = document.createElement('div');
+                    div.className = 'card';
+                    div.innerHTML = `<img src="${logo}"><div>${name}</div>`;
+                    div.onclick = () => start(url, name, key[1], key[2], ua);
+                    document.getElementById('grid').appendChild(div);
                 }
             }
         });
     }
 
-    async function play(url, name, kid, key, ua) {
-        document.getElementById('player-overlay').style.display = 'flex';
-        document.getElementById('p-name').innerText = name;
+    async function start(url, name, kid, key, ua) {
+        document.getElementById('player-layer').style.display = 'flex';
+        document.getElementById('chan-name').innerText = name;
+        const v = document.getElementById('video');
+        player = new shaka.Player(v);
+        const ui = new shaka.ui.Overlay(player, document.getElementById('video-container'), v);
         
-        const video = document.getElementById('video');
-        player = new shaka.Player(video);
-        const ui = new shaka.ui.Overlay(player, document.getElementById('video-container'), video);
-        
-        // Carica le chiavi DRM
         player.configure({ drm: { clearKeys: { [kid]: key } } });
 
-        // Forza il player a passare per il proxy esterno (bypass CORS e Errore 4000)
         player.getNetworkingEngine().registerRequestFilter((type, request) => {
-            const originalUrl = request.uris[0];
-            if (!originalUrl.includes(PROXY)) {
-                request.uris = [PROXY + encodeURIComponent(originalUrl)];
-                // Aggiungiamo lo User-Agent se presente
-                if (ua) request.headers['User-Agent'] = ua;
+            const original = request.uris[0];
+            if (!original.includes('corsproxy.io')) {
+                request.uris = [P + encodeURIComponent(original)];
+                if(ua) request.headers['User-Agent'] = ua;
             }
         });
 
-        try {
-            await player.load(url);
-        } catch(e) {
-            console.error(e);
-            alert("Errore: " + e.code + ". Il flusso potrebbe essere offline.");
-        }
+        try { await player.load(url); } 
+        catch(e) { alert("Errore caricamento: " + e.code); }
     }
-
-    init();
 </script>
 </body>
 </html>
