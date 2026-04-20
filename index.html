@@ -3,61 +3,176 @@
 <head>
 <meta charset="ISO-8859-1">
 <title>Single Stream Player</title>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
+
 <style>
-    body { background-color: #262626; color: white; font-family: Arial, sans-serif; }
-    .center { margin: auto; width: 50%; text-align: center; }
-    video { width: 100%; height: 100%; }
-    .channels { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
-    .btn { background: #444; color: white; border: 1px solid #666; padding: 10px; cursor: pointer; border-radius: 4px; }
+    /* STILE NODRM */
+    :root { 
+        --bg: #0b0e11; 
+        --card: #151921; 
+        --blue: #00d2ff; 
+        --border: #1e232d;
+    }
+
+    body { 
+        background-color: var(--bg); 
+        color: white; 
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+        margin: 0; 
+        padding: 0;
+    }
+
+    .hidden { display: none !important; }
+
+    /* SCHERMATA PASSWORD */
+    #lock-screen {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: var(--bg);
+    }
+    #lock-screen input {
+        background: #000;
+        border: 1px solid #333;
+        color: white;
+        padding: 12px;
+        border-radius: 4px;
+        margin-bottom: 10px;
+        text-align: center;
+        width: 200px;
+    }
+    #lock-screen button {
+        background: var(--blue);
+        color: black;
+        border: none;
+        padding: 10px 30px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    /* LAYOUT PRINCIPALE */
+    .container { padding: 20px; max-width: 1200px; margin: auto; }
+    
+    .header { 
+        border-bottom: 1px solid var(--border); 
+        margin-bottom: 25px; 
+        padding-bottom: 15px;
+    }
+    .header h2 { font-size: 18px; text-transform: uppercase; letter-spacing: 1px; margin: 0; }
+
+    /* VIDEO PLAYER */
+    .video-wrapper {
+        max-width: 800px;
+        margin: 0 auto 30px auto;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    /* GRIGLIA CANALI STILE NODRM */
+    .channels-grid { 
+        display: grid; 
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
+        gap: 12px; 
+    }
+    .btn-channel { 
+        background: var(--card); 
+        border: 1px solid var(--border); 
+        color: white; 
+        padding: 15px; 
+        cursor: pointer; 
+        border-radius: 4px; 
+        text-align: left;
+        transition: all 0.2s;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 80px;
+    }
+    .btn-channel:hover { 
+        border-color: #3e4553; 
+        background: #1c212a;
+    }
+    .btn-channel .name { font-size: 13px; font-weight: bold; }
+    .btn-channel .sub { font-size: 9px; color: var(--blue); text-transform: uppercase; margin-top: 5px; }
+
 </style>
 </head>
 <body>
-<div class="center"><h2 id="title">Seleziona Canale</h2></div>
-<div class="center" style="max-width:40em" data-shaka-player-container><video autoplay data-shaka-player id="video"></video></div>
-<div class="center channels" id="list"></div>
+
+<div id="lock-screen">
+    <div style="margin-bottom: 20px; font-size: 24px; font-weight: bold; color: var(--blue);">CHANNELS</div>
+    <input type="password" id="pw-input" placeholder="Password">
+    <button onclick="checkPassword()">ENTRA</button>
+</div>
+
+<div id="main-content" class="hidden">
+    <div class="container">
+        <div class="header">
+            <h2 id="title">Seleziona Canale</h2>
+        </div>
+
+        <div class="video-wrapper">
+            <div data-shaka-player-container data-shaka-player-cast-receiver-id="07AEE832">
+                <video autoplay data-shaka-player id="video" style="width:100%; height:100%;"></video>
+            </div>
+        </div>
+
+        <div class="channels-grid" id="list"></div>
+    </div>
+</div>
 
 <script>
+// FUNZIONE PASSWORD
+function checkPassword() {
+    const pass = document.getElementById('pw-input').value;
+    if(pass === "1234") { // Cambia qui la tua password
+        document.getElementById('lock-screen').classList.add('hidden');
+        document.getElementById('main-content').classList.remove('hidden');
+    } else {
+        alert("Password errata!");
+    }
+}
+
+// LOGICA PLAYER - IDENTICA AL TUO CODICE ORIGINALE
 async function init() {
     const video = document.getElementById('video');
     const ui = video['ui'];
-    const player = ui.getControls().getPlayer();
+    const controls = ui.getControls();
+    const player = controls.getPlayer();
 
     try {
         const res = await fetch('lista_privata.m3u');
         const data = await res.text();
         const container = document.getElementById('list');
         
-        // Dividiamo la lista in base a come è scritta (molto importante)
         const items = data.split('#EXTINF');
 
         items.forEach(item => {
             if (item.includes('license_key=')) {
-                // Estrazione pulita dei dati
                 const name = item.split(',').pop().split('\n')[0].trim();
                 const url = item.match(/https?:\/\/[^\s"|]+/)?.[0];
                 const keys = item.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
 
                 if (url && keys) {
-                    const btn = document.createElement('button');
-                    btn.className = 'btn';
-                    btn.innerText = name;
+                    const btn = document.createElement('div');
+                    btn.className = 'btn-channel';
+                    btn.innerHTML = `<span class="name">${name}</span><span class="sub">Live</span>`;
                     
                     btn.onclick = async () => {
                         document.getElementById('title').innerText = "Caricamento: " + name;
                         
-                        // Applichiamo le chiavi esattamente come nel tuo esempio Eurosport
                         player.configure({
                             drm: { clearKeys: { [keys[1]]: keys[2] } }
                         });
 
                         try {
-                            // Usiamo corsproxy.io per evitare il blocco 4000
                             await player.load("https://corsproxy.io/?url=" + encodeURIComponent(url));
                             document.getElementById('title').innerText = name;
                         } catch (e) {
-                            // Se fallisce col proxy, tentiamo l'ultima volta senza nulla (come a mano)
                             try {
                                 await player.load(url);
                                 document.getElementById('title').innerText = name;
@@ -72,6 +187,7 @@ async function init() {
         });
     } catch (err) { console.error("Errore M3U"); }
 }
+
 document.addEventListener('shaka-ui-loaded', init);
 </script>
 </body>
