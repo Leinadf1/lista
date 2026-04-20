@@ -3,20 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TV Dashboard – Area Protetta</title>
+    <title>TV Dashboard PRO – Protected</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
     <style>
-        /* Stili Login */
-        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0d1117; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; }
-        #login-box { background: #161b22; padding: 30px; border-radius: 12px; border: 1px solid #30363d; text-align: center; }
-        input { padding: 12px; border-radius: 6px; border: 1px solid #30363d; background: #0d1117; color: white; margin-bottom: 15px; width: 200px; text-align: center; }
-        button#login-btn { padding: 10px 25px; background: #238636; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        
-        /* Stili Dashboard (Nascosti all'inizio) */
-        #main-content { display: none; }
+        /* Overlay per il Login */
+        #login-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #0d1117; display: flex; justify-content: center; align-items: center;
+            z-index: 10000; flex-direction: column;
+        }
+        #login-box {
+            background: #161b22; padding: 40px; border-radius: 15px;
+            border: 1px solid #30363d; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        input#psw {
+            padding: 12px; width: 250px; border-radius: 8px; border: 1px solid #30363d;
+            background: #0d1117; color: white; font-size: 16px; margin-bottom: 20px; outline: none;
+        }
+        input#psw:focus { border-color: #58a6ff; }
+        button#ent-btn {
+            padding: 12px 30px; background: #238636; color: white; border: none;
+            border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px;
+        }
+        button#ent-btn:hover { background: #2ea043; }
+
+        /* Stile Dashboard */
         body { background-color: #0d1117; color: #c9d1d9; font-family: sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        #main-app { display: none; width: 100%; display: flex; flex-direction: column; align-items: center; }
         #header { width: 100%; max-width: 1200px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid #30363d; padding-bottom: 10px; }
+        h1 { font-size: 24px; color: #58a6ff; margin: 0; }
+        #chan-count { color: #8b949e; font-weight: bold; }
         .player-container { width: 100%; max-width: 850px; background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 35px; border: 1px solid #30363d; }
         video { width: 100%; aspect-ratio: 16/9; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; width: 100%; max-width: 1200px; }
@@ -26,24 +43,24 @@
         .logo-box { width: 100%; height: 100px; display: flex; justify-content: center; align-items: center; background: #21262d; padding: 10px; box-sizing: border-box; }
         .logo-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
         .info-box { padding: 12px; text-align: center; border-top: 1px solid #30363d; }
-        .name { font-size: 13px; font-weight: 600; color: #f0f6fc; }
+        .name { font-size: 13px; font-weight: 600; color: #f0f6fc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     </style>
 </head>
 <body>
 
-    <div id="login-overlay">
+    <div id="login-screen">
         <div id="login-box">
-            <h2 style="color: #58a6ff;">Accesso Riservato</h2>
-            <input type="password" id="pass-field" placeholder="Inserisci Password"><br>
-            <button id="login-btn" onclick="checkLogin()">Entra</button>
-            <p id="login-err" style="color: #f85149; font-size: 13px; margin-top: 10px;"></p>
+            <h1 style="margin-bottom: 20px;">TV DASHBOARD</h1>
+            <input type="password" id="psw" placeholder="Inserisci Password"><br>
+            <button id="ent-btn" onclick="tentaAccesso()">ACCEDI</button>
+            <p id="err-msg" style="color: #f85149; margin-top: 15px; font-weight: bold;"></p>
         </div>
     </div>
 
-    <div id="main-content">
+    <div id="main-app" style="display: none;">
         <div id="header">
-            <h1>Dashboard</h1>
-            <div id="chan-count">Sincronizzazione...</div>
+            <h1>Dashboard Live</h1>
+            <div id="chan-count">Inizializzazione...</div>
         </div>
         <div class="player-container" data-shaka-player-container>
             <video autoplay data-shaka-player id="video"></video>
@@ -53,29 +70,40 @@
 
 <script>
 // --- CONFIGURAZIONE SICUREZZA ---
-const MASTER_PASSWORD = "LaTuaPassword123"; // CAMBIA QUESTA PASSWORD
+const MIA_PASSWORD = "LaTuaPassword123"; // <--- CAMBIA QUESTA
 
-// --- LOGICA DI ACCESSO ---
-function checkLogin() {
-    const entered = document.getElementById('pass-field').value;
-    const err = document.getElementById('login-err');
-
-    if (entered === MASTER_PASSWORD) {
-        // Crea un ID sessione unico per questo browser
-        const sessionID = "session_" + Math.random().toString(36).substr(2, 9);
-        localStorage.setItem('tv_session_token', sessionID);
+function tentaAccesso() {
+    const input = document.getElementById('psw').value;
+    const error = document.getElementById('err-msg');
+    
+    if (input === MIA_PASSWORD) {
+        // Creiamo un ID sessione univoco per questo dispositivo
+        const sessionID = "sess_" + Date.now();
+        localStorage.setItem("active_session", sessionID);
         
-        document.getElementById('login-overlay').style.display = 'none';
-        document.getElementById('main-content').style.display = 'block';
+        // Mostriamo la dashboard
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('main-app').style.display = 'flex';
+        
+        // Avviamo il caricamento canali
         initDashboard();
     } else {
-        err.innerText = "Password errata!";
+        error.innerText = "Password errata! Accesso negato.";
     }
 }
 
-// --- CONFIGURAZIONE CANALI ---
+// Controllo per "Accesso Singolo": se apri il sito altrove, questo localstorage cambierà
+window.addEventListener('storage', (e) => {
+    if (e.key === 'active_session') {
+        alert("Accesso effettuato da un altro dispositivo. Questa sessione verrà chiusa.");
+        location.reload();
+    }
+});
+
+// --- LOGICA DASHBOARD (LA TUA ORIGINALE) ---
 const SOURCE_URL = "https://nodrm.online/list/list2.m3u";
 const PROXY_URL = "https://api.allorigins.win/raw?url=" + encodeURIComponent(SOURCE_URL);
+
 const CANALI_FISSI = [
     { name: "EUROSPORT 4K", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/thumb.prod.front.tim.cptech.pro/http/unsafe/filters:format(png):anamorphosis(640,480)/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020019/tim-ouah/CHN43FN/MONOGRAM_ESP4K_WHITE_V2-BjK0", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport4k)/manifest.mpd", keys: {"9ceae06c6ad34aada83ba86c0b511452":"406862beb4af1ef8fe04ba15d9936360","fcd924bd2e45470fa2ae50ef05e357c0":"266db84d3572bc889185274a90ff31df","dea135e33341468f8a4e8da806d8a6e6":"fb7423db39e6fab75056f8c83f415847","31911db90ee3410f8b38e45659d01fb1":"ac316ab7dfd2b50faf6d44633e4fedd5","a16f2a39adbb4974b8910cec8a651a09":"c2d55e0111af955f47214af209a2c468"} },
     { name: "EUROSPORT 1", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/thumb.prod.front.tim.cptech.pro/http/unsafe/filters:format(png):anamorphosis(640,480)/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020000/tim-ouah/CHN43FN/MONOGRAM_ESP1_WHITE_V2-Lv2g", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport1)/manifest.mpd", kid: "46e559c2f9f645ce8d80c7fa20446bdb", key: "597d214d66342ee042bccffeb165e750" },
@@ -124,13 +152,16 @@ async function initDashboard() {
                 const urlMatch = block.match(/https?:\/\/[^\s"|]+\.mpd[^\s"|]*/i);
                 const logoMatch = block.match(/tvg-logo="([^"]+)"/) || block.match(/tvg-logo=([^\s,]+)/);
                 const nameMatch = block.match(/#EXTINF:[^,]+,(.*)/);
+
                 if (keyMatch && urlMatch && nameMatch) {
                     liveCount++;
                     createCard(nameMatch[1].trim(), logoMatch ? logoMatch[1] : '', urlMatch[0], { [keyMatch[1]]: keyMatch[2] });
                 }
             }
         });
-    } catch (err) { console.error(err); }
+    } catch (err) {
+        console.error("Errore sincronizzazione live:", err);
+    }
 
     CANALI_FISSI.forEach(ch => {
         const drm = ch.keys ? ch.keys : { [ch.kid]: ch.key };
