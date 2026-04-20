@@ -8,11 +8,11 @@
 <style>
     body { background-color: #121212; color: white; font-family: sans-serif; padding: 20px; margin: 0; }
     .center { margin: auto; width: 95%; max-width: 800px; text-align: center; }
-    .video-container { width: 100%; background: #000; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.7); margin-bottom: 20px; }
-    #title { color: #00d2ff; font-size: 18px; margin-bottom: 15px; font-weight: bold; }
+    .video-container { width: 100%; background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
+    #title { color: #00d2ff; font-size: 18px; margin-bottom: 15px; }
     .channels { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
-    .btn { background: #2a2a2a; color: #eee; border: 1px solid #444; padding: 12px 5px; cursor: pointer; border-radius: 6px; font-size: 11px; font-weight: bold; transition: 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .btn:hover, .btn.active { background: #00d2ff; color: black; border-color: white; }
+    .btn { background: #2a2a2a; color: #eee; border: 1px solid #444; padding: 12px 5px; cursor: pointer; border-radius: 6px; font-size: 11px; font-weight: bold; }
+    .btn.active { background: #00d2ff; color: black; border: 2px solid white; }
 </style>
 </head>
 <body>
@@ -34,7 +34,6 @@ async function init() {
 
     const MIO_PROXY = "https://still-dawn-7cbdfd.miniclashroyale3636.workers.dev/?url=";
 
-    // Filtro di rete per forzare il proxy su tutto il traffico
     player.getNetworkingEngine().registerRequestFilter((type, request) => {
         if (!request.uris[0].includes('workers.dev')) {
             request.uris[0] = MIO_PROXY + encodeURIComponent(request.uris[0]);
@@ -44,19 +43,13 @@ async function init() {
     try {
         const res = await fetch('lista_privata.m3u');
         const data = await res.text();
-        const container = document.getElementById('list');
         const items = data.split('#EXTINF');
 
         items.forEach(item => {
             if (item.includes('license_key=')) {
                 const lines = item.split('\n');
                 let name = "Canale";
-                for (let line of lines) {
-                    if (line.includes(',') && !line.includes('license_key')) {
-                        name = line.split(',').pop().trim();
-                        break;
-                    }
-                }
+                for (let l of lines) { if (l.includes(',') && !l.includes('license')) { name = l.split(',').pop().trim(); break; } }
 
                 const url = item.match(/https?:\/\/[^\s"|]+/)?.[0];
                 const keys = item.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
@@ -65,33 +58,31 @@ async function init() {
                     const btn = document.createElement('button');
                     btn.className = 'btn';
                     btn.innerText = name;
-                    
                     btn.onclick = async () => {
-                        document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
-                        btn.classList.add('active');
                         titleDisplay.innerText = "Caricamento: " + name;
-
+                        
                         player.configure({
-                            drm: { clearKeys: { [keys[1]]: keys[2] } }
+                            drm: { clearKeys: { [keys[1]]: keys[2] } },
+                            manifest: { dash: { ignoreMinBufferTime: true } },
+                            streaming: { 
+                                rebufferingGoal: 2,
+                                failureCallback: () => player.retryStreaming()
+                            }
                         });
 
                         try {
-                            // Carichiamo l'URL originale: il filtro si occuperà di aggiungere il proxy
                             await player.load(url);
                             titleDisplay.innerText = "In riproduzione: " + name;
                         } catch (e) {
                             titleDisplay.innerText = "Errore: " + e.code;
                         }
                     };
-                    container.appendChild(btn);
+                    document.getElementById('list').appendChild(btn);
                 }
             }
         });
-    } catch (err) {
-        titleDisplay.innerText = "Errore lista";
-    }
+    } catch (e) { titleDisplay.innerText = "Errore Lista"; }
 }
-
 document.addEventListener('shaka-ui-loaded', init);
 </script>
 </body>
