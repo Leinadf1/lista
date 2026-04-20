@@ -1,136 +1,92 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="ISO-8859-1">
-<title>TV Dashboard - Basata su Eurosport</title>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
-
-<style>
-body {
-background-color: #262626;
-color: white;
-font-family: Arial, sans-serif;
-padding: 20px;
-}
-.center {
-margin: auto;
-width: 60%;
-text-align: center;
-}
-video {
-width: 100%;
-height: 100%;
-}
-/* Stile per i bottoni dei canali */
-.grid {
-display: grid;
-grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-gap: 10px;
-margin-top: 30px;
-}
-.btn {
-background: #3d3d3d;
-color: white;
-border: 1px solid #555;
-padding: 15px 5px;
-cursor: pointer;
-border-radius: 5px;
-font-size: 11px;
-font-weight: bold;
-}
-.btn:hover { background: #00d2ff; color: black; }
-.btn.active { background: #00d2ff; color: black; border: 2px solid white; }
-</style>
+    <title>Generatore HTML Dashboard</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f0f0f0; }
+        textarea { width: 100%; height: 200px; margin-bottom: 10px; }
+        pre { background: #fff; padding: 10px; border: 1px solid #ccc; overflow-x: auto; max-height: 400px; }
+    </style>
 </head>
-
 <body>
-<div class="center">
-<h2 id="current-chan">Seleziona un Canale</h2>
-</div>
+    <h2>Incolla qui la tua lista .m3u</h2>
+    <textarea id="m3uInput" placeholder="#EXTINF:-1 ..."></textarea>
+    <button onclick="genera()">Genera Codice HTML Finale</button>
 
-<div
-class="center"
-style="max-width:40em"
-data-shaka-player-container
-data-shaka-player-cast-receiver-id="07AEE832"
->
-<video autoplay data-shaka-player id="video"></video>
-</div>
+    <h2>Copia questo codice nel tuo file lista.html</h2>
+    <pre id="output"></pre>
 
-<div id="list" class="grid"></div>
+    <script>
+        function genera() {
+            const input = document.getElementById('m3uInput').value;
+            const blocks = input.split('#EXTINF');
+            let channelsArray = [];
 
-<script>
-async function init() {
-    const video = document.getElementById('video');
-    const ui = video['ui'];
-    const controls = ui.getControls();
-    const player = controls.getPlayer();
-    const statusHeader = document.getElementById('current-chan');
-
-    player.addEventListener('error', e => console.error('Player error:', e.detail));
-
-    try {
-        // Leggiamo la tua lista
-        const res = await fetch('lista_privata.m3u');
-        const data = await res.text();
-        const container = document.getElementById('list');
-        const items = data.split('#EXTINF');
-
-        items.forEach(item => {
-            if (item.includes('license_key=')) {
-                // 1. Pulizia nome (esattamente come la volevi)
-                const lines = item.split('\n');
-                let name = "Canale";
-                for (let l of lines) { 
-                    if (l.includes(',') && !l.includes('license')) { 
-                        name = l.split(',').pop().trim(); 
-                        break; 
-                    } 
-                }
-
-                // 2. Estrazione URL e Chiavi
-                const url = item.match(/https?:\/\/[^\s"|]+/)?.[0];
-                const keys = item.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
-
-                if (url && keys) {
-                    const btn = document.createElement('button');
-                    btn.className = 'btn';
-                    btn.innerText = name;
+            blocks.forEach(block => {
+                if (block.includes('license_key=')) {
+                    const lines = block.split('\n');
+                    let name = "Canale";
+                    for (let l of lines) { if (l.includes(',') && !l.includes('license')) { name = l.split(',').pop().trim(); break; } }
                     
-                    btn.onclick = async () => {
-                        // Gestione grafica bottoni
-                        document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
-                        btn.classList.add('active');
-                        statusHeader.innerText = name;
+                    const url = block.match(/https?:\/\/[^\s"|]+/)?.[0];
+                    const keys = block.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
 
-                        // Configurazione DRM IDENTICA al tuo esempio
-                        player.configure({
-                            drm: {
-                                clearKeys: { [keys[1]]: keys[2] }
-                            }
-                        });
-
-                        try {
-                            await player.load(url);
-                            console.log(name + ' caricato con successo');
-                        } catch (e) {
-                            console.error('Errore nel caricamento:', e);
-                            statusHeader.innerText = "Errore: " + e.code;
-                        }
-                    };
-                    container.appendChild(btn);
+                    if (url && keys) {
+                        channelsArray.push({ name: name, url: url, kid: keys[1], key: keys[2] });
+                    }
                 }
-            }
-        });
-    } catch (err) {
-        console.error('Errore caricamento lista.m3u');
-    }
-}
+            });
 
-document.addEventListener('shaka-ui-loaded', init);
-document.addEventListener('shaka-ui-load-failed', () => console.error('Errore caricamento Shaka UI'));
-</script>
+            const finalCode = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="ISO-8859-1">
+    <title>TV Dashboard Static</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"><\/script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
+    <style>
+        body { background-color: #262626; color: white; font-family: Arial, sans-serif; padding: 20px; text-align: center; }
+        .center { margin: auto; width: 60%; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-top: 20px; }
+        .btn { background: #3d3d3d; color: white; border: 1px solid #555; padding: 12px 5px; cursor: pointer; border-radius: 5px; font-size: 11px; }
+        .btn:hover { background: #00d2ff; color: black; }
+        video { width: 100%; aspect-ratio: 16/9; }
+    </style>
+</head>
+<body>
+    <h2 id="title">Seleziona Canale</h2>
+    <div class="center" data-shaka-player-container style="max-width:40em">
+        <video autoplay data-shaka-player id="video"></video>
+    </div>
+    <div class="grid" id="buttons"></div>
+
+    <script>
+        const channels = ${JSON.stringify(channelsArray, null, 4)};
+
+        async function init() {
+            const video = document.getElementById('video');
+            const player = video['ui'].getControls().getPlayer();
+            const btnContainer = document.getElementById('buttons');
+
+            channels.forEach(ch => {
+                const btn = document.createElement('button');
+                btn.className = 'btn';
+                btn.innerText = ch.name;
+                btn.onclick = async () => {
+                    document.getElementById('title').innerText = ch.name;
+                    player.configure({ drm: { clearKeys: { [ch.kid]: ch.key } } });
+                    try { await player.load(ch.url); } catch(e) { console.error(e); }
+                };
+                btnContainer.appendChild(btn);
+            });
+        }
+        document.addEventListener('shaka-ui-loaded', init);
+    <\/script>
+</body>
+</html>`;
+            document.getElementById('output').innerText = finalCode;
+        }
+    </script>
 </body>
 </html>
