@@ -6,12 +6,12 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
 <style>
-    body { background-color: #121212; color: white; font-family: sans-serif; padding: 20px; }
+    body { background-color: #121212; color: white; font-family: sans-serif; padding: 20px; margin: 0; }
     .center { margin: auto; width: 95%; max-width: 800px; text-align: center; }
-    .video-container { width: 100%; background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
-    #title { color: #00d2ff; font-size: 18px; margin-bottom: 15px; }
+    .video-container { width: 100%; background: #000; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.7); margin-bottom: 20px; }
+    #title { color: #00d2ff; font-size: 18px; margin-bottom: 15px; font-weight: bold; }
     .channels { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
-    .btn { background: #2a2a2a; color: white; border: 1px solid #444; padding: 12px 5px; cursor: pointer; border-radius: 6px; font-size: 11px; }
+    .btn { background: #2a2a2a; color: #eee; border: 1px solid #444; padding: 12px 5px; cursor: pointer; border-radius: 6px; font-size: 11px; font-weight: bold; transition: 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .btn:hover, .btn.active { background: #00d2ff; color: black; border-color: white; }
 </style>
 </head>
@@ -26,16 +26,17 @@
 </div>
 
 <script>
-const MIO_PROXY = "https://still-dawn-7cbdfd.miniclashroyale3636.workers.dev/?url=";
-
 async function init() {
     const video = document.getElementById('video');
     const ui = video['ui'];
     const player = ui.getControls().getPlayer();
+    const titleDisplay = document.getElementById('title');
 
-    // Filtro per far passare tutto dal proxy (corretto per evitare loop)
+    const MIO_PROXY = "https://still-dawn-7cbdfd.miniclashroyale3636.workers.dev/?url=";
+
+    // Filtro di rete per forzare il proxy su tutto il traffico
     player.getNetworkingEngine().registerRequestFilter((type, request) => {
-        if (!request.uris[0].includes('still-dawn-7cbdfd')) {
+        if (!request.uris[0].includes('workers.dev')) {
             request.uris[0] = MIO_PROXY + encodeURIComponent(request.uris[0]);
         }
     });
@@ -43,13 +44,19 @@ async function init() {
     try {
         const res = await fetch('lista_privata.m3u');
         const data = await res.text();
+        const container = document.getElementById('list');
         const items = data.split('#EXTINF');
 
         items.forEach(item => {
             if (item.includes('license_key=')) {
                 const lines = item.split('\n');
                 let name = "Canale";
-                for (let l of lines) { if (l.includes(',') && !l.includes('license')) { name = l.split(',').pop().trim(); break; } }
+                for (let line of lines) {
+                    if (line.includes(',') && !line.includes('license_key')) {
+                        name = line.split(',').pop().trim();
+                        break;
+                    }
+                }
 
                 const url = item.match(/https?:\/\/[^\s"|]+/)?.[0];
                 const keys = item.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
@@ -58,28 +65,33 @@ async function init() {
                     const btn = document.createElement('button');
                     btn.className = 'btn';
                     btn.innerText = name;
+                    
                     btn.onclick = async () => {
                         document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
                         btn.classList.add('active');
-                        document.getElementById('title').innerText = "Caricamento: " + name;
+                        titleDisplay.innerText = "Caricamento: " + name;
 
                         player.configure({
                             drm: { clearKeys: { [keys[1]]: keys[2] } }
                         });
 
                         try {
-                            await player.load(url); // Il filtro NetworkingEngine aggiungerà il proxy automaticamente
-                            document.getElementById('title').innerText = "In riproduzione: " + name;
+                            // Carichiamo l'URL originale: il filtro si occuperà di aggiungere il proxy
+                            await player.load(url);
+                            titleDisplay.innerText = "In riproduzione: " + name;
                         } catch (e) {
-                            document.getElementById('title').innerText = "Errore: " + e.code;
+                            titleDisplay.innerText = "Errore: " + e.code;
                         }
                     };
-                    document.getElementById('list').appendChild(btn);
+                    container.appendChild(btn);
                 }
             }
         });
-    } catch (e) { console.error(e); }
+    } catch (err) {
+        titleDisplay.innerText = "Errore lista";
+    }
 }
+
 document.addEventListener('shaka-ui-loaded', init);
 </script>
 </body>
