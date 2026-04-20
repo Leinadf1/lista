@@ -8,42 +8,26 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
 
 <style>
-body {
-background-color: #262626;
-color: white;
-font-family: Arial, sans-serif;
-}
-.center {
-margin: auto;
-width: 50%;
-text-align: center;
-}
-video {
-width: 100%;
-height: 100%;
-}
-/* Ho aggiunto solo questo per i bottoni dei canali */
-.channel-list { margin-top: 20px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
-.chan-btn { background: #444; color: white; border: 1px solid #666; padding: 10px; cursor: pointer; border-radius: 4px; }
-.chan-btn:hover { background: #ffcc00; color: black; }
+body { background-color: #262626; color: white; font-family: Arial, sans-serif; }
+.center { margin: auto; width: 50%; text-align: center; }
+video { width: 100%; height: 100%; }
+/* Stile per i tasti canali sotto al video */
+.channels { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.chan-btn { background: #444; color: #fff; border: 1px solid #666; padding: 10px; cursor: pointer; border-radius: 4px; font-size: 12px; }
+.chan-btn:hover { background: #ffcc00; color: #000; }
 </style>
 </head>
 
 <body>
 <div class="center">
-<h2 id="title">Seleziona un Canale</h2>
+<h2 id="channel-title">Seleziona un Canale</h2>
 </div>
 
-<div
-class="center"
-style="max-width:40em"
-data-shaka-player-container
-data-shaka-player-cast-receiver-id="07AEE832"
->
-<video autoplay data-shaka-player id="video"></video>
+<div class="center" style="max-width:40em" data-shaka-player-container data-shaka-player-cast-receiver-id="07AEE832">
+    <video autoplay data-shaka-player id="video"></video>
 </div>
 
-<div class="center channel-list" id="list"></div>
+<div class="center channels" id="buttons-container"></div>
 
 <script>
 async function init() {
@@ -52,34 +36,50 @@ async function init() {
     const controls = ui.getControls();
     const player = controls.getPlayer();
 
-    // Carica la lista e crea i bottoni
-    const res = await fetch("./lista_privata.m3u");
-    const data = await res.text();
-    const blocks = data.split('#KODIPROP:inputstream.adaptive.license_type=clearkey');
+    // Carichiamo la lista .m3u
+    try {
+        const response = await fetch('lista_privata.m3u');
+        const data = await response.text();
+        
+        // Dividiamo la lista per blocchi ClearKey
+        const blocks = data.split('#KODIPROP:inputstream.adaptive.license_type=clearkey');
+        const container = document.getElementById('buttons-container');
 
-    blocks.forEach(block => {
-        if (block.includes('#EXTINF')) {
-            const name = block.split(',').pop().split('\n')[0].trim();
-            const url = block.match(/https?:\/\/\S+/)?.[0];
-            const keys = block.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
+        blocks.forEach(block => {
+            if (block.includes('#EXTINF')) {
+                // Estraiamo Nome, URL e Chiavi
+                const name = block.split(',').pop().split('\n')[0].trim();
+                const url = block.match(/https?:\/\/\S+/)?.[0];
+                const keyMatch = block.match(/license_key=([a-f0-9]{32}):([a-f0-9]{32})/i);
 
-            if (url && keys) {
-                const btn = document.createElement('button');
-                btn.className = 'chan-btn';
-                btn.innerText = name;
-                btn.onclick = async () => {
-                    document.getElementById('title').innerText = name;
-                    player.configure({ drm: { clearKeys: { [keys[1]]: keys[2] } } });
-                    try {
-                        await player.load(url);
-                    } catch (e) {
-                        alert("Errore 4000: Il browser blocca il flusso.");
-                    }
-                };
-                document.getElementById('list').appendChild(btn);
+                if (url && keyMatch) {
+                    const btn = document.createElement('button');
+                    btn.className = 'chan-btn';
+                    btn.innerText = name;
+                    
+                    btn.onclick = async () => {
+                        document.getElementById('channel-title').innerText = "Caricamento: " + name;
+                        
+                        // Configurazione DRM
+                        player.configure({
+                            drm: { clearKeys: { [keyMatch[1]]: keyMatch[2] } }
+                        });
+
+                        try {
+                            await player.load(url);
+                            document.getElementById('channel-title').innerText = name;
+                        } catch (e) {
+                            console.error('Errore caricamento:', e);
+                            alert("Errore 4000: Flusso bloccato o non disponibile.");
+                        }
+                    };
+                    container.appendChild(btn);
+                }
             }
-        }
-    });
+        });
+    } catch (e) {
+        console.error('Errore nel caricamento della lista m3u:', e);
+    }
 }
 
 document.addEventListener('shaka-ui-loaded', init);
