@@ -369,3 +369,13 @@ https://abndy7jaaaaaaaamb5sbzman2g3xq.bia-cf.live.pv-cdn.net/lhr-nitro/live/clie
 https://nodrm.online:6163/stream/test/prime/master.m3u8?u=prime_video&p=26972c05e5cd32b4d006247a875330a1275a60747cd411377cfbb1f15633d612
 
 
+
+#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/12d0gpj7g0ta2gtmooy08740v_image-header_pIt_1775643532000/fill/none/top/none/100/1280/720/png/image",Athletic Bilbao - Osasuna
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=13df91d96a205c5a9a4d84455cd7c490:0ced20375f12ff0cee24830c088b8a0c
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1776790204~exp%3D1776876604~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D59e31230f9c44d3704bb8ded370a2f6fbf752f9eabf9f1e219c1c4f2f6aad851%23wm%3D0~hmac%3Db4fb6edf00cd7f98a064549a5ab06fa5f135f36f9cfe6914e2e3beae7f112433/1rfpca1cp129y19ienusr6q3o2/web/stream.mpd?channel=3930&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/9lkvczbmzlsjm6qept543gaxp_image-header_pIt_1775643625000/fill/none/top/none/100/1280/720/png/image",Maiorca - Valencia
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1776790207~exp%3D1776876607~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D9ace6a1a7adb6aca408b792e39f01d1502dc03e3c4ac7e3a2fe96fa09497cde1~hmac%3D81410258cb62df3b60bb669af72af8ec0c8d2b598316cd83c3f4ab57c3c628bf/1112t92x5tjd81f56jqvqft8ug/web/stream.mpd?channel=3737&mta=it&outlet=dazn-italy&plang=it
