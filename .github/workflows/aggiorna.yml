@@ -1,8 +1,12 @@
 name: Auto Update
 on:
   schedule:
-    - cron: '*/30 * * * *' # 5 minuti è troppo poco, GitHub ti blocca. 30 è meglio.
-  workflow_dispatch:
+    - cron: '*/15 * * * *' # Ogni 15 minuti (compromesso ideale)
+  workflow_dispatch:      # Permette il lancio manuale
+  push:                   # Parte anche se modifichi un file a mano
+    branches:
+      - main
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -10,20 +14,24 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - name: Download
+      
+      - name: Download and Clean
         run: |
-          # Scarichiamo la lista
-          curl -sL https://nodrm.online/list/list2.m3u -o lista_privata.m3u
+          # Scarica la lista aggiornata
+          curl -sL "https://nodrm.online/list/list2.m3u" -o lista_privata.m3u
+          # Crea o aggiorna un file di log per "svegliare" Git
+          echo "Ultimo controllo: $(date)" > last_sync.txt
+
       - name: Save Changes
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add lista_privata.m3u
+          git add lista_privata.m3u last_sync.txt
           
-          # Se il file è cambiato, fai il commit. Se non è cambiato, non fa nulla.
+          # Forza il commit se c'è qualsiasi differenza (anche solo nel log)
           if ! git diff --staged --quiet; then
-            git commit -m "Lista aggiornata: $(date +'%Y-%m-%d %H:%M')"
+            git commit -m "Update: $(date +'%d/%m/%Y %H:%M')"
             git push
           else
-            echo "La lista sul server è identica a quella attuale. Nessun aggiornamento necessario."
+            echo "Nessuna modifica rilevata."
           fi
