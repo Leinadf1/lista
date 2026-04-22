@@ -369,23 +369,3 @@ https://abndy7jaaaaaaaamb5sbzman2g3xq.bia-cf.live.pv-cdn.net/lhr-nitro/live/clie
 https://nodrm.online:6163/stream/test/prime/master.m3u8?u=prime_video&p=26972c05e5cd32b4d006247a875330a1275a60747cd411377cfbb1f15633d612
 
 
-
-#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/12d0gpj7g0ta2gtmooy08740v_image-header_pIt_1775643532000/fill/none/top/none/100/1280/720/png/image",Athletic Bilbao - Osasuna
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=13df91d96a205c5a9a4d84455cd7c490:0ced20375f12ff0cee24830c088b8a0c
-https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1776790204~exp%3D1776876604~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D59e31230f9c44d3704bb8ded370a2f6fbf752f9eabf9f1e219c1c4f2f6aad851%23wm%3D0~hmac%3Db4fb6edf00cd7f98a064549a5ab06fa5f135f36f9cfe6914e2e3beae7f112433/1rfpca1cp129y19ienusr6q3o2/web/stream.mpd?channel=3930&mta=it&outlet=dazn-italy&plang=it
-
-#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/9lkvczbmzlsjm6qept543gaxp_image-header_pIt_1775643625000/fill/none/top/none/100/1280/720/png/image",Maiorca - Valencia
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec
-https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1776790207~exp%3D1776876607~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D9ace6a1a7adb6aca408b792e39f01d1502dc03e3c4ac7e3a2fe96fa09497cde1~hmac%3D81410258cb62df3b60bb669af72af8ec0c8d2b598316cd83c3f4ab57c3c628bf/1112t92x5tjd81f56jqvqft8ug/web/stream.mpd?channel=3737&mta=it&outlet=dazn-italy&plang=it
-
-#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/eephou21uskknqjfbbr7xgih5_image-header_pIt_1775643555000/fill/none/top/none/100/1280/720/png/image",Real Madrid - Alavés
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=e8f5d16b04b95cbeaf1080626f60ecfd:265b3cfb879e38f603b63cbb9060299b
-https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1776799206~exp%3D1776885606~acl%3D%2F*~id%3DHjBL5BodKG5pE6gKE9zUTY7wsPhLSGKTep-ZgGvjYQt2vf9lu473erqGJHO4qlTK~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D99b49a94fede7ee20b07225ed419f5b0152d3c2ca35a73fdf66965a55dccae2e%23wm%3D1%23wmd%3D1152~hmac%3Dac226a68688482aea392c863ef43e693b4c2b101710afe6cfd43e5c194926e0c/1dl70bes4v86m1v5b0s6lamk0j/web/stream.mpd?channel=3941&mta=it&outlet=dazn-italy&plang=it
-
-#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/2wll9mrfwfpxn0mose1fo7c12_image-header_pIt_1775643562000/fill/none/top/none/100/1280/720/png/image",Girona - Betis
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec
-https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1776799220~exp%3D1776885620~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D40bcc3267d6fb3e32ed9414052ca72de487d5aa20c78b614615e812fc702d001~hmac%3Dd39ae5ada6389485a4148bcf479958e5e4e683fcd1b01679e3a1c034c78d9ab3/1kwb2bik7zdro1ry29fpplov4f/web/stream.mpd?channel=3732&mta=it&outlet=dazn-italy&plang=it
