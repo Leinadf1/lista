@@ -374,3 +374,8 @@ https://nodrm.online:6163/stream/test/prime/master.m3u8?u=prime_video&p=26972c05
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=f6c3125e77c85d759a21f9ea7186378d:6cfb769ab3f7de0c23001aef2e7ea6c6
 https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1776876604~exp%3D1776963004~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Daa6911fc57838fa3c483a56764e4d45439566e7ad47099853d70039a295901d2%23wm%3D0~hmac%3D30ba31eff88adc25919ffc90808ea59a40bd5095d5d6d7789287fad405c81965/oimtxzhqtici14oabw2xxfzof/web/stream.mpd?channel=3940&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/dech67y68mcs9aid18qxmwog_image-header_pIt_1775643577000/fill/none/top/none/100/1280/720/png/image",Real Sociedad - Getafe
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1776880203~exp%3D1776966603~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D3b08d8f38ed0f12ce6314cff8b3d4380a578b29d2f13c5f97051ca97b264e2b5~hmac%3D46b15a8e0bb3d735451a8af454ebd0055df5275c0d1df6053902ee753afa4bdf/cp9dnvwp9k9e11m71dlx0eunb/web/stream.mpd?channel=3729&mta=it&outlet=dazn-italy&plang=it
