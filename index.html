@@ -163,33 +163,32 @@ const CANALI_FISSI = [
 ];
 
 async function checkAccess() {
-    const passwordInserita = prompt("Inserisci la Password per accedere:");
-    if (!passwordInserita) return window.location.reload();
+    const passwordInserita = prompt("Inserisci la Password:");
+    if (!passwordInserita) return;
 
     try {
-        // Chiamata sicura alla funzione serverless di Vercel
         const response = await fetch("/api/get-list", {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ password: passwordInserita })
         });
 
-        if (!response.ok) {
-            alert("Password Errata o Accesso Negato!");
-            window.location.reload();
+        if (response.status === 401) {
+            alert("Password Errata!");
             return;
         }
 
-        // Se la password è corretta, riceviamo il testo della lista M3U
-        const m3uData = await response.text();
+        if (response.status === 403) {
+            alert("Questa password è già usata da un altro amico in questo momento!");
+            return;
+        }
 
-        // Mostriamo l'interfaccia e carichiamo i canali
+        const m3uData = await response.text();
         document.getElementById('mainBody').style.display = "flex";
-        init(m3uData);
+        init(m3uData); // Avvia i canali
 
     } catch (error) {
-        console.error(error);
-        alert("Errore critico di connessione.");
+        alert("Errore di connessione.");
     }
 }
 
