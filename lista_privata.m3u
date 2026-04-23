@@ -369,3 +369,8 @@ https://abndy7jaaaaaaaamb5sbzman2g3xq.bia-cf.live.pv-cdn.net/lhr-nitro/live/clie
 https://nodrm.online:6163/stream/test/prime/master.m3u8?u=prime_video&p=26972c05e5cd32b4d006247a875330a1275a60747cd411377cfbb1f15633d612
 
 
+
+#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/d1eg0vdypr1drp9qj74rclnfv_image-header_pIt_1775643611000/fill/none/top/none/100/1280/720/png/image",Levante - Siviglia
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1776963003~exp%3D1777049403~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D708ddd5b6039bcd9df526c31cd2d6d54af85a78072892b653683a04e55665993~hmac%3D9ffa4992775b4754f05390f72ea6299fc65001d9b76600e2875d547386ffc507/n6q3d7sv50l51vqctl1kmdd9s/web/stream.mpd?channel=3729&mta=it&outlet=dazn-italy&plang=it
