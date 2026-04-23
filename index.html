@@ -173,22 +173,21 @@ async function checkAccess() {
             body: JSON.stringify({ password: passwordInserita })
         });
 
-        if (response.status === 401) {
-            alert("Password Errata!");
+        // SE IL SERVER RISPONDE CON ERRORE (401, 403, 500)
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            alert(errorData.error || "Accesso negato!");
+            window.location.reload(); // Ricarica per sicurezza
             return;
         }
 
-        if (response.status === 403) {
-            alert("Questa password è già usata da un altro amico in questo momento!");
-            return;
-        }
-
+        // SE LA RISPOSTA È OK (200)
         const m3uData = await response.text();
         document.getElementById('mainBody').style.display = "flex";
-        init(m3uData); // Avvia i canali
+        init(m3uData);
 
     } catch (error) {
-        alert("Errore di connessione.");
+        alert("Errore di connessione al server.");
     }
 }
 
