@@ -18,7 +18,14 @@ jobs:
 
       - name: Download
         run: |
+          # Scarica la lista sovrascrivendo la vecchia
           curl -sL "https://nodrm.online/list/list2.m3u" > lista_privata.m3u
+          
+          # FORZA IL CAMBIAMENTO: aggiunge la data in fondo al file m3u
+          # In questo modo Git vedrà sempre un file diverso e lo aggiornerà
+          echo "# Ultimo aggiornamento: $(date)" >> lista_privata.m3u
+          
+          # Aggiorna il file di log separato
           echo "Aggiornato il: $(date)" > last_sync.txt
 
       - name: Save
@@ -26,6 +33,6 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add lista_privata.m3u last_sync.txt
-          # Commit forzato: se non ci sono cambi, non fallisce
+          # Il commit ora troverà sempre modifiche grazie alla riga aggiunta sopra
           git commit -m "Update list $(date +'%H:%M')" || echo "No changes"
           git push origin main
