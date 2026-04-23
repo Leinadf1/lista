@@ -135,10 +135,6 @@
             body { padding: 10px; }
             .player-container { margin-bottom: 25px; }
         }
-
-        @media (min-width: 1800px) {
-            .grid { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); }
-        }
     </style>
 </head>
 <body id="mainBody" style="display:none;">
@@ -155,71 +151,7 @@
     <div id="main-list" style="width: 100%;"></div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, get, set, onDisconnect } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyC7bYrOSB-3JPQVDBHOFQU9uUnDKN57oio",
-  authDomain: "mirochu-31bcd.firebaseapp.com",
-  projectId: "mirochu-31bcd",
-  databaseURL: "https://mirochu-31bcd-default-rtdb.europe-west1.firebasedatabase.app",
-  storageBucket: "mirochu-31bcd.firebasestorage.app",
-  messagingSenderId: "838586759420",
-  appId: "1:838586759420:web:ca320ac5818daa87d00f79"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-async function checkAccess() {
-    const passwordInserita = prompt("Inserisci la Password per accedere:");
-    if (!passwordInserita) return window.location.reload();
-
-    try {
-        const pwdSnapshot = await get(ref(db, 'passwords'));
-        const pwdData = pwdSnapshot.val();
-        let pwdKey = null;
-
-        if (pwdData) {
-            for (let key in pwdData) {
-                if (pwdData[key] === passwordInserita) { pwdKey = key; break; }
-            }
-        }
-
-        if (!pwdKey) {
-            alert("Password errata!");
-            window.location.reload();
-            return;
-        }
-
-        const userLockRef = ref(db, `session/${pwdKey}`);
-        const snapshot = await get(userLockRef);
-        const session = snapshot.val();
-        const ora = Date.now();
-
-        if (session && session.occupied && (ora - session.lastSeen < 40000)) {
-            alert("Questa password è già in uso su un altro dispositivo!");
-            document.body.innerHTML = "<h2 style='color:white;text-align:center;margin-top:100px;'>SESSIONE OCCUPATA</h2>";
-            document.body.style.display = "block";
-            return;
-        }
-
-        await set(userLockRef, { occupied: true, lastSeen: ora });
-        setInterval(() => { set(userLockRef, { occupied: true, lastSeen: Date.now() }); }, 20000);
-        onDisconnect(userLockRef).set({ occupied: false, lastSeen: Date.now() });
-
-        // Se tutto ok, mostriamo il body e avviamo la tua funzione init()
-        document.getElementById('mainBody').style.display = "flex";
-        init();
-
-    } catch (error) {
-        console.error(error);
-        alert("Errore di connessione al database.");
-    }
-}
-
-// --- LA TUA LOGICA ORIGINALE (NON MODIFICATA) ---
-const SOURCE_URL = "https://raw.githubusercontent.com/Leinadf1/lista/main/lista_privata.m3u";
+// Configurazione Canali Fissi
 const CANALI_FISSI = [
     { name: "EUROSPORT 4K", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020019/tim-ouah/CHN43FN/MONOGRAM_ESP4K_WHITE_V2-BjK0", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport4k)/manifest.mpd", drm: {"9ceae06c6ad34aada83ba86c0b511452":"406862beb4af1ef8fe04ba15d9936360","fcd924bd2e45470fa2ae50ef05e357c0":"266db84d3572bc889185274a90ff31df","dea135e33341468f8a4e8da806d8a6e6":"fb7423db39e6fab75056f8c83f415847","31911db90ee3410f8b38e45659d01fb1":"ac316ab7dfd2b50faf6d44633e4fedd5","a16f2a39adbb4974b8910cec8a651a09":"c2d55e0111af955f47214af209a2c468"} },
     { name: "EUROSPORT 1", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020000/tim-ouah/CHN43FN/MONOGRAM_ESP1_WHITE_V2-Lv2g", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport1)/manifest.mpd", drm: {"46e559c2f9f645ce8d80c7fa20446bdb":"597d214d66342ee042bccffeb165e750"} },
@@ -230,7 +162,38 @@ const CANALI_FISSI = [
     { name: "EUROSPORT 6", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020005/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-H53i", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport6)/manifest.mpd", drm: {"ead1c567a3df48619799b2e78b18fdfa":"1de9d9af5651296aa67913979ad8c694"} }
 ];
 
-async function init() {
+async function checkAccess() {
+    const passwordInserita = prompt("Inserisci la Password per accedere:");
+    if (!passwordInserita) return window.location.reload();
+
+    try {
+        // Chiamata sicura alla funzione serverless di Vercel
+        const response = await fetch("/api/get-list", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: passwordInserita })
+        });
+
+        if (!response.ok) {
+            alert("Password Errata o Accesso Negato!");
+            window.location.reload();
+            return;
+        }
+
+        // Se la password è corretta, riceviamo il testo della lista M3U
+        const m3uData = await response.text();
+
+        // Mostriamo l'interfaccia e carichiamo i canali
+        document.getElementById('mainBody').style.display = "flex";
+        init(m3uData);
+
+    } catch (error) {
+        console.error(error);
+        alert("Errore critico di connessione.");
+    }
+}
+
+async function init(m3uContent) {
     const video = document.getElementById('video');
     const ui = video['ui'];
     const player = ui.getControls().getPlayer();
@@ -276,51 +239,47 @@ async function init() {
         grid.appendChild(card);
     }
 
-    try {
-        const response = await fetch(SOURCE_URL + "?t=" + Date.now());
-        const text = await response.text();
-        const lines = text.split('\n');
+    // Elaborazione della lista ricevuta dal server
+    const lines = m3uContent.split('\n');
+    let currentChannel = { name: "", logo: "", group: "ALTRI", drm: {}, url: "" };
+    let loadedCount = 0;
 
-        let currentChannel = { name: "", logo: "", group: "ALTRI", drm: {}, url: "" };
-        let loadedCount = 0;
+    for (let line of lines) {
+        line = line.trim();
+        if (!line) continue;
 
-        for (let line of lines) {
-            line = line.trim();
-            if (!line) continue;
-
-            if (line.startsWith('#KODIPROP:inputstream.adaptive.license_key=')) {
-                const keyData = line.split('=')[1];
-                if (keyData.startsWith('{')) {
-                    try { currentChannel.drm = JSON.parse(keyData); } catch(e) {}
-                } else {
-                    const parts = keyData.split(':');
-                    if (parts.length === 2) currentChannel.drm[parts[0].toLowerCase()] = parts[1].toLowerCase();
-                }
-            } 
-            else if (line.startsWith('#EXTINF:')) {
-                const logoMatch = line.match(/tvg-logo="([^"]+)"/i);
-                const groupMatch = line.match(/group-title="([^"]+)"/i);
-                const nameMatch = line.match(/,(.*)/);
-                
-                if (logoMatch) currentChannel.logo = logoMatch[1];
-                if (groupMatch) currentChannel.group = groupMatch[1];
-                if (nameMatch) currentChannel.name = nameMatch[1].trim();
-            } 
-            else if (line.startsWith('http')) {
-                currentChannel.url = line;
-                createCard(currentChannel);
-                loadedCount++;
-                currentChannel = { name: "", logo: "", group: "ALTRI", drm: {}, url: "" };
+        if (line.startsWith('#KODIPROP:inputstream.adaptive.license_key=')) {
+            const keyData = line.split('=')[1];
+            if (keyData.startsWith('{')) {
+                try { currentChannel.drm = JSON.parse(keyData); } catch(e) {}
+            } else {
+                const parts = keyData.split(':');
+                if (parts.length === 2) currentChannel.drm[parts[0].toLowerCase()] = parts[1].toLowerCase();
             }
+        } 
+        else if (line.startsWith('#EXTINF:')) {
+            const logoMatch = line.match(/tvg-logo="([^"]+)"/i);
+            const groupMatch = line.match(/group-title="([^"]+)"/i);
+            const nameMatch = line.match(/,(.*)/);
+            
+            if (logoMatch) currentChannel.logo = logoMatch[1];
+            if (groupMatch) currentChannel.group = groupMatch[1];
+            if (nameMatch) currentChannel.name = nameMatch[1].trim();
+        } 
+        else if (line.startsWith('http')) {
+            currentChannel.url = line;
+            createCard(currentChannel);
+            loadedCount++;
+            currentChannel = { name: "", logo: "", group: "ALTRI", drm: {}, url: "" };
         }
+    }
 
-        CANALI_FISSI.forEach(ch => {
-            createCard({ ...ch, group: "EUROSPORT" });
-        });
+    // Aggiunta canali fissi
+    CANALI_FISSI.forEach(ch => {
+        createCard({ ...ch, group: "EUROSPORT" });
+    });
 
-        countHeader.innerText = (loadedCount + CANALI_FISSI.length) + " CANALI";
-
-    } catch(e) { console.error("Errore lista:", e); }
+    countHeader.innerText = (loadedCount + CANALI_FISSI.length) + " CANALI";
 }
 
 // Avvio tramite Shaka UI
