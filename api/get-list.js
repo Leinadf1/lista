@@ -7,12 +7,16 @@ export default async function handler(req, res) {
 
     if (req.method === 'OPTIONS') return res.status(200).end();
 
+    // ... (tutto uguale sopra)
     const { password } = req.body;
-    const authorizedPasswords = (process.env.MASTER_PASSWORD || "").split(',');
+    
+    // TEST: Scriviamole a mano qui dentro per un secondo
+    const authorizedPasswords = ["uno", "due", "Francesco"]; 
 
     if (!password || !authorizedPasswords.includes(password)) {
         return res.status(401).json({ error: "Password errata" });
     }
+// ... (tutto uguale sotto)
 
     try {
         // Creazione client con le variabili automatiche di Vercel
