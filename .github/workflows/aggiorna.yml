@@ -1,7 +1,31 @@
 name: Auto Update
 on:
   schedule:
-    - cron: '0 * * * *' # Questo lo lasciamo per sicurezza
-  workflow_dispatch:      # QUESTA RIGA È FONDAMENTALE per far funzionare la sveglia
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
   push:
     branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Download
+        run: |
+          curl -sL "https://nodrm.online/list/list2.m3u" > lista_privata.m3u
+          echo "Aggiornato il: $(date)" > last_sync.txt
+
+      - name: Save
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add lista_privata.m3u last_sync.txt
+          # Commit forzato: se non ci sono cambi, non fallisce
+          git commit -m "Update list $(date +'%H:%M')" || echo "No changes"
+          git push origin main
