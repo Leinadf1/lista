@@ -1,4 +1,4 @@
-import { createClient } from '@vercel/kv'; 
+import { createClient } from '@vercel/kv';
 
 export default async function handler(req, res) {
     // Intestazioni CORS per permettere l'accesso dal browser
