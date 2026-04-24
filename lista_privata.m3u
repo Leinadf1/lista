@@ -369,19 +369,4 @@ https://abndy7jaaaaaaaamb5sbzman2g3xq.bia-cf.live.pv-cdn.net/lhr-nitro/live/clie
 https://nodrm.online:6163/stream/test/prime/master.m3u8?u=prime_video&p=26972c05e5cd32b4d006247a875330a1275a60747cd411377cfbb1f15633d612
 
 
-
-#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/d1eg0vdypr1drp9qj74rclnfv_image-header_pIt_1775643611000/fill/none/top/none/100/1280/720/png/image",Levante - Siviglia
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec
-https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1776963003~exp%3D1777049403~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D708ddd5b6039bcd9df526c31cd2d6d54af85a78072892b653683a04e55665993~hmac%3D9ffa4992775b4754f05390f72ea6299fc65001d9b76600e2875d547386ffc507/n6q3d7sv50l51vqctl1kmdd9s/web/stream.mpd?channel=3729&mta=it&outlet=dazn-italy&plang=it
-
-#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/f1y2fw0w9lv315v9i6o9bp214_image-header_pIt_1775643423000/fill/none/top/none/100/1280/720/png/image",Rayo Vallecano - Espanyol
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec
-https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1776966604~exp%3D1777053004~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D0a3f0a691ef494ac34c7fa561a521c7d7662910e8630127e0de5b9dd3ae5239e~hmac%3D8121a040982d5d1c28d68580af26e46be6caa93a25001426475af54768efd46f/pd76rrviue0q1q4b02mdlrlg5/web/stream.mpd?channel=3730&mta=it&outlet=dazn-italy&plang=it
-
-#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/5zl7klbyx3wrpoa401nflxnlb_image-header_pIt_1775643655000/fill/none/top/none/100/1280/720/png/image",Real Oviedo - Villarreal
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec
-https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1776972005~exp%3D1777058405~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D1c6d4a06bb3a4205fb44d83ac24c5ec72a1c08522bf1d7e588a22eba8caa9181~hmac%3De6d23b95f9f13dc8707bd3084857107ca1c97cf914c85f73076f32826d44668a/62sijxkf7xg5115sikmcxjcso/web/stream.mpd?channel=3732&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Fri Apr 24 02:50:19 UTC 2026
+# Ultimo aggiornamento: Fri Apr 24 03:00:42 UTC 2026
