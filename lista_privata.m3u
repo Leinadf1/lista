@@ -429,4 +429,9 @@ https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1777122016~exp%3D1777208416~acl%3D%2
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=b4734c772bcd58b280a4c39ced13b84e:d7c61755962447a39c7df8fb7c8f9746
 https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777122018~exp%3D1777208418~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D142e8e8499bb97f70183d5b1ef331b15158ec7028b5646ae85b8c57017db11cb%23wm%3D0~hmac%3De76d68ffbcf10f171a25b8a13dfeec2d5d293a33505940b42a7ccbf587877b52/xwot945ttypt12ijk75rlsvz0/web/stream.mpd?channel=3931&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Sat Apr 25 14:02:47 UTC 2026
+
+#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/tikrk4fnfbjej34nvqxyd3q1_image-header_pIt_1775643451000/fill/none/top/none/100/1280/720/png/image",Getafe - Barcellona
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777125904~exp%3D1777212304~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D32bde30fcfa82ddd307807dab9681635cab8edbf639a57a245da98a2171ce5d3~hmac%3Dde05d3d617c64c03033ea2b47c0bd889a97f30358a1ce65646d6df74dcd9f782/6oo43dxdptnj1axfqi0444av6/web/stream.mpd?channel=3760&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Sat Apr 25 14:08:06 UTC 2026
