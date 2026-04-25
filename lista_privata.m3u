@@ -454,4 +454,9 @@ https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1777134003~exp%3D1777220403~acl%3D%2
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=48e498d5bf565ccda57ff3da6a86455c:49403e13714c293079feb40f18e163fc
 https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1777137604~exp%3D1777224004~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D1149cea80af5ff8701b2e7314f03c7237cbb9e7d32c0a0a869e000a0aa6849d4%23wm%3D0~hmac%3Da909696031123373add6ab09e1809d914789bda99a5e67e6a11c6cc3effb9c44/15fzlzqmiztwp1rxczbr8k7bup/web/stream.mpd?channel=3927&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Sat Apr 25 17:37:32 UTC 2026
+
+#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/80i8vmoaipaoeegxngdasa5pn_image-header_pIt_1775572328000/fill/none/top/none/100/1280/720/png/image",Hellas Verona - Lecce
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=bc827b35dc655bed850da3943e9a1b76:21c4df57b0af754f9cdd04f9c1bfc0ee
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1777140904~exp%3D1777227304~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D802df87ece478698c5439562335ead57616c8ed14410eed2bb17f3778898f774%23wm%3D0~hmac%3Dd2cb7166d24478c85005ad3aa3a2abf4dd99f4504d60cb3936d39e6be260c8b2/1ql36vbn21t1b1o17vcol655pw/web/stream.mpd?channel=1348&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Sat Apr 25 18:26:55 UTC 2026
