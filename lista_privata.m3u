@@ -369,29 +369,4 @@ https://abndy7jaaaaaaaamb5sbzman2g3xq.bia-cf.live.pv-cdn.net/lhr-nitro/live/clie
 https://nodrm.online:6163/stream/test/prime/master.m3u8?u=prime_video&p=26972c05e5cd32b4d006247a875330a1275a60747cd411377cfbb1f15633d612
 
 
-
-#EXTINF:-1 group-title="DAZN SERIE BKT" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/ep82hshmbn0ivoc16p9whao3p_image-header_pIt_1758299761000/fill/none/top/none/100/1280/720/png/image",Monza - Modena
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=127eb726599752d88bc38141db340b34:76e75ba810f54880ff9843693a35be69
-https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777049404~exp%3D1777135804~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Da51016edbf16b4f61337af91c28056ba6d7ef69aa8f0dbdb8150c0f88d83d620%23wm%3D0~hmac%3Ddc47a5ab50efa59b45c9caac96973f533a52f25daa903cf65a79914639653906/msip1j2mea8p1dev7il5b6oir/web/stream.mpd?channel=3928&mta=it&outlet=dazn-italy&plang=it
-
-#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/2wc4ywr10xeok74ct48mhkaiv_image-header_pIt_1776178545000/fill/none/top/none/100/1280/720/png/image",Napoli - Cremonese
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=6efc4f8fa9105e0bbf1ba3202a236227:e6e90ad40a91f286df3f587a22256ad4
-https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1777052704~exp%3D1777139104~acl%3D%2F*~id%3D29ce4820-8b55-5ac6-8c7a-5a820e51ebbb~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D4a3162f89a3dc698caa9ff807985af5d93ffe61bebf6522e03432efbb2320b42%23wm%3D1%23wmd%3D1152%23tmidversion%3D3~hmac%3Db628180bd3cd73a1aec121f081b0b288bb6690c37d790c2a4ab56db2f70ba964/7uvhjyc40wvn1i8ahumdqpepp/web/stream.mpd?channel=1354&mta=it&outlet=dazn-italy&plang=it
-
-#EXTINF:-1 group-title="DAZN SERIE BKT" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/21wx2y9wb0ypwi7ifwapvoam4_image-header_pIt_1775132829000/fill/none/top/none/100/1280/720/png/image",Avellino - Bari
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=32079cc1e7565e43a66f00f22f094bb7:9dd4ed7cc5940c03ccca7440f9296bab
-https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777056606~exp%3D1777143006~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Dc74f3af3631003b11292eef3551bb6907bfaebe0fab1895b57b3df7ecbd8aee5%23wm%3D0~hmac%3Dd70bc84f4fb1e2892e9a375a20b1d416964f7c2c0162b88424af24393b724833/o50dp4zn4noh162walv9wfhks/web/stream.mpd?channel=3927&mta=it&outlet=dazn-italy&plang=it
-
-#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/9bkdigw9ovh76zmry8s3w1sx8_image-header_pIt_1775643570000/fill/none/top/none/100/1280/720/png/image",Betis - Real Madrid
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=60b1a2e2d68d581ebb1260f71bd8f271:1d1571fa99d641f9ac3f5ebb6018c9b8
-https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777056611~exp%3D1777143011~acl%3D%2F*~id%3D29ce4820-8b55-5ac6-8c7a-5a820e51ebbb~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Dedd35aae1f7364dfaee4ae1ddcfc1565aa9f94e5e5da14d3ca1702659c7eaab7%23wm%3D1%23wmd%3D1152%23tmidversion%3D3~hmac%3Dc264bfbcb8c809cdfe2052ec6a357d6c52cdc9f45ea3faf0cd4bef55bb234a5b/1rfmc3ct3rpi71jxtszppwgjdu/web/stream.mpd?channel=3936&mta=it&outlet=dazn-italy&plang=it
-
-#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/d60cdhsxgqdy9srgq8g2lyri7_image-header_pIt_1770385458000/fill/none/top/none/100/1280/720/png/image",Undicesima puntata | Friday Football Show
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=e06dc0c729f152b2bd9e8ba8e68b7e18:42ee99adf6e8b416a75f05c1c22fa3e3
-https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777063504~exp%3D1777149904~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D4ef5a9f2750dfcd0031aef5e40ca47d13599fb7136d1d9cd0cbca9d5aef60d18%23wm%3D0~hmac%3Dc08bbf2e941c54b9e2631f2b867cecd64176405078c48a9d9587eaa3f1f3575f/1t39p2kg0tv1t1pkfp4er9zurh/web/stream.mpd?channel=1348&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Sat Apr 25 00:05:13 UTC 2026
+# Ultimo aggiornamento: Sat Apr 25 03:32:16 UTC 2026
