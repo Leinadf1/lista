@@ -155,27 +155,19 @@
 let passwordGlobale = "";
 let heartbeatInterval;
 
-// Funzione Battito Cardiaco (Aggiorna la sessione ogni 30s)
+// Funzione Battito Cardiaco aggiornata per Netlify
 function startHeartbeat(password) {
     if (heartbeatInterval) clearInterval(heartbeatInterval);
     heartbeatInterval = setInterval(async () => {
         try {
-            await fetch("/api/get-list", {
+            await fetch("/.netlify/functions/get-list", {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'x-heartbeat': 'true' },
-                body: JSON.stringify({ password: password })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: password, heartbeat: true })
             });
         } catch (e) { console.warn("Heartbeat fallito"); }
     }, 30000);
 }
-
-// Logout istantaneo alla chiusura della pagina
-window.addEventListener('beforeunload', () => {
-    if (passwordGlobale) {
-        const data = JSON.stringify({ password: passwordGlobale });
-        navigator.sendBeacon('/api/logout', data);
-    }
-});
 
 // --- CONFIGURAZIONE CANALI FISSI ---
 const CANALI_FISSI = [
@@ -193,24 +185,24 @@ async function checkAccess() {
     if (!psw) return;
 
     try {
-        const response = await fetch("/api/get-list", {
+        // FETCH MODIFICATA PER NETLIFY
+        const response = await fetch("/.netlify/functions/get-list", {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ password: psw })
         });
 
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            alert(errorData.error || "Accesso negato!");
+            alert("Accesso negato!");
             window.location.reload();
             return;
         }
 
         const m3uData = await response.text();
-        passwordGlobale = psw; // Salviamo per il logout/heartbeat
+        passwordGlobale = psw;
         document.getElementById('mainBody').style.display = "flex";
         
-        startHeartbeat(psw); // Avviamo il battito cardiaco
+        startHeartbeat(psw); 
         init(m3uData);
 
     } catch (error) {
