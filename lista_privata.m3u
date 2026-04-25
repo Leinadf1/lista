@@ -384,4 +384,14 @@ https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1777112403~exp%3D1777198803~acl%3D%2
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec
 https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1777117805~exp%3D1777204205~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Db5287dbd5569704e069eedcb1eb9f9f517f9ce5e13e5d191dd4e88b467726585~hmac%3D975aa67249607baa647ea8b2e5a7e88e19c751de787622acf3b6ddf4f254939e/18bocjtdb5irk133oln9pawog4/web/stream.mpd?channel=3747&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Sat Apr 25 12:33:19 UTC 2026
+
+#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/5d51gd5fitlp9ma807rvvk6m8_image-header_pIt_1777033754000/fill/none/top/none/100/1280/720/png/image",Bremer la conferenza stampa pre-partita
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=76ec9defa7e05372acb82dab5f7c4dc3:872e30f5786185ca47a8c9206fb61c71
+https://dca-ac-live.cdn.indazn.com/dugongeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvZnltZWJ4M3Nic2EyMWFtdnA0MG5wazg0OSJdLCJleGMiOltdLCJoZWFkZXJzIjpbXSwiY28iOnRydWUsImlwIjpmYWxzZSwiYXNuIjpbIjE2MjMyIl0sImludHNpZyI6ImhZcmtHTG9rNUF2TGNEZFNpZXR3ZEpqU21taElDWTVWTGVEclpvWEdVRm8iLCJpYXQiOjE3NzcxMjA1MDMsImV4cCI6MTc3NzIwNjkwM30.ui2RYRaUu3MbxEekEe9UQqDHmoNgFoDlD8tw7Xo_R5w/fymebx3sbsa21amvp40npk849/web/stream.mpd?channel=7067&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/vtju3ig77inn860otnmcqkal_image-header_pIt_1767991287000/fill/none/top/none/100/1280/720/png/image",Chivu la conferenza stampa pre-partita
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=2fbe01d0024c5192ab60bdacf38c8b21:e2c5ea6b546eb86e65baadeb3bdc03ce
+https://dca-ac-live.cdn.indazn.com/dugongeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMTI3anZneHBtZHNiOTE2MjZkdGx1c3RwYnEiXSwiZXhjIjpbXSwiaGVhZGVycyI6W10sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIxNjIzMiJdLCJpbnRzaWciOiJoWXJrR0xvazVBdkxjRGRTaWV0d2RKalNtbWhJQ1k1VkxlRHJab1hHVUZvIiwiaWF0IjoxNzc3MTIwNTA2LCJleHAiOjE3NzcyMDY5MDZ9.sMGFf3jz-tz8m2P3OqhR02syYVUxz1ipB4swKTmya8k/127jvgxpmdsb91626dtlustpbq/web/stream.mpd?channel=7004&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Sat Apr 25 12:37:54 UTC 2026
