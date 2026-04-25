@@ -1,5 +1,4 @@
 exports.handler = async (event) => {
-    // 1. LOG DI DEBUG (Vedrai questo nei logs di Netlify)
     console.log("--- NUOVA RICHIESTA DI ACCESSO ---");
 
     let passwordRicevuta = "";
@@ -8,19 +7,14 @@ exports.handler = async (event) => {
         passwordRicevuta = body.password ? body.password.trim() : "";
         console.log("Password inserita dall'utente:", passwordRicevuta);
     } catch (e) {
-        console.error("Errore parsing JSON:", e);
         return { statusCode: 400, body: "Dati non validi" };
     }
 
-    // 2. RECUPERO E PULIZIA PASSWORDS DA ENVIRONMENT
     const rawPasswords = process.env.MASTER_PASSWORD || "";
     const listaPassword = rawPasswords.split(',').map(p => p.trim()).filter(p => p !== "");
     
-    console.log("Password autorizzate caricate (nomi):", listaPassword);
-
-    // 3. CONTROLLO ACCESSO
     if (!passwordRicevuta || !listaPassword.includes(passwordRicevuta)) {
-        console.warn("ACCESSO NEGATO: Password non corrispondente.");
+        console.warn("ACCESSO NEGATO: Password errata.");
         return { 
             statusCode: 401, 
             headers: { "Content-Type": "application/json" },
@@ -30,12 +24,19 @@ exports.handler = async (event) => {
 
     console.log("ACCESSO GARANTITO per:", passwordRicevuta);
 
-    // 4. RECUPERO LISTA DA GITHUB
     try {
-        const response = await fetch('https://raw.githubusercontent.com/Leinadf1/lista/main/lista_privata.m3u');
-        if (!response.ok) throw new Error("GitHub RAW non risponde");
+        // URL AGGIORNATO: Questo punta direttamente al file RAW su GitHub
+        const urlGitHub = 'https://raw.githubusercontent.com/Leinadf1/lista/refs/heads/main/lista_privata.m3u';
+        
+        const response = await fetch(urlGitHub);
+        
+        if (!response.ok) {
+            console.error("GitHub ha risposto con errore:", response.status);
+            throw new Error("GitHub RAW non risponde");
+        }
         
         let fileContent = await response.text();
+        console.log("File M3U recuperato con successo.");
 
         // Filtro speciale per Matteo
         if (passwordRicevuta === 'Matteo') {
@@ -49,19 +50,29 @@ exports.handler = async (event) => {
             }
             return { 
                 statusCode: 200, 
-                headers: { "Content-Type": "text/plain" },
+                headers: { 
+                    "Content-Type": "text/plain",
+                    "Access-Control-Allow-Origin": "*" 
+                },
                 body: filteredM3U 
             };
         }
 
+        // Risposta standard per gli altri
         return { 
             statusCode: 200, 
-            headers: { "Content-Type": "text/plain" },
+            headers: { 
+                "Content-Type": "text/plain",
+                "Access-Control-Allow-Origin": "*" 
+            },
             body: fileContent 
         };
 
     } catch (error) {
-        console.error("Errore recupero file M3U:", error);
-        return { statusCode: 500, body: "Errore nel caricamento della lista" };
+        console.error("Errore critico:", error.message);
+        return { 
+            statusCode: 500, 
+            body: JSON.stringify({ error: "Errore nel caricamento della lista", dettagli: error.message }) 
+        };
     }
 };
