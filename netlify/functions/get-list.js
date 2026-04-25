@@ -11,14 +11,17 @@ exports.handler = async (event) => {
     const listaPassword = rawPasswords.split(',').map(p => p.trim()).filter(p => p !== "");
     
     if (!passwordRicevuta || !listaPassword.includes(passwordRicevuta)) {
-        return { statusCode: 401, body: JSON.stringify({ error: "Password errata" }) };
+        return { 
+            statusCode: 401, 
+            headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+            body: JSON.stringify({ error: "Password errata" }) 
+        };
     }
 
     const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
     const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
 
     try {
-        // Usiamo l'IP dell'utente come "ID dispositivo"
         const dispositivoId = event.headers['x-nf-client-connection-ip'] || event.headers['client-ip'] || "anon";
 
         const checkRes = await fetch(`${redisUrl}/get/${passwordRicevuta}`, {
@@ -26,16 +29,14 @@ exports.handler = async (event) => {
         });
         const checkData = await checkRes.json();
 
-        // Se la password è già usata da un IP DIVERSO, blocca
         if (checkData.result && checkData.result !== dispositivoId) {
             return { 
                 statusCode: 403, 
-                headers: { "Access-Control-Allow-Origin": "*" },
+                headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
                 body: JSON.stringify({ error: "Password già in uso su un altro dispositivo." }) 
             };
         }
 
-        // Occupiamo la password per 30 secondi
         await fetch(`${redisUrl}/set/${passwordRicevuta}/${dispositivoId}/EX/30`, {
             headers: { Authorization: `Bearer ${redisToken}` }
         });
@@ -51,11 +52,13 @@ exports.handler = async (event) => {
         let fileContent = await response.text();
         let finalBody = fileContent;
 
+        // FILTRO SPECIALE MATTEO
         if (passwordRicevuta === 'Matteo') {
             const lines = fileContent.split('\n');
             let filteredM3U = "#EXTM3U\n";
             for (let i = 0; i < lines.length; i++) {
-                if (lines[i].includes("Sky Sport F1")) {
+                // Filtro più flessibile: cerca "Sky Sport F1" ignorando maiuscole/minuscole
+                if (lines[i].toUpperCase().includes("SKY SPORT F1")) {
                     filteredM3U += lines[i] + "\n" + (lines[i+1] || "") + "\n";
                 }
             }
@@ -64,7 +67,12 @@ exports.handler = async (event) => {
 
         return { 
             statusCode: 200, 
-            headers: { "Content-Type": "text/plain", "Access-Control-Allow-Origin": "*" },
+            headers: { 
+                "Content-Type": "text/plain", 
+                "Access-Control-Allow-Origin": "*",
+                // Aggiungiamo un segnale per l'HTML se è Matteo
+                "X-User-Type": passwordRicevuta 
+            },
             body: finalBody 
         };
 
