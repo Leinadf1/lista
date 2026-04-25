@@ -27,59 +27,52 @@ export default async function handler(req, res) {
         return res.status(401).json({ error: "Password errata" });
     }
 
-    // --- LOGICA BLOCCO SESSIONE UNICA ---
     const sessionKey = `session_${psw}`;
     const isOccupied = await kv.get(sessionKey);
-    // Se la sessione esiste E non è un battito cardiaco (heartbeat), nega l'accesso
     if (isOccupied && req.headers['x-heartbeat'] !== 'true') {
-        return res.status(403).json({ error: "Accesso negato: password già in uso" });
+        return res.status(403).json({ error: "Accesso negato: sessione già attiva" });
     }
-    // Aggiorna/Crea la sessione per 45 secondi
     await kv.set(sessionKey, "active", { ex: 45 });
 
     try {
-        const githubUrl = "https://raw.githubusercontent.com/Leinadf1/lista/main/lista_privata.m3u";
-        const githubResponse = await fetch(githubUrl, {
+        const githubResponse = await fetch("https://raw.githubusercontent.com/Leinadf1/lista/main/lista_privata.m3u", {
             headers: { 
                 'Authorization': `token ${process.env.GITHUB_TOKEN}`,
                 'Accept': 'application/vnd.github.v3.raw'
             }
         });
-        
         const fileContent = await githubResponse.text();
 
-        // --- LOGICA SPECIALE MATTEO ---
+        // SE MATTEO: Filtra solo Sky Sport F1
         if (psw === "Matteo") {
-            const target = "Sky Sport F1";
-            const lines = fileContent.split('\n');
+            const lines = fileContent.split('\n').map(l => l.trim());
             let filtered = "#EXTM3U\n";
-            let found = false;
+            let targetIdx = -1;
 
             for (let i = 0; i < lines.length; i++) {
-                if (lines[i].includes('#EXTINF') && lines[i].toLowerCase().includes(target.toLowerCase())) {
-                    // Prendi i KODIPROP sopra
-                    let j = i - 1;
-                    let props = [];
-                    while(j >= 0 && (lines[j].includes('KODIPROP') || lines[j].includes('EXT-X-KEY'))) {
-                        props.unshift(lines[j]);
-                        j--;
-                    }
-                    props.forEach(p => filtered += p + "\n");
-                    // Canale
-                    filtered += lines[i] + "\n";
-                    // URL sotto
-                    if (lines[i+1] && lines[i+1].startsWith('http')) {
-                        filtered += lines[i+1] + "\n";
-                    }
-                    found = true;
+                if (lines[i].includes('#EXTINF') && lines[i].toUpperCase().includes("SKY SPORT F1")) {
+                    targetIdx = i;
                     break;
                 }
             }
-            // Se Matteo, manda SOLO il canale trovato (i fissi li togliamo lato client)
-            return res.status(200).send(found ? filtered : "#EXTM3U\n#EXTINF:-1,Canale Non Trovato\nhttp://0.0.0.0");
+
+            if (targetIdx !== -1) {
+                let j = targetIdx - 1;
+                let buffer = [];
+                while (j >= 0 && lines[j].startsWith('#')) {
+                    if (lines[j] !== "") buffer.unshift(lines[j]);
+                    j--;
+                }
+                buffer.forEach(l => filtered += l + "\n");
+                filtered += lines[targetIdx] + "\n";
+                if (lines[targetIdx + 1]) filtered += lines[targetIdx + 1] + "\n";
+                return res.status(200).send(filtered);
+            }
         }
 
+        // PER TUTTI GLI ALTRI: Lista completa
         res.status(200).send(fileContent);
+
     } catch (error) {
         res.status(500).json({ error: "Errore GitHub" });
     }
