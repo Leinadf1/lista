@@ -439,4 +439,9 @@ https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777125904~exp%3D1777212304~acl%3D%2
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=bbbf58b1e21e53ee8b424324088f4316:ed9f6bada36927527c2d77e0ffaa8e9c
 https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777129205~exp%3D1777215605~acl%3D%2F*~id%3D29ce4820-8b55-5ac6-8c7a-5a820e51ebbb~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D151491e438e7955c404241cf38141103ba247a5181ca6a915b3607bbf2e30e30%23wm%3D1%23wmd%3D1152%23tmidversion%3D3~hmac%3D307a16e34d1e8d2f9937dd3b399ee87909a8f57b05fdb1f155a746e1a790abb9/xrjn0tg9jmuu1mlpbzxly37gu/web/stream.mpd?channel=1388&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Sat Apr 25 15:00:48 UTC 2026
+
+#EXTINF:-1 group-title="DAZN SERIE BKT" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/7wc7s4kxbvhzku581nh6urmwx_image-header_pIt_1775132815000/fill/none/top/none/100/1280/720/png/image",Venezia - Empoli
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=010da8399c2b5a34a017e3caabe8c79f:5e8d6b72f4a98fd85e2a8e75922966be
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777129504~exp%3D1777215904~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Dbde326dfa507ed01e41e90218be35f9747151ba024be9e78b3c424b05df4991f%23wm%3D0~hmac%3D376782e80b68c298926519b826729ebe5f88aec84644830194836d59d9f8bd80/1outh0kmn5i8115g729vo55uhe/web/stream.mpd?channel=3928&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Sat Apr 25 15:56:06 UTC 2026
