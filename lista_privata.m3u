@@ -394,4 +394,14 @@ https://dca-ac-live.cdn.indazn.com/dugongeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImt
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=2fbe01d0024c5192ab60bdacf38c8b21:e2c5ea6b546eb86e65baadeb3bdc03ce
 https://dca-ac-live.cdn.indazn.com/dugongeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMTI3anZneHBtZHNiOTE2MjZkdGx1c3RwYnEiXSwiZXhjIjpbXSwiaGVhZGVycyI6W10sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIxNjIzMiJdLCJpbnRzaWciOiJoWXJrR0xvazVBdkxjRGRTaWV0d2RKalNtbWhJQ1k1VkxlRHJab1hHVUZvIiwiaWF0IjoxNzc3MTIwNTA2LCJleHAiOjE3NzcyMDY5MDZ9.sMGFf3jz-tz8m2P3OqhR02syYVUxz1ipB4swKTmya8k/127jvgxpmdsb91626dtlustpbq/web/stream.mpd?channel=7004&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Sat Apr 25 12:41:39 UTC 2026
+
+#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/257ibpji7iohwz0cir21koj4r_image-header_pIt_1775572313000/fill/none/top/none/100/1280/720/png/image",Parma - Pisa
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=9dbfb046cd825964839974068fdcf228:f5ee646f43f03f8cbb54b19748e3b06e
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777121102~exp%3D1777207502~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Da274cfd5a549242805ec05653970cd4744e72fd4d4302d5c662fd5624375d30e%23wm%3D0~hmac%3Df66647ab9523f48e90de64f52fae598a5294663502ec9e5d75d88b87d266f650/1pcvx3ty1bmu21op60cjvgaqw7/web/stream.mpd?channel=1348&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN SERIE BKT" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/e46bma6u44s9bubanjukn10aw_image-header_pIt_1756365226000/fill/none/top/none/100/1280/720/png/image",Zona Serie BKT
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=90ce28fe5f6d55aabdcf581390363639:36299d68bb925c4bbcc341cef96ca46b
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1777121403~exp%3D1777207803~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Da23b54d230a5fddc562d302fa678c76491cca9e21ab8baac3c04d338290f4a66%23wm%3D0~hmac%3Dceeb85eef708de8851975683c403582bd2deef76d27600c8dc17026c78fbc511/k8mpxmt8uyco14mx3nrs60eka/web/stream.mpd?channel=3937&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Sat Apr 25 12:50:55 UTC 2026
