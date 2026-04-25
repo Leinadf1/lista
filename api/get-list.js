@@ -25,7 +25,7 @@ export default async function handler(req, res) {
             return res.status(403).json({ error: "Password in uso altrove" });
         }
 
-        // Set blocco con scadenza 120 secondi (2 minuti)
+        // Set blocco con scadenza 120 secondi (2 minuti) per risparmiare risorse
         await fetch(`${redisUrl}/set/${passwordRicevuta}/${dispositivoId}/EX/120`, {
             headers: { Authorization: `Bearer ${redisToken}` }
         });
@@ -40,7 +40,7 @@ export default async function handler(req, res) {
         
         let fileContent = await response.text();
 
-        // Filtro speciale per Matteo
+        // Filtro speciale per Matteo: Solo Sky Sport F1
         if (passwordRicevuta === 'Matteo') {
             const lines = fileContent.split('\n');
             let filteredM3U = "#EXTM3U\n";
