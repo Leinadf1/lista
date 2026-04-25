@@ -449,4 +449,9 @@ https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777129504~exp%3D1777215904~acl%3D%2
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec
 https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1777134003~exp%3D1777220403~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D4681fe1a5a2bab3398b4ef0bc97d1fd1d3079a9151453f0282b7ddf003ebefd4~hmac%3D1594d24a8415cc797ca146e161f37961750998cd671ca73b30a57fc38512399e/nhafjpwqwftt19g3rohrlxfmv/web/stream.mpd?channel=3747&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Sat Apr 25 16:46:02 UTC 2026
+
+#EXTINF:-1 group-title="DAZN SERIE BKT" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/73uj0xoype0902jbiezmwulby_image-header_pIt_1775749191000/fill/none/top/none/100/1280/720/png/image",Cesena - Sampdoria
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=48e498d5bf565ccda57ff3da6a86455c:49403e13714c293079feb40f18e163fc
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1777137604~exp%3D1777224004~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D1149cea80af5ff8701b2e7314f03c7237cbb9e7d32c0a0a869e000a0aa6849d4%23wm%3D0~hmac%3Da909696031123373add6ab09e1809d914789bda99a5e67e6a11c6cc3effb9c44/15fzlzqmiztwp1rxczbr8k7bup/web/stream.mpd?channel=3927&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Sat Apr 25 17:37:32 UTC 2026
