@@ -155,18 +155,25 @@
 let passwordGlobale = "";
 let heartbeatInterval;
 
-// Funzione Battito Cardiaco aggiornata per Netlify
+// Funzione Battito Cardiaco: Rinnova ogni 15 secondi (per scadenza server di 30s)
 function startHeartbeat(password) {
     if (heartbeatInterval) clearInterval(heartbeatInterval);
     heartbeatInterval = setInterval(async () => {
         try {
-            await fetch("/.netlify/functions/get-list", {
+            const res = await fetch("/.netlify/functions/get-list", {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ password: password, heartbeat: true })
+                body: JSON.stringify({ password: password })
             });
+            
+            // Se il server risponde 403 (occupato da altro IP), blocchiamo l'accesso locale
+            if (res.status === 403) {
+                clearInterval(heartbeatInterval);
+                alert("Sessione scaduta o Password in uso su un altro dispositivo.");
+                window.location.reload();
+            }
         } catch (e) { console.warn("Heartbeat fallito"); }
-    }, 30000);
+    }, 15000);
 }
 
 // --- CONFIGURAZIONE CANALI FISSI ---
@@ -185,7 +192,6 @@ async function checkAccess() {
     if (!psw) return;
 
     try {
-        // FETCH MODIFICATA PER NETLIFY
         const response = await fetch("/.netlify/functions/get-list", {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -193,7 +199,8 @@ async function checkAccess() {
         });
 
         if (!response.ok) {
-            alert("Accesso negato!");
+            const err = await response.json();
+            alert(err.error || "Accesso negato!");
             window.location.reload();
             return;
         }
@@ -206,7 +213,8 @@ async function checkAccess() {
         init(m3uData);
 
     } catch (error) {
-        alert("Errore di connessione al server.");
+        alert("Errore: Password già in uso o server non disponibile.");
+        window.location.reload();
     }
 }
 
