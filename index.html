@@ -155,24 +155,27 @@
 let passwordGlobale = "";
 let heartbeatInterval;
 
+// Funzione Battito Cardiaco (Aggiorna la sessione ogni 30s)
 function startHeartbeat(password) {
     if (heartbeatInterval) clearInterval(heartbeatInterval);
     heartbeatInterval = setInterval(async () => {
         try {
-            const res = await fetch("/.netlify/functions/get-list", {
+            await fetch("/api/get-list", {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'x-heartbeat': 'true' },
                 body: JSON.stringify({ password: password })
             });
-            
-            if (res.status === 403) {
-                clearInterval(heartbeatInterval);
-                alert("Sessione scaduta o Password in uso su un altro dispositivo.");
-                window.location.reload();
-            }
         } catch (e) { console.warn("Heartbeat fallito"); }
-    }, 15000);
+    }, 30000);
 }
+
+// Logout istantaneo alla chiusura della pagina
+window.addEventListener('beforeunload', () => {
+    if (passwordGlobale) {
+        const data = JSON.stringify({ password: passwordGlobale });
+        navigator.sendBeacon('/api/logout', data);
+    }
+});
 
 // --- CONFIGURAZIONE CANALI FISSI ---
 const CANALI_FISSI = [
@@ -190,29 +193,28 @@ async function checkAccess() {
     if (!psw) return;
 
     try {
-        const response = await fetch("/.netlify/functions/get-list", {
+        const response = await fetch("/api/get-list", {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ password: psw })
         });
 
         if (!response.ok) {
-            const err = await response.json();
-            alert(err.error || "Accesso negato!");
+            const errorData = await response.json().catch(() => ({}));
+            alert(errorData.error || "Accesso negato!");
             window.location.reload();
             return;
         }
 
         const m3uData = await response.text();
-        passwordGlobale = psw;
+        passwordGlobale = psw; // Salviamo per il logout/heartbeat
         document.getElementById('mainBody').style.display = "flex";
         
-        startHeartbeat(psw); 
+        startHeartbeat(psw); // Avviamo il battito cardiaco
         init(m3uData);
 
     } catch (error) {
-        alert("Errore: Password già in uso o server non disponibile.");
-        window.location.reload();
+        alert("Errore di connessione al server.");
     }
 }
 
@@ -296,16 +298,11 @@ async function init(m3uContent) {
         }
     }
 
-    // Carica i canali Eurosport solo se l'utente NON è Matteo
-    if (passwordGlobale !== 'Matteo') {
-        CANALI_FISSI.forEach(ch => {
-            createCard({ ...ch, group: "EUROSPORT" });
-        });
-    }
+    CANALI_FISSI.forEach(ch => {
+        createCard({ ...ch, group: "EUROSPORT" });
+    });
 
-    // Aggiorna il conteggio totale
-    const extraChannels = (passwordGlobale === 'Matteo') ? 0 : CANALI_FISSI.length;
-    countHeader.innerText = (loadedCount + extraChannels) + " CANALI";
+    countHeader.innerText = (loadedCount + CANALI_FISSI.length) + " CANALI";
 }
 
 document.addEventListener('shaka-ui-loaded', checkAccess);
