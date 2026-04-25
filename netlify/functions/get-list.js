@@ -14,32 +14,32 @@ exports.handler = async (event) => {
         return { statusCode: 401, body: JSON.stringify({ error: "Password errata" }) };
     }
 
-    // --- LOGICA 1 DISPOSITIVO ALLA VOLTA (UPSTASH) ---
     const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
     const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
 
     try {
-        // Controlliamo se la password è già in uso
+        // Usiamo l'IP dell'utente come "ID dispositivo"
+        const dispositivoId = event.headers['x-nf-client-connection-ip'] || event.headers['client-ip'] || "anon";
+
         const checkRes = await fetch(`${redisUrl}/get/${passwordRicevuta}`, {
             headers: { Authorization: `Bearer ${redisToken}` }
         });
         const checkData = await checkRes.json();
 
-        if (checkData.result) {
-            // Se esiste già una "sessione" attiva, blocchiamo l'accesso
+        // Se la password è già usata da un IP DIVERSO, blocca
+        if (checkData.result && checkData.result !== dispositivoId) {
             return { 
                 statusCode: 403, 
-                headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-                body: JSON.stringify({ error: "Password già in uso su un altro dispositivo. Riprova tra 15 minuti." }) 
+                headers: { "Access-Control-Allow-Origin": "*" },
+                body: JSON.stringify({ error: "Password già in uso su un altro dispositivo." }) 
             };
         }
 
-        // Se è libera, la "occupiamo" per 900 secondi (15 minuti)
-        await fetch(`${redisUrl}/set/${passwordRicevuta}/active/EX/900`, {
+        // Occupiamo la password per 30 secondi
+        await fetch(`${redisUrl}/set/${passwordRicevuta}/${dispositivoId}/EX/30`, {
             headers: { Authorization: `Bearer ${redisToken}` }
         });
 
-        // --- RECUPERO LISTA DA GITHUB ---
         const urlGitHub = 'https://api.github.com/repos/Leinadf1/lista/contents/lista_privata.m3u';
         const response = await fetch(urlGitHub, {
             headers: {
@@ -48,11 +48,9 @@ exports.handler = async (event) => {
             }
         });
         
-        if (!response.ok) throw new Error("Errore GitHub");
         let fileContent = await response.text();
-
-        // Filtro Matteo
         let finalBody = fileContent;
+
         if (passwordRicevuta === 'Matteo') {
             const lines = fileContent.split('\n');
             let filteredM3U = "#EXTM3U\n";
