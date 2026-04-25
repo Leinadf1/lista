@@ -434,4 +434,9 @@ https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777122018~exp%3D1777208418~acl%3D%2
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec
 https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777125904~exp%3D1777212304~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D32bde30fcfa82ddd307807dab9681635cab8edbf639a57a245da98a2171ce5d3~hmac%3Dde05d3d617c64c03033ea2b47c0bd889a97f30358a1ce65646d6df74dcd9f782/6oo43dxdptnj1axfqi0444av6/web/stream.mpd?channel=3760&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Sat Apr 25 14:25:40 UTC 2026
+
+#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/50ckcep68uh1fa9tz4u5i7l05_image-header_pIt_1776172230000/fill/none/top/none/100/1280/720/png/image",Bologna - Roma
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=bbbf58b1e21e53ee8b424324088f4316:ed9f6bada36927527c2d77e0ffaa8e9c
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777129205~exp%3D1777215605~acl%3D%2F*~id%3D29ce4820-8b55-5ac6-8c7a-5a820e51ebbb~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D151491e438e7955c404241cf38141103ba247a5181ca6a915b3607bbf2e30e30%23wm%3D1%23wmd%3D1152%23tmidversion%3D3~hmac%3D307a16e34d1e8d2f9937dd3b399ee87909a8f57b05fdb1f155a746e1a790abb9/xrjn0tg9jmuu1mlpbzxly37gu/web/stream.mpd?channel=1388&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Sat Apr 25 15:00:48 UTC 2026
