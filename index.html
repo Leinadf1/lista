@@ -155,7 +155,6 @@
 let passwordGlobale = "";
 let heartbeatInterval;
 
-// Funzione Battito Cardiaco: Rinnova ogni 15 secondi (per scadenza server di 30s)
 function startHeartbeat(password) {
     if (heartbeatInterval) clearInterval(heartbeatInterval);
     heartbeatInterval = setInterval(async () => {
@@ -166,7 +165,6 @@ function startHeartbeat(password) {
                 body: JSON.stringify({ password: password })
             });
             
-            // Se il server risponde 403 (occupato da altro IP), blocchiamo l'accesso locale
             if (res.status === 403) {
                 clearInterval(heartbeatInterval);
                 alert("Sessione scaduta o Password in uso su un altro dispositivo.");
@@ -298,11 +296,16 @@ async function init(m3uContent) {
         }
     }
 
-    CANALI_FISSI.forEach(ch => {
-        createCard({ ...ch, group: "EUROSPORT" });
-    });
+    // Carica i canali Eurosport solo se l'utente NON è Matteo
+    if (passwordGlobale !== 'Matteo') {
+        CANALI_FISSI.forEach(ch => {
+            createCard({ ...ch, group: "EUROSPORT" });
+        });
+    }
 
-    countHeader.innerText = (loadedCount + CANALI_FISSI.length) + " CANALI";
+    // Aggiorna il conteggio totale
+    const extraChannels = (passwordGlobale === 'Matteo') ? 0 : CANALI_FISSI.length;
+    countHeader.innerText = (loadedCount + extraChannels) + " CANALI";
 }
 
 document.addEventListener('shaka-ui-loaded', checkAccess);
