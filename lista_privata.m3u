@@ -374,4 +374,9 @@ https://nodrm.online:6163/stream/test/prime/master.m3u8?u=prime_video&p=26972c05
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=c9c61c9422625249851eb5c0f01630d9:3fde6698dd589e331faa87f6c1c997e5
 https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777198502~exp%3D1777284902~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D2ee8bdcadbc55b87be15fe65e2057625e455f1a8f807a68908cf22e566df3e51%23wm%3D0~hmac%3Df82fe79d7f41da60c8f39858a13fa1960b4e199a6e3cda095a5cf79d0f564a0e/1cylwukncdmvc1rhmgjern2xkq/web/stream.mpd?channel=1346&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Sun Apr 26 11:40:21 UTC 2026
+
+#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/d3tbxi779ek8ap89gr9jpw8fi_image-header_pIt_1775643588000/fill/none/top/none/100/1280/720/png/image",Rayo Vallecano - Real Sociedad
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=f13e0f54d9e55cdea3b8cf55c9583145:87c4f10039a4ec19f15a8ef9079b3853
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1777204205~exp%3D1777290605~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D750cad189ad2c26b85d4c085e1c00710aac1c241ec59045b61bc3a3ca1054e76%23wm%3D0~hmac%3D7070d6809080362738a5da3fbf589b70fd65be72b0c313a58a9053df48835aef/1l45wiyk6sspt18rfpb1x3xvk6/web/stream.mpd?channel=3943&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Sun Apr 26 11:50:21 UTC 2026
