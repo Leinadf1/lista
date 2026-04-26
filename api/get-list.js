@@ -35,7 +35,6 @@ export default async function handler(req, res) {
     await kv.set(sessionKey, "active", { ex: 45 });
 
     try {
-        // 1. Scarica la tua lista privata da GitHub
         const githubResponse = await fetch(`https://raw.githubusercontent.com/Leinadf1/lista/main/lista_privata.m3u?t=${Date.now()}`, {
             headers: { 
                 'Authorization': `token ${process.env.GITHUB_TOKEN}`,
@@ -44,12 +43,13 @@ export default async function handler(req, res) {
         });
         const fileContent = await githubResponse.text();
 
-        // 2. SE MATTEO o DARIO: Filtra solo Sky Sport F1 e chiudi
+        // --- FILTRO RIGOROSO PER MATTEO E DARIO ---
         if (psw === "Matteo" || psw === "Dario") {
             const lines = fileContent.split('\n').map(l => l.trim());
             let filtered = "#EXTM3U\n";
             let targetIdx = -1;
 
+            // Cerchiamo solo Sky Sport F1
             for (let i = 0; i < lines.length; i++) {
                 if (lines[i].includes('#EXTINF') && lines[i].toUpperCase().includes("SKY SPORT F1")) {
                     targetIdx = i;
@@ -58,21 +58,28 @@ export default async function handler(req, res) {
             }
 
             if (targetIdx !== -1) {
+                // Recuperiamo i tag sopra l'inf (tipo #KODIPROP se ci sono)
                 let j = targetIdx - 1;
                 let buffer = [];
-                while (j >= 0 && lines[j].startsWith('#')) {
+                while (j >= 0 && lines[j].startsWith('#') && !lines[j].startsWith('#EXTM3U')) {
                     if (lines[j] !== "") buffer.unshift(lines[j]);
                     j--;
                 }
+                
                 buffer.forEach(l => filtered += l + "\n");
-                filtered += lines[targetIdx] + "\n";
-                if (lines[targetIdx + 1]) filtered += lines[targetIdx + 1] + "\n";
+                filtered += lines[targetIdx] + "\n"; // La riga #EXTINF
+                if (lines[targetIdx + 1]) filtered += lines[targetIdx + 1] + "\n"; // Il link stream
+                
+                // MANDIAMO LA RISPOSTA E ABORTIAMO TUTTO IL RESTO
                 return res.status(200).send(filtered);
             }
-            return res.status(200).send(filtered);
+            
+            // Se non trova la F1, manda comunque solo l'header vuoto (così non vede altro)
+            return res.status(200).send("#EXTM3U\n");
         }
+        // --- FINE FILTRO ---
 
-        // 3. PER GLI ALTRI: Scarica DAZN 1 (il canale lineare)
+        // LOGICA PER TE (DAZN + RESTO DELLA LISTA)
         let daznLineare = "";
         try {
             const daznResponse = await fetch(`https://nodrm.online/list/dz1.txt?t=${Date.now()}`);
@@ -82,7 +89,6 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("Errore DAZN 1"); }
 
-        // 4. POSIZIONAMENTO DOPO CHAMPIONS LEAGUE
         let lines = fileContent.split('\n');
         let lastChampionsIdx = -1;
 
@@ -99,11 +105,9 @@ export default async function handler(req, res) {
 
         let finalContent = "";
         if (lastChampionsIdx !== -1) {
-            // Inserimento dopo l'ultimo canale Champions
             lines.splice(lastChampionsIdx + 1, 0, "\n" + daznLineare + "\n");
             finalContent = lines.join('\n');
         } else {
-            // Se Champions non c'è, lo mette in fondo
             finalContent = fileContent + "\n" + daznLineare;
         }
 
