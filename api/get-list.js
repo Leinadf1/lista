@@ -44,8 +44,8 @@ export default async function handler(req, res) {
         });
         const fileContent = await githubResponse.text();
 
-        // 2. SE MATTEO: Filtra solo Sky Sport F1 e chiudi
-        if (psw === "Matteo") {
+        // 2. SE MATTEO o DARIO: Filtra solo Sky Sport F1 e chiudi
+        if (psw === "Matteo" || psw === "Dario") {
             const lines = fileContent.split('\n').map(l => l.trim());
             let filtered = "#EXTM3U\n";
             let targetIdx = -1;
@@ -72,7 +72,7 @@ export default async function handler(req, res) {
             return res.status(200).send(filtered);
         }
 
-        // 3. PER TE: Scarica DAZN 1 (il canale lineare)
+        // 3. PER GLI ALTRI: Scarica DAZN 1 (il canale lineare)
         let daznLineare = "";
         try {
             const daznResponse = await fetch(`https://nodrm.online/list/dz1.txt?t=${Date.now()}`);
@@ -82,14 +82,12 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("Errore DAZN 1"); }
 
-        // 4. POSIZIONAMENTO INTELLIGENTE
-        // Cerchiamo l'ultima riga del gruppo CHAMPIONS LEAGUE
+        // 4. POSIZIONAMENTO DOPO CHAMPIONS LEAGUE
         let lines = fileContent.split('\n');
         let lastChampionsIdx = -1;
 
         for (let i = 0; i < lines.length; i++) {
             if (lines[i].toUpperCase().includes('GROUP-TITLE="CHAMPIONS LEAGUE"')) {
-                // Trovato un canale Champions, cerchiamo dove finisce (la sua URL)
                 for (let k = i + 1; k < lines.length; k++) {
                     if (lines[k].trim().startsWith('http')) {
                         lastChampionsIdx = k;
@@ -101,11 +99,11 @@ export default async function handler(req, res) {
 
         let finalContent = "";
         if (lastChampionsIdx !== -1) {
-            // Se troviamo la Champions, inseriamo DAZN 1 subito dopo l'ultimo canale del gruppo
+            // Inserimento dopo l'ultimo canale Champions
             lines.splice(lastChampionsIdx + 1, 0, "\n" + daznLineare + "\n");
             finalContent = lines.join('\n');
         } else {
-            // Se il gruppo Champions non esiste in quel momento, lo mette in fondo
+            // Se Champions non c'è, lo mette in fondo
             finalContent = fileContent + "\n" + daznLineare;
         }
 
