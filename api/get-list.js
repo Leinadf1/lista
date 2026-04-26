@@ -44,7 +44,7 @@ export default async function handler(req, res) {
         });
         const fileContent = await githubResponse.text();
 
-        // 2. SE MATTEO: Filtra solo Sky Sport F1 e chiudi (DAZN non viene aggiunto)
+        // 2. SE MATTEO: Filtra solo Sky Sport F1 e chiudi
         if (psw === "Matteo") {
             const lines = fileContent.split('\n').map(l => l.trim());
             let filtered = "#EXTM3U\n";
@@ -69,29 +69,49 @@ export default async function handler(req, res) {
                 if (lines[targetIdx + 1]) filtered += lines[targetIdx + 1] + "\n";
                 return res.status(200).send(filtered);
             }
-            return res.status(200).send(filtered); // Ritorna vuoto se F1 non trovata
+            return res.status(200).send(filtered);
         }
 
-        // 3. PER GLI ALTRI (TE): Scarica DAZN 1 dal link esterno
-        let daznContent = "";
+        // 3. PER TE: Scarica DAZN 1 (il canale lineare)
+        let daznLineare = "";
         try {
             const daznResponse = await fetch(`https://nodrm.online/list/dz1.txt?t=${Date.now()}`);
             if (daznResponse.ok) {
-                daznContent = await daznResponse.text();
-                // Puliamo l'eventuale intestazione #EXTM3U dal file DAZN per non duplicarla
-                daznContent = daznContent.replace("#EXTM3U", "").trim();
+                daznLineare = await daznResponse.text();
+                daznLineare = daznLineare.replace("#EXTM3U", "").trim();
             }
-        } catch (e) {
-            console.error("Errore download DAZN esterno");
+        } catch (e) { console.error("Errore DAZN 1"); }
+
+        // 4. POSIZIONAMENTO INTELLIGENTE
+        // Cerchiamo l'ultima riga del gruppo CHAMPIONS LEAGUE
+        let lines = fileContent.split('\n');
+        let lastChampionsIdx = -1;
+
+        for (let i = 0; i < lines.length; i++) {
+            if (lines[i].toUpperCase().includes('GROUP-TITLE="CHAMPIONS LEAGUE"')) {
+                // Trovato un canale Champions, cerchiamo dove finisce (la sua URL)
+                for (let k = i + 1; k < lines.length; k++) {
+                    if (lines[k].trim().startsWith('http')) {
+                        lastChampionsIdx = k;
+                        break;
+                    }
+                }
+            }
         }
 
-        // 4. Unisci DAZN 1 in cima alla tua lista
-        // Inseriamo il contenuto di DAZN subito dopo la prima riga (#EXTM3U)
-        let finalContent = fileContent.replace("#EXTM3U", "#EXTM3U\n" + daznContent);
+        let finalContent = "";
+        if (lastChampionsIdx !== -1) {
+            // Se troviamo la Champions, inseriamo DAZN 1 subito dopo l'ultimo canale del gruppo
+            lines.splice(lastChampionsIdx + 1, 0, "\n" + daznLineare + "\n");
+            finalContent = lines.join('\n');
+        } else {
+            // Se il gruppo Champions non esiste in quel momento, lo mette in fondo
+            finalContent = fileContent + "\n" + daznLineare;
+        }
 
         res.status(200).send(finalContent);
 
     } catch (error) {
-        res.status(500).json({ error: "Errore GitHub o recupero liste" });
+        res.status(500).json({ error: "Errore caricamento liste" });
     }
 }
