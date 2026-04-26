@@ -35,7 +35,8 @@ export default async function handler(req, res) {
     await kv.set(sessionKey, "active", { ex: 45 });
 
     try {
-        const githubResponse = await fetch("https://raw.githubusercontent.com/Leinadf1/lista/main/lista_privata.m3u", {
+        // 1. Scarica la tua lista privata da GitHub
+        const githubResponse = await fetch(`https://raw.githubusercontent.com/Leinadf1/lista/main/lista_privata.m3u?t=${Date.now()}`, {
             headers: { 
                 'Authorization': `token ${process.env.GITHUB_TOKEN}`,
                 'Accept': 'application/vnd.github.v3.raw'
@@ -43,7 +44,7 @@ export default async function handler(req, res) {
         });
         const fileContent = await githubResponse.text();
 
-        // SE MATTEO: Filtra solo Sky Sport F1
+        // 2. SE MATTEO: Filtra solo Sky Sport F1 e chiudi (DAZN non viene aggiunto)
         if (psw === "Matteo") {
             const lines = fileContent.split('\n').map(l => l.trim());
             let filtered = "#EXTM3U\n";
@@ -68,12 +69,29 @@ export default async function handler(req, res) {
                 if (lines[targetIdx + 1]) filtered += lines[targetIdx + 1] + "\n";
                 return res.status(200).send(filtered);
             }
+            return res.status(200).send(filtered); // Ritorna vuoto se F1 non trovata
         }
 
-        // PER TUTTI GLI ALTRI: Lista completa
-        res.status(200).send(fileContent);
+        // 3. PER GLI ALTRI (TE): Scarica DAZN 1 dal link esterno
+        let daznContent = "";
+        try {
+            const daznResponse = await fetch(`https://nodrm.online/list/dz1.txt?t=${Date.now()}`);
+            if (daznResponse.ok) {
+                daznContent = await daznResponse.text();
+                // Puliamo l'eventuale intestazione #EXTM3U dal file DAZN per non duplicarla
+                daznContent = daznContent.replace("#EXTM3U", "").trim();
+            }
+        } catch (e) {
+            console.error("Errore download DAZN esterno");
+        }
+
+        // 4. Unisci DAZN 1 in cima alla tua lista
+        // Inseriamo il contenuto di DAZN subito dopo la prima riga (#EXTM3U)
+        let finalContent = fileContent.replace("#EXTM3U", "#EXTM3U\n" + daznContent);
+
+        res.status(200).send(finalContent);
 
     } catch (error) {
-        res.status(500).json({ error: "Errore GitHub" });
+        res.status(500).json({ error: "Errore GitHub o recupero liste" });
     }
 }
