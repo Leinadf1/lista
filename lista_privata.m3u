@@ -409,4 +409,9 @@ https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777224603~exp%3D1777311003~acl%3D%2
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec
 https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777229409~exp%3D1777315809~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D62c892e42cce8cf1fd3910c13d61fe2392331ce6cf6d0dc78bf7adb7281a64fc~hmac%3D359b43ec5fb225f99ae45cf64be0776f9f2c1a2e7db37580d37270fa5aa0dba3/1vj5fyr0trv3h1ejwd8mwrtygp/web/stream.mpd?channel=3740&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Sun Apr 26 20:40:21 UTC 2026
+
+#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/992y92tsv4auniu5bcrw3b7ux_image-header_pIt_1758534633000/fill/none/top/none/100/1280/720/png/image",Ventottesima puntata | Fuoriclasse
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=0ee71eee3ac6553ab33c62d341856fc2:ebb5590ca52213dbea7164293592f260
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777236303~exp%3D1777322703~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Ddeff87d023c340121f0bf64d9599ed023fcaca0cb21dd5adbb06d56f296f2811%23wm%3D0~hmac%3De460503de8c4fad5d15dc1529a351522da82a96cf7c37d1ca537570ce4bd4c41/1ow6l1zr66oda1vmyh1byzniqy/web/stream.mpd?channel=1347&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Sun Apr 26 20:50:19 UTC 2026
