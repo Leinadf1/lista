@@ -384,4 +384,9 @@ https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777312803~exp%3D1777399203~acl%3D%2
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec
 https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777316106~exp%3D1777402506~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D63aad41e8aaba0bf05e1f6d7296074777b91fcaabe919442a8c81769ee3d8f38~hmac%3Dd2878e1d8e4326bd3b47e7019011aeec7a9d867c6de0bc5545786752e5fc4af9/ds3al9o8pdqy1tp90g1hcojbb/web/stream.mpd?channel=3734&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Mon Apr 27 20:40:20 UTC 2026
+
+#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/2xhyzqet6pgdjww6j34gwzoyo_image-header_pIt_1759159202000/fill/none/top/none/100/1280/720/png/image",Ventiquattresima puntata | 4-3-2-1
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=a39bb5498516548e9afdf89a9c84ac39:5585c56bdc2301fe326e039a0e1a97ea
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777322703~exp%3D1777409103~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D46c6e41db8b46f512f1f60f5e2327d6ca7d9c63a8f922a190c5f40f4331561d5%23wm%3D0~hmac%3Da0b7048d556fe3fb45a8ee8f500f0e3ead17832ea565c8f5482b31b74a72d08e/z309cjotn5221h16snifs9zl9/web/stream.mpd?channel=1345&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Mon Apr 27 20:50:22 UTC 2026
