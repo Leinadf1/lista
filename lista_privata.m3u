@@ -379,4 +379,9 @@ https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777305604~exp%3D1777392004~acl%3D%2
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=408a702e22f45a2b817647b319ad47e8:421743368efbefd683412fe1936f216b
 https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777312803~exp%3D1777399203~acl%3D%2F*~id%3D29ce4820-8b55-5ac6-8c7a-5a820e51ebbb~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Def2135a3cf41e18777f67b8b0457d44d39923bc4af95f0cd128451ecc1ac2fcb%23wm%3D1%23wmd%3D1152%23tmidversion%3D3~hmac%3Df5ce9b0d9ba5ae026ed222db2a2dcb12a63ae2bfb312cb57ea54bd0caf332f8e/10p496hd2khw51uud39z70nz14/web/stream.mpd?channel=1382&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Mon Apr 27 18:50:23 UTC 2026
+
+#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/b4xg8bvax5hp4yggn3sh9l08_image-header_pIt_1775643477000/fill/none/top/none/100/1280/720/png/image",Espanyol - Levante
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777316106~exp%3D1777402506~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D63aad41e8aaba0bf05e1f6d7296074777b91fcaabe919442a8c81769ee3d8f38~hmac%3Dd2878e1d8e4326bd3b47e7019011aeec7a9d867c6de0bc5545786752e5fc4af9/ds3al9o8pdqy1tp90g1hcojbb/web/stream.mpd?channel=3734&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Mon Apr 27 18:57:20 UTC 2026
