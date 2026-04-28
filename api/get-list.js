@@ -44,40 +44,43 @@ export default async function handler(req, res) {
         const fileContent = await githubResponse.text();
 
         // --- FILTRO RIGOROSO PER MATTEO E DARIO ---
-        if (psw === "Matteo" || psw === "Dario") {
-            // Puliamo la lista da righe vuote per evitare errori di indice
+        // Usiamo il minuscolo per il confronto così non sbagliamo mai
+        const checkPsw = psw.toLowerCase();
+        if (checkPsw === "matteo" || checkPsw === "dario") {
             const lines = fileContent.split('\n').map(l => l.trim()).filter(l => l !== "");
             let filtered = "#EXTM3U\n";
             
-            // Trova l'indice esatto del canale Sky Sport F1
+            // Cerchiamo l'indice di Sky Sport F1
             const targetIdx = lines.findIndex(l => 
                 l.startsWith('#EXTINF') && l.toUpperCase().includes("SKY SPORT F1")
             );
 
             if (targetIdx !== -1) {
-                // Recupera eventuali tag tecnici (es. #KODIPROP) situati subito sopra l'EXTINF
+                // Recuperiamo tag extra tipo #KODIPROP sopra l'inf
                 let j = targetIdx - 1;
-                let extraTags = [];
+                let buffer = [];
                 while (j >= 0 && lines[j].startsWith('#') && !lines[j].startsWith('#EXTM3U') && !lines[j].startsWith('#EXTINF')) {
-                    extraTags.unshift(lines[j]);
+                    buffer.unshift(lines[j]);
                     j--;
                 }
                 
-                // Aggiunge i tag, l'EXTINF e la riga successiva (il link dello stream)
-                extraTags.forEach(l => filtered += l + "\n");
+                // Costruiamo il blocco singolo
+                buffer.forEach(l => filtered += l + "\n");
                 filtered += lines[targetIdx] + "\n"; 
                 
+                // Aggiungiamo il link e chiudiamo immediatamente
                 if (lines[targetIdx + 1] && !lines[targetIdx + 1].startsWith('#')) {
                     filtered += lines[targetIdx + 1] + "\n";
                 }
                 
+                // IL RETURN QUI BLOCCA TUTTO: Dario non potrà mai vedere i canali fissi sotto
                 return res.status(200).send(filtered);
             }
             
-            // Se non trova il canale, restituisce solo l'header vuoto
             return res.status(200).send("#EXTM3U\n");
         }
-        // --- FINE FILTRO ---
+        // --- FINE FILTRO PER MATTEO/DARIO ---
+
 
         // LOGICA PER TE (DAZN + RESTO DELLA LISTA)
         let daznLineare = "";
