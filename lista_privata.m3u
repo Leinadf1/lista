@@ -369,29 +369,4 @@ https://abndy7jaaaaaaaamb5sbzman2g3xq.bia-cf.live.pv-cdn.net/lhr-nitro/live/clie
 https://nodrm.online:6163/stream/test/prime/master.m3u8?u=prime_video&p=26972c05e5cd32b4d006247a875330a1275a60747cd411377cfbb1f15633d612
 
 
-
-#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/4uphjar435phjrtaqraoy61u5_image-header_pIt_1775573662000/fill/none/top/none/100/1280/720/png/image",Cagliari - Atalanta
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=54aa1d5435b0552facae360bbb635089:207086cae3e1fa0fcc2716d717f0dbdd
-https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777305604~exp%3D1777392004~acl%3D%2F*~id%3D29ce4820-8b55-5ac6-8c7a-5a820e51ebbb~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D3085406f3b803d5551114fd3d6093e2f62aa606331b9d7be776077f6b6427be1%23wm%3D1%23wmd%3D1152%23tmidversion%3D3~hmac%3D8df34f5e76bccfbc25c044c566e795101fff243473fa32c6cb1ddb89c8bd1d0f/12ru6q592vien1ouo0han2fitf/web/stream.mpd?channel=1381&mta=it&outlet=dazn-italy&plang=it
-
-#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/7irwvgazma3d3qpqmhgc42293_image-header_pIt_1776176986000/fill/none/top/none/100/1280/720/png/image",Lazio - Udinese
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=408a702e22f45a2b817647b319ad47e8:421743368efbefd683412fe1936f216b
-https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777312803~exp%3D1777399203~acl%3D%2F*~id%3D29ce4820-8b55-5ac6-8c7a-5a820e51ebbb~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Def2135a3cf41e18777f67b8b0457d44d39923bc4af95f0cd128451ecc1ac2fcb%23wm%3D1%23wmd%3D1152%23tmidversion%3D3~hmac%3Df5ce9b0d9ba5ae026ed222db2a2dcb12a63ae2bfb312cb57ea54bd0caf332f8e/10p496hd2khw51uud39z70nz14/web/stream.mpd?channel=1382&mta=it&outlet=dazn-italy&plang=it
-
-#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/b4xg8bvax5hp4yggn3sh9l08_image-header_pIt_1775643477000/fill/none/top/none/100/1280/720/png/image",Espanyol - Levante
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec
-https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777316106~exp%3D1777402506~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D63aad41e8aaba0bf05e1f6d7296074777b91fcaabe919442a8c81769ee3d8f38~hmac%3Dd2878e1d8e4326bd3b47e7019011aeec7a9d867c6de0bc5545786752e5fc4af9/ds3al9o8pdqy1tp90g1hcojbb/web/stream.mpd?channel=3734&mta=it&outlet=dazn-italy&plang=it
-
-#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/2xhyzqet6pgdjww6j34gwzoyo_image-header_pIt_1759159202000/fill/none/top/none/100/1280/720/png/image",Ventiquattresima puntata | 4-3-2-1
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=a39bb5498516548e9afdf89a9c84ac39:5585c56bdc2301fe326e039a0e1a97ea
-https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777322703~exp%3D1777409103~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D46c6e41db8b46f512f1f60f5e2327d6ca7d9c63a8f922a190c5f40f4331561d5%23wm%3D0~hmac%3Da0b7048d556fe3fb45a8ee8f500f0e3ead17832ea565c8f5482b31b74a72d08e/z309cjotn5221h16snifs9zl9/web/stream.mpd?channel=1345&mta=it&outlet=dazn-italy&plang=it
-
-#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/7irwvgazma3d3qpqmhgc42293_image-header_pIt_1776176986000/fill/none/top/none/100/1280/720/png/image",Lazio - Udinese | Post-partita con 4-3-2-1
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=408a702e22f45a2b817647b319ad47e8:421743368efbefd683412fe1936f216b
-https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1777323306~exp%3D1777409706~acl%3D%2F*~id%3D29ce4820-8b55-5ac6-8c7a-5a820e51ebbb~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Def2135a3cf41e18777f67b8b0457d44d39923bc4af95f0cd128451ecc1ac2fcb%23wm%3D1%23wmd%3D1152%23tmidversion%3D3~hmac%3Dd72961d595706e4818532da1533ae00398499181dd078d077afe6baf009b6dfc/10p496hd2khw51uud39z70nz14/web/stream.mpd?channel=1382&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Tue Apr 28 02:50:19 UTC 2026
+# Ultimo aggiornamento: Tue Apr 28 03:00:43 UTC 2026
