@@ -45,36 +45,36 @@ export default async function handler(req, res) {
 
         // --- FILTRO RIGOROSO PER MATTEO E DARIO ---
         if (psw === "Matteo" || psw === "Dario") {
-            const lines = fileContent.split('\n').map(l => l.trim());
+            // Puliamo la lista da righe vuote per evitare errori di indice
+            const lines = fileContent.split('\n').map(l => l.trim()).filter(l => l !== "");
             let filtered = "#EXTM3U\n";
-            let targetIdx = -1;
-
-            // Cerchiamo solo Sky Sport F1
-            for (let i = 0; i < lines.length; i++) {
-                if (lines[i].includes('#EXTINF') && lines[i].toUpperCase().includes("SKY SPORT F1")) {
-                    targetIdx = i;
-                    break;
-                }
-            }
+            
+            // Trova l'indice esatto del canale Sky Sport F1
+            const targetIdx = lines.findIndex(l => 
+                l.startsWith('#EXTINF') && l.toUpperCase().includes("SKY SPORT F1")
+            );
 
             if (targetIdx !== -1) {
-                // Recuperiamo i tag sopra l'inf (tipo #KODIPROP se ci sono)
+                // Recupera eventuali tag tecnici (es. #KODIPROP) situati subito sopra l'EXTINF
                 let j = targetIdx - 1;
-                let buffer = [];
-                while (j >= 0 && lines[j].startsWith('#') && !lines[j].startsWith('#EXTM3U')) {
-                    if (lines[j] !== "") buffer.unshift(lines[j]);
+                let extraTags = [];
+                while (j >= 0 && lines[j].startsWith('#') && !lines[j].startsWith('#EXTM3U') && !lines[j].startsWith('#EXTINF')) {
+                    extraTags.unshift(lines[j]);
                     j--;
                 }
                 
-                buffer.forEach(l => filtered += l + "\n");
-                filtered += lines[targetIdx] + "\n"; // La riga #EXTINF
-                if (lines[targetIdx + 1]) filtered += lines[targetIdx + 1] + "\n"; // Il link stream
+                // Aggiunge i tag, l'EXTINF e la riga successiva (il link dello stream)
+                extraTags.forEach(l => filtered += l + "\n");
+                filtered += lines[targetIdx] + "\n"; 
                 
-                // MANDIAMO LA RISPOSTA E ABORTIAMO TUTTO IL RESTO
+                if (lines[targetIdx + 1] && !lines[targetIdx + 1].startsWith('#')) {
+                    filtered += lines[targetIdx + 1] + "\n";
+                }
+                
                 return res.status(200).send(filtered);
             }
             
-            // Se non trova la F1, manda comunque solo l'header vuoto (così non vede altro)
+            // Se non trova il canale, restituisce solo l'header vuoto
             return res.status(200).send("#EXTM3U\n");
         }
         // --- FINE FILTRO ---
