@@ -1,6 +1,6 @@
 import { createClient } from '@vercel/kv';
 
-// Canali Eurosport
+// Canali Eurosport (gestiti centralmente)
 const CANALI_FISSI = [
     { name: "EUROSPORT 4K", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020019/tim-ouah/CHN43FN/MONOGRAM_ESP4K_WHITE_V2-BjK0", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport4k)/manifest.mpd", drm: '{"9ceae06c6ad34aada83ba86c0b511452":"406862beb4af1ef8fe04ba15d9936360","fcd924bd2e45470fa2ae50ef05e357c0":"266db84d3572bc889185274a90ff31df","dea135e33341468f8a4e8da806d8a6e6":"fb7423db39e6fab75056f8c83f415847","31911db90ee3410f8b38e45659d01fb1":"ac316ab7dfd2b50faf6d44633e4fedd5","a16f2a39adbb4974b8910cec8a651a09":"c2d55e0111af955f47214af209a2c468"}' },
     { name: "EUROSPORT 1", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020000/tim-ouah/CHN43FN/MONOGRAM_ESP1_WHITE_V2-Lv2g", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport1)/manifest.mpd", drm: '{"46e559c2f9f645ce8d80c7fa20446bdb":"597d214d66342ee042bccffeb165e750"}' },
@@ -62,7 +62,7 @@ export default async function handler(req, res) {
         });
         const fileContent = await githubResponse.text();
 
-        // Password "solo F1" da variabile d'ambiente
+        // Password che devono vedere solo Sky Sport F1 (da variabile d'ambiente)
         const f1OnlyPasswords = (process.env.F1_ONLY_PASSWORDS || "").split(',').map(p => p.trim().toLowerCase());
         const isF1Only = f1OnlyPasswords.includes(psw.toLowerCase());
 
@@ -97,125 +97,10 @@ export default async function handler(req, res) {
             return res.status(200).send("#EXTM3U\n");
         }
 
-        // Per tutti gli altri utenti: restituisce la lista completa + Eurosport fissi
+        // Per tutti gli altri: lista completa + Eurosport in coda
         let finalContent = fileContent;
-        // Aggiunge gli Eurosport in fondo
         const eurosportM3U = CANALI_FISSI.map(c => buildM3U(c)).join('\n');
         finalContent = finalContent.trimEnd() + "\n" + eurosportM3U;
-
-        res.status(200).send(finalContent);
-
-    } catch (error) {
-        res.status(500).json({ error: "Errore caricamento liste" });
-    }
-}        for await (const chunk of req) { buffers.push(chunk); }
-        const data = Buffer.concat(buffers).toString();
-        body = data ? JSON.parse(data) : {};
-    } catch (e) { body = {}; }
-
-    const psw = body.password ? body.password.trim() : "";
-    const authorizedPasswords = (process.env.MASTER_PASSWORD || "").split(',').map(p => p.trim());
-
-    if (!psw || !authorizedPasswords.includes(psw)) {
-        return res.status(401).json({ error: "Password errata" });
-    }
-
-    const sessionKey = `session_${psw}`;
-    const isOccupied = await kv.get(sessionKey);
-    if (isOccupied && req.headers['x-heartbeat'] !== 'true') {
-        return res.status(403).json({ error: "Accesso negato: sessione già attiva" });
-    }
-    await kv.set(sessionKey, "active", { ex: 45 });
-
-    try {
-        const githubResponse = await fetch(`https://raw.githubusercontent.com/Leinadf1/lista/main/lista_privata.m3u?t=${Date.now()}`, {
-            headers: { 
-                'Authorization': `token ${process.env.GITHUB_TOKEN}`,
-                'Accept': 'application/vnd.github.v3.raw'
-            }
-        });
-        const fileContent = await githubResponse.text();
-
-        // Legge le password "solo F1" da variabile d'ambiente (es. F1_ONLY_PASSWORDS="Matteo,Dario")
-        const f1OnlyPasswords = (process.env.F1_ONLY_PASSWORDS || "").split(',').map(p => p.trim().toLowerCase());
-        const isF1Only = f1OnlyPasswords.includes(psw.toLowerCase());
-
-        // ---- FILTRO SOLO F1 ----
-        if (isF1Only) {
-            const lines = fileContent.split('\n').map(l => l.trim());
-            let filtered = "#EXTM3U\n";
-            let targetIdx = -1;
-
-            for (let i = 0; i < lines.length; i++) {
-                if (lines[i].startsWith('#EXTINF') && lines[i].toUpperCase().includes("SKY SPORT F1")) {
-                    targetIdx = i;
-                    break;
-                }
-            }
-
-            if (targetIdx !== -1) {
-                let j = targetIdx - 1;
-                let buffer = [];
-                while (
-                    j >= 0 &&
-                    lines[j].startsWith('#') &&
-                    !lines[j].startsWith('#EXTM3U') &&
-                    !lines[j].startsWith('#EXTINF')
-                ) {
-                    if (lines[j] !== "") buffer.unshift(lines[j]);
-                    j--;
-                }
-
-                buffer.forEach(l => filtered += l + "\n");
-                filtered += lines[targetIdx] + "\n";
-                if (lines[targetIdx + 1]) filtered += lines[targetIdx + 1] + "\n";
-
-                filtered = filtered
-                    .split('\n')
-                    .filter(line => !line.toUpperCase().includes("EUROSPORT"))
-                    .join('\n');
-
-                return res.status(200).send(filtered);
-            }
-
-            return res.status(200).send("#EXTM3U\n");
-        }
-
-        // ---- LOGICA PER TUTTI GLI ALTRI (DAZN + lista + canali fissi Eurosport) ----
-        let daznLineare = "";
-        try {
-            const daznResponse = await fetch(`https://nodrm.online/list/dz1.txt?t=${Date.now()}`);
-            if (daznResponse.ok) {
-                daznLineare = await daznResponse.text();
-                daznLineare = daznLineare.replace("#EXTM3U", "").trim();
-            }
-        } catch (e) { console.error("Errore DAZN 1"); }
-
-        let lines = fileContent.split('\n');
-        let lastChampionsIdx = -1;
-
-        for (let i = 0; i < lines.length; i++) {
-            if (lines[i].toUpperCase().includes('GROUP-TITLE="CHAMPIONS LEAGUE"')) {
-                for (let k = i + 1; k < lines.length; k++) {
-                    if (lines[k].trim().startsWith('http')) {
-                        lastChampionsIdx = k;
-                        break;
-                    }
-                }
-            }
-        }
-
-        let finalContent = "";
-        if (lastChampionsIdx !== -1) {
-            lines.splice(lastChampionsIdx + 1, 0, "\n" + daznLineare + "\n");
-            finalContent = lines.join('\n');
-        } else {
-            finalContent = fileContent + "\n" + daznLineare;
-        }
-
-        // Aggiunge i canali Eurosport in fondo (per utenti non F1-only)
-        const eurosportM3U = CANALI_FISSI.map(c => buildM3U(c)).join('\n');
-        finalContent += "\n" + eurosportM3U;
 
         res.status(200).send(finalContent);
 
