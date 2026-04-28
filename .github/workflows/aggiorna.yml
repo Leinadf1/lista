@@ -16,56 +16,11 @@ jobs:
         with:
           persist-credentials: true
 
-      - name: Download and Merge
+      - name: Download base list
         run: |
-          # Scarica lista base
+          # Scarica SOLO la lista base (DAZN verrà aggiunto dall'API)
           curl -sL "https://nodrm.online/list/list2.m3u" > lista_privata.m3u
-          
-          # Scarica DAZN1
-          curl -sL "https://nodrm.online/list/dz1.txt" > dz1.txt
-          
-          # Unisce usando Python (gestisce caratteri speciali, newline, ecc.)
-          python3 << 'EOF'
-          import re
-
-          # Legge la lista base
-          with open('lista_privata.m3u', 'r', encoding='utf-8') as f:
-              lines = f.readlines()
-
-          # Legge dz1.txt e rimuove riga #EXTM3U
-          with open('dz1.txt', 'r', encoding='utf-8') as f:
-              dazn_content = [line for line in f if not line.startswith('#EXTM3U')]
-
-          # Cerca l'ultimo link dopo una riga contenente "CHAMPIONS LEAGUE"
-          last_cl_index = -1
-          found_cl = False
-          for i, line in enumerate(lines):
-              if 'CHAMPIONS LEAGUE' in line.upper():
-                  found_cl = True
-              if found_cl and line.strip().startswith('http'):
-                  last_cl_index = i
-                  found_cl = False  # reset per eventuali prossime occorrenze (prendiamo l'ultimo)
-
-          # Inserisce il contenuto dopo l'ultimo link CL
-          if last_cl_index != -1:
-              # Inserisce una riga vuota, poi il contenuto di dazn, poi altra riga vuota
-              insert_pos = last_cl_index + 1
-              for item in reversed(['\n'] + dazn_content + ['\n']):
-                  lines.insert(insert_pos, item)
-          else:
-              # Se non trova Champions League, appende in fondo
-              lines.append('\n')
-              lines.extend(dazn_content)
-
-          # Aggiunge la data in fondo per forzare il cambiamento
-          from datetime import datetime
-          lines.append(f"# Ultimo aggiornamento: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-
-          with open('lista_privata.m3u', 'w', encoding='utf-8') as f:
-              f.writelines(lines)
-          EOF
-
-          # Log opzionale
+          echo "# Ultimo aggiornamento: $(date)" >> lista_privata.m3u
           echo "Aggiornato il: $(date)" > last_sync.txt
 
       - name: Save
