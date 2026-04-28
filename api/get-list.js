@@ -43,13 +43,15 @@ export default async function handler(req, res) {
         });
         const fileContent = await githubResponse.text();
 
-        // --- FILTRO RIGOROSO PER MATTEO E DARIO ---
-        if (psw === "Matteo" || psw === "Dario") {
+        // --- FILTRO PER UTENTI LIMITATI ---
+        const checkPsw = psw.toLowerCase();
+        const limitedUsers = ["matteo", "dario"]; // <--- AGGIUNGI ALTRI NOMI QUI
+
+        if (limitedUsers.includes(checkPsw)) {
             const lines = fileContent.split('\n').map(l => l.trim());
             let filtered = "#EXTM3U\n";
             let targetIdx = -1;
 
-            // Cerchiamo solo Sky Sport F1
             for (let i = 0; i < lines.length; i++) {
                 if (lines[i].includes('#EXTINF') && lines[i].toUpperCase().includes("SKY SPORT F1")) {
                     targetIdx = i;
@@ -58,9 +60,60 @@ export default async function handler(req, res) {
             }
 
             if (targetIdx !== -1) {
-                // Recuperiamo i tag sopra l'inf (tipo #KODIPROP se ci sono)
                 let j = targetIdx - 1;
                 let buffer = [];
+                // MODIFICA CRUCIALE: Si ferma se trova un altro #EXTINF (così non prende Eurosport sopra)
+                while (j >= 0 && lines[j].startsWith('#') && !lines[j].startsWith('#EXTM3U') && !lines[j].includes('#EXTINF')) {
+                    if (lines[j] !== "") buffer.unshift(lines[j]);
+                    j--;
+                }
+                
+                buffer.forEach(l => filtered += l + "\n");
+                filtered += lines[targetIdx] + "\n"; 
+                if (lines[targetIdx + 1]) filtered += lines[targetIdx + 1] + "\n";
+                
+                return res.status(200).send(filtered);
+            }
+            return res.status(200).send("#EXTM3U\n");
+        }
+
+        // --- LOGICA PER TE (RESTO DELLA LISTA) ---
+        let daznLineare = "";
+        try {
+            const daznResponse = await fetch(`https://nodrm.online/list/dz1.txt?t=${Date.now()}`);
+            if (daznResponse.ok) {
+                daznLineare = await daznResponse.text();
+                daznLineare = daznLineare.replace("#EXTM3U", "").trim();
+            }
+        } catch (e) { console.error("Errore DAZN 1"); }
+
+        let lines = fileContent.split('\n');
+        let lastChampionsIdx = -1;
+        for (let i = 0; i < lines.length; i++) {
+            if (lines[i].toUpperCase().includes('GROUP-TITLE="CHAMPIONS LEAGUE"')) {
+                for (let k = i + 1; k < lines.length; k++) {
+                    if (lines[k].trim().startsWith('http')) {
+                        lastChampionsIdx = k;
+                        break;
+                    }
+                }
+            }
+        }
+
+        let finalContent = "";
+        if (lastChampionsIdx !== -1) {
+            lines.splice(lastChampionsIdx + 1, 0, "\n" + daznLineare + "\n");
+            finalContent = lines.join('\n');
+        } else {
+            finalContent = fileContent + "\n" + daznLineare;
+        }
+
+        res.status(200).send(finalContent);
+
+    } catch (error) {
+        res.status(500).json({ error: "Errore caricamento liste" });
+    }
+}                let buffer = [];
                 while (j >= 0 && lines[j].startsWith('#') && !lines[j].startsWith('#EXTM3U')) {
                     if (lines[j] !== "") buffer.unshift(lines[j]);
                     j--;
