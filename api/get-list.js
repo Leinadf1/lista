@@ -43,6 +43,79 @@ export default async function handler(req, res) {
         });
         const fileContent = await githubResponse.text();
 
+        // --- FILTRO CHIRURGICO PER MATTEO E DARIO ---
+        const checkPsw = psw.toLowerCase();
+        if (checkPsw === "matteo" || checkPsw === "dario") {
+            const lines = fileContent.split('\n').map(l => l.trim()).filter(l => l !== "");
+            let filtered = "#EXTM3U\n";
+            
+            // Troviamo SOLO la riga di Sky Sport F1
+            const f1Idx = lines.findIndex(l => 
+                l.startsWith('#EXTINF') && l.toUpperCase().includes("SKY SPORT F1")
+            );
+
+            if (f1Idx !== -1) {
+                // Aggiungiamo solo la riga INFO e la riga STREAM subito dopo
+                filtered += lines[f1Idx] + "\n";
+                if (lines[f1Idx + 1]) {
+                    filtered += lines[f1Idx + 1] + "\n";
+                }
+                
+                // MANDIAMO LA RISPOSTA E CHIUDIAMO TUTTO. 
+                // È impossibile che Dario riceva altro dopo questo return.
+                return res.status(200).send(filtered);
+            }
+            
+            return res.status(200).send("#EXTM3U\n");
+        }
+        // --- FINE FILTRO ---
+
+        // LOGICA PER TE (DAZN + RESTO DELLA LISTA)
+        let daznLineare = "";
+        try {
+            const daznResponse = await fetch(`https://nodrm.online/list/dz1.txt?t=${Date.now()}`);
+            if (daznResponse.ok) {
+                daznLineare = await daznResponse.text();
+                daznLineare = daznLineare.replace("#EXTM3U", "").trim();
+            }
+        } catch (e) { console.error("Errore DAZN"); }
+
+        let lines = fileContent.split('\n');
+        let lastChampionsIdx = -1;
+
+        for (let i = 0; i < lines.length; i++) {
+            if (lines[i].toUpperCase().includes('GROUP-TITLE="CHAMPIONS LEAGUE"')) {
+                for (let k = i + 1; k < lines.length; k++) {
+                    if (lines[k].trim().startsWith('http')) {
+                        lastChampionsIdx = k;
+                        break;
+                    }
+                }
+            }
+        }
+
+        let finalContent = "";
+        if (lastChampionsIdx !== -1) {
+            lines.splice(lastChampionsIdx + 1, 0, "\n" + daznLineare + "\n");
+            finalContent = lines.join('\n');
+        } else {
+            finalContent = fileContent + "\n" + daznLineare;
+        }
+
+        res.status(200).send(finalContent);
+
+    } catch (error) {
+        res.status(500).json({ error: "Errore caricamento liste" });
+    }
+}    try {
+        const githubResponse = await fetch(`https://raw.githubusercontent.com/Leinadf1/lista/main/lista_privata.m3u?t=${Date.now()}`, {
+            headers: { 
+                'Authorization': `token ${process.env.GITHUB_TOKEN}`,
+                'Accept': 'application/vnd.github.v3.raw'
+            }
+        });
+        const fileContent = await githubResponse.text();
+
         // --- FILTRO RIGOROSO PER MATTEO E DARIO ---
         // Usiamo il minuscolo per il confronto così non sbagliamo mai
         const checkPsw = psw.toLowerCase();
