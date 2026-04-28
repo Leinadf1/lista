@@ -50,7 +50,7 @@ export default async function handler(req, res) {
             let filtered = "#EXTM3U\n";
             let targetIdx = -1;
 
-            // Cerca Sky Sport F1
+            // Cerchiamo solo Sky Sport F1
             for (let i = 0; i < lines.length; i++) {
                 if (lines[i].startsWith('#EXTINF') && lines[i].toUpperCase().includes("SKY SPORT F1")) {
                     targetIdx = i;
@@ -59,7 +59,7 @@ export default async function handler(req, res) {
             }
 
             if (targetIdx !== -1) {
-                // Raccoglie SOLO i tag di proprietà (es. #KODIPROP) appartenenti a F1
+                // Raccoglie solo tag di proprietà (es. #KODIPROP) appartenenti a F1
                 let j = targetIdx - 1;
                 let buffer = [];
                 while (
