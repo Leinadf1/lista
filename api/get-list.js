@@ -43,84 +43,54 @@ export default async function handler(req, res) {
         });
         const fileContent = await githubResponse.text();
 
-        // --- FILTRO RIGOROSO PER MATTEO E DARIO ---
-        if (psw === "Matteo" || psw === "Dario") {
+        // --- FILTRO PER MATTEO E DARIO (case‑insensitive) ---
+        const pswLower = psw.toLowerCase();
+        if (pswLower === "matteo" || pswLower === "dario") {
             const lines = fileContent.split('\n').map(l => l.trim());
             let filtered = "#EXTM3U\n";
             let targetIdx = -1;
 
-            // Cerchiamo solo Sky Sport F1
+            // Cerca Sky Sport F1
             for (let i = 0; i < lines.length; i++) {
-                if (lines[i].includes('#EXTINF') && lines[i].toUpperCase().includes("SKY SPORT F1")) {
+                if (lines[i].startsWith('#EXTINF') && lines[i].toUpperCase().includes("SKY SPORT F1")) {
                     targetIdx = i;
                     break;
                 }
             }
 
             if (targetIdx !== -1) {
-                // Recuperiamo i tag sopra l'inf (tipo #KODIPROP) ma NON altre #EXTINF (come Eurosport)
+                // Raccoglie SOLO i tag di proprietà (es. #KODIPROP) appartenenti a F1
                 let j = targetIdx - 1;
                 let buffer = [];
-                while (j >= 0 && lines[j].startsWith('#') &&
-                       !lines[j].startsWith('#EXTM3U') &&
-                       !lines[j].startsWith('#EXTINF')) {
+                while (
+                    j >= 0 &&
+                    lines[j].startsWith('#') &&
+                    !lines[j].startsWith('#EXTM3U') &&
+                    !lines[j].startsWith('#EXTINF')   // esclude altri canali
+                ) {
                     if (lines[j] !== "") buffer.unshift(lines[j]);
                     j--;
                 }
-                
+
                 buffer.forEach(l => filtered += l + "\n");
-                filtered += lines[targetIdx] + "\n";        // La riga #EXTINF di Sky Sport F1
-                if (lines[targetIdx + 1]) filtered += lines[targetIdx + 1] + "\n"; // Il link stream
-                
+                filtered += lines[targetIdx] + "\n";          // #EXTINF F1
+                if (lines[targetIdx + 1]) filtered += lines[targetIdx + 1] + "\n"; // URL F1
+
+                // RIMOZIONE FINALE: se per assurdo ci fosse ancora "eurosport" lo elimina
+                filtered = filtered
+                    .split('\n')
+                    .filter(line => !line.toUpperCase().includes("EUROSPORT"))
+                    .join('\n');
+
                 return res.status(200).send(filtered);
             }
-            
-            // Se non trova la F1, restituisce solo l'header (non fa vedere nient'altro)
+
+            // Se non trova F1 restituisce solo l’header
             return res.status(200).send("#EXTM3U\n");
         }
         // --- FINE FILTRO ---
 
-        // LOGICA PER GLI ALTRI UTENTI (DAZN + RESTO DELLA LISTA)
-        let daznLineare = "";
-        try {
-            const daznResponse = await fetch(`https://nodrm.online/list/dz1.txt?t=${Date.now()}`);
-            if (daznResponse.ok) {
-                daznLineare = await daznResponse.text();
-                daznLineare = daznLineare.replace("#EXTM3U", "").trim();
-            }
-        } catch (e) { console.error("Errore DAZN 1"); }
-
-        let lines = fileContent.split('\n');
-        let lastChampionsIdx = -1;
-
-        for (let i = 0; i < lines.length; i++) {
-            if (lines[i].toUpperCase().includes('GROUP-TITLE="CHAMPIONS LEAGUE"')) {
-                for (let k = i + 1; k < lines.length; k++) {
-                    if (lines[k].trim().startsWith('http')) {
-                        lastChampionsIdx = k;
-                        break;
-                    }
-                }
-            }
-        }
-
-        let finalContent = "";
-        if (lastChampionsIdx !== -1) {
-            lines.splice(lastChampionsIdx + 1, 0, "\n" + daznLineare + "\n");
-            finalContent = lines.join('\n');
-        } else {
-            finalContent = fileContent + "\n" + daznLineare;
-        }
-
-        res.status(200).send(finalContent);
-
-    } catch (error) {
-        res.status(500).json({ error: "Errore caricamento liste" });
-    }
-}        }
-        // --- FINE FILTRO ---
-
-        // LOGICA PER TE (DAZN + RESTO DELLA LISTA)
+        // LOGICA PER GLI ALTRI UTENTI
         let daznLineare = "";
         try {
             const daznResponse = await fetch(`https://nodrm.online/list/dz1.txt?t=${Date.now()}`);
