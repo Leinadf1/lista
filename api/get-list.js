@@ -47,10 +47,15 @@ export default async function handler(req, res) {
     }
 
     const sessionKey = `session_${psw}`;
-    const isOccupied = await kv.get(sessionKey);
-    if (isOccupied && req.headers['x-heartbeat'] !== 'true') {
-        return res.status(403).json({ error: "Accesso negato: sessione già attiva" });
+
+    // Gestione heartbeat: rinnova la sessione e termina
+    if (req.headers['x-heartbeat'] === 'true') {
+        await kv.set(sessionKey, "active", { ex: 45 });
+        return res.status(200).json({ status: "ok" });
     }
+
+    // Per richieste normali: sovrascriviamo sempre la sessione (nuovo accesso)
+    // In questo modo non blocchiamo più l'utente se la sessione precedente non è ancora scaduta
     await kv.set(sessionKey, "active", { ex: 45 });
 
     try {
