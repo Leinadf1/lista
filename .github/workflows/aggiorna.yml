@@ -16,43 +16,55 @@ jobs:
         with:
           persist-credentials: true
 
-            - name: Download and Merge
+      - name: Download and Merge
         run: |
-          # Scarica la lista base
+          # Scarica lista base
           curl -sL "https://nodrm.online/list/list2.m3u" > lista_privata.m3u
           
-          # Scarica il canale DAZN1
+          # Scarica DAZN1
           curl -sL "https://nodrm.online/list/dz1.txt" > dz1.txt
           
-          # Rimuove l'header #EXTM3U da dz1.txt (se presente)
-          sed -i '/^#EXTM3U/d' dz1.txt
-          
-          # Cerca l'ultimo link dopo una riga con "CHAMPIONS LEAGUE"
-          # Utilizziamo awk per trovare l'ultimo URL della CL e inserire dopo di esso
-          awk -v dazn="$(cat dz1.txt)" '
-            /CHAMPIONS LEAGUE/ { flag=1 }
-            /^http/ && flag { last_cl = NR; flag=0 }
-            { lines[NR] = $0 }
-            END {
-              for (i=1; i<=NR; i++) {
-                print lines[i];
-                if (i == last_cl) print "";
-                if (i == last_cl) print dazn;
-                if (i == last_cl) print "";
-              }
-              if (!last_cl) {
-                # Se non c’è Champions League, appende in fondo
-                print "";
-                print dazn;
-              }
-            }
-          ' lista_privata.m3u > lista_tmp.m3u
-          
-          mv lista_tmp.m3u lista_privata.m3u
-          
-          # Aggiunge la data in fondo (come facevi prima) per forzare il cambiamento
-          echo "# Ultimo aggiornamento: $(date)" >> lista_privata.m3u
-          
+          # Unisce usando Python (gestisce caratteri speciali, newline, ecc.)
+          python3 << 'EOF'
+          import re
+
+          # Legge la lista base
+          with open('lista_privata.m3u', 'r', encoding='utf-8') as f:
+              lines = f.readlines()
+
+          # Legge dz1.txt e rimuove riga #EXTM3U
+          with open('dz1.txt', 'r', encoding='utf-8') as f:
+              dazn_content = [line for line in f if not line.startswith('#EXTM3U')]
+
+          # Cerca l'ultimo link dopo una riga contenente "CHAMPIONS LEAGUE"
+          last_cl_index = -1
+          found_cl = False
+          for i, line in enumerate(lines):
+              if 'CHAMPIONS LEAGUE' in line.upper():
+                  found_cl = True
+              if found_cl and line.strip().startswith('http'):
+                  last_cl_index = i
+                  found_cl = False  # reset per eventuali prossime occorrenze (prendiamo l'ultimo)
+
+          # Inserisce il contenuto dopo l'ultimo link CL
+          if last_cl_index != -1:
+              # Inserisce una riga vuota, poi il contenuto di dazn, poi altra riga vuota
+              insert_pos = last_cl_index + 1
+              for item in reversed(['\n'] + dazn_content + ['\n']):
+                  lines.insert(insert_pos, item)
+          else:
+              # Se non trova Champions League, appende in fondo
+              lines.append('\n')
+              lines.extend(dazn_content)
+
+          # Aggiunge la data in fondo per forzare il cambiamento
+          from datetime import datetime
+          lines.append(f"# Ultimo aggiornamento: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+
+          with open('lista_privata.m3u', 'w', encoding='utf-8') as f:
+              f.writelines(lines)
+          EOF
+
           # Log opzionale
           echo "Aggiornato il: $(date)" > last_sync.txt
 
@@ -61,6 +73,5 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add lista_privata.m3u last_sync.txt
-          # Il commit ora troverà sempre modifiche grazie alla riga aggiunta sopra
           git commit -m "Update list $(date +'%H:%M')" || echo "No changes"
           git push origin main
