@@ -281,7 +281,8 @@ async function init(m3uContent, userPsw) {
         }
     }
 
-    if (userPsw !== "Matteo") {
+    // MODIFICA: esclude Eurosport anche per Dario
+    if (userPsw !== "Matteo" && userPsw !== "Dario") {
         CANALI_FISSI.forEach(ch => {
             createCard({ ...ch, group: "EUROSPORT" });
             loadedCount++;
