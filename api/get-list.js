@@ -62,7 +62,7 @@ export default async function handler(req, res) {
         const fileContent = await githubResponse.text();
 
         // 2. Controllo password F1-only (da variabile d'ambiente)
-        const f1OnlyPasswords = (process.env.F1_ONLY_PASSWORDS || "").split(',').map(p => p.trim().toLowerCase());
+        const f1OnlyPasswords = (process.env.F1_ONLY_PASSWORD || "").split(',').map(p => p.trim().toLowerCase());
         const isF1Only = f1OnlyPasswords.includes(psw.toLowerCase());
 
         if (isF1Only) {
