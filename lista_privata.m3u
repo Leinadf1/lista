@@ -351,9 +351,9 @@ https://g004-lin-it-cmaf-prd-ak.pcdn07.cssott02.com/v~a-0-0_e~1777510826_s~fdf05
 https://g004-lin-it-cmaf-prd-ak.pcdn07.cssott02.com/v~a-0-0_e~1777510827_s~f2b7689c-8de8-4011-82f7-fa5af1d927fc_u~b55087268a5867608c1c75764bcfc8b1ee6979d748b3ff0fb812ea7c195a0cb0109d29e1e6ed6afc72e8583e157d3c8c_l~55_x~4aeef22aec04cdfde52d5434a29f87e04b9ec3d4058b151e86fcf986ad19f045/nowitlin2/Content/CMAF_CTR_H1/Live/channel(boomerang)/master_2hr-all.mpd?t=v2&c3.ri=69f14a1b_Q1ZYMDc_0_QUtBTUFJ_1cbf7627259e&c3.ri=69f14a1b_Q1ZYMDc_0_QUtBTUFJ_1cbf7627259e
 
 #KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=bc2417cf44db2fd182eead5b55f60b49:e735de2bd6bc34f21dab213354bea100
+#KODIPROP:inputstream.adaptive.license_key=0056e3df60bda509fa4db8cbec222d01:463358cd2d371bdbb1bf2adb2ba5e64c
 #EXTINF:-1 group-title="CHAMPIONS LEAGUE" tvg-logo="https://media.engage.it/2020/12/champions-league-prime-video-italia_319186.jpg", TEST AMAZON 50 FPS
-https://a170live-pv-ta-amazon.akamaized.net/$T$2D3RhEOhAQWhBFgkMzY1YjU1OTQtNmRiYy00OGIwLTg3ZjMtMzVmYjU3ODA3MmZlWJCnAWpwcmltZXZpZGVvBBpqBimXBhpp8mMXA2Zha2FtYWkCeClzc2lkOjQwMjQzZGUzLTRmYmItNDdlOS04M2NiLWM3ODBkNDRkMTQwYxkBOKEFoQJ4My8yZWVtdmh2ejNyL291dC92MS83YzQyNWNlYzI1MjY0ZDgxOWU3MTU5YmI0ZjhhMDczNBkBPIFiSVRYIA1JPSuXShs0qPoJoXL8sgNUyZLTs3xtA-Xrf-xHxtHE/fra-nitro/startover/clients/dash/manipulated-manifest-fra-prod/enc/2eemvhvz3r/out/v1/7c425cec25264d819e7159bb4f8a0734/14bb9e8c-4e25-4808-8eb9-b046193d738d-cenc.mpd
+https://ABF75OBAAAAAAAAMKQUEKDL2JFEFN.ta.emt-cf.live.pv-cdn.net/$T$2D3RhEOhAQWhBFgkMTc3OTk2YzUtOTA1ZS00YWY3LWJhYWItODljZDY5NjRkZjU1WJSnAWpwcmltZXZpZGVvBBpqBjHrBhpp8mtrA2pjbG91ZGZyb250Angpc3NpZDo4N2M3OTQ4NC03MGY3LTQ3NjMtOGIyNi03NDE2ZDI4NzUwNzYZATihBaECeDMvcGhnaHVzZG5oeC9vdXQvdjEvNjUxOGMwYWI0MzJlNDE0NGFhZmI0ZjdmMTcxYjg1MmEZATyBYklUWCDbqoSXa0hoJl0QcQZUaZZYCvhC-zDTAA3rrjvqX8X7ig/DUB/02833ccfb23d4dd584af6d14ab965db9/v1/dash/396202602859/ucl_amzn1_dv_live_csid_314f7620-b3d6-4810-a359-9f4ac80e951f_eu-west-2_dub_dash_h265_none_stereo/live/clients/dash/enc/phghusdnhx/out/v1/6518c0ab432e4144aafb4f7f171b852a/cenc.mpd?aws.sessionId=b06f55f4-9bf5-4b33-bcbe-92576d92bc8c
 
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=e3762bc90acca0c4315a593c89596f00:07dc584ae7369bb0922b29b0a9c48793
@@ -373,4 +373,4 @@ https://abndy7jaaaaaaaamb5sbzman2g3xq.bia-cf.live.pv-cdn.net/lhr-nitro/live/clie
 https://nodrm.online:6163/stream/test/prime/master.m3u8?u=prime_video&p=26972c05e5cd32b4d006247a875330a1275a60747cd411377cfbb1f15633d612
 
 
-# Ultimo aggiornamento: Wed Apr 29 20:30:34 UTC 2026
+# Ultimo aggiornamento: Wed Apr 29 20:40:22 UTC 2026
