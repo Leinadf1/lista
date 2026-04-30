@@ -1,1 +1,5 @@
-{ "github": { "autoDeploy": false } }
+{
+  "github": {
+    "autoDeploy": false
+  }
+}
