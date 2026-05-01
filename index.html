@@ -160,7 +160,7 @@ function startHeartbeat(password) {
                 body: JSON.stringify({ password: password })
             });
         } catch (e) { console.warn("Sessione persa"); }
-    }, 20000); 
+    }, 15000); // <-- MODIFICATO: ogni 15 secondi per mantenere sessione con TTL 25s
 }
 
 async function checkAccess() {
