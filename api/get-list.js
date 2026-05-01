@@ -1,4 +1,4 @@
-import { createClient } from '@vercel/kv'; 
+import { createClient } from '@vercel/kv';
 
 const CANALI_FISSI = [
     { name: "EUROSPORT 4K", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020019/tim-ouah/CHN43FN/MONOGRAM_ESP4K_WHITE_V2-BjK0", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport4k)/manifest.mpd", drm: '{"9ceae06c6ad34aada83ba86c0b511452":"406862beb4af1ef8fe04ba15d9936360","fcd924bd2e45470fa2ae50ef05e357c0":"266db84d3572bc889185274a90ff31df","dea135e33341468f8a4e8da806d8a6e6":"fb7423db39e6fab75056f8c83f415847","31911db90ee3410f8b38e45659d01fb1":"ac316ab7dfd2b50faf6d44633e4fedd5","a16f2a39adbb4974b8910cec8a651a09":"c2d55e0111af955f47214af209a2c468"}' },
@@ -10,10 +10,35 @@ const CANALI_FISSI = [
     { name: "EUROSPORT 6", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020005/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-H53i", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport6)/manifest.mpd", drm: '{"ead1c567a3df48619799b2e78b18fdfa":"1de9d9af5651296aa67913979ad8c694"}' }
 ];
 
+// Nuovo array per i canali DAZN fissi (con gruppo DAZN LINEARI)
+// Il token nell'URL scade periodicamente: modifica manualmente il campo 'url' quando necessario
+const DAZN_FISSI = [
+    {
+        name: "DAZN 1 WIFI",
+        logo: "https://static.wikia.nocookie.net/logopedia/images/1/18/DAZN_1_2024.svg",
+        group_title: "DAZN LINEARI",
+        stream_headers: "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+        license_type: "clearkey",
+        license_key: "6164a0abaa7c53c6875fa1e7fe0bb463:271510d3e1259571dcc568a232e397eb",
+        url: "https://dcs-fs-live-dazn-cdn.dazn.com/dugongeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Nzc3NjQzODgsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoyLCJwYXRoIjoiOGViOTUwYjA5YmIxZjMzOTBlZDQ4ODgzN2VhZjk5ODY3MDc2OTRkMSIsInNzaWQiOiI2MjFkY2E0ZTE0M2UiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIyMTAyNzgiXSwidWEiOiI0YjM1MGFjMDNjNWY1NGVkMDg4NDQyNDBmZTFmOTIxYmFiZmQ5OTU4IiwiaWF0IjoxNzc3Njc3OTg4fQ.PSX-23E24wkew8GhxN4Bmi-KoLPh6kVLA59Gb1Y-zGM/dash/dazn-linear-206/stream.mpd?p=web"
+    }
+];
+
 function buildM3U(channel) {
     let out = '';
     out += `#EXTINF:-1 tvg-logo="${channel.logo}" group-title="EUROSPORT",${channel.name}\n`;
     out += `#KODIPROP:inputstream.adaptive.license_key=${channel.drm}\n`;
+    out += channel.url + '\n';
+    return out;
+}
+
+// Funzione per generare l'M3U per i canali DAZN fissi (con più KODIPROP)
+function buildDaznM3U(channel) {
+    let out = '';
+    out += `#EXTINF:-1 group-title="${channel.group_title}" tvg-logo="${channel.logo}" tvg-id="${channel.name.replace(/\s/g, '')}",${channel.name}\n`;
+    out += `#KODIPROP:inputstream.adaptive.stream_headers=${channel.stream_headers}\n`;
+    out += `#KODIPROP:inputstream.adaptive.license_type=${channel.license_type}\n`;
+    out += `#KODIPROP:inputstream.adaptive.license_key=${channel.license_key}\n`;
     out += channel.url + '\n';
     return out;
 }
@@ -141,9 +166,14 @@ export default async function handler(req, res) {
         const eurosportM3U = CANALI_FISSI.map(c => buildM3U(c)).join('\n');
         finalContent = finalContent.trimEnd() + "\n" + eurosportM3U;
 
+        // 6. Aggiunge i canali DAZN fissi (con gruppo DAZN LINEARI)
+        const daznFissiM3U = DAZN_FISSI.map(c => buildDaznM3U(c)).join('\n');
+        finalContent = finalContent.trimEnd() + "\n" + daznFissiM3U;
+
         res.status(200).send(finalContent);
 
     } catch (error) {
+        console.error(error);
         res.status(500).json({ error: "Errore caricamento liste" });
     }
 }
