@@ -428,4 +428,9 @@ https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777639826~exp%3D1777726226~acl%3D%2
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=29f177f1a7a25ff19a07bdf1bdf77ee2:94bddfe76f587c87fbd7f6042dd1b8c9
 https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777639828~exp%3D1777726228~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Db28472491cfccd377ffc0d846181b09468ef1c4b9992a6639915df8172050628%23wm%3D0~hmac%3Da5315b381ecd9ee42bb9e3eb23a270a1e2489ee68b923a607d26c421c8b69226/1qo37hjr8nrq91kkry18om9gdm/web/stream.mpd?channel=3941&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Fri May  1 17:40:19 UTC 2026
+
+#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/5jresxml7fxc2gkdr4w9wyby5_image-header_pIt_1777363120000/fill/none/top/none/100/1280/720/png/image",Pisa - Lecce
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=b83eb454692c5044af0b1b2d72d91fd2:c047cd6c05b384927dabf7c7ee7733c4
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1777657503~exp%3D1777743903~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D642146d526f28e31d016c2a7319fd68b8c45f086d01e2e2482f211518dcad798%23wm%3D0~hmac%3D9ddc6feafd89957e17d15465b4e3e9771e7de5bedc2367f61b3971ef3643bc8f/1l9an5segm26q1bz82fsj2cxab/web/stream.mpd?channel=1348&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Fri May  1 17:50:23 UTC 2026
