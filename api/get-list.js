@@ -47,14 +47,20 @@ export default async function handler(req, res) {
 
     const sessionKey = `session_${psw}`;
 
-    // Heartbeat: rinnova sessione e termina
+    // Heartbeat: rinnova sessione (TTL 25 secondi)
     if (req.headers['x-heartbeat'] === 'true') {
-        await kv.set(sessionKey, "active", { ex: 45 });
+        await kv.set(sessionKey, "active", { ex: 25 });
         return res.status(200).json({ status: "ok" });
     }
 
-    // Nuovo accesso: sovrascrive sempre la sessione
-    await kv.set(sessionKey, "active", { ex: 45 });
+    // Controllo sessione attiva (impedisce accessi simultanei)
+    const isOccupied = await kv.get(sessionKey);
+    if (isOccupied) {
+        return res.status(403).json({ error: "Accesso negato: sessione già attiva" });
+    }
+
+    // Nuovo accesso: imposta la sessione
+    await kv.set(sessionKey, "active", { ex: 25 });
 
     try {
         // 1. Scarica la lista base da GitHub
