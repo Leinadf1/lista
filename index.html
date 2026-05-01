@@ -2,16 +2,77 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TV Dashboard PRO</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="referrer" content="no-referrer">
+    <title>KICK TV</title>
+
+    <!-- ICONE (immagine originale) -->
+    <link rel="icon" type="image/png" sizes="512x512" href="https://leinadf1.github.io/kicktv/image.png?v=2">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://leinadf1.github.io/kicktv/image.png?v=2">
+    <link rel="icon" type="image/png" href="https://leinadf1.github.io/kicktv/image.png?v=2">
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
+        /* === SPLASH SCREEN (INVARIATO) === */
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease, visibility 0.8s;
+            text-align: center;
+            padding: 20px;
+        }
+
+        #splash-screen.fade-out {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .splash-logo {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+
+        .splash-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: #05ff12;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+
+        .splash-subtitle {
+            font-size: 18px;
+            font-weight: 400;
+            color: #f0f6fc;
+            max-width: 400px;
+            line-height: 1.5;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); filter: drop-shadow(0 0 0px #05ff12); }
+            50% { transform: scale(1.05); filter: drop-shadow(0 0 15px #05ff12); }
+            100% { transform: scale(1); filter: drop-shadow(0 0 0px #05ff12); }
+        }
+
+        /* === STILI COPIATI DA DASHBOARD PRO (colori adattati a KICK TV) === */
         body { 
-            background-color: #0d1117; 
-            color: #c9d1d9; 
+            background-color: #000000; 
+            color: #f0f6fc; 
             font-family: 'Inter', sans-serif; 
             margin: 0; 
             padding: 20px; 
@@ -27,13 +88,13 @@
             justify-content: space-between; 
             align-items: center; 
             margin-bottom: 25px; 
-            border-bottom: 1px solid #30363d; 
+            border-bottom: 1px solid #1f2328; 
             padding-bottom: 15px; 
             box-sizing: border-box; 
         }
         
-        h1 { font-size: 22px; font-weight: 700; color: #58a6ff; margin: 0; letter-spacing: -0.5px; }
-        #chan-count { font-size: 13px; color: #8b949e; font-weight: 600; background: #21262d; padding: 4px 12px; border-radius: 20px; }
+        h1 { font-size: 22px; font-weight: 700; color: #05ff12; margin: 0; letter-spacing: -0.5px; text-transform: uppercase; }
+        #chan-count { font-size: 13px; color: #05ff12; font-weight: 600; background: #161b22; padding: 4px 12px; border-radius: 20px; border: 1px solid rgba(5,255,24,0.3); }
         
         .player-container { 
             width: 100%; 
@@ -44,10 +105,12 @@
         }
         video { width: 100%; aspect-ratio: 16/9; display: block; }
 
+        #main-list { width: 100%; display: flex; flex-direction: column; }
+
         .category-container { width: 100%; margin-bottom: 45px; box-sizing: border-box; }
         .category-title { 
             font-size: 16px; 
-            color: #f1e05a; 
+            color: #05ff12; 
             margin-bottom: 20px; 
             font-weight: 700; 
             text-transform: uppercase; 
@@ -60,7 +123,7 @@
             display: inline-block;
             width: 4px;
             height: 18px;
-            background: #58a6ff;
+            background: #05ff12;
             margin-right: 12px;
             border-radius: 2px;
         }
@@ -73,7 +136,7 @@
         }
         
         .channel-card { 
-            background-color: #161b22; 
+            background-color: #0d1117; 
             border: 1px solid #30363d; 
             border-radius: 12px; 
             cursor: pointer; 
@@ -84,12 +147,12 @@
         }
         .channel-card:hover { 
             transform: translateY(-5px); 
-            border-color: #58a6ff; 
-            background-color: #1c2128;
+            border-color: #05ff12; 
+            background-color: #161b22;
         }
         .channel-card.active { 
-            border: 2px solid #58a6ff; 
-            background-color: #21262d; 
+            border: 2px solid #05ff12; 
+            background-color: #161b22; 
         }
         
         .logo-box { 
@@ -98,7 +161,7 @@
             display: flex; 
             justify-content: center; 
             align-items: center; 
-            background: #0d1117; 
+            background: #000000; 
             padding: 15px; 
             box-sizing: border-box; 
         }
@@ -108,7 +171,7 @@
             padding: 12px; 
             text-align: center; 
             border-top: 1px solid #30363d; 
-            background: #161b22; 
+            background: #0d1117; 
             flex-grow: 1; 
             display: flex; 
             align-items: center; 
@@ -122,174 +185,215 @@
             line-height: 1.3;
         }
 
+        /* Stile per l'immagine bandiera (usata solo su PC) */
+        .flag-img {
+            height: 28px;
+            width: auto;
+            margin-right: 10px;
+            vertical-align: middle;
+            border-radius: 3px;
+        }
+
+        /* Media query mobile (identica a Dashboard PRO) */
         @media (max-width: 600px) {
             .grid { 
-                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); 
-                gap: 12px; 
+                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+                gap: 12px;
             }
             .logo-box { height: 80px; padding: 10px; }
             .name { font-size: 11.5px; }
             body { padding: 10px; }
         }
     </style>
+
+    <!-- FORZATURA MOBILE IMMEDIATA (ignora la cache) -->
+    <script>
+    (function forceMobileCSS() {
+        if (/Mobi|Android|iPhone|iPad|iPod|webOS/i.test(navigator.userAgent) || 
+            (navigator.maxTouchPoints > 0 && 'ontouchstart' in window)) {
+            var style = document.createElement('style');
+            style.textContent = `
+                .grid { 
+                    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)) !important; 
+                    gap: 12px !important; 
+                }
+                .logo-box { 
+                    height: 80px !important; 
+                    padding: 10px !important; 
+                }
+                .name { 
+                    font-size: 11.5px !important; 
+                }
+                body { 
+                    padding: 10px !important; 
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    })();
+    </script>
 </head>
-<body id="mainBody" style="display:none;">
+<body>
+
+    <!-- SCHERMATA DI BENVENUTO -->
+    <div id="splash-screen">
+        <img src="https://leinadf1.github.io/kicktv/image.png" alt="Logo" class="splash-logo">
+        <div class="splash-title">Kick Streaming</div>
+        <div class="splash-subtitle">Tutto ciò che è a pagamento è gratis con noi! 🔥</div>
+    </div>
 
     <div id="header">
-        <h1>DASHBOARD TV</h1>
-        <div id="chan-count">Caricamento...</div>
+        <h1>KICK TV🔥📺</h1>
+        <div id="chan-count">0 CANALI</div>
     </div>
 
     <div class="player-container" data-shaka-player-container>
         <video autoplay data-shaka-player id="video"></video>
     </div>
 
-    <div id="main-list" style="width: 100%;"></div>
+    <div id="main-list"></div>
 
-<script type="module">
-let passwordGlobale = "";
-let heartbeatInterval;
+<script>
+// Gestione rimozione Splash Screen
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        const splash = document.getElementById('splash-screen');
+        splash.classList.add('fade-out');
+    }, 3000);
+});
 
-function startHeartbeat(password) {
-    if (heartbeatInterval) clearInterval(heartbeatInterval);
-    heartbeatInterval = setInterval(async () => {
-        try {
-            await fetch("/api/get-list", {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'x-heartbeat': 'true' },
-                body: JSON.stringify({ password: password })
-            });
-        } catch (e) { console.warn("Sessione persa"); }
-    }, 15000); // <-- MODIFICATO: ogni 15 secondi per mantenere sessione con TTL 25s
+document.getElementById('splash-screen').addEventListener('click', function() {
+    this.classList.add('fade-out');
+});
+
+const SOURCE_API = "lista.m3u";
+
+/* Icona di fallback per i canali */
+const FALLBACK_ICON = 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 80" fill="none">
+  <rect width="150" height="80" fill="#161b22"/>
+  <text x="75" y="45" dominant-baseline="middle" text-anchor="middle" font-family="Arial,sans-serif" font-weight="bold" font-size="14" fill="#f0f6fc">TV</text>
+</svg>`);
+
+// Mappa emoji → codice paese (minuscolo) per FlagCDN
+const emojiToCountryCode = {
+    "🇵🇹": "pt", "🇧🇦": "ba", "🇮🇹": "it", "🇬🇧": "gb", "🇺🇸": "us",
+    "🇪🇸": "es", "🇫🇷": "fr", "🇩🇪": "de", "🇳🇱": "nl", "🇧🇷": "br",
+    "🇦🇷": "ar", "🇷🇴": "ro", "🇬🇷": "gr", "🇲🇽": "mx", "🇵🇱": "pl"
+};
+
+const countryCodeMap = {
+    "PT": "pt", "BA": "ba", "IT": "it", "UK": "gb", "US": "us",
+    "ES": "es", "FR": "fr", "DE": "de", "NL": "nl", "BR": "br",
+    "AR": "ar", "RO": "ro", "GR": "gr", "MX": "mx", "PL": "pl"
+};
+
+function isMobile() {
+    return /Mobi|Android|iPhone|iPad|iPod|webOS/i.test(navigator.userAgent) || 
+           (navigator.maxTouchPoints > 0 && 'ontouchstart' in window);
 }
 
-async function checkAccess() {
-    const psw = prompt("Password:");
-    if (!psw) return;
-
-    try {
-        const response = await fetch("/api/get-list", {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ password: psw })
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            alert(errorData.error || "Sessione già attiva o password errata!");
-            window.location.reload();
-            return;
-        }
-
-        const m3uData = await response.text();
-        passwordGlobale = psw;
-        document.getElementById('mainBody').style.display = "flex";
-        
-        startHeartbeat(psw);
-        init(m3uData);
-
-    } catch (error) {
-        alert("Errore server.");
-    }
+function extractCountryCode(groupTitle) {
+    const emojiMatch = groupTitle.trim().match(/^(\p{Regional_Indicator}{2})/u);
+    if (emojiMatch && emojiToCountryCode[emojiMatch[1]]) return emojiToCountryCode[emojiMatch[1]];
+    const codeMatch = groupTitle.trim().match(/^([A-Z]{2})\b/);
+    if (codeMatch && countryCodeMap[codeMatch[1]]) return countryCodeMap[codeMatch[1]];
+    return null;
 }
 
-async function init(m3uContent) {
+function formatGroupTitle(groupTitle) {
+    if (isMobile()) return groupTitle;
+    const code = extractCountryCode(groupTitle);
+    if (!code) return groupTitle;
+    const flagUrl = `https://flagcdn.com/w80/${code}.png`;
+    const imgHtml = `<img src="${flagUrl}" alt="${code}" class="flag-img" />`;
+    return imgHtml + groupTitle.replace(/^(?:\p{Regional_Indicator}{2}|[A-Z]{2})\s*/u, '');
+}
+
+async function init() {
     const video = document.getElementById('video');
     const ui = video['ui'];
     const player = ui.getControls().getPlayer();
     const mainList = document.getElementById('main-list');
-    const countHeader = document.getElementById('chan-count');
+    const chanCount = document.getElementById('chan-count');
 
-    player.configure({ streaming: { jumpLargeGaps: true } });
+    player.configure({ 
+        manifest: { dash: { ignoreDrmInfo: true } }, 
+        streaming: { jumpLargeGaps: true, retryParameters: { maxAttempts: 3 } }
+    });
 
-    function createCard(ch) {
-        const name = (ch.group || "LISTA").toUpperCase().trim();
-        let gridId = `grid-${name.replace(/[^a-z0-9]/gi, '-')}`;
-        let grid = document.getElementById(gridId);
-        
-        if (!grid) {
-            const container = document.createElement('div');
-            container.className = 'category-container';
-            container.innerHTML = `<div class="category-title">${name}</div><div class="grid" id="${gridId}"></div>`;
-            mainList.appendChild(container);
-            grid = document.getElementById(gridId);
+    player.getNetworkingEngine().registerRequestFilter((type, request) => {
+        if (request.uris[0].includes('pluscdn.pl') || request.uris[0].includes('t-mobile.pl')) {
+            request.allowCrossOrigin = true;
+            request.headers['User-Agent'] = 'Mozilla/5.0 (Web0S; Linux; SmartTV) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.5735.199 Safari/537.36';
+            delete request.headers['Origin']; delete request.headers['Referer'];
         }
+    });
 
-        const card = document.createElement('div');
-        card.className = 'channel-card';
-        card.innerHTML = `
-            <div class="logo-box"><img src="${ch.logo}" onerror="this.src='https://via.placeholder.com/150x80?text=TV'"></div>
-            <div class="info-box"><div class="name">${ch.name}</div></div>
-        `;
-        
-        card.onclick = async () => {
-            document.querySelectorAll('.channel-card').forEach(c => c.classList.remove('active'));
-            card.classList.add('active');
-            await player.unload();
-            
-            // DRM
-            player.configure({ drm: { clearKeys: ch.drm || {} } });
+    try {
+        const res = await fetch(SOURCE_API);
+        const text = await res.text();
+        const lines = text.split('\n');
+        let ch = { drm: {} };
+        let count = 0;
 
-            // HEADERS PERSONALIZZATI
-            if (ch.streamHeaders && Object.keys(ch.streamHeaders).length > 0) {
-                player.configure({ streaming: { customHttpHeaders: ch.streamHeaders } });
-            } else {
-                player.configure({ streaming: { customHttpHeaders: {} } });
-            }
-
-            await player.load(ch.url);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        };
-        grid.appendChild(card);
-    }
-
-    const lines = m3uContent.split('\n');
-    let currentChannel = { name: "", logo: "", group: "LISTA", drm: {}, url: "", streamHeaders: {} };
-    let loadedCount = 0;
-
-    for (let line of lines) {
-        line = line.trim();
-        if (line.startsWith('#KODIPROP:inputstream.adaptive.license_key=')) {
-            const val = line.split('=')[1];
-            try {
-                currentChannel.drm = JSON.parse(val);
-            } catch (e) {
-                const parts = val.split(':');
-                if (parts.length === 2) currentChannel.drm[parts[0].toLowerCase()] = parts[1].toLowerCase();
-            }
-        } 
-        else if (line.startsWith('#KODIPROP:inputstream.adaptive.stream_headers=')) {
-            const val = line.split('=')[1];
-            if (val) {
-                const pairs = val.split('&');
-                pairs.forEach(pair => {
-                    const [headerKey, headerValue] = pair.split('=');
-                    if (headerKey && headerValue) {
-                        currentChannel.streamHeaders[headerKey.trim()] = headerValue.trim();
+        for (let line of lines) {
+            line = line.trim();
+            if (line.includes('license_key=')) {
+                if (line.includes('{')) {
+                    try { ch.drm = JSON.parse(line.split('license_key=')[1]); } catch(e) {}
+                } else {
+                    const m = line.match(/[a-f0-9]{32}/gi);
+                    if (m && m.length >= 2) {
+                        for (let i = 0; i < m.length; i += 2) { if (m[i+1]) ch.drm[m[i]] = m[i+1]; }
                     }
-                });
+                }
+            } else if (line.startsWith('#EXTINF:')) {
+                ch.logo = (line.match(/tvg-logo="([^"]+)"/i) || [])[1] || "";
+                ch.group = (line.match(/group-title="([^"]+)"/i) || [])[1] || "ALTRI";
+                ch.name = (line.match(/,(.*)/) || [])[1] || "Canale";
+            } else if (line.startsWith('http')) {
+                const url = line;
+                const currentCh = {...ch};
+                count++;
+                const groupHtml = formatGroupTitle(currentCh.group);
+
+                let gridId = `grid-${currentCh.group.replace(/[^\w]/g, '-').toLowerCase()}`;
+                let grid = document.getElementById(gridId);
+                
+                if (!grid) {
+                    const container = document.createElement('div');
+                    container.className = 'category-container';
+                    container.innerHTML = `<div class="category-title">${groupHtml}</div><div class="grid" id="${gridId}"></div>`;
+                    mainList.appendChild(container);
+                    grid = document.getElementById(gridId);
+                }
+
+                const card = document.createElement('div');
+                card.className = 'channel-card';
+                card.innerHTML = `
+                    <div class="logo-box"><img src="${currentCh.logo}" onerror="this.src='${FALLBACK_ICON}'" alt="logo"></div>
+                    <div class="info-box"><div class="name">${currentCh.name}</div></div>
+                `;
+                
+                card.onclick = async () => {
+                    document.querySelectorAll('.channel-card').forEach(c => c.classList.remove('active'));
+                    card.classList.add('active');
+                    await player.unload();
+                    player.configure({ drm: { clearKeys: currentCh.drm } });
+                    try {
+                        const finalUrl = url.startsWith('http://') ? url.replace('http://', 'https://') : url;
+                        await player.load(finalUrl);
+                        window.scrollTo({top: 0, behavior: 'smooth'});
+                    } catch (e) { console.error("Errore Shaka:", e); }
+                };
+                grid.appendChild(card);
+                ch = { drm: {} };
             }
         }
-        else if (line.startsWith('#EXTINF:')) {
-            const logo = line.match(/tvg-logo="([^"]+)"/i);
-            const group = line.match(/group-title="([^"]+)"/i);
-            const name = line.match(/,(.*)/);
-            if (logo) currentChannel.logo = logo[1];
-            if (group) currentChannel.group = group[1];
-            if (name) currentChannel.name = name[1].trim();
-        } 
-        else if (line.startsWith('http')) {
-            currentChannel.url = line;
-            createCard(currentChannel);
-            loadedCount++;
-            currentChannel = { name: "", logo: "", group: "LISTA", drm: {}, url: "", streamHeaders: {} };
-        }
-    }
-
-    countHeader.innerText = loadedCount + " CANALI";
+        chanCount.innerText = count + " CANALI";
+    } catch(e) { console.error("Errore API:", e); }
 }
-
-document.addEventListener('shaka-ui-loaded', checkAccess);
+document.addEventListener('shaka-ui-loaded', init);
 </script>
 </body>
 </html>
