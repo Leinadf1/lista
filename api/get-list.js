@@ -10,8 +10,8 @@ const CANALI_FISSI = [
     { name: "EUROSPORT 6", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020005/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-H53i", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport6)/manifest.mpd", drm: '{"ead1c567a3df48619799b2e78b18fdfa":"1de9d9af5651296aa67913979ad8c694"}' }
 ];
 
-// Nuovo array per i canali DAZN fissi (con gruppo DAZN LINEARI)
-// Il token nell'URL scade periodicamente: modifica manualmente il campo 'url' quando necessario
+// Canali DAZN fissi (DAZN 1 WIFI)
+// Il token nell'URL scade periodicamente: modifica manualmente il campo 'url' e 'license_key' quando necessario
 const DAZN_FISSI = [
     {
         name: "DAZN 1 WIFI",
@@ -32,11 +32,11 @@ function buildM3U(channel) {
     return out;
 }
 
-// Funzione per generare l'M3U per i canali DAZN fissi (con più KODIPROP)
+// Funzione per generare l'M3U dei canali DAZN fissi
+// NOTA: la riga stream_headers è stata rimossa perché in un browser non può essere applicata
 function buildDaznM3U(channel) {
     let out = '';
     out += `#EXTINF:-1 group-title="${channel.group_title}" tvg-logo="${channel.logo}" tvg-id="${channel.name.replace(/\s/g, '')}",${channel.name}\n`;
-    out += `#KODIPROP:inputstream.adaptive.stream_headers=${channel.stream_headers}\n`;
     out += `#KODIPROP:inputstream.adaptive.license_type=${channel.license_type}\n`;
     out += `#KODIPROP:inputstream.adaptive.license_key=${channel.license_key}\n`;
     out += channel.url + '\n';
@@ -130,7 +130,7 @@ export default async function handler(req, res) {
             return res.status(200).send("#EXTM3U\n");
         }
 
-        // 3. PER GLI ALTRI UTENTI: fetch diretto di DAZN (token fresco!)
+        // 3. PER GLI ALTRI UTENTI: fetch diretto di DAZN (quello da dz1.txt, token TIM)
         let daznLineare = "";
         try {
             const daznResponse = await fetch(`https://nodrm.online/list/dz1.txt?t=${Date.now()}`);
@@ -140,7 +140,7 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("Errore DAZN fetch"); }
 
-        // 4. Inserisce DAZN dopo l'ultimo canale Champions League
+        // 4. Inserisce il DAZN preso da dz1.txt dopo l'ultimo canale Champions League
         let lines = fileContent.split('\n');
         let lastChampionsIdx = -1;
         for (let i = 0; i < lines.length; i++) {
@@ -162,11 +162,11 @@ export default async function handler(req, res) {
             finalContent = fileContent + "\n" + daznLineare;
         }
 
-        // 5. Aggiunge gli Eurosport in fondo
+        // 5. Aggiunge gli Eurosport fissi in fondo
         const eurosportM3U = CANALI_FISSI.map(c => buildM3U(c)).join('\n');
         finalContent = finalContent.trimEnd() + "\n" + eurosportM3U;
 
-        // 6. Aggiunge i canali DAZN fissi (con gruppo DAZN LINEARI)
+        // 6. Aggiunge i canali DAZN fissi (DAZN 1 WIFI)
         const daznFissiM3U = DAZN_FISSI.map(c => buildDaznM3U(c)).join('\n');
         finalContent = finalContent.trimEnd() + "\n" + daznFissiM3U;
 
@@ -176,4 +176,4 @@ export default async function handler(req, res) {
         console.error(error);
         res.status(500).json({ error: "Errore caricamento liste" });
     }
-}
+                    }
