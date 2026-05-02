@@ -403,4 +403,9 @@ https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777731306~exp%3D1777817706~acl%3D%2
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=759894810d3b52b989e762192899db52:d03a16cba33c844e10199d17fdcd402c
 https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777734003~exp%3D1777820403~acl%3D%2F*~id%3D29ce4820-8b55-5ac6-8c7a-5a820e51ebbb~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D5d24ab62f676bb205553d7c0925c8833a79a0b359aa8a8098d81b1c13a200730%23wm%3D1%23wmd%3D1152%23tmidversion%3D3~hmac%3D5cbc9b5a923b4b8cda79ad74cdc73388d82f72abcaa0e65bd726fd14fea34956/1goycd51p0j2219wtvisj7xd8a/web/stream.mpd?channel=1387&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Sat May  2 15:56:37 UTC 2026
+
+#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/3l6wgd8rge8gjdh8y2riqlejj_image-header_pIt_1775643270000/fill/none/top/none/100/1280/720/png/image",Alavés - Athletic Bilbao
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777738804~exp%3D1777825204~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D4beb9d037fda927b0cf9301a7de31cd37178e8cf828dfcaae561116f0682ea7e~hmac%3D30072c21ba46289245368a14e3b2291009b0dd94a446151c7c219db1eac82790/17uoa9q7xsdc31hety8pfsm7p5/web/stream.mpd?channel=3748&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Sat May  2 16:30:24 UTC 2026
