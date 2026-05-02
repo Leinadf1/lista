@@ -418,4 +418,14 @@ https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777745703~exp%3D1777832103~acl%3D%2
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=fac60ada115f5cf6a7e91bedede19164:8c7ff8dc22ac1300d86f3cd730e4e5b0
 https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1777747804~exp%3D1777834204~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Db65d32d41a7782316241df33628c31fa59048036f0cd8dfe9d0db11b1b55d95a%23wm%3D0~hmac%3Db3ae10a568a00d7e4cef35a7d10b0bf91b81092d10168653f5862fdfa8f27830/y19z4yi79d4h17iaplrl5sxfz/web/stream.mpd?channel=3941&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Sat May  2 20:40:16 UTC 2026
+
+#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/dsoz88aebrpg8lefzpg3rmxuj_image-header_pIt_1776955071000/fill/none/top/none/100/1280/720/png/image",Atalanta - Genoa | Post-partita con Vamos!
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=81159f2acb38585396aa34b6c25d3476:2bc06dbb1077b7ae1f516dfed2c79cfc
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1777754703~exp%3D1777841103~acl%3D%2F*~id%3D29ce4820-8b55-5ac6-8c7a-5a820e51ebbb~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D2e3918fc8a9319bcc1bb37b72668421f5264ff7f2df9c5b203c0fab1b65aeb50%23wm%3D1%23wmd%3D1152%23tmidversion%3D3~hmac%3Daf38d3c0eddb27c6a98dfb39007472858d1e776580a138109193688419b28d22/xf2gsu5tjksrzzah1eer6wk0/web/stream.mpd?channel=1388&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/5wg5crxqzl4oqhz9fook5oyba_image-header_pIt_1764949099000/fill/none/top/none/100/1280/720/png/image",Trentaduesima puntata | Vamos! Il sabato della Serie A
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=8f54d1da59815c2ba1c30dce70a3b1a5:f8969340ff2a3fbdff887581193bf2b1
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1777754704~exp%3D1777841104~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D1edc079f0e800618e06dc1489b718dbce16ba606e4763221285da0535054a72f%23wm%3D0~hmac%3D2e01d1a7855556fbd5908dc5eee4d63591ab21a71fa3bb424a3437989f11c62d/sz6v5084i24z1j1k6mqgf6uni/web/stream.mpd?channel=1346&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Sat May  2 20:50:23 UTC 2026
