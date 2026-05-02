@@ -388,4 +388,14 @@ https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777722607~exp%3D1777809007~acl%3D%2
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=a3b8e8adf6195f21bfbf1cedf3d508e9:46aa6eb2b97f704830f935ce3f2de5a2
 https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1777725903~exp%3D1777812303~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D6d0a4073fa723ee2b32e1d2c2022391b1d419ad3ccaf432c831ea0e439cf1ef6%23wm%3D0~hmac%3Df0eca1a05d738f382e0057394aa70599bc088796a724c65fd3d9ba390055f1a1/bqc7czq37rkm1njxy0kekbywl/web/stream.mpd?channel=1357&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Sat May  2 13:59:38 UTC 2026
+
+#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/cjhc4umegib42t8v61p7sgi85_image-header_pIt_1761917569000/fill/none/top/none/100/1280/720/png/image",Spalletti la conferenza stampa pre-partita
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=ad56ebeb3cbd5b249cbbfd40d9762747:4f34ed55f866c133e4c012d92b3a0686
+https://dca-de-livedazn.daznedge.net/@tend%3A1777817703~geo%3AIT~asn%3A16232~path%3A1_1_aa4e4d9e8ac5d8dd5dae4c0c98b9578f4e1e8b1034d319645e104df5923db587~id%3A9827c3cf91d3~tk3%3A6b17e83ba0ab6f57f80682ebd16f29df378a8d73dbcf0d89becea3c3ba7ab2f1/4fba1gg4blnj16ramcyxyhblb/web/stream.mpd?channel=7003&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/8je9qokutv273ggyks7nz2c4m_image-header_pIt_1775643634000/fill/none/top/none/100/1280/720/png/image",Valencia - Atlético Madrid
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=da73eb1911235592bb496519f5b20322:eb2eab1374f395ae4610f150d08e3ba3
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777731306~exp%3D1777817706~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D60f47a6db804a8d8c10a3a0854014168f60a603f5bf8368bba4d5e51d0e43c1b%23wm%3D0~hmac%3D0d579b76d6461ee1e8ca6f3a7d21cded5d6b8d9b75a406e491e3ba7d4e190d4c/rdxx6m8iqnur1bqea2ydggy1i/web/stream.mpd?channel=3940&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Sat May  2 14:59:28 UTC 2026
