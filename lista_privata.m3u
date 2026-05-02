@@ -373,4 +373,14 @@ https://abndy7jaaaaaaaamb5sbzman2g3xq.bia-cf.live.pv-cdn.net/lhr-nitro/live/clie
 https://nodrm.online:6163/stream/test/prime/master.m3u8?u=prime_video&p=26972c05e5cd32b4d006247a875330a1275a60747cd411377cfbb1f15633d612
 
 
-# Ultimo aggiornamento: Sat May  2 11:40:16 UTC 2026
+
+#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/6vg68nukqkpwo2iluieeeaafq_image-header_pIt_1763740921000/fill/none/top/none/100/1280/720/png/image",Allegri la conferenza stampa pre-partita
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=e51fc8626d3153d798e8856fa0395c88:908c2d138760f684c511226b2d78907b
+https://dca-de-livedazn.daznedge.net/@tend%3A1777809003~geo%3AIT~asn%3A16232~path%3A1_1_35a4bdd256e5da6505515467ae32d85bdaf2cdfa53a18d1b695e75dc6f6b022d~id%3A9827c3cf91d3~tk3%3A5675b1e1024016a464bd335e6f4f9b0bfbddaee0d7f54cb5151a5a38ad9c87fa/t2dwt6uxmo1v1gm0jk2fa2raz/web/stream.mpd?channel=5073&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/a94yr16s42yk6ju9rzamfqu6o_image-header_pIt_1775643664000/fill/none/top/none/100/1280/720/png/image",Villarreal - Levante
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777722607~exp%3D1777809007~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D9dcaec9a722ed0ea82236ef3384d6f9c1d38b105c72984b041d50c99bcf600b2~hmac%3D22fdb704b169f3979d0a1a1a428de74ca7602bb8bd213595e19b9b64bcbeb54b/1vxww5t7zrpiq1o7mhnq7w8tz2/web/stream.mpd?channel=3732&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Sat May  2 11:50:19 UTC 2026
