@@ -398,4 +398,9 @@ https://dca-de-livedazn.daznedge.net/@tend%3A1777817703~geo%3AIT~asn%3A16232~pat
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=da73eb1911235592bb496519f5b20322:eb2eab1374f395ae4610f150d08e3ba3
 https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777731306~exp%3D1777817706~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D60f47a6db804a8d8c10a3a0854014168f60a603f5bf8368bba4d5e51d0e43c1b%23wm%3D0~hmac%3D0d579b76d6461ee1e8ca6f3a7d21cded5d6b8d9b75a406e491e3ba7d4e190d4c/rdxx6m8iqnur1bqea2ydggy1i/web/stream.mpd?channel=3940&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Sat May  2 14:59:28 UTC 2026
+
+#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/7e4fvjbvvdjg59i2jvawtuc16_image-header_pIt_1777363234000/fill/none/top/none/100/1280/720/png/image",Como - Napoli
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=759894810d3b52b989e762192899db52:d03a16cba33c844e10199d17fdcd402c
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777734003~exp%3D1777820403~acl%3D%2F*~id%3D29ce4820-8b55-5ac6-8c7a-5a820e51ebbb~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D5d24ab62f676bb205553d7c0925c8833a79a0b359aa8a8098d81b1c13a200730%23wm%3D1%23wmd%3D1152%23tmidversion%3D3~hmac%3D5cbc9b5a923b4b8cda79ad74cdc73388d82f72abcaa0e65bd726fd14fea34956/1goycd51p0j2219wtvisj7xd8a/web/stream.mpd?channel=1387&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Sat May  2 15:56:37 UTC 2026
