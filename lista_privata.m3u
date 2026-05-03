@@ -403,4 +403,9 @@ https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1777821304~exp%3D1777907704~acl%3D%2
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec
 https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1777825204~exp%3D1777911604~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D81c33c6ce1aa77e8f51435273420123837c411a152222b0e29f12cb38969969b~hmac%3D0a8af3b1c02167afd5c603dc42a7386b2ae754f32f89cbcd9c3d49888cebd67a/9q4e1z6ypc811pag2mm7p0o87/web/stream.mpd?channel=6738&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Sun May  3 17:20:16 UTC 2026
+
+#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/a20e19mb0mt0ecjs3oq9fybpr_image-header_pIt_1776951436000/fill/none/top/none/100/1280/720/png/image",Inter - Parma
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=23b8cdeddb45559e8da4a847e7213d4b:b18651f69583ecb33bbc3045808babca
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777829403~exp%3D1777915803~acl%3D%2F*~id%3D29ce4820-8b55-5ac6-8c7a-5a820e51ebbb~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D40d58dc95aae4db9693abb018ca04b8d90e3907326178de26b9ea59a1a144d18%23wm%3D1%23wmd%3D1152%23tmidversion%3D3~hmac%3Da78b6940012a9e8b344180b31426412a39b4ff9ae4ce0cd45c9b26622065ed5a/14eqym0q9uq1z1ic6kwt1iph3o/web/stream.mpd?channel=1381&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Sun May  3 17:30:33 UTC 2026
