@@ -1,6 +1,6 @@
 name: Auto Update
 on:
-  workflow_dispatch:   # solo esecuzione manuale
+  workflow_dispatch:   # attivabile manualmente o via API esterna (cron-job)
 
 jobs:
   build:
