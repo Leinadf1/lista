@@ -1,10 +1,6 @@
 name: Auto Update
 on:
-  schedule:
-    - cron: '*/15 * * * *'
-  workflow_dispatch:
-  push:
-    branches: [ main ]
+  workflow_dispatch:   # solo esecuzione manuale
 
 jobs:
   build:
@@ -18,7 +14,6 @@ jobs:
 
       - name: Download base list
         run: |
-          # Scarica SOLO la lista base (DAZN verrà aggiunto dall'API)
           curl -sL "https://nodrm.online/list/list2.m3u" > lista_privata.m3u
           echo "# Ultimo aggiornamento: $(date)" >> lista_privata.m3u
           echo "Aggiornato il: $(date)" > last_sync.txt
