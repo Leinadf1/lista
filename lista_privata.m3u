@@ -378,4 +378,9 @@ https://nodrm.online:6163/stream/test/prime/master.m3u8?u=prime_video&p=26972c05
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=9518246e94245d319bf14e47e57fa915:a29e33773691ec6c09e6fbe7d6203639
 https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777910704~exp%3D1777997104~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Df8efb5b74ce3137f20c62046b65b9d7176c822441cb19bba94071f61b43b7e62%23wm%3D0~hmac%3D13ba267244d837c62e28dea9faf8e6cfcf29c9bc198d88e38bbd129990b5ecb4/16t8bhq0aesj9118eolhmbfmpz/web/stream.mpd?channel=1347&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Mon May  4 17:50:19 UTC 2026
+
+#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/4yqmnoi2370meump06ahxi064_image-header_pIt_1776950940000/fill/none/top/none/100/1280/720/png/image",Roma - Fiorentina
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=5d676e68ad1d55b89a762bea67e6052f:9c3e02fe7c333c388f6d9a1551c5405c
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1777917606~exp%3D1778004006~acl%3D%2F*~id%3D29ce4820-8b55-5ac6-8c7a-5a820e51ebbb~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D2c366ed4f7b51a79ce991c733b7d2d7f13b5adcfc9f91d73427c956fc3c72ece%23wm%3D1%23wmd%3D1152%23tmidversion%3D3~hmac%3D9b86220078c6a7773c397fd1cbb2a6eaf40904609ffb09210b1083cb132dcbb8/1u3brzko3zpwd1t71o6mjn6w2f/web/stream.mpd?channel=1381&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Mon May  4 18:00:50 UTC 2026
