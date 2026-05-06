@@ -351,9 +351,9 @@ https://g004-lin-it-cmaf-prd-ak.pcdn07.cssott02.com/v~a-0-0_e~1778115627_s~9262b
 https://g004-lin-it-cmaf-prd-ak.pcdn07.cssott02.com/v~a-0-0_e~1778115627_s~970cfbff-a3e0-4791-b204-188ca7a3efe5_u~b55087268a5867608c1c75764bcfc8b1ee6979d748b3ff0fb812ea7c195a0cb0109d29e1e6ed6afc72e8583e157d3c8c_l~55_x~9bc6d700769d8db6a4528a88a88d66a8dd3f68e1fcb67101da0f7abfa4ccc5a5/nowitlin2/Content/CMAF_CTR_H1/Live/channel(boomerang)/master_2hr-all.mpd?t=v2&c3.ri=69fa849b_Q1ZYMDc_0_QUtBTUFJ_5f5b4c6956d4&c3.ri=69fa849b_Q1ZYMDc_0_QUtBTUFJ_5f5b4c6956d4
 
 #KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=0056e3df60bda509fa4db8cbec222d01:463358cd2d371bdbb1bf2adb2ba5e64c
+#KODIPROP:inputstream.adaptive.license_key=bc2417cf44db2fd182eead5b55f60b49:e735de2bd6bc34f21dab213354bea100
 #EXTINF:-1 group-title="CHAMPIONS LEAGUE" tvg-logo="https://media.engage.it/2020/12/champions-league-prime-video-italia_319186.jpg",Bayern Monaco vs Paris Saint-Germain 50 FPS
-https://abndy7jaaaaaaaamb5sbzman2g3xq.bia-cf.live.pv-cdn.net/lhr-nitro/live/clients/dash/enc/mxhdnqvfcv/out/v1/5fd2d8d8ca4f47dbae1ab73a2d78ab36/cenc.mpd
+https://abndy7jaaaaaaaamb5sbzman2g3xq.bia-cf.live.pv-cdn.net/lhr-nitro/live/clients/dash/enc/svtcjtaz7r/out/v1/7c425cec25264d819e7159bb4f8a0734/cenc.mpd
 
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=8c53947b4be2025415fea71d378ac6a5:e7990a5809933be29ad14ba63d21fa61
@@ -370,4 +370,4 @@ https://abndy7jaaaaaaaamb5sbzman2g3xq.bia-cf.live.pv-cdn.net/lhr-nitro/live/clie
 https://nodrm.online:6163/stream/test/prime/master.m3u8?u=prime_video&p=26972c05e5cd32b4d006247a875330a1275a60747cd411377cfbb1f15633d612
 
 
-# Ultimo aggiornamento: Wed May  6 18:40:20 UTC 2026
+# Ultimo aggiornamento: Wed May  6 18:50:21 UTC 2026
