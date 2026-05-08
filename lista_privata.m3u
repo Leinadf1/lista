@@ -435,4 +435,9 @@ https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1778264424~exp%3D1778350824~acl%3D%2
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=b64e744ef494580abae5023ea0f8b192:7dd70e8183e23164bd951aba887f1eef
 https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1778265603~exp%3D1778352003~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D64f8647e87d92bb2d0b966d31eeeac18dac7cf6d2b15f9590a410947438a6d38%23wm%3D0~hmac%3D0e0700cd2bfef1d30b6bf2f0e86532e3014f748828a07b99226bc31f8e55eec0/f03rcu61zn6z1ov8rpl6cvjzo/web/stream.mpd?channel=1346&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Fri May  8 18:50:18 UTC 2026
+
+#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/39sliujosa2ywoxa3idi0kjft_image-header_pIt_1775643528000/fill/none/top/none/100/1280/720/png/image",Levante - Osasuna
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1778266504~exp%3D1778352904~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D9955f161f9747d13ee14682b024a2442e1b698d76690ee98f3eb0738ece1dcd9~hmac%3De6b2e857f4d0a239a51ed4d8cf357a6683bbea398c08ac824ba9032a0072aada/1mwi15gjjb3f21a4fc30u0xtyi/web/stream.mpd?channel=3752&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Fri May  8 19:00:46 UTC 2026
