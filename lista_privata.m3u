@@ -430,4 +430,9 @@ https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1778264422~exp%3D1778350822~acl%3D%2
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=99bfc202304f5e49a20a3395fc8adae5:b5d3ddff7e44f07a27aff3b957bde67d
 https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1778264424~exp%3D1778350824~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Da299af78812501dbc83ac069534c221b4dbac31d007d08ca1b339b750ee61df2%23wm%3D0~hmac%3De8a683c4b56beb07823fad17913dead6324b2ec828043bfb72eacffe13a98e70/q8mfkg6cr61v12ewqbqkyz3oi/web/stream.mpd?channel=3935&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Fri May  8 18:30:36 UTC 2026
+
+#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/1n021rrlnnfz1doe544fgk0i8_image-header_pIt_1774952584000/fill/none/top/none/100/1280/720/png/image",Torino - Sassuolo
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=b64e744ef494580abae5023ea0f8b192:7dd70e8183e23164bd951aba887f1eef
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1778265603~exp%3D1778352003~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D64f8647e87d92bb2d0b966d31eeeac18dac7cf6d2b15f9590a410947438a6d38%23wm%3D0~hmac%3D0e0700cd2bfef1d30b6bf2f0e86532e3014f748828a07b99226bc31f8e55eec0/f03rcu61zn6z1ov8rpl6cvjzo/web/stream.mpd?channel=1346&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Fri May  8 18:40:26 UTC 2026
