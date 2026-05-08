@@ -380,4 +380,54 @@ https://dca-fs-live-dazn-cdn.dazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJl
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=ce2e5e4996b558dfb2b4d688d0ac10ea:e29879981c1d5a3e57f9d66dba98fcea
 https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1778261405~exp%3D1778347805~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Da273bb4c4aafa641f086f26ac329fe77ab20104f0f04c6fa425e8f1d1c38be2f%23wm%3D0~hmac%3D809ef85327411c18b0cf8e0b169d7397ba682b10ddd7b838cbfb8a1b057dbffc/1p4el93s5c9k31po710tnkgsx5/web/stream.mpd?channel=3942&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Fri May  8 18:20:21 UTC 2026
+
+#EXTINF:-1 group-title="DAZN SERIE BKT" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/7xlxzrazulr7ls4i7fnqqrznm_image-header_pIt_1758299637000/fill/none/top/none/100/1280/720/png/image",Frosinone - Mantova
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=2f56e83ed5315b4b837065665719d56f:751aedabac2667282b47ee079ad5eeff
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1778264405~exp%3D1778350805~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D70b2cfc76eac96abe347ff29be8baf9d2ffedfa63048b2f668d778d05f6e1fa4%23wm%3D0~hmac%3D35b58caf579da217fcccdb687de33c7c8cbff90f9f960246fa36378b2cc4f000/1a1kiu3iaxcov1lwkd3vaiogaw/web/stream.mpd?channel=3927&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN SERIE BKT" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/awuti8zx9ydwavwkkg6rs2yao_image-header_pIt_1758299625000/fill/none/top/none/100/1280/720/png/image",Monza - Empoli
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=7b62347458b75c4aaaffb34b8f43b68e:b0d06056f5c54be71546f3b1b9aa9e22
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1778264407~exp%3D1778350807~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D2a8495ac2b7bf06324d506d316a415cbf1ae6b92e51fd590973d5e454b403c7a%23wm%3D0~hmac%3Dae574229666a04686c9174d94e5c38dad015a06814d4343e684f0c810a754666/11y43uofqdq071u96w27eag5f1/web/stream.mpd?channel=3931&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN SERIE BKT" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/elqq4c68br5yrb4dn56yg1rqc_image-header_pIt_1775132847000/fill/none/top/none/100/1280/720/png/image",Venezia - Palermo
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=590033f50218543c8998b523e7707da6:3bd347d0653d063b9e7c0c839d090b29
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1778264409~exp%3D1778350809~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D6a453b5a3947faa88226ea0d91c4c0bcea640b865c337e0fe63d5b182f02904c%23wm%3D0~hmac%3D79ba252f72cf8cd8a8b182d5dee0572a40eb7e5a4ff9818bb91bbe922179bb7c/15qkut6lotnm91nm087r3yqvz1/web/stream.mpd?channel=3932&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN SERIE BKT" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/2ha22baku6zab7zyfo4dzw356_image-header_pIt_1775132826000/fill/none/top/none/100/1280/720/png/image",Catanzaro - Bari
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=e28dd4d0e28d5ddc9874c290fc868f5f:17fdab02fca4816567944dc173ca0497
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1778264411~exp%3D1778350811~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D6a0086019bfa61486e4d8468baa7bfe6467f64d67cb0cbe652ec361fbcbf8214%23wm%3D0~hmac%3D1276e54c24bd8d7d56cc30bb20e81e14247b9eabeb14e58730f16c0c74d89320/o2v4stn5x5pj1dcepukxu2v1e/web/stream.mpd?channel=3936&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN SERIE BKT" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/4kt01er1heb1gh6tlqr1ldcm1_image-header_pIt_1774003311000/fill/none/top/none/100/1280/720/png/image",Pescara - Spezia
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=e798ebf4204a5b4b88ffd1b0f4bb43a5:294ed19f22727a519b1148bbb6b03fe9
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1778264413~exp%3D1778350813~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Daba9b77fb13c75d5dbc946165a84b50a19a16ad8f63bf8bcd3e92963613651da%23wm%3D0~hmac%3D1fa3d2931418edb080e47bfed9e65f4e5c80df133d78e58c508c536632a0250e/fgz1gbl76nsk1vy2pl06uxh9n/web/stream.mpd?channel=3929&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN SERIE BKT" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/7rirygfbotn0vz08w702inuqz_image-header_pIt_1775749187000/fill/none/top/none/100/1280/720/png/image",Cesena - Padova
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=26bdf60b17465da3959854d376bfa0fb:6bad7eb264d51e6bbd385a9baf07b3f9
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1778264415~exp%3D1778350815~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D3b9f45c019bb912273c100e329f9bdbc04a88e1a6941f77d27a3e70067660b6e%23wm%3D0~hmac%3D07e22cb2dbdfffc42e995749742794c897507483830c1bc3843eb20d1d4e1cf4/1bnlwyi1laypr1q19fyau2p7bd/web/stream.mpd?channel=3928&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN SERIE BKT" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/4zot6i9hrtu0c21q6lmceqyg_image-header_pIt_1775132744000/fill/none/top/none/100/1280/720/png/image",Südtirol - Juve Stabia
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=72d2ec41d2015a46bd0ca9bf7fb161ef:ef0b16f1fad696b568077d17726669d5
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1778264417~exp%3D1778350817~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Db6731eccc38541f16888c822d14b80b5c1ef8249fe0d43195d3e615e3279aae3%23wm%3D0~hmac%3Dcd6acb301ae9c8cc3d56b1d040400920d86b4c1e92a2194691ae1812251dc709/km5obgtl1mmy1kxwqb3w8nwk1/web/stream.mpd?channel=3934&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN SERIE BKT" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/b0kco1eje3jyhg3dw0pogwtvl_image-header_pIt_1758299644000/fill/none/top/none/100/1280/720/png/image",Virtus Entella - Carrarese
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=1467881009365504bbe82a905416c41f:73fa1d8ab94416c4ee1304b4a1927ac9
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1778264419~exp%3D1778350819~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D43fb87a282a586e6f07e3ae5ace9cd1e9923f69a7604ad3c8f602b23c77e53fe%23wm%3D0~hmac%3D19f2946377cd06549c4856e7cd17c73d8041093d47e95a53c647e3a6917170a3/rzcgozxzi6s81iavjh3tdhq9p/web/stream.mpd?channel=3930&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN SERIE BKT" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/801sgjsxveeuz8z52ll28d630_image-header_pIt_1758299555000/fill/none/top/none/100/1280/720/png/image",Reggiana - Sampdoria
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=e12431b84f7f59298d84f4cef3b55174:11c6693da1225691fdb0eb6b86b41684
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1778264422~exp%3D1778350822~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Dbb6d9b9d14579c67d0279104826c7ed1b017c3c5926850deff4c2db5be1e5c74%23wm%3D0~hmac%3Dadc16009806ce8f044f729d79e6fcbdcf0b0573d6a0b01d04c8e33161162c85d/1ceerxkludvlg164qsakdw10vu/web/stream.mpd?channel=3933&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN SERIE BKT" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/564xsr2kzcl98trxy0yll3uno_image-header_pIt_1758299697000/fill/none/top/none/100/1280/720/png/image",Avellino - Modena
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=99bfc202304f5e49a20a3395fc8adae5:b5d3ddff7e44f07a27aff3b957bde67d
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1778264424~exp%3D1778350824~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Da299af78812501dbc83ac069534c221b4dbac31d007d08ca1b339b750ee61df2%23wm%3D0~hmac%3De8a683c4b56beb07823fad17913dead6324b2ec828043bfb72eacffe13a98e70/q8mfkg6cr61v12ewqbqkyz3oi/web/stream.mpd?channel=3935&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Fri May  8 18:30:36 UTC 2026
