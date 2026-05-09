@@ -30,4 +30,14 @@ https://dca-fs-live-dazn-cdn.dazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJl
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec
 https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1778327704~exp%3D1778414104~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D5868bfbea6a975eca93cd0fd2f8f4c6c667e66df5f50e2e1eb99bbafe5cf43d5~hmac%3D9127b440784b55562c05b929045a66bdbd3af1552307d9b87bb72f67d88fc089/103sadgepxf3h1mzt3yh0sxzxn/web/stream.mpd?channel=3741&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Sat May  9 12:00:40 UTC 2026
+
+#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/3a71hnq0diy71fm2rwwq5ve4x_image-header_pIt_1775572311000/fill/none/top/none/100/1280/720/png/image",Cagliari - Udinese
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=3b43d62c96595eb18bb5c4631a6abd1f:4718707c8d3cb64c09693cdaa2a4832f
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1778329803~exp%3D1778416203~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Dcd19fc71c302e1de9c5b7750ceba8c69905ba38b9396ef64eba1be3288726252%23wm%3D0~hmac%3Dc00748ee3f8670b5ae15da7daaa167b6301da3edb5f9998543547d6cc09ea870/jb9pz8rkq5r81jk79rcxh7pcm/web/stream.mpd?channel=1346&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/bvdh3ynbuq2ez6hbxca7wnn0v_image-header_pIt_1775643616000/fill/none/top/none/100/1280/720/png/image",Siviglia - Espanyol
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1778336103~exp%3D1778422503~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Da4753a2274ed227084e9ee679fc2e1525725b98c35e81f3bd4230110133a7e34~hmac%3Dbfa013e12595b0cb355bc90b46669a2584e9de9940af7b78fb32e20d063b1e8a/1hw74xogdooo81bof0dp8u45qy/web/stream.mpd?channel=3748&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Sat May  9 14:30:26 UTC 2026
