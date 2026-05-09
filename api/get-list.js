@@ -2,13 +2,6 @@ import { createClient } from '@vercel/kv';
 
 const CANALI_FISSI = [
     { 
-        name: "SKY SPORT F1", 
-        group_title: "SKY", 
-        logo: "https://pixel.disco.nowtv.it/logo/skychb_478_darknow/LOGO_CHANNEL_LIGHT/512/512?language=it-IT&proposition=NOWOTT", 
-        url: "https://g004-lin-it-cmaf-prd-ak.pcdn07.cssott02.com/v~a-0-0_e~1777942819_s~1409b435-5034-451f-b178-6701efe3a3c6_u~b55087268a5867608c1c75764bcfc8b1ee6979d748b3ff0fb812ea7c195a0cb0109d29e1e6ed6afc72e8583e157d3c8c_l~56_x~73475626d0a02124ec3320be967c69cb3a2740677c2b8696ed1c26bef0c4ef26/nowitlin2/Content/CMAF_CTR_H1/Live/channel(skysportf1)/master_2hr-all.mpd?t=v2&c3.ri=69f7e193_Q1ZYMDc_0_QUtBTUFJ_9d00a7588312&c3.ri=69f7e193_Q1ZYMDc_0_QUtBTUFJ_9d00a7588312", 
-        drm: '{"1118dc70d4ee2bb6e694b577f09d5294":"3a2afc4bd8e28a212756bbc882e64292"}' 
-    },
-    { 
         name: "SKY SPORT TENNIS", 
         group_title: "SKY", 
         logo: "https://pixel.disco.nowtv.it/logo/skychb_559_darknow/LOGO_CHANNEL_LIGHT/512/512?language=it-IT&proposition=NOWOTT", 
