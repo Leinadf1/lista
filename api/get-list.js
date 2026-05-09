@@ -133,12 +133,41 @@ export default async function handler(req, res) {
             let filtered = "#EXTM3U\n";
             let targetIdx = -1;
 
+            // Cerca SKY SPORT F1 nella lista dinamica
             for (let i = 0; i < lines.length; i++) {
                 if (lines[i].startsWith('#EXTINF') && lines[i].toUpperCase().includes("SKY SPORT F1")) {
                     targetIdx = i;
                     break;
                 }
             }
+
+            if (targetIdx !== -1) {
+                // Trovato nella lista dinamica: estrai il canale e le sue proprietà
+                let j = targetIdx - 1;
+                let buffer = [];
+                while (j >= 0 && lines[j].startsWith('#') && !lines[j].startsWith('#EXTM3U') && !lines[j].startsWith('#EXTINF')) {
+                    if (lines[j] !== "") buffer.unshift(lines[j]);
+                    j--;
+                }
+                buffer.forEach(l => filtered += l + "\n");
+                filtered += lines[targetIdx] + "\n";
+                if (lines[targetIdx + 1]) filtered += lines[targetIdx + 1] + "\n";
+
+                // Rimuove eventuali righe Eurosport residue (anche se non dovrebbero essercene)
+                filtered = filtered.split('\n').filter(line => !line.toUpperCase().includes("EUROSPORT")).join('\n');
+                return res.status(200).send(filtered);
+            }
+
+            // Se non trovato nella lista dinamica, usa il canale fisso SKY SPORT F1 (se esiste)
+            const f1Fisso = CANALI_FISSI.find(c => c.name.toUpperCase().includes("SKY SPORT F1"));
+            if (f1Fisso) {
+                filtered += buildM3U(f1Fisso);
+                return res.status(200).send(filtered);
+            }
+
+            // Nessun canale F1 disponibile
+            return res.status(200).send("#EXTM3U\n");
+        }
 
             if (targetIdx !== -1) {
                 let j = targetIdx - 1;
