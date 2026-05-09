@@ -70,4 +70,9 @@ https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1778359503~exp%3D1778445903~acl%3D%2
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=0960c20f5b3a5088a67e7c267bce82d5:c1dc5270bd3b77a7c9d43dd2fe6fabba
 https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1778359504~exp%3D1778445904~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Da5a1bb122dcf09c53839aad4c7abcb6539b01ac53cad96187a3cea363ee363c2%23wm%3D0~hmac%3D5c87bfadaf1da164fb4dc3090d980d46185c42293154baf416a1f58065641e25/15a0r8q4mvaaz1i0q4hdpyel9j/web/stream.mpd?channel=1346&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Sat May  9 20:50:24 UTC 2026
+
+#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/b4c9cj7yu7gl0l6c2ezvo2iky_image-header_pIt_1778339087000/fill/none/top/none/100/1280/720/png/image",Lecce - Juventus | Post-partita con Vamos! Il sabato della Serie A
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=a17bf049a1215720b9f9b40980ba26cb:102a92f7eb49892e4725c4b46a0aa084
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1778360103~exp%3D1778446503~acl%3D%2F*~id%3D29ce4820-8b55-5ac6-8c7a-5a820e51ebbb~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D02d2a01f929a091d8f9de982f49602f622f897ac13773d00cb3750b1b00f6e43%23wm%3D1%23wmd%3D1152%23tmidversion%3D3~hmac%3D4449114fa7606778a4d260579750c15a8ae06e0224f5b593b584654e91984cd1/1qc4dlgrsh0k61mkwm897nmr2f/web/stream.mpd?channel=1387&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Sat May  9 21:00:37 UTC 2026
