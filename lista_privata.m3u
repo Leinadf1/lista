@@ -25,4 +25,9 @@ https://nodrm.online:6163/stream/test/prime/master.m3u8?u=prime_video&p=26972c05
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=298faff3fe5757249ae9b6b8601d2330:ed575606bd3d3f3c2d764fd1bdcd3063
 https://dca-fs-live-dazn-cdn.dazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Nzg0MDc4MDQsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoxLCJwYXRoIjoiODcyNTMxMTU2Njc5N2E3ODc4ODYyNzc5NzE3ZjE3YzNiY2YyMGI4NiIsInNzaWQiOiI5ODI3YzNjZjkxZDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIxNjIzMiJdLCJpYXQiOjE3NzgzMjE0MDR9.d3h30bAoUjQ_pORB5RmlRE5zNsLdjs_TCG6IYcakO9g/1gfw151sj1h5g1nygohtfq9rw1/web/stream.mpd?channel=7002&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Sat May  9 11:50:16 UTC 2026
+
+#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/58n8hq9fbc2kob654w8gapsp8_image-header_pIt_1776704754000/fill/none/top/none/100/1280/720/png/image",Elche - Alavés
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1778327704~exp%3D1778414104~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D5868bfbea6a975eca93cd0fd2f8f4c6c667e66df5f50e2e1eb99bbafe5cf43d5~hmac%3D9127b440784b55562c05b929045a66bdbd3af1552307d9b87bb72f67d88fc089/103sadgepxf3h1mzt3yh0sxzxn/web/stream.mpd?channel=3741&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Sat May  9 12:00:40 UTC 2026
