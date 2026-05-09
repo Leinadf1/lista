@@ -50,4 +50,9 @@ https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1778338803~exp%3D1778425203~acl%3D%2
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec
 https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1778343614~exp%3D1778430014~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D4b9affec5470aad5800f0d3dab23a5b07acafa282c2497642509f15dd64cb2df~hmac%3D99a5eb6aeb9edc6500d4aeeb425368d2b55d0a1e39074aef61261399902997df/1swle8gwtrh9p11tbtfihvgdgw/web/stream.mpd?channel=3742&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Sat May  9 17:50:18 UTC 2026
+
+#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/b4c9cj7yu7gl0l6c2ezvo2iky_image-header_pIt_1775572315000/fill/none/top/none/100/1280/720/png/image",Lecce - Juventus
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=a17bf049a1215720b9f9b40980ba26cb:102a92f7eb49892e4725c4b46a0aa084
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1778349604~exp%3D1778436004~acl%3D%2F*~id%3D29ce4820-8b55-5ac6-8c7a-5a820e51ebbb~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D02d2a01f929a091d8f9de982f49602f622f897ac13773d00cb3750b1b00f6e43%23wm%3D1%23wmd%3D1152%23tmidversion%3D3~hmac%3D26ad597e2d855f7611340d5f78df2824dd2b512f318d5c3b7369e70de69635af/1qc4dlgrsh0k61mkwm897nmr2f/web/stream.mpd?channel=1387&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Sat May  9 18:00:37 UTC 2026
