@@ -38,8 +38,6 @@ const CANALI_FISSI = [
     { name: "EUROSPORT 6", group_title: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020005/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-H53i", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport6)/manifest.mpd", drm: '{"ead1c567a3df48619799b2e78b18fdfa":"1de9d9af5651296aa67913979ad8c694"}' }
 ];
 
-// Canali DAZN fissi (DAZN 1 WIFI)
-// Il token nell'URL scade periodicamente: modifica manualmente il campo 'url' e 'license_key' quando necessario
 const DAZN_FISSI = [
     {
         name: "DAZN 1 WIFI",
@@ -59,8 +57,7 @@ function buildM3U(channel) {
     out += channel.url + '\n';
     return out;
 }
-// Funzione per generare l'M3U dei canali DAZN fissi
-// NOTA: la riga stream_headers è stata rimossa perché in un browser non può essere applicata
+
 function buildDaznM3U(channel) {
     let out = '';
     out += `#EXTINF:-1 group-title="${channel.group_title}" tvg-logo="${channel.logo}" tvg-id="${channel.name.replace(/\s/g, '')}",${channel.name}\n`;
@@ -99,23 +96,19 @@ export default async function handler(req, res) {
 
     const sessionKey = `session_${psw}`;
 
-    // Heartbeat: rinnova sessione (TTL 25 secondi)
     if (req.headers['x-heartbeat'] === 'true') {
         await kv.set(sessionKey, "active", { ex: 25 });
         return res.status(200).json({ status: "ok" });
     }
 
-    // Controllo sessione attiva (impedisce accessi simultanei)
     const isOccupied = await kv.get(sessionKey);
     if (isOccupied) {
         return res.status(403).json({ error: "Accesso negato: sessione già attiva" });
     }
 
-    // Nuovo accesso: imposta la sessione
     await kv.set(sessionKey, "active", { ex: 25 });
 
     try {
-        // 1. Scarica la lista base da GitHub
         const githubResponse = await fetch(`https://raw.githubusercontent.com/Leinadf1/lista/main/lista_privata.m3u?t=${Date.now()}`, {
             headers: { 
                 'Authorization': `token ${process.env.GITHUB_TOKEN}`,
@@ -124,7 +117,6 @@ export default async function handler(req, res) {
         });
         const fileContent = await githubResponse.text();
 
-        // 2. Controllo password F1-only (da variabile d'ambiente)
         const f1OnlyPasswords = (process.env.F1_ONLY_PASSWORD || "").split(',').map(p => p.trim().toLowerCase());
         const isF1Only = f1OnlyPasswords.includes(psw.toLowerCase());
 
@@ -133,7 +125,6 @@ export default async function handler(req, res) {
             let filtered = "#EXTM3U\n";
             let targetIdx = -1;
 
-            // Cerca SKY SPORT F1 nella lista dinamica
             for (let i = 0; i < lines.length; i++) {
                 if (lines[i].startsWith('#EXTINF') && lines[i].toUpperCase().includes("SKY SPORT F1")) {
                     targetIdx = i;
@@ -142,7 +133,6 @@ export default async function handler(req, res) {
             }
 
             if (targetIdx !== -1) {
-                // Trovato nella lista dinamica: estrai il canale e le sue proprietà
                 let j = targetIdx - 1;
                 let buffer = [];
                 while (j >= 0 && lines[j].startsWith('#') && !lines[j].startsWith('#EXTM3U') && !lines[j].startsWith('#EXTINF')) {
@@ -153,40 +143,21 @@ export default async function handler(req, res) {
                 filtered += lines[targetIdx] + "\n";
                 if (lines[targetIdx + 1]) filtered += lines[targetIdx + 1] + "\n";
 
-                // Rimuove eventuali righe Eurosport residue (anche se non dovrebbero essercene)
                 filtered = filtered.split('\n').filter(line => !line.toUpperCase().includes("EUROSPORT")).join('\n');
                 return res.status(200).send(filtered);
             }
 
-            // Se non trovato nella lista dinamica, usa il canale fisso SKY SPORT F1 (se esiste)
+            // Fallback al canale fisso se non trovato nella lista dinamica
             const f1Fisso = CANALI_FISSI.find(c => c.name.toUpperCase().includes("SKY SPORT F1"));
             if (f1Fisso) {
                 filtered += buildM3U(f1Fisso);
                 return res.status(200).send(filtered);
             }
 
-            // Nessun canale F1 disponibile
             return res.status(200).send("#EXTM3U\n");
         }
 
-            if (targetIdx !== -1) {
-                let j = targetIdx - 1;
-                let buffer = [];
-                while (j >= 0 && lines[j].startsWith('#') && !lines[j].startsWith('#EXTM3U') && !lines[j].startsWith('#EXTINF')) {
-                    if (lines[j] !== "") buffer.unshift(lines[j]);
-                    j--;
-                }
-                buffer.forEach(l => filtered += l + "\n");
-                filtered += lines[targetIdx] + "\n";
-                if (lines[targetIdx + 1]) filtered += lines[targetIdx + 1] + "\n";
-
-                filtered = filtered.split('\n').filter(line => !line.toUpperCase().includes("EUROSPORT")).join('\n');
-                return res.status(200).send(filtered);
-            }
-            return res.status(200).send("#EXTM3U\n");
-        }
-
-        // 3. PER GLI ALTRI UTENTI: fetch diretto di DAZN (quello da dz1.txt, token TIM)
+        // PER GLI ALTRI UTENTI
         let daznLineare = "";
         try {
             const daznResponse = await fetch(`https://nodrm.online/list/dz1.txt?t=${Date.now()}`);
@@ -196,7 +167,6 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("Errore DAZN fetch"); }
 
-        // 4. Inserisce il DAZN preso da dz1.txt dopo l'ultimo canale Champions League
         let lines = fileContent.split('\n');
         let lastChampionsIdx = -1;
         for (let i = 0; i < lines.length; i++) {
@@ -218,11 +188,9 @@ export default async function handler(req, res) {
             finalContent = fileContent + "\n" + daznLineare;
         }
 
-        // 5. Aggiunge gli Eurosport fissi in fondo
         const eurosportM3U = CANALI_FISSI.map(c => buildM3U(c)).join('\n');
         finalContent = finalContent.trimEnd() + "\n" + eurosportM3U;
 
-        // 6. Aggiunge i canali DAZN fissi (DAZN 1 WIFI)
         const daznFissiM3U = DAZN_FISSI.map(c => buildDaznM3U(c)).join('\n');
         finalContent = finalContent.trimEnd() + "\n" + daznFissiM3U;
 
@@ -232,4 +200,4 @@ export default async function handler(req, res) {
         console.error(error);
         res.status(500).json({ error: "Errore caricamento liste" });
     }
-                    }
+}
