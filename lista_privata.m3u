@@ -45,4 +45,9 @@ https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1778336103~exp%3D1778422503~acl%3D%2
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=041e9c429607591685d21db8b9b11dd1:1ea78febf5b72461d7fe70ed84c44d6e
 https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1778338803~exp%3D1778425203~acl%3D%2F*~id%3D29ce4820-8b55-5ac6-8c7a-5a820e51ebbb~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D4582e91ed8f7e6866ad37dd648062b250bf2e65b37172867fc5f19b84c5cfe34%23wm%3D1%23wmd%3D1152%23tmidversion%3D3~hmac%3Dd86721b95b1d49246994be25a4f0965e852cbaa537141a60eac6e87648f91ecb/y13dkbew5jix1o2y2bh0mid2d/web/stream.mpd?channel=1388&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Sat May  9 16:10:17 UTC 2026
+
+#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/16fszzsoyw0wnb2jhqoy68yy2_image-header_pIt_1775643320000/fill/none/top/none/100/1280/720/png/image",Atlético Madrid - Celta Vigo
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1778343614~exp%3D1778430014~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D4b9affec5470aad5800f0d3dab23a5b07acafa282c2497642509f15dd64cb2df~hmac%3D99a5eb6aeb9edc6500d4aeeb425368d2b55d0a1e39074aef61261399902997df/1swle8gwtrh9p11tbtfihvgdgw/web/stream.mpd?channel=3742&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Sat May  9 16:20:17 UTC 2026
