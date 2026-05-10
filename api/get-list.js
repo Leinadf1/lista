@@ -1,27 +1,6 @@
 import { createClient } from '@vercel/kv';
 
 const CANALI_FISSI = [
-    { 
-        name: "SKY SPORT TENNIS", 
-        group_title: "SKY", 
-        logo: "https://pixel.disco.nowtv.it/logo/skychb_559_darknow/LOGO_CHANNEL_LIGHT/512/512?language=it-IT&proposition=NOWOTT", 
-        url: "https://g006-lin-it-cmaf-prd-cf.pcdn07.cssott02.com/v~1-0-0_e~1778390433_f~0_g~1_s~01881b2b-392a-4ab9-9978-9db13ad02cc6_u~b9fbcd3e402648cf113f98fc35a72a86d7f3acca5f930c66536fcb2ff90ec301821ad542153467fff4602ae5e1340be4_k~A_l~60_x~dda044a3c49b8c289ef74807a22fa149/nowitlin2/Content/CMAF_CTR_H1/Live/channel(skysporttennis)/master_2hr-all.mpd", 
-        drm: '{"11180ff7bd5680d534cef8c33110b636":"236d0731787ff055c604e7eac27dcadb"}' 
-    },
-    { 
-        name: "SKY SPORT MOTOGP", 
-        group_title: "SKY", 
-        logo: "https://pixel.disco.nowtv.it/logo/skychb_483_darknow/LOGO_CHANNEL_LIGHT/512/512?language=it-IT&proposition=NOWOTT", 
-        url: "https://g006-lin-it-cmaf-prd-cf.pcdn07.cssott02.com/v~1-0-0_e~1778403326_f~0_g~1_s~94874f34-55ea-4c9d-8c8d-acf5362d6744_u~b9fbcd3e402648cf113f98fc35a72a86d7f3acca5f930c66536fcb2ff90ec301821ad542153467fff4602ae5e1340be4_k~A_l~60_x~7be86c7a23cb873e057b74f242d8ec63/nowitlin2/Content/CMAF_CTR_H1/Live/channel(skysportmotogp)/master_2hr-all.mpd", 
-        drm: '{"11183e764b9543502f2a56f57a0e4f18":"6c10a382f4715359f0c0ec9a2751c3da"}' 
-    },
-    { 
-        name: "SKY SPORT 257", 
-        group_title: "SKY", 
-        logo: "https://pixel.disco.nowtv.it/logo/skychb_775_darknow/LOGO_CHANNEL_LIGHT/512/512?language=it-IT&proposition=NOWOTT", 
-        url: "https://g006-lin-it-cmaf-prd-cf.pcdn07.cssott02.com/v~1-0-0_e~1778366848_f~0_g~1_s~8b9b73bc-3c73-4fdd-b0b9-8be6eb7a662a_u~b9fbcd3e402648cf113f98fc35a72a86d7f3acca5f930c66536fcb2ff90ec301821ad542153467fff4602ae5e1340be4_k~A_l~57_x~7741619c8f60ec1d28eaea4bd069585a/nowitlin2/Content/CMAF_CTR_H1/Live/channel(skysport257)/master_2hr-all.mpd", 
-        drm: '{"111836734e88acf2a270fc8e3f7d3578":"61cc7fc2256407a650256c4db619607f"}' 
-    },
     { name: "EUROSPORT 4K", group_title: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020019/tim-ouah/CHN43FN/MONOGRAM_ESP4K_WHITE_V2-BjK0", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport4k)/manifest.mpd", drm: '{"9ceae06c6ad34aada83ba86c0b511452":"406862beb4af1ef8fe04ba15d9936360","fcd924bd2e45470fa2ae50ef05e357c0":"266db84d3572bc889185274a90ff31df","dea135e33341468f8a4e8da806d8a6e6":"fb7423db39e6fab75056f8c83f415847","31911db90ee3410f8b38e45659d01fb1":"ac316ab7dfd2b50faf6d44633e4fedd5","a16f2a39adbb4974b8910cec8a651a09":"c2d55e0111af955f47214af209a2c468"}' },
     { name: "EUROSPORT 1", group_title: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020000/tim-ouah/CHN43FN/MONOGRAM_ESP1_WHITE_V2-Lv2g", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport1)/manifest.mpd", drm: '{"700b3619ccfb4c0cbd2bb26832e643cf":"b2c7c4b6f3375b8e07c42f95668dadeb"}' },
     { name: "EUROSPORT 2", group_title: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020001/tim-ouah/CHN43FN/MONOGRAM_ESP2_WHITE_V2-Zp7E", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport2)/manifest.mpd", drm: '{"610bcda111c74c97b0792b059630a10b":"b9817853538459b371f3fb56a267d55c"}' },
