@@ -395,4 +395,9 @@ https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1778417103~exp%3D1778503503~acl%3D%2
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=ee7ee32a103550dd88a3f300f92cc352:b01431e5ad197dbf963021c77a345907
 https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1778417105~exp%3D1778503505~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Dbae2acbcbd7326dcffe6464243a07d8e50fb40f69de806d87a4907f500a7d8d3%23wm%3D0~hmac%3D90a804d9a437068457603083a50a5067da2af93c000e3d8eb706d702bca85b8e/1q4ond23wh9rr11xahz1ao4tjf/web/stream.mpd?channel=1356&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Sun May 10 14:00:44 UTC 2026
+
+#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/8y1ertq7fhoyupdpm1iihbib6_image-header_pIt_1775643628000/fill/none/top/none/100/1280/720/png/image",Athletic Bilbao - Valencia
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=984d3386d6e959c8bcf3329e6993595f:cecfcc1b79edc956fc7ad0e3f646355a
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1778422503~exp%3D1778508903~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Dfcf534e30ecba08bf2b163482a8cacd03c12e593c5ac6a2c22d9414c9effa607%23wm%3D0~hmac%3D1c93f5f2247a9cd491a2b0b169e6bead13eda5ad4e103e5faa6dfced47b5cc02/1512j2ygg5bx4155y8zv5308vw/web/stream.mpd?channel=3934&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Sun May 10 14:20:16 UTC 2026
