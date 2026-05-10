@@ -400,4 +400,9 @@ https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1778417105~exp%3D1778503505~acl%3D%2
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=984d3386d6e959c8bcf3329e6993595f:cecfcc1b79edc956fc7ad0e3f646355a
 https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1778422503~exp%3D1778508903~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Dfcf534e30ecba08bf2b163482a8cacd03c12e593c5ac6a2c22d9414c9effa607%23wm%3D0~hmac%3D1c93f5f2247a9cd491a2b0b169e6bead13eda5ad4e103e5faa6dfced47b5cc02/1512j2ygg5bx4155y8zv5308vw/web/stream.mpd?channel=3934&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Sun May 10 15:10:18 UTC 2026
+
+#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/3uui0ej9dpo7fob7u6g2aimut_image-header_pIt_1775573639000/fill/none/top/none/100/1280/720/png/image",Parma - Roma
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=984f1300e5ea5e28bc6d748ef4b9532c:fe16a264c6301808f650dc271b1a4d6d
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1778426104~exp%3D1778512504~acl%3D%2F*~id%3D29ce4820-8b55-5ac6-8c7a-5a820e51ebbb~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D6bab1f3de8821acb7b481d15fc3e0aa152f843e98a1c9e08154feaee26fcb123%23wm%3D1%23wmd%3D1152%23tmidversion%3D3~hmac%3Ddcc8fc96bcf6f89cb43e23af6422ff3ea79c66749c4e5dd8e60201cb69ae154a/1es60srbg4x8i1i60y8jjm1msn/web/stream.mpd?channel=1382&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Sun May 10 15:20:25 UTC 2026
