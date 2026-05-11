@@ -25,4 +25,9 @@ https://nodrm.online:6163/stream/test/prime/master.m3u8?u=prime_video&p=26972c05
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=e44fde08d84453daa255efedc38a9762:d7f6aff4d62108238749cc549a57e90a
 https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1778522406~exp%3D1778608806~acl%3D%2F*~id%3D29ce4820-8b55-5ac6-8c7a-5a820e51ebbb~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D4b40c393d68b2e7bffc859cf4fb613713b9896b185f437dae76f2b247e96e6f8%23wm%3D1%23wmd%3D1152%23tmidversion%3D3~hmac%3D71a5d49e58a5628dddc154a20e31fa84e91726cc14a7071d7be4e18bd38bbdfd/zkaww20k98pu1w2chp8j2zx4j/web/stream.mpd?channel=1381&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Mon May 11 18:50:28 UTC 2026
+
+#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/f2vpa5j1lbligs9tufc9edz21_image-header_pIt_1775643456000/fill/none/top/none/100/1280/720/png/image",Rayo Vallecano - Girona
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1778525703~exp%3D1778612103~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Da544a7bdf751d6ab1adbc7fcc98a268ae44f54f3b25421dcd9034bc09e2a6802~hmac%3Dccfea842701b6349b51f01e07a74f43f27d8ff90863e13cedb9f6b70494230e6/1spger0edr9w91to9bd80676a7/web/stream.mpd?channel=3728&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Mon May 11 19:00:53 UTC 2026
