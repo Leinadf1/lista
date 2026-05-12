@@ -390,4 +390,9 @@ https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1778608204~exp%3D1778694604~acl%3D%2
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=378decdf71935aa19914fc0ebce930b3:073a1c53dae91946745baf4260b255bd
 https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1778611803~exp%3D1778698203~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D5f2835e1efc6570c2922bcbf325c568d8c8393b57d521f41f99257fdb3055460%23wm%3D0~hmac%3D1b4de74a63f7aac169cdd5cdf33e474a7f7474ae7c50c9472e06039d5e4ef74c/10ahbg3muswz21hw9ruk10nccx/web/stream.mpd?channel=3934&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Tue May 12 19:10:26 UTC 2026
+
+#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/8wlixxgwdum2u3q2kgp31wemn_image-header_pIt_1775643540000/fill/none/top/none/100/1280/720/png/image",Osasuna - Atlético Madrid
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=4c01381f5b4755b3aebf545cd5c6ce2b:d37edb6b541a911d0ffac6ebf6e67888
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1778613604~exp%3D1778700004~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D06c7dd1a99ed8253f3c808891ea43ac9dbc5b61932ed99dc343bcada1d2cbd5c%23wm%3D0~hmac%3D972acf9a020fd094918a11e05e47a831d2b537cfb7c622b7f41c569900caf2bf/1geekok3sqkh91aw8yz75wxobs/web/stream.mpd?channel=3930&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Tue May 12 19:20:23 UTC 2026
