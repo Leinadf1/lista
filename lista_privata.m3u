@@ -380,4 +380,9 @@ https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1778603707~exp%3D1778690107~acl%3D%2
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec
 https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1778604604~exp%3D1778691004~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D68227c7694d007ad774cb5eeb312879d5a69112ab66c3f348826ffbaad3542b5~hmac%3D72ebee1dd1038992614e577efc11c9ba11a4b24111e2d4f8c79c2e3b2b1f3043/1a53yz2hb9uz21m1iu6k7kyi6x/web/stream.mpd?channel=3728&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Tue May 12 17:40:27 UTC 2026
+
+#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/6yd7go8noqi7sfqp7vpxec1h7_image-header_pIt_1776704694000/fill/none/top/none/100/1280/720/png/image",Betis - Elche
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1778608204~exp%3D1778694604~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Db77afc31297beeb21768c4ee740e91a04e5a4a57c34d0b87636e0773b6058665~hmac%3Dc24c7627b1831d86aaeb312d85a187ee127b177969990c1888102e54c3dec315/d8nec6cqchwe1qobeqram1r0e/web/stream.mpd?channel=3733&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Tue May 12 17:50:27 UTC 2026
