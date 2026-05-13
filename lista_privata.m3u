@@ -370,29 +370,4 @@ https://abndy7jaaaaaaaamb5sbzman2g3xq.bia-cf.live.pv-cdn.net/lhr-nitro/live/clie
 https://nodrm.online:6163/stream/test/prime/master.m3u8?u=prime_video&p=26972c05e5cd32b4d006247a875330a1275a60747cd411377cfbb1f15633d612
 
 
-
-#EXTINF:-1 group-title="DAZN SERIE BKT" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/5li5wkqans3dtb7iwgyzcffzt_image-header_pIt_1778499484000/fill/none/top/none/100/1280/720/png/image",Modena - Juve Stabia
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=5943a51f560653fe9d5f7028c8a4bbea:59a2e2c28392e0022b4f36b0be55a85e
-https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1778603707~exp%3D1778690107~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D40311d140ccb21ded350ef9b26467a9c269e21a8b46f90a54293b62f24bd09e6%23wm%3D0~hmac%3D619eef87ba47bf04b30388979cb13dc5d55271bf385837dbd59241b723f4a4e6/x0m5j18905zvzwablphuppka/web/stream.mpd?channel=3935&mta=it&outlet=dazn-italy&plang=it
-
-#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/7nm69gfzulvemq8kvs72ze5o0_image-header_pIt_1775643475000/fill/none/top/none/100/1280/720/png/image",Celta Vigo - Levante
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec
-https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1778604604~exp%3D1778691004~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D68227c7694d007ad774cb5eeb312879d5a69112ab66c3f348826ffbaad3542b5~hmac%3D72ebee1dd1038992614e577efc11c9ba11a4b24111e2d4f8c79c2e3b2b1f3043/1a53yz2hb9uz21m1iu6k7kyi6x/web/stream.mpd?channel=3728&mta=it&outlet=dazn-italy&plang=it
-
-#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/6yd7go8noqi7sfqp7vpxec1h7_image-header_pIt_1776704694000/fill/none/top/none/100/1280/720/png/image",Betis - Elche
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec
-https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1778608204~exp%3D1778694604~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Db77afc31297beeb21768c4ee740e91a04e5a4a57c34d0b87636e0773b6058665~hmac%3Dc24c7627b1831d86aaeb312d85a187ee127b177969990c1888102e54c3dec315/d8nec6cqchwe1qobeqram1r0e/web/stream.mpd?channel=3733&mta=it&outlet=dazn-italy&plang=it
-
-#EXTINF:-1 group-title="DAZN SERIE BKT" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/bc5wzrh8sferpjhu5hnqp9hqn_image-header_pIt_1778499481000/fill/none/top/none/100/1280/720/png/image",Catanzaro - Avellino
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=378decdf71935aa19914fc0ebce930b3:073a1c53dae91946745baf4260b255bd
-https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1778611803~exp%3D1778698203~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D5f2835e1efc6570c2922bcbf325c568d8c8393b57d521f41f99257fdb3055460%23wm%3D0~hmac%3D1b4de74a63f7aac169cdd5cdf33e474a7f7474ae7c50c9472e06039d5e4ef74c/10ahbg3muswz21hw9ruk10nccx/web/stream.mpd?channel=3934&mta=it&outlet=dazn-italy&plang=it
-
-#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/8wlixxgwdum2u3q2kgp31wemn_image-header_pIt_1775643540000/fill/none/top/none/100/1280/720/png/image",Osasuna - Atlético Madrid
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=4c01381f5b4755b3aebf545cd5c6ce2b:d37edb6b541a911d0ffac6ebf6e67888
-https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1778613604~exp%3D1778700004~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D06c7dd1a99ed8253f3c808891ea43ac9dbc5b61932ed99dc343bcada1d2cbd5c%23wm%3D0~hmac%3D972acf9a020fd094918a11e05e47a831d2b537cfb7c622b7f41c569900caf2bf/1geekok3sqkh91aw8yz75wxobs/web/stream.mpd?channel=3930&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Wed May 13 02:50:23 UTC 2026
+# Ultimo aggiornamento: Wed May 13 03:00:39 UTC 2026
