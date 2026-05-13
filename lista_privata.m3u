@@ -370,4 +370,14 @@ https://abndy7jaaaaaaaamb5sbzman2g3xq.bia-cf.live.pv-cdn.net/lhr-nitro/live/clie
 https://nodrm.online:6163/stream/test/prime/master.m3u8?u=prime_video&p=26972c05e5cd32b4d006247a875330a1275a60747cd411377cfbb1f15633d612
 
 
-# Ultimo aggiornamento: Wed May 13 17:00:52 UTC 2026
+
+#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/8okotsky19fnddl7r13ivz5c6_image-header_pIt_1775643651000/fill/none/top/none/100/1280/720/png/image",Villarreal - Siviglia
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=6092a426ca365ceba46287fa309c6a96:563615a7d6ffebb7d0fdbeb451d8f5d7
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1778692204~exp%3D1778778604~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Df3cbfdc435262400f480d3684a0db9b985d18845d36aa9fab266f5828cab887a%23wm%3D0~hmac%3D83cd8d2d2f628f6ced93d16f6b3d48afc202b820905186f5f0308ef661f4d88d/t8h6d73bysov17fvk6arbpoy4/web/stream.mpd?channel=3936&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/5g5xxafw8c48bybn245wdv30q_image-header_pIt_1775643419000/fill/none/top/none/100/1280/720/png/image",Espanyol - Athletic Bilbao
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1778692206~exp%3D1778778606~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D2cc610a5709c44c65c3933abe5d44aee0828d92ede9743556a44a03d6dd2e6b2~hmac%3D8cbde11a1b0158abff9efeb7a6bbba0b6f9af18fc6c8b0e420bd61d62eb8ca0c/9mi1y39cdmbc16qx84doycmoc/web/stream.mpd?channel=3734&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Wed May 13 17:10:25 UTC 2026
