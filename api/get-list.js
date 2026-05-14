@@ -43,16 +43,28 @@ function buildDaznM3U(channel) {
 function parseM3U(content) {
     const lines = content.split('\n').map(l => l.trim());
     const channels = [];
-    let current = { name: "", logo: "", group_title: "SKY", drm: {}, url: "" };
+    let current = { name: "", logo: "", group_title: "SKY", drm: "{}", url: "" };
 
     for (let line of lines) {
         if (line.startsWith('#KODIPROP:inputstream.adaptive.license_key=')) {
             const val = line.split('=')[1];
-            try {
-                current.drm = JSON.parse(val);
-            } catch (e) {
-                const parts = val.split(':');
-                if (parts.length === 2) current.drm[parts[0].toLowerCase()] = parts[1].toLowerCase();
+            if (val) {
+                try {
+                    // Prova a parsare come JSON; se è già un oggetto, lo riconvertiamo in stringa
+                    const parsed = JSON.parse(val);
+                    current.drm = JSON.stringify(parsed);
+                } catch (e) {
+                    // Non è JSON: potrebbe essere "key:value"
+                    const parts = val.split(':');
+                    if (parts.length === 2) {
+                        const key = parts[0].trim();
+                        const value = parts[1].trim();
+                        current.drm = JSON.stringify({ [key]: value });
+                    } else {
+                        // Caso imprevisto: teniamo la stringa così com'è (potrebbe essere già una stringa JSON non standard)
+                        current.drm = val;
+                    }
+                }
             }
         } else if (line.startsWith('#EXTINF:')) {
             const logo = line.match(/tvg-logo="([^"]+)"/i);
@@ -66,7 +78,7 @@ function parseM3U(content) {
             if (current.name && current.url) {
                 channels.push({ ...current });
             }
-            current = { name: "", logo: "", group_title: "SKY", drm: {}, url: "" };
+            current = { name: "", logo: "", group_title: "SKY", drm: "{}", url: "" };
         }
     }
     return channels;
