@@ -12,14 +12,13 @@ const CANALI_FISSI = [
 
 const DAZN_FISSI = [
     {
-        name: "DAZN 1",
-        logo: "https://image.discovery.indazn.com/eu/v3/eu/none/sxq07q8rseju1j7chnfc7w3if_image-header_pIt_1754467959000/fill/none/top/none/85/334/187/webp/image",
-        group_title: "DAZN Lineari",
-        manifest_type: "mpd",
+        name: "DAZN 1 WIFI",
+        logo: "https://static.wikia.nocookie.net/logopedia/images/1/18/DAZN_1_2024.svg",
+        group_title: "DAZN LINEARI",
+        stream_headers: "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
         license_type: "clearkey",
         license_key: "6164a0abaa7c53c6875fa1e7fe0bb463:271510d3e1259571dcc568a232e397eb",
-        stream_headers: "dazn-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Nzg5NzExNjgsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoyLCJwYXRoIjoiOGViOTUwYjA5YmIxZjMzOTBlZDQ4ODgzN2VhZjk5ODY3MDc2OTRkMSIsInNzaWQiOiI2MjFkY2E0ZTE0M2UiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIyMTAyNzgiXSwidWEiOiIxNGNkZmY1NTE5YjZjOTQwODUwMmE0ZDI2MmNkNzQ1NjUzODYyMzM4IiwiaWF0IjoxNzc4ODg0NzY4fQ.MyUphAB55yRfze8MMBrPGPedLzNnQM5BGDZLmKlCCM0",
-        url: "https://dct-fs-live-dazn-cdn.dazn.com/dash/dazn-linear-206/stream.mpd?p=web"
+        url: "https://dcs-fs-live-dazn-cdn.dazn.com/dugongeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Nzg5NzExNjgsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoyLCJwYXRoIjoiOGViOTUwYjA5YmIxZjMzOTBlZDQ4ODgzN2VhZjk5ODY3MDc2OTRkMSIsInNzaWQiOiI2MjFkY2E0ZTE0M2UiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIyMTAyNzgiXSwidWEiOiIxNGNkZmY1NTE5YjZjOTQwODUwMmE0ZDI2MmNkNzQ1NjUzODYyMzM4IiwiaWF0IjoxNzc4ODg0NzY4fQ.MyUphAB55yRfze8MMBrPGPedLzNnQM5BGDZLmKlCCM0/dash/dazn-linear-206/stream.mpd?p=web"
     }
 ];
 
@@ -33,16 +32,9 @@ function buildM3U(channel) {
 
 function buildDaznM3U(channel) {
     let out = '';
-    const tvgId = channel.id || channel.name.replace(/\s/g, '');
-    out += `#EXTINF:-1 tvg-id="${tvgId}" tvg-name="${channel.name}" tvg-logo="${channel.logo}" group-title="${channel.group_title}",${channel.name}\n`;
-    if (channel.manifest_type) {
-        out += `#KODIPROP:inputstream.adaptive.manifest_type=${channel.manifest_type}\n`;
-    }
+    out += `#EXTINF:-1 group-title="${channel.group_title}" tvg-logo="${channel.logo}" tvg-id="${channel.name.replace(/\s/g, '')}",${channel.name}\n`;
     out += `#KODIPROP:inputstream.adaptive.license_type=${channel.license_type}\n`;
     out += `#KODIPROP:inputstream.adaptive.license_key=${channel.license_key}\n`;
-    if (channel.stream_headers) {
-        out += `#KODIPROP:inputstream.adaptive.stream_headers=${channel.stream_headers}\n`;
-    }
     out += channel.url + '\n';
     return out;
 }
@@ -194,6 +186,7 @@ export default async function handler(req, res) {
                 if (lines[targetIdx + 1]) filtered += lines[targetIdx + 1] + "\n";
 
                 filtered = filtered.split('\n').filter(line => !line.toUpperCase().includes("EUROSPORT")).join('\n');
+                // Codifica Base64 anche per la risposta F1-only
                 const encoded = Buffer.from(filtered, 'utf-8').toString('base64');
                 return res.status(200).send(encoded);
             }
@@ -257,6 +250,7 @@ export default async function handler(req, res) {
         const daznFissiM3U = DAZN_FISSI.map(c => buildDaznM3U(c)).join('\n');
         finalContent = finalContent.trimEnd() + "\n" + daznFissiM3U;
 
+        // Codifica Base64
         const encoded = Buffer.from(finalContent, 'utf-8').toString('base64');
         res.status(200).send(encoded);
 
