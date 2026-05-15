@@ -39,7 +39,6 @@ function buildDaznM3U(channel) {
     return out;
 }
 
-// Parser M3U per estrarre canali Sky da un file esterno (sky.m3u)
 function parseM3U(content) {
     const lines = content.split('\n').map(l => l.trim());
     const channels = [];
@@ -50,18 +49,15 @@ function parseM3U(content) {
             const val = line.split('=')[1];
             if (val) {
                 try {
-                    // Prova a parsare come JSON; se è già un oggetto, lo riconvertiamo in stringa
                     const parsed = JSON.parse(val);
                     current.drm = JSON.stringify(parsed);
                 } catch (e) {
-                    // Non è JSON: potrebbe essere "key:value"
                     const parts = val.split(':');
                     if (parts.length === 2) {
                         const key = parts[0].trim();
                         const value = parts[1].trim();
                         current.drm = JSON.stringify({ [key]: value });
                     } else {
-                        // Caso imprevisto: teniamo la stringa così com'è (potrebbe essere già una stringa JSON non standard)
                         current.drm = val;
                     }
                 }
@@ -126,7 +122,6 @@ export default async function handler(req, res) {
     await kv.set(sessionKey, "active", { ex: 25 });
 
     try {
-        // 1. Lista principale
         const githubResponse = await fetch(`https://raw.githubusercontent.com/Leinadf1/lista/main/lista_privata.m3u?t=${Date.now()}`, {
             headers: { 
                 'Authorization': `token ${process.env.GITHUB_TOKEN}`,
@@ -135,7 +130,6 @@ export default async function handler(req, res) {
         });
         const fileContent = await githubResponse.text();
 
-        // 2. Carica i canali Sky esterni (sky.m3u)
         let skyChannels = [];
         try {
             const skyResponse = await fetch(`https://raw.githubusercontent.com/Leinadf1/lista/main/sky.m3u?t=${Date.now()}`, {
@@ -152,7 +146,6 @@ export default async function handler(req, res) {
             console.error("Errore nel caricamento sky.m3u:", e);
         }
 
-        // 3. Insieme dei nomi già presenti nella lista principale (evita duplicati)
         const existingNames = new Set();
         const baseLines = fileContent.split('\n');
         for (let i = 0; i < baseLines.length; i++) {
@@ -164,10 +157,8 @@ export default async function handler(req, res) {
             }
         }
 
-        // 4. Filtra i canali Sky non ancora presenti
         const newSkyChannels = skyChannels.filter(ch => !existingNames.has(ch.name.toUpperCase()));
 
-        // 5. Logica F1‑only
         const f1OnlyPasswords = (process.env.F1_ONLY_PASSWORD || "").split(',').map(p => p.trim().toLowerCase());
         const isF1Only = f1OnlyPasswords.includes(psw.toLowerCase());
 
@@ -195,20 +186,22 @@ export default async function handler(req, res) {
                 if (lines[targetIdx + 1]) filtered += lines[targetIdx + 1] + "\n";
 
                 filtered = filtered.split('\n').filter(line => !line.toUpperCase().includes("EUROSPORT")).join('\n');
-                return res.status(200).send(filtered);
+                // Codifica Base64 anche per la risposta F1-only
+                const encoded = Buffer.from(filtered, 'utf-8').toString('base64');
+                return res.status(200).send(encoded);
             }
 
-            // Fallback a sky.m3u
             const f1FromSky = skyChannels.find(c => c.name.toUpperCase().includes("SKY SPORT F1"));
             if (f1FromSky) {
                 filtered += buildM3U(f1FromSky);
-                return res.status(200).send(filtered);
+                const encoded = Buffer.from(filtered, 'utf-8').toString('base64');
+                return res.status(200).send(encoded);
             }
 
-            return res.status(200).send("#EXTM3U\n");
+            const encoded = Buffer.from(filtered, 'utf-8').toString('base64');
+            return res.status(200).send(encoded);
         }
 
-        // 6. Per gli altri utenti: DAZN dinamico
         let daznLineare = "";
         try {
             const daznResponse = await fetch(`https://nodrm.online/list/dz1.txt?t=${Date.now()}`);
@@ -239,7 +232,6 @@ export default async function handler(req, res) {
             finalContent = fileContent + "\n" + daznLineare;
         }
 
-        // Inserisce i canali Sky mancanti SUBITO DOPO l'header #EXTM3U
         if (newSkyChannels.length > 0) {
             const headerIdx = finalContent.split('\n').findIndex(l => l.trim() === '#EXTM3U');
             const skyBlock = newSkyChannels.map(c => buildM3U(c)).join('\n');
@@ -252,15 +244,15 @@ export default async function handler(req, res) {
             }
         }
 
-        // Aggiunge gli Eurosport fissi in fondo
         const eurosportM3U = CANALI_FISSI.map(c => buildM3U(c)).join('\n');
         finalContent = finalContent.trimEnd() + "\n" + eurosportM3U;
 
-        // Aggiunge il DAZN fisso
         const daznFissiM3U = DAZN_FISSI.map(c => buildDaznM3U(c)).join('\n');
         finalContent = finalContent.trimEnd() + "\n" + daznFissiM3U;
 
-        res.status(200).send(finalContent);
+        // Codifica Base64
+        const encoded = Buffer.from(finalContent, 'utf-8').toString('base64');
+        res.status(200).send(encoded);
 
     } catch (error) {
         console.error(error);
