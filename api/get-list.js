@@ -19,7 +19,7 @@ const DAZN_FISSI = [
         manifest_type: "mpd",
         license_type: "org.w3.clearkey",
         license_key: "6164a0abaa7c53c6875fa1e7fe0bb463:271510d3e1259571dcc568a232e397eb",
-        stream_headers: "dazn-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvZGFzaC9kYXpuLWxpbmVhci0yMDYiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIyMTAyNzgiXSwiaW50c2lnIjoiRFRneGpxTWExRHdZYkhPSGYxSFVZUDVoQnlaTW9EbW9oMXN6VzEzak9TNCIsImlhdCI6MTc3ODg3ODc3OCwiZXhwIjoxNzc4OTY1MTc4fQ.-PBD-znp92JHeZHTTAozfBNxrImUPlaHp4rbgdsx76k",
+        stream_headers: "dazn-token=st%3D1778883517~exp%3D1778969917~acl%3D/%2A~id%3D621dca4e143e~data%3Dproto%3Ddash%23country%3Dit%23asn%3D210278%23path%3D1s%2C2d%23hashp%3D7146d3dea70044f8d191494cbaf9b170539059551a801458f7e9193ddef7835d%23hashua%3D286fc7e32b7b67d0baa2b54acae9b10c156131ceeeff494d50688993169e2c0e~hmac%3Ddc6f33a4adf62d7fa0e57c209299d0e85dd201aed938e37b059746e87b2093ed",
         user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36",
         url: "https://dcs-ac-live.cdn.indazn.com/dash/dazn-linear-206/stream.mpd?p=web"
     }
