@@ -349,11 +349,3 @@ https://g006-lin-it-cmaf-prd-cf.pcdn07.cssott02.com/v~1-0-0_e~1778845702_f~0_g~1
 #EXTVLCOPT:http-user-agent="Mozilla/5.0 (Linux; Android 9; AFTKA Build/PS7702.4965N; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/136.0.7103.125 Mobile Safari/537.36"
 #EXTINF:-1 group-title="SKY IT BAMBINI" tvg-logo="https://pixel.disco.nowtv.it/logo/skychb_367_darknow/LOGO_CHANNEL_LIGHT/512/512?language=it-IT&proposition=NOWOTT" tvg-id="Boomerang.it",Boomerang
 https://g006-lin-it-cmaf-prd-cf.pcdn07.cssott02.com/v~1-0-0_e~1778924373_f~0_g~1_s~594bf82b-8ff8-4174-a1f8-f0ed416d7963_u~b9fbcd3e402648cf113f98fc35a72a86d7f3acca5f930c66536fcb2ff90ec301821ad542153467fff4602ae5e1340be4_k~A_l~55_x~b4bbd4d560187eb6839736333984c611/nowitlin2/Content/CMAF_CTR_H1/Live/channel(boomerang)/master_2hr-all.mpd
-
-#EXTINF:-1 tvg-name="DAZN 1 ss" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/sxq07q8rseju1j7chnfc7w3if_image-header_pIt_1754467959000/fill/none/top/none/85/334/187/webp/image" group-title="DAZN Lineari",DAZN 1
-#KODIPROP:inputstream.adaptive.manifest_type=mpd
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=6164a0abaa7c53c6875fa1e7fe0bb463:271510d3e1259571dcc568a232e397eb
-#KODIPROP:inputstream.adaptive.stream_headers=dazn-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvZGFzaC9kYXpuLWxpbmVhci0yMDYiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIyMTAyNzgiXSwiaW50c2lnIjoiRFRneGpxTWExRHdZYkhPSGYxSFVZUDVoQnlaTW9EbW9oMXN6VzEzak9TNCIsImlhdCI6MTc3ODg3ODc3OCwiZXhwIjoxNzc4OTY1MTc4fQ.-PBD-znp92JHeZHTTAozfBNxrImUPlaHp4rbgdsx76k
-#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36
-https://dcs-ac-live.cdn.indazn.com/dash/dazn-linear-206/stream.mpd?p=web
