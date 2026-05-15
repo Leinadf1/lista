@@ -160,7 +160,7 @@ function startHeartbeat(password) {
                 body: JSON.stringify({ password: password })
             });
         } catch (e) { console.warn("Sessione persa"); }
-    }, 15000); // <-- MODIFICATO: ogni 15 secondi per mantenere sessione con TTL 25s
+    }, 15000);
 }
 
 async function checkAccess() {
@@ -181,7 +181,10 @@ async function checkAccess() {
             return;
         }
 
-        const m3uData = await response.text();
+        // Decodifica Base64
+        const m3uEncoded = await response.text();
+        const m3uData = atob(m3uEncoded);
+        
         passwordGlobale = psw;
         document.getElementById('mainBody').style.display = "flex";
         
