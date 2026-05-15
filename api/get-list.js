@@ -16,11 +16,11 @@ const DAZN_FISSI = [
         logo: "https://image.discovery.indazn.com/eu/v3/eu/none/sxq07q8rseju1j7chnfc7w3if_image-header_pIt_1754467959000/fill/none/top/none/85/334/187/webp/image",
         group_title: "DAZN Lineari",
         manifest_type: "mpd",
-        license_type: "clearkey",
+        license_type: "org.w3.clearkey",
         license_key: "6164a0abaa7c53c6875fa1e7fe0bb463:271510d3e1259571dcc568a232e397eb",
         stream_headers: "dazn-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Nzg5NzExNjgsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoyLCJwYXRoIjoiOGViOTUwYjA5YmIxZjMzOTBlZDQ4ODgzN2VhZjk5ODY3MDc2OTRkMSIsInNzaWQiOiI2MjFkY2E0ZTE0M2UiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIyMTAyNzgiXSwidWEiOiIxNGNkZmY1NTE5YjZjOTQwODUwMmE0ZDI2MmNkNzQ1NjUzODYyMzM4IiwiaWF0IjoxNzc4ODg0NzY4fQ.MyUphAB55yRfze8MMBrPGPedLzNnQM5BGDZLmKlCCM0",
         user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
-        url: "https://dcs-ac-live.cdn.indazn.com/dash/dazn-linear-206/stream.mpd?p=web"
+        url: "https://dct-fs-live-dazn-cdn.dazn.com/dash/dazn-linear-206/stream.mpd?p=web"
     }
 ];
 
