@@ -15,7 +15,7 @@ const DAZN_FISSI = [
         name: "DAZN 1 WIFI",
         logo: "https://static.wikia.nocookie.net/logopedia/images/1/18/DAZN_1_2024.svg",
         group_title: "DAZN LINEARI",
-        stream_headers: "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+        stream_headers: "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36",
         license_type: "clearkey",
         license_key: "6164a0abaa7c53c6875fa1e7fe0bb463:271510d3e1259571dcc568a232e397eb",
         url: "https://dcs-ac-live.cdn.indazn.com/dugongeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvZGFzaC9kYXpuLWxpbmVhci0yMDYiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIyMTAyNzgiXSwiaW50c2lnIjoiRFRneGpxTWExRHdZYkhPSGYxSFVZUDVoQnlaTW9EbW9oMXN6VzEzak9TNCIsImlhdCI6MTc3ODg3NTM0NiwiZXhwIjoxNzc4OTYxNzQ2fQ.Ga5wsPhPTYc3b_xThDFENGjtF0V6r_366wCEcwYi0hQ/dash/dazn-linear-206/stream.mpd?p=web"
