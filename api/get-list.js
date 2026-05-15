@@ -43,9 +43,6 @@ function buildDaznM3U(channel) {
     if (channel.stream_headers) {
         out += `#KODIPROP:inputstream.adaptive.stream_headers=${channel.stream_headers}\n`;
     }
-    if (channel.user_agent) {
-        out += `#EXTVLCOPT:http-user-agent=${channel.user_agent}\n`;
-    }
     out += channel.url + '\n';
     return out;
 }
