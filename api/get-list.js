@@ -15,7 +15,7 @@ const DAZN_FISSI = [
         name: "DAZN 1 WIFI",
         logo: "https://static.wikia.nocookie.net/logopedia/images/1/18/DAZN_1_2024.svg",
         group_title: "DAZN LINEARI",
-        stream_headers: "user-Agent=AppleTV14,1/5.0 (Apple TV; U; CPU OS 14_3 like Mac OS X; en_us)",
+        stream_headers: "user-agent=AppleTV14,1/5.0 (Apple TV; U; CPU OS 14_3 like Mac OS X; en_us)",
         license_type: "clearkey",
         license_key: "6164a0abaa7c53c6875fa1e7fe0bb463:271510d3e1259571dcc568a232e397eb",
         url: "https://dct-fs-live-dazn-cdn.dazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvZGFzaC9kYXpuLWxpbmVhci0yMDYiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIyMTAyNzgiXSwiaW50c2lnIjoiZjdoTjNCdGUtVDFjRng2QUNZNGhGTFN1UHo1UUQ4LWZXRmJPMXZXZHFjdyIsImlhdCI6MTc3ODkzNzcxMSwiZXhwIjoxNzc5MDI0MTExfQ.0pHOAJxOONKt3PLkNv6414Yg9nxrQbijSqnBp2_AXxM/dash/dazn-linear-206/stream.mpd?p=web"
