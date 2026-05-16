@@ -15,10 +15,10 @@ const DAZN_FISSI = [
         name: "DAZN 1 WIFI",
         logo: "https://static.wikia.nocookie.net/logopedia/images/1/18/DAZN_1_2024.svg",
         group_title: "DAZN LINEARI",
-        stream_headers: "Mozilla/5.0 (Web0S; Linux/SmartTV) AppleWebKit/537.41 (KHTML, like Gecko) Large Screen Safari/537.41 LG Browser/7.00.00(LGE; WEBOS1; 05.06.10; 1); webOS.TV-2014; LG NetCast.TV-2013 Compatible (LGE, WEBOS1, wireless)",
+        stream_headers: "Mozilla/5.0",
         license_type: "clearkey",
         license_key: "6164a0abaa7c53c6875fa1e7fe0bb463:271510d3e1259571dcc568a232e397eb",
-        url: "https://dcs-fs-live-dazn-cdn.dazn.com/dugongeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzkwMTE0MTgsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoyLCJwYXRoIjoiOGViOTUwYjA5YmIxZjMzOTBlZDQ4ODgzN2VhZjk5ODY3MDc2OTRkMSIsInNzaWQiOiI2MjFkY2E0ZTE0M2UiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIyMTAyNzgiXSwidWEiOiI1MWM0NGIxZmU1MWRjYzdhMzY2NjI1ZTE3ZmRiZWQ1NWY0NTI2Yjc3IiwiaWF0IjoxNzc4OTI1MDE4fQ.cMOZ29C6a6oAbdMwyk4apWvVILJziMGm5Klmw12JY3g/dash/dazn-linear-206/stream.mpd?p=web"
+        url: "https://dcs-fs-live-dazn-cdn.dazn.com/dugongeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvZGFzaC9kYXpuLWxpbmVhci0yMDYiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIyMTAyNzgiXSwiaW50c2lnIjoicEdhYlVfYmVCUTg4djd6UU9rajRrS0tuR0d2ckNWNngtWlVzbjhWRC1uOCIsImlhdCI6MTc3ODkyOTQ5NSwiZXhwIjoxNzc5MDE1ODk1fQ.nGrOGiSvQVitbY-7hS8ggyO7Oug84t4qw0vy7SbvLvk/dash/dazn-linear-206/stream.mpd?p=web"
     }
 
 ];
