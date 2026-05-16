@@ -18,7 +18,7 @@ const DAZN_FISSI = [
         stream_headers: "user-Agent=AppleTV14,1/5.0 (Apple TV; U; CPU OS 14_3 like Mac OS X; en_us)",
         license_type: "clearkey",
         license_key: "6164a0abaa7c53c6875fa1e7fe0bb463:271510d3e1259571dcc568a232e397eb",
-        url: "https://dct-fs-live-dazn-cdn.dazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzkwMjM4NTYsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoyLCJwYXRoIjoiOGViOTUwYjA5YmIxZjMzOTBlZDQ4ODgzN2VhZjk5ODY3MDc2OTRkMSIsInNzaWQiOiI2MjFkY2E0ZTE0M2UiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIyMTAyNzgiXSwidWEiOiI5ZGJiNjk1NTY0Yzg0OTkxM2M5NzY2OTEzMmFiNWFlYjEwYzkzYTE0IiwiaWF0IjoxNzc4OTM3NDU2fQ.5DHOUFOqLJhV-mYi6cs8aDR2wZ621Wr7Ts3rZO08IQo/dash/dazn-linear-206/stream.mpd?p=web"
+        url: "https://dct-fs-live-dazn-cdn.dazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvZGFzaC9kYXpuLWxpbmVhci0yMDYiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIyMTAyNzgiXSwiaW50c2lnIjoiZjdoTjNCdGUtVDFjRng2QUNZNGhGTFN1UHo1UUQ4LWZXRmJPMXZXZHFjdyIsImlhdCI6MTc3ODkzNzcxMSwiZXhwIjoxNzc5MDI0MTExfQ.0pHOAJxOONKt3PLkNv6414Yg9nxrQbijSqnBp2_AXxM/dash/dazn-linear-206/stream.mpd?p=web"
     }
 
 ];
