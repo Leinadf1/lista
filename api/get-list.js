@@ -18,7 +18,7 @@ const DAZN_FISSI = [
         stream_headers: "Mozilla/5.0",
         license_type: "clearkey",
         license_key: "6164a0abaa7c53c6875fa1e7fe0bb463:271510d3e1259571dcc568a232e397eb",
-        url: "https://dcs-fs-live-dazn-cdn.dazn.com/dugongeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvZGFzaC9kYXpuLWxpbmVhci0yMDYiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIyMTAyNzgiXSwiaW50c2lnIjoicEdhYlVfYmVCUTg4djd6UU9rajRrS0tuR0d2ckNWNngtWlVzbjhWRC1uOCIsImlhdCI6MTc3ODkyOTQ5NSwiZXhwIjoxNzc5MDE1ODk1fQ.nGrOGiSvQVitbY-7hS8ggyO7Oug84t4qw0vy7SbvLvk/dash/dazn-linear-206/stream.mpd?p=web"
+        url: "https://dcs-fs-live-dazn-cdn.dazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzkwMTcyNjUsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoyLCJwYXRoIjoiOGViOTUwYjA5YmIxZjMzOTBlZDQ4ODgzN2VhZjk5ODY3MDc2OTRkMSIsInNzaWQiOiI2MjFkY2E0ZTE0M2UiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIyMTAyNzgiXSwidWEiOiI4MmFhNmE0ODJiZDI3NmNmZjE0OTc0MDQ3OGE2MDNhNWZlODM0ODQwIiwiaWF0IjoxNzc4OTMwODY1fQ.JVPtPatwIhDooOXoctrUk6Xf3M-c7yjgQQf7p8NB4To/dash/dazn-linear-206/stream.mpd?p=web"
     }
 
 ];
