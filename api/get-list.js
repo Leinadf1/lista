@@ -15,11 +15,31 @@ const DAZN_FISSI = [
         name: "DAZN 1 WIFI",
         logo: "https://static.wikia.nocookie.net/logopedia/images/1/18/DAZN_1_2024.svg",
         group_title: "DAZN LINEARI",
+        stream_headers: "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        license_type: "clearkey",
+        license_key: "6164a0abaa7c53c6875fa1e7fe0bb463:271510d3e1259571dcc568a232e397eb",
+        url: "https://dcs-fs-live-dazn-cdn.dazn.com/dugongeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Nzg5NzExNjgsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoyLCJwYXRoIjoiOGViOTUwYjA5YmIxZjMzOTBlZDQ4ODgzN2VhZjk5ODY3MDc2OTRkMSIsInNzaWQiOiI2MjFkY2E0ZTE0M2UiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIyMTAyNzgiXSwidWEiOiIxNGNkZmY1NTE5YjZjOTQwODUwMmE0ZDI2MmNkNzQ1NjUzODYyMzM4IiwiaWF0IjoxNzc4ODg0NzY4fQ.MyUphAB55yRfze8MMBrPGPedLzNnQM5BGDZLmKlCCM0/dash/dazn-linear-206/stream.mpd?p=web"
+    }
+        {
+        name: "DAZN test 147",
+        logo: "https://static.wikia.nocookie.net/logopedia/images/1/18/DAZN_1_2024.svg",
+        group_title: "DAZN LINEARI",
         stream_headers: "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
         license_type: "clearkey",
         license_key: "6164a0abaa7c53c6875fa1e7fe0bb463:271510d3e1259571dcc568a232e397eb",
         url: "https://dcs-fs-live-dazn-cdn.dazn.com/dugongeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Nzg5NzExNjgsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoyLCJwYXRoIjoiOGViOTUwYjA5YmIxZjMzOTBlZDQ4ODgzN2VhZjk5ODY3MDc2OTRkMSIsInNzaWQiOiI2MjFkY2E0ZTE0M2UiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIyMTAyNzgiXSwidWEiOiIxNGNkZmY1NTE5YjZjOTQwODUwMmE0ZDI2MmNkNzQ1NjUzODYyMzM4IiwiaWF0IjoxNzc4ODg0NzY4fQ.MyUphAB55yRfze8MMBrPGPedLzNnQM5BGDZLmKlCCM0/dash/dazn-linear-206/stream.mpd?p=web"
     }
+
+    {
+        name: "DAZN 1 test vecchio tutto giusto",
+        logo: "https://static.wikia.nocookie.net/logopedia/images/1/18/DAZN_1_2024.svg",
+        group_title: "DAZN LINEARI",
+        stream_headers: "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/1480.0.0 Safari/537.36",
+        license_type: "clearkey",
+        license_key: "6164a0abaa7c53c6875fa1e7fe0bb463:271510d3e1259571dcc568a232e397eb",
+        url: "https://dcs-fs-live-dazn-cdn.dazn.com/dugongeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Nzg5NzExNjgsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoyLCJwYXRoIjoiOGViOTUwYjA5YmIxZjMzOTBlZDQ4ODgzN2VhZjk5ODY3MDc2OTRkMSIsInNzaWQiOiI2MjFkY2E0ZTE0M2UiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIyMTAyNzgiXSwidWEiOiIxNGNkZmY1NTE5YjZjOTQwODUwMmE0ZDI2MmNkNzQ1NjUzODYyMzM4IiwiaWF0IjoxNzc4ODg0NzY4fQ.MyUphAB55yRfze8MMBrPGPedLzNnQM5BGDZLmKlCCM0/dash/dazn-linear-206/stream.mpd?p=web"
+    }
+
 ];
 
 function buildM3U(channel) {
