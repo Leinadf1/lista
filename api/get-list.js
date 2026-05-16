@@ -20,7 +20,6 @@ const DAZN_FISSI = [
         license_key: "6164a0abaa7c53c6875fa1e7fe0bb463:271510d3e1259571dcc568a232e397eb",
         url: "https://dct-fs-live-dazn-cdn.dazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvZGFzaC9kYXpuLWxpbmVhci0yMDYiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIyMTAyNzgiXSwiaW50c2lnIjoiZjdoTjNCdGUtVDFjRng2QUNZNGhGTFN1UHo1UUQ4LWZXRmJPMXZXZHFjdyIsImlhdCI6MTc3ODkzNzcxMSwiZXhwIjoxNzc5MDI0MTExfQ.0pHOAJxOONKt3PLkNv6414Yg9nxrQbijSqnBp2_AXxM/dash/dazn-linear-206/stream.mpd?p=web"
     }
-
 ];
 
 function buildM3U(channel) {
@@ -36,6 +35,10 @@ function buildDaznM3U(channel) {
     out += `#EXTINF:-1 group-title="${channel.group_title}" tvg-logo="${channel.logo}" tvg-id="${channel.name.replace(/\s/g, '')}",${channel.name}\n`;
     out += `#KODIPROP:inputstream.adaptive.license_type=${channel.license_type}\n`;
     out += `#KODIPROP:inputstream.adaptive.license_key=${channel.license_key}\n`;
+    // MODIFICA: aggiunge la riga stream_headers se presente
+    if (channel.stream_headers) {
+        out += `#KODIPROP:inputstream.adaptive.stream_headers=${channel.stream_headers}\n`;
+    }
     out += channel.url + '\n';
     return out;
 }
@@ -187,7 +190,6 @@ export default async function handler(req, res) {
                 if (lines[targetIdx + 1]) filtered += lines[targetIdx + 1] + "\n";
 
                 filtered = filtered.split('\n').filter(line => !line.toUpperCase().includes("EUROSPORT")).join('\n');
-                // Codifica Base64 anche per la risposta F1-only
                 const encoded = Buffer.from(filtered, 'utf-8').toString('base64');
                 return res.status(200).send(encoded);
             }
@@ -251,7 +253,6 @@ export default async function handler(req, res) {
         const daznFissiM3U = DAZN_FISSI.map(c => buildDaznM3U(c)).join('\n');
         finalContent = finalContent.trimEnd() + "\n" + daznFissiM3U;
 
-        // Codifica Base64
         const encoded = Buffer.from(finalContent, 'utf-8').toString('base64');
         res.status(200).send(encoded);
 
