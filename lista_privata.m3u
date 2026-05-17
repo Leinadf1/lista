@@ -410,4 +410,9 @@ https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1779018303~exp%3D1779104703~acl%3D%2
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=25751c9269045825a40d173b04849822:7439cd8b56439d47f5ff6a140af7077f
 https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1779019804~exp%3D1779106204~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3De8a0ee487d297b87545a84d037f01633feb62eb2efb84e6b6db39314e40e99c0%23wm%3D0~hmac%3Dc14ff0124b9e0d3d5d02cddc8fa9a60853c1f0795d9d24626517e802c957a9d0/1764iu6z83bws181lffimx0myo/web/stream.mpd?channel=1946&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Sun May 17 15:40:15 UTC 2026
+
+#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/398kqkg4ucfx7096vakorip7f_image-header_pIt_1775573663000/fill/none/top/none/100/1280/720/png/image",Atalanta - Bologna
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=5cf9bb95712951d1beffcaa362dee3c9:f53e42d1ba1d0206153d6989ab00822c
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1779032703~exp%3D1779119103~acl%3D%2F*~id%3D29ce4820-8b55-5ac6-8c7a-5a820e51ebbb~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D4da63313326e55fe8a77799cad545db3d1347988ccabf31a98d7043a23423c15%23wm%3D1%23wmd%3D1152%23tmidversion%3D3~hmac%3D44f9b755eafb097ea4e9ab19d44512a28db779a0bf20843a516341c6643f06c9/14e4zs1ig9xxk1bj6vg1if9o5l/web/stream.mpd?channel=1381&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Sun May 17 15:50:17 UTC 2026
