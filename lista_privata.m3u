@@ -25,4 +25,29 @@ https://nodrm.online:6163/stream/test/prime/master.m3u8?u=prime_video&p=26972c05
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=38272cf3ccf853e5b809247f86239a20:34582f4595503335642c73253efbdf47
 https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1779006603~exp%3D1779093003~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Db314bda19ec5741dc9e936e9c521b0c613a3d181c738ec865566e64d49922167%23wm%3D0~hmac%3D72ba4f9b1f11ad4b4532a2b71c83b0a5b135cea2e389ee930c24342597ddd80c/19o3hgcp4ohwuzytbvpjvfg72/web/stream.mpd?channel=1345&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Sun May 17 09:40:15 UTC 2026
+
+#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/3kmqbq3zxcj1e05s1wx7h24d5_image-header_pIt_1775573639000/fill/none/top/none/100/1280/720/png/image",Roma - Lazio
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=5cd76b4876fb5bd3accedd445f314027:b8234f0da3369a23124df13dba10ed05
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1779011103~exp%3D1779097503~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D9143b836deec5dbe2f8469ccf3927402775e467e6a7e5f21fd0995e03c4cb26b%23wm%3D0~hmac%3D0d93c9d62da99dab32f72eef8a4c8c8ec9702720843b8e40e3c87d0676c58db1/1567b115zqci01vmplhyxb7n1n/web/stream.mpd?channel=1347&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/2tpnllhr388ovkfffq8n8gt7v_image-header_pIt_1775572320000/fill/none/top/none/100/1280/720/png/image",Juventus - Fiorentina
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=a4da8ec43f815458a516d2c8457fa9ea:d4466db7099a1f2f4d6b9d29dd07a1cd
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1779011105~exp%3D1779097505~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D77f58ff21946a92bc01ed8a0888a801354cde09c13db6c3c35dd86583a2d8a0c%23wm%3D0~hmac%3D6c41f8c4ac184c615a542170e1cf7f56c5710e54aaa77938175f832e39e3aba9/czumbrkzuwz7131y0etyt6600/web/stream.mpd?channel=1389&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/4rsvlommg2fvtmqaoz6v48nfp_image-header_pIt_1775572320000/fill/none/top/none/100/1280/720/png/image",Genoa - Milan
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=70ef724595885f3e8675eb9e4d973269:c88e651e53b62dd364ccc1cd31f55789
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1779011403~exp%3D1779097803~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D07d02ddc2c086694ba1ef698990f2b041a3ef7d73e64399beb76bded7e67a4a8%23wm%3D0~hmac%3Dbafff5361d6e020a1c950c6869e7d5247b998816c6af1f70440ebd7d59d0f6a6/186pe5ovyip7ez56nfh970ro0/web/stream.mpd?channel=1381&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/9wmsppp1fyz7nn2dcr0rfx4p4_image-header_pIt_1775572328000/fill/none/top/none/100/1280/720/png/image",Pisa - Napoli
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=9f1f5cfc732858a4af1d74300412eb7a:65247fda913e82dfebf8fe80453a35e3
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1779011405~exp%3D1779097805~acl%3D%2F*~id%3D29ce4820-8b55-5ac6-8c7a-5a820e51ebbb~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D3e301dfb8f5243515b4019a3a2739df73d2012b907422a04b27260a628693481%23wm%3D1%23wmd%3D1152%23tmidversion%3D3~hmac%3D2eaacc8283d259cf2f6c9f42863c68191155d849667e361f7918b90062a03eb9/1bpevxx7hp10e19os4l6pa1lz5/web/stream.mpd?channel=1382&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/8nipxcg6ima2jqs6ky4tc0979_image-header_pIt_1775572324000/fill/none/top/none/100/1280/720/png/image",Como - Parma
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=dc37127a0dee50db8e26be5fc3031e19:f5aa7f3285bc42ab2eba754013b3b7c6
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1779011407~exp%3D1779097807~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3De1004e73a6e8dfe5d342a27d77f784b476a2a93bbeadcb9c7b755376d80c1271%23wm%3D0~hmac%3Dcb72ffda11d34254e8ad32b8d8b0d81c7e3c5d9cb244f7a08e7404844e90dc5c/vojiitby7tg815rv36kgxyhg2/web/stream.mpd?channel=1948&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Sun May 17 09:50:15 UTC 2026
