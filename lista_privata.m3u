@@ -480,4 +480,19 @@ https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1779040203~exp%3D1779126603~acl%3D%2
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=a0159bf4d7db57d28973d3f0f124e46d:689129fb8f76384685313c77cbc7bd8b
 https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1779040805~exp%3D1779127205~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D235edec50a9ea60d89e0e3cab3f45939be17c88498a266e66d5b72073f858306%23wm%3D0~hmac%3Dfe24f06fed7d39f96a2fddf921e641d5c0a50f2059d7f65a87eb2960dc64d603/oayyvcb8060zz76669hxqzcc/web/stream.mpd?channel=1340&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Sun May 17 18:20:16 UTC 2026
+
+#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/7l89y4bpigdps9uff6qymv2o8_image-header_pIt_1775572331000/fill/none/top/none/100/1280/720/png/image",Sassuolo - Lecce
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=d21a543c2edc526cb81527072e859b15:7440224ed116c74919121cd890754a0f
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1779042603~exp%3D1779129003~acl%3D%2F*~id%3D29ce4820-8b55-5ac6-8c7a-5a820e51ebbb~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D9209317c9c6d859a31a2d58e787830139349da9dc84516f313150165f1fe1a11%23wm%3D1%23wmd%3D1152%23tmidversion%3D3~hmac%3D76db8897b184cefc16cec7da62d1bf41bf3ee2bef01e5859b63064d8288827a4/1so31plu4d94s1ik13o8goucje/web/stream.mpd?channel=1382&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/3ttczepti1tcglcixvtlr9m3k_image-header_pIt_1777971474000/fill/none/top/none/100/1280/720/png/image",Udinese - Cremonese
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=86b7bcc7b71e5f5aa558ed59ece50805:73ceb86051a97940ae617a93f777b9af
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1779042612~exp%3D1779129012~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D516bd9939f9441ad1289c86beb9408cf640fd339d5ee374346ae2d76d829f6d7%23wm%3D0~hmac%3Db5ae06a155a1e953ea9679273040e151deef8ea1d38ad94da1bef19d4fba60e7/173fcqsbuo03119ebj1fgokj81/web/stream.mpd?channel=1347&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/ev029n85s6wt234tp5nr2hkh0_image-header_pIt_1775572322000/fill/none/top/none/100/1280/720/png/image",Cagliari - Torino
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=93dbd72ecd015e47adc7a10e991eeca0:7103d8224c3c58a73fa6b937d4ff975e
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1779042615~exp%3D1779129015~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D4d3c0fc6d852f1bd2ff2fcd41735d51a66f4dcc92513d6f3a5c37b563d5d794f%23wm%3D0~hmac%3D09b8524568bac6927ad96cbf1d5d58d30ba199763a85a6383b62436459c9f051/1tubx2i5sdt3y15q0txtm1h0um/web/stream.mpd?channel=1348&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Sun May 17 18:30:26 UTC 2026
