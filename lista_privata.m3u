@@ -415,4 +415,59 @@ https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1779019804~exp%3D1779106204~acl%3D%2
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=5cf9bb95712951d1beffcaa362dee3c9:f53e42d1ba1d0206153d6989ab00822c
 https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1779032703~exp%3D1779119103~acl%3D%2F*~id%3D29ce4820-8b55-5ac6-8c7a-5a820e51ebbb~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D4da63313326e55fe8a77799cad545db3d1347988ccabf31a98d7043a23423c15%23wm%3D1%23wmd%3D1152%23tmidversion%3D3~hmac%3D44f9b755eafb097ea4e9ab19d44512a28db779a0bf20843a516341c6643f06c9/14e4zs1ig9xxk1bj6vg1if9o5l/web/stream.mpd?channel=1381&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Sun May 17 16:50:15 UTC 2026
+
+#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/d3blef1k4f6hkavatccq6n155_image-header_pIt_1775643468000/fill/none/top/none/100/1280/720/png/image",Atlético Madrid - Girona
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=26a5c664d47855798bb53c6b3b54ca1f:2a15a74c2bb859f8e72cb89f13d83f03
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1779036603~exp%3D1779123003~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D7c2b035e359238a921b8826e09f13635f80d6b07e60f5d40fbddb281b96228a5%23wm%3D0~hmac%3Da24afbc2de51b6e5d3e0f5ad230ddbe74014b088430e512c332d2d2556168139/d9r2relqr38q15r3975w2pc65/web/stream.mpd?channel=6915&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/dtk5vjm40eajd0568golnjwhm_image-header_pIt_1775643620000/fill/none/top/none/100/1280/720/png/image",Siviglia - Real Madrid
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=6acc08f03b1f5c35af86bd3568175346:203e9af858a23d5e9bc51dea191cde7d
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1779036605~exp%3D1779123005~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D7524120e0f62b36261c1210e7ef1222cb295eecaa0a7eddfe7393937c862ebdd%23wm%3D0~hmac%3D9dc5a4925052f5d4fdcb667b5d28118ebaa0468e320a1bc1225d28fd6bf66434/11rjid58fj41s1a05obd14dm8a/web/stream.mpd?channel=6946&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/6m3yryub9qurrt8papw8e2720_image-header_pIt_1775643626000/fill/none/top/none/100/1280/720/png/image",Real Sociedad - Valencia
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=e237483356e65592997cc26fab3b66a8:e337c4f4670870677197abef2da6e14c
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1779036608~exp%3D1779123008~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D5ccc103d34cbc0bbe1d6fc885933c14cd2daf033c72b545b934a8d2e9c8dda4c%23wm%3D0~hmac%3Db25df30356627767775681c9afa73584f605811a57b682b4d0506869af9723b1/18opc6wtjy2o11lmvpj5qh2ye0/web/stream.mpd?channel=6933&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/atiod0f10shhj58vzy1bzkqhl_image-header_pIt_1775643662000/fill/none/top/none/100/1280/720/png/image",Rayo Vallecano - Villarreal
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=bfb9a807ccfc57fcb85c9988ba7a3d5e:c865c6c45a905e4ad4ec1976490f9a95
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1779036610~exp%3D1779123010~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D21a6defe55dfc57c656f8c46e6327bfe48ededa8b023f0ca59e931858fd9a99b%23wm%3D0~hmac%3Db6850993f7478f43c77f2aca8e3f5b7bd0febf4b9a34598c407ab797635b1b51/emc8je7lgszh1gz2kk7kjavjk/web/stream.mpd?channel=6925&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/2x7f9mc3xyixdkwyvlxrkzwky_image-header_pIt_1775643595000/fill/none/top/none/100/1280/720/png/image",Real Oviedo - Alavés
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1779036612~exp%3D1779123012~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Da364e145746aaf56c231b9602d65550e40bf1707393f661d50860c399e4c5a97~hmac%3D282cd933efdbbda2e9e4387c0f1775c2e263cd6c8214bd11aad47b5e647e52fb/1uxbc3rru2bjx1ioqtfdjqm5dr/web/stream.mpd?channel=6740&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/8l8eobftdr8oblwh0phfrc7f9_image-header_pIt_1775955592000/fill/none/top/none/100/1280/720/png/image",Elche - Getafe
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1779036614~exp%3D1779123014~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D952e7731b4b23306ecd0b10332fb9947225643437f76d0099f68cf0fb8f1bf03~hmac%3D12f5da5abaec3bf5a2347618a98068fd0cadf12dc068dbadd511564e2ee39d31/w4v1l5n9ukm414jgagxyftole/web/stream.mpd?channel=6751&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/j9aqytq8957hsxh4huwec4ei_image-header_pIt_1775643268000/fill/none/top/none/100/1280/720/png/image",Athletic Bilbao - Celta Vigo
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1779036615~exp%3D1779123015~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D9672ee46ea7f77015ac00d661045126fa27d6babf489d18af66a11d15a05f1eb~hmac%3Dc183f4b2321c211973b71b22c035d77ece353ef0419380fd3387dd6dd7239ea4/lktm2ikgiluv1xvz80u9jplsp/web/stream.mpd?channel=6728&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/8ep1unqjh0lb7v72p42bpyt1i_image-header_pIt_1775643538000/fill/none/top/none/100/1280/720/png/image",Osasuna - Espanyol
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1779036617~exp%3D1779123017~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Dfc00873edb3e26128de25558747bdb0b4ecd1d0324d6ff00901a22cc41008d5c~hmac%3D4cfe2129ea4e38422853ee61caf6509a1f93e814b00eaf523232460540e508a6/y94jx9yqr6711bpa9qulq0bg1/web/stream.mpd?channel=6730&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/dv8u8y4mcn1oi7xvhr3ra9wk3_image-header_pIt_1775643515000/fill/none/top/none/100/1280/720/png/image",Levante - Maiorca
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1779036618~exp%3D1779123018~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Dcd5e1c80023a15b6e1ed0787f4aed868962eac6f12f31181f709cb7df4ac449f~hmac%3D659cd6c3114c465ccc189d8dc0bfc70c658b861a75db86d3cb16aee15fe786c0/pcco1rdabi3016xhpl8ar8976/web/stream.mpd?channel=6729&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/hu7vaso0lu05fhhx10sim2ic_image-header_pIt_1778830789000/fill/none/top/none/100/1280/720/png/image",Inter TV | La festa Scudetto dei nerazzurri
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=5f9a9f850c065d2e9fbdf2b057137016:d06a94b10de6aac2ea75171a08357eeb
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1779037203~exp%3D1779123603~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D40fbf3fe728b7468c21cf9dca8d6ae2d03b2a4cd76ba332a5c14c967224596f1%23wm%3D0~hmac%3Dac4a1bd688c7d4e233b2b2c147efdf1bdd3d9d22281b181c77e597c7c7e3cdfb/1qpkdm8igx9sv14eibwsvpk34k/web/stream.mpd?channel=3223&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN LALIGA EA SPORTS" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/abjworns3hrygdgg2l6j9tolp_image-header_pIt_1747553326000/fill/none/top/none/100/1280/720/png/image",LaLiga Multigol
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=07db40e0948e5f0eb497da79d7ac24c0:89a67f00036a7efa168cc04fe9ad7feb
+https://dcb-deit-livedazn.daznedge.net/@tend%3A1779123606~geo%3AIT~asn%3A16232~path%3A1_1_b30f7be7af3d80eb8a032cef87f978d9ed3c077f2950a538ad622e02013b2612~id%3A9827c3cf91d3~tk3%3A9b47791fff1a3158c36a754952e25d4e6aab3ce9aa51da29321a7c3ca7afd1eb/1fkj4pr27mm471tlv1eo69p0g2/web/stream.mpd?channel=3235&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Sun May 17 17:00:37 UTC 2026
