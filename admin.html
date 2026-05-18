@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin – Sessioni Attive</title>
+    <style>
+        body { background: #0d1117; color: #c9d1d9; font-family: 'Inter', sans-serif; padding: 40px; }
+        h1 { color: #58a6ff; }
+        .card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; margin-top: 20px; }
+        .error { color: #f78166; }
+        .list { list-style: none; padding: 0; }
+        .list li { padding: 6px 0; border-bottom: 1px solid #30363d; }
+        button { background: #238636; color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; }
+        input { background: #0d1117; border: 1px solid #30363d; color: white; padding: 8px; border-radius: 4px; margin-right: 10px; }
+    </style>
+</head>
+<body>
+    <h1>🔐 Sessioni attive</h1>
+    <div>
+        <input type="password" id="adminPassword" placeholder="Password admin" />
+        <button onclick="checkSessions()">Mostra sessioni</button>
+    </div>
+    <div id="result" class="card"></div>
+
+    <script>
+        async function checkSessions() {
+            const pwd = document.getElementById('adminPassword').value;
+            const resultDiv = document.getElementById('result');
+            try {
+                const response = await fetch('/api/admin-sessions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ adminPassword: pwd })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    if (data.activePasswords.length === 0) {
+                        resultDiv.innerHTML = '<p>Nessuna sessione attiva al momento.</p>';
+                    } else {
+                        const list = data.activePasswords.map(p => `<li>${p}</li>`).join('');
+                        resultDiv.innerHTML = `<p><strong>Sessioni attive (${data.count}):</strong></p><ul class="list">${list}</ul>`;
+                    }
+                } else {
+                    resultDiv.innerHTML = `<p class="error">${data.error}</p>`;
+                }
+            } catch (err) {
+                resultDiv.innerHTML = `<p class="error">Errore di rete</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
