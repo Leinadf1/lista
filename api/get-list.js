@@ -2,12 +2,12 @@ import { createClient } from '@vercel/kv';
 
 const CANALI_FISSI = [
     { name: "EUROSPORT 4K", group_title: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020019/tim-ouah/CHN43FN/MONOGRAM_ESP4K_WHITE_V2-BjK0", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport4k)/manifest.mpd", drm: '{"9ceae06c6ad34aada83ba86c0b511452":"406862beb4af1ef8fe04ba15d9936360","fcd924bd2e45470fa2ae50ef05e357c0":"266db84d3572bc889185274a90ff31df","dea135e33341468f8a4e8da806d8a6e6":"fb7423db39e6fab75056f8c83f415847","31911db90ee3410f8b38e45659d01fb1":"ac316ab7dfd2b50faf6d44633e4fedd5","a16f2a39adbb4974b8910cec8a651a09":"c2d55e0111af955f47214af209a2c468"}' },
-    { name: "EUROSPORT 1", group_title: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020000/tim-ouah/CHN43FN/MONOGRAM_ESP1_WHITE_V2-Lv2g", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport1)/manifest.mpd", drm: '{"163303a883824977b05d7357da82f487":"40d5e1198d23aaad9079bdc881f2ca5a"}' },
-    { name: "EUROSPORT 2", group_title: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020001/tim-ouah/CHN43FN/MONOGRAM_ESP2_WHITE_V2-Zp7E", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport2)/manifest.mpd", drm: '{"edb40da832c44957b49a30351ebccee3":"37979044fd480ae10a441c6c8547b38a"}' },
-    { name: "EUROSPORT 3", group_title: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020002/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-yiID", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport3)/manifest.mpd", drm: '{"1f0db319a1e3492ca02d1dbcfef176ac":"ef3bc3b15caf33064d1e8f9d0b46b4b1"}' },
-    { name: "EUROSPORT 4", group_title: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020003/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-3YSY", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport4)/manifest.mpd", drm: '{"eade7aa2314a407da820d6c81167cb90":"c6b701dae6c8bdead2cbe6ecde0769bb"}' },
-    { name: "EUROSPORT 5", group_title: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020004/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-sv5m", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport5)/manifest.mpd", drm: '{"da9e85e0a6f4459f9344cdb544c22a4e":"6af3a1f0911da1e5f6a196872ab5fbfe"}' },
-    { name: "EUROSPORT 6", group_title: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020005/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-H53i", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport6)/manifest.mpd", drm: '{"7395986fd46d4d0ab472471c224621e3":"adf1f40a8db52e319a18ca00a4dbe0aa"}' },
+    { name: "EUROSPORT 1", group_title: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020000/tim-ouah/CHN43FN/MONOGRAM_ESP1_WHITE_V2-Lv2g", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport1)/manifest.mpd", drm: '{"610bcda111c74c97b0792b059630a10b":"b9817853538459b371f3fb56a267d55c"}' },
+    { name: "EUROSPORT 2", group_title: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020001/tim-ouah/CHN43FN/MONOGRAM_ESP2_WHITE_V2-Zp7E", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport2)/manifest.mpd", drm: '{"700b3619ccfb4c0cbd2bb26832e643cf":"b2c7c4b6f3375b8e07c42f95668dadeb"}' },
+    { name: "EUROSPORT 3", group_title: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020002/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-yiID", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport3)/manifest.mpd", drm: '{"5fd7709359db4103ae799d5f8d79ae0b":"6d39ec4186bed97705274a6c78c69d94"}' },
+    { name: "EUROSPORT 4", group_title: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020003/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-3YSY", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport4)/manifest.mpd", drm: '{"026e140de784409b9c437fcc0212977c":"6f5ad01fa42deede99ae7c6ccf5215d7"}' },
+    { name: "EUROSPORT 5", group_title: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020004/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-sv5m", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport5)/manifest.mpd", drm: '{"6844bc96d46e4677a322cd4838705489":"6b483aa12ba85bad2e84efb4bc6a9893"}' },
+    { name: "EUROSPORT 6", group_title: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020005/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-H53i", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport6)/manifest.mpd", drm: '{"69982165690d4fef90d3f4d4e245fc27":"49711e568736d9ae3ea7993571c9bcce"}' },
     { name: "EUROSPORT 1", group_title: "EUROSPORT ENG/ITA", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020000/tim-ouah/CHN43FN/MONOGRAM_ESP1_WHITE_V2-Lv2g", url: "https://wp10-s-anp33343334-live-ch-prod.prod.cdn.dmdsdp.com/live/disk1/SV09320/stb-dash-fhd-avc/SV09320.mpd", drm: '{"5697867136904350861b81589b29be76":"35d43b4d23abcfe16b451d7be92ad990","c150a0dc15b73792b9ee5ada5561f793":"d5173922c2c7a8b98510650c3cdb54cd"}' },
     { name: "EUROSPORT 2", group_title: "EUROSPORT ENG/ITA", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020001/tim-ouah/CHN43FN/MONOGRAM_ESP2_WHITE_V2-Zp7E", url: "https://wp2-s-anp31323132-live-ch-prod.prod.cdn.dmdsdp.com/live/disk1/SV09322/stb-dash-fhd-avc/SV09322.mpd", drm: '{"a1387afabdd04dfc939593cb1724e8f7":"38ecd1f7b8f248633490f6717d86e17d","72982d60457c390dbce4e8ba6aa9ff33":"5574602ec1bfeda66f459ce603dc17fd"}' },
 ];
@@ -22,6 +22,7 @@ const DAZN_FISSI = [
         license_key: "6164a0abaa7c53c6875fa1e7fe0bb463:271510d3e1259571dcc568a232e397eb",
         url: "https://dct-fs-live-dazn-cdn.dazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzkwMjg3MDMsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoyLCJwYXRoIjoiOGViOTUwYjA5YmIxZjMzOTBlZDQ4ODgzN2VhZjk5ODY3MDc2OTRkMSIsInNzaWQiOiI2MjFkY2E0ZTE0M2UiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIyMTAyNzgiXSwidWEiOiIxNGNkZmY1NTE5YjZjOTQwODUwMmE0ZDI2MmNkNzQ1NjUzODYyMzM4IiwiaWF0IjoxNzc4OTQyMzAzfQ.NjdSMX6Kv5XV2dik4qvJqYNZyjwxFS2AXyRU5_JkMlI/dash/dazn-linear-206/stream.mpd?p=web"
     }
+
 ];
 
 function buildM3U(channel) {
@@ -111,30 +112,17 @@ export default async function handler(req, res) {
 
     const sessionKey = `session_${psw}`;
 
-    // ========== HEARTBEAT (rinnova TTL mantenendo i metadati) ==========
     if (req.headers['x-heartbeat'] === 'true') {
-        const currentData = await kv.get(sessionKey);
-        if (currentData) {
-            await kv.set(sessionKey, currentData, { ex: 25 });
-        }
+        await kv.set(sessionKey, "active", { ex: 25 });
         return res.status(200).json({ status: "ok" });
     }
 
-    // ========== NUOVO ACCESSO ==========
     const isOccupied = await kv.get(sessionKey);
     if (isOccupied) {
         return res.status(403).json({ error: "Accesso negato: sessione già attiva" });
     }
 
-    // Salva metadati di sessione (IP, User‑Agent, timestamp)
-    const clientIp = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || 'sconosciuto';
-    const userAgent = req.headers['user-agent'] || 'sconosciuto';
-    const sessionData = JSON.stringify({
-        ip: clientIp,
-        userAgent: userAgent,
-        startTime: new Date().toISOString()
-    });
-    await kv.set(sessionKey, sessionData, { ex: 25 });
+    await kv.set(sessionKey, "active", { ex: 25 });
 
     try {
         const githubResponse = await fetch(`https://raw.githubusercontent.com/Leinadf1/lista/main/lista_privata.m3u?t=${Date.now()}`, {
@@ -201,6 +189,7 @@ export default async function handler(req, res) {
                 if (lines[targetIdx + 1]) filtered += lines[targetIdx + 1] + "\n";
 
                 filtered = filtered.split('\n').filter(line => !line.toUpperCase().includes("EUROSPORT")).join('\n');
+                // Codifica Base64 anche per la risposta F1-only
                 const encoded = Buffer.from(filtered, 'utf-8').toString('base64');
                 return res.status(200).send(encoded);
             }
@@ -264,6 +253,7 @@ export default async function handler(req, res) {
         const daznFissiM3U = DAZN_FISSI.map(c => buildDaznM3U(c)).join('\n');
         finalContent = finalContent.trimEnd() + "\n" + daznFissiM3U;
 
+        // Codifica Base64
         const encoded = Buffer.from(finalContent, 'utf-8').toString('base64');
         res.status(200).send(encoded);
 
