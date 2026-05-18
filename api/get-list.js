@@ -22,7 +22,6 @@ const DAZN_FISSI = [
         license_key: "6164a0abaa7c53c6875fa1e7fe0bb463:271510d3e1259571dcc568a232e397eb",
         url: "https://dct-fs-live-dazn-cdn.dazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzkwMjg3MDMsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoyLCJwYXRoIjoiOGViOTUwYjA5YmIxZjMzOTBlZDQ4ODgzN2VhZjk5ODY3MDc2OTRkMSIsInNzaWQiOiI2MjFkY2E0ZTE0M2UiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIyMTAyNzgiXSwidWEiOiIxNGNkZmY1NTE5YjZjOTQwODUwMmE0ZDI2MmNkNzQ1NjUzODYyMzM4IiwiaWF0IjoxNzc4OTQyMzAzfQ.NjdSMX6Kv5XV2dik4qvJqYNZyjwxFS2AXyRU5_JkMlI/dash/dazn-linear-206/stream.mpd?p=web"
     }
-
 ];
 
 function buildM3U(channel) {
@@ -112,17 +111,30 @@ export default async function handler(req, res) {
 
     const sessionKey = `session_${psw}`;
 
+    // ========== HEARTBEAT (rinnova TTL mantenendo i metadati) ==========
     if (req.headers['x-heartbeat'] === 'true') {
-        await kv.set(sessionKey, "active", { ex: 25 });
+        const currentData = await kv.get(sessionKey);
+        if (currentData) {
+            await kv.set(sessionKey, currentData, { ex: 25 });
+        }
         return res.status(200).json({ status: "ok" });
     }
 
+    // ========== NUOVO ACCESSO ==========
     const isOccupied = await kv.get(sessionKey);
     if (isOccupied) {
         return res.status(403).json({ error: "Accesso negato: sessione già attiva" });
     }
 
-    await kv.set(sessionKey, "active", { ex: 25 });
+    // Salva metadati di sessione (IP, User‑Agent, timestamp)
+    const clientIp = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || 'sconosciuto';
+    const userAgent = req.headers['user-agent'] || 'sconosciuto';
+    const sessionData = JSON.stringify({
+        ip: clientIp,
+        userAgent: userAgent,
+        startTime: new Date().toISOString()
+    });
+    await kv.set(sessionKey, sessionData, { ex: 25 });
 
     try {
         const githubResponse = await fetch(`https://raw.githubusercontent.com/Leinadf1/lista/main/lista_privata.m3u?t=${Date.now()}`, {
@@ -189,7 +201,6 @@ export default async function handler(req, res) {
                 if (lines[targetIdx + 1]) filtered += lines[targetIdx + 1] + "\n";
 
                 filtered = filtered.split('\n').filter(line => !line.toUpperCase().includes("EUROSPORT")).join('\n');
-                // Codifica Base64 anche per la risposta F1-only
                 const encoded = Buffer.from(filtered, 'utf-8').toString('base64');
                 return res.status(200).send(encoded);
             }
@@ -253,7 +264,6 @@ export default async function handler(req, res) {
         const daznFissiM3U = DAZN_FISSI.map(c => buildDaznM3U(c)).join('\n');
         finalContent = finalContent.trimEnd() + "\n" + daznFissiM3U;
 
-        // Codifica Base64
         const encoded = Buffer.from(finalContent, 'utf-8').toString('base64');
         res.status(200).send(encoded);
 
