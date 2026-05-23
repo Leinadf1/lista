@@ -385,4 +385,9 @@ https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1779548404~exp%3D1779634804~acl%3D%2
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=b1e9fd15bccd5e77ba75283906f72849:0c1ec7e0f34cee46ee0329c71e80a376
 https://dca-ac-live.cdn.indazn.com/dugongeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMTN6amQ5aTN4MHhnNjFoYThkN3FjcGk0Y3IiXSwiZXhjIjpbXSwiaGVhZGVycyI6W10sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIxNjIzMiJdLCJpbnRzaWciOiJoWXJrR0xvazVBdkxjRGRTaWV0d2RKalNtbWhJQ1k1VkxlRHJab1hHVUZvIiwiaWF0IjoxNzc5NTQ4NDA3LCJleHAiOjE3Nzk2MzQ4MDd9.v-FqAUrK_gl3C-7bEPwKSy-47jawGFqhIhDQb0h3K-I/13zjd9i3x0xg61ha8d7qcpi4cr/web/stream.mpd?channel=5080&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Sat May 23 18:10:16 UTC 2026
+
+#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/6k0o5rlngve3d6l8l5neb1ata_image-header_pIt_1775572326000/fill/none/top/none/100/1280/720/png/image",Lazio - Pisa
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=4c8eb3fcd05550bca6c0cae6ae20bb93:a3c5f70354c788274926f20f0e1a7a21
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1779560104~exp%3D1779646504~acl%3D%2F*~id%3D29ce4820-8b55-5ac6-8c7a-5a820e51ebbb~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D7b2fe8cfef26c51fc94e1fd1dae17715e657a14366261f0ad063fdc4bdfe49b3%23wm%3D1%23wmd%3D1152%23tmidversion%3D3~hmac%3Da30013b47c7fdd28a535e9160bcdb39081152f2afe530a430de562a081192fad/16vk286pbth5o1kjcmu6bcg01o/web/stream.mpd?channel=1381&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Sat May 23 18:30:28 UTC 2026
