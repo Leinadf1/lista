@@ -375,4 +375,14 @@ https://nodrm.online:6163/stream/test/prime/master.m3u8?u=prime_video&p=26972c05
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=296db16df4ec52c09248b66de219458c:b021eba12ac2fd678d63f1a2aada9db3
 https://dca-de-livedazn.daznedge.net/@tend%3A1779631918~geo%3AIT~asn%3A16232~path%3A1_1_5f70c26ce2bec948f12a740afa4a45280919c8e5d21109d88a8feb0384af0c21~id%3A9827c3cf91d3~tk3%3Ab3644c1aef5cb32fba088a64e402a02153d4175760f3647c4902e67c9df5b49e/16rvm3q3ypb551v5y4puahdn8p/web/stream.mpd?channel=7032&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Sat May 23 14:50:16 UTC 2026
+
+#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/bvg22zdly62s2ym6155dmqn3p_image-header_pIt_1779193609000/fill/none/top/none/100/1280/720/png/image",Bologna - Inter
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=b0dc887ea4cc5d6e804d9e0b89a3e1f6:dba0ce23b980da445431d43064080a9e
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1779548404~exp%3D1779634804~acl%3D%2F*~id%3D29ce4820-8b55-5ac6-8c7a-5a820e51ebbb~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Dd82c4b13c002e181ccbb0978a856e5170e090c47bf8e3334e6b3b0eef13f4478%23wm%3D1%23wmd%3D1152%23tmidversion%3D3~hmac%3D947f73174f9ec4234e14bbb826b87239b39f6d5feb039f20c653ccee35d1fca5/k78xlb32fo9s1cafjro43umii/web/stream.mpd?channel=1382&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/2g99e5ztp91nz0tqdz3gzdqvk_image-header_pIt_1761917569000/fill/none/top/none/100/1280/720/png/image",Luciano Spalletti la conferenza stampa pre partita
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=b1e9fd15bccd5e77ba75283906f72849:0c1ec7e0f34cee46ee0329c71e80a376
+https://dca-ac-live.cdn.indazn.com/dugongeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMTN6amQ5aTN4MHhnNjFoYThkN3FjcGk0Y3IiXSwiZXhjIjpbXSwiaGVhZGVycyI6W10sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIxNjIzMiJdLCJpbnRzaWciOiJoWXJrR0xvazVBdkxjRGRTaWV0d2RKalNtbWhJQ1k1VkxlRHJab1hHVUZvIiwiaWF0IjoxNzc5NTQ4NDA3LCJleHAiOjE3Nzk2MzQ4MDd9.v-FqAUrK_gl3C-7bEPwKSy-47jawGFqhIhDQb0h3K-I/13zjd9i3x0xg61ha8d7qcpi4cr/web/stream.mpd?channel=5080&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Sat May 23 15:00:42 UTC 2026
