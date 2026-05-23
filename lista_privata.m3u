@@ -440,4 +440,14 @@ https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1779562227~exp%3D1779648627~acl%3D%2
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=df7cb85936c8564985216e1fdb33497e:86422d9a1e3f62f50f939c0158a8f181
 https://dcb-deit-livedazn.daznedge.net/@tend%3A1779648629~geo%3AIT~asn%3A16232~path%3A1_1_b3fd31a10e67eefb49062a884a52b0ea26b61142d3e963c93ec18f28b734b93a~id%3A9827c3cf91d3~tk3%3A709455a30c06011a1ce4c2c14a378e592f88e7aaa61ce1cc4101503aa6775f51/1edwg6qsnqct01atw1zyft6rf8/web/stream.mpd?channel=9244&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Sat May 23 20:40:17 UTC 2026
+
+#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/amig5ld6va8xwq5lqt9yd6qn1_image-header_pIt_1778317411000/fill/none/top/none/100/1280/720/png/image",Trentaseiesima puntata | Vamos! Il sabato della Serie A
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=0622a8c7c5985c21914120e7b94ec9de:d3c3a014cbea7b2e8cfa4f03d84cba58
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1779569103~exp%3D1779655503~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D1630069895fffdbc1e673cd3bf5db754498d9733d5bc8c0fe96bcee85626e5d0%23wm%3D0~hmac%3Df29d7ee7e6a5bc2120f7e23b912a80fe055093436452983bc8087f02c65a58e8/165xhn3roptov1x5xo1tajgqg4/web/stream.mpd?channel=1355&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN SERIE A ENILIVE" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/6k0o5rlngve3d6l8l5neb1ata_image-header_pIt_1779193852000/fill/none/top/none/100/1280/720/png/image",Lazio - Pisa | Post-partita con Vamos!
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=4c8eb3fcd05550bca6c0cae6ae20bb93:a3c5f70354c788274926f20f0e1a7a21
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1779569403~exp%3D1779655803~acl%3D%2F*~id%3D29ce4820-8b55-5ac6-8c7a-5a820e51ebbb~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D7b2fe8cfef26c51fc94e1fd1dae17715e657a14366261f0ad063fdc4bdfe49b3%23wm%3D1%23wmd%3D1152%23tmidversion%3D3~hmac%3D4651a5c717d1c7d31ea787e67e619aca9a6f4b3f6dc6cd5a4fcb4d592f7cdb0d/16vk286pbth5o1kjcmu6bcg01o/web/stream.mpd?channel=1381&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Sat May 23 20:50:18 UTC 2026
