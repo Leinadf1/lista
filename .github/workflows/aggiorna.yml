@@ -14,7 +14,7 @@ jobs:
 
       - name: Download base list
         run: |
-          curl -sL "https://nodrm.online/list/list2.m3u" > lista_privata.m3u
+          curl -sL -k "https://nodrm.online/list/list2.m3u" > lista_privata.m3u
           echo "# Ultimo aggiornamento: $(date)" >> lista_privata.m3u
           echo "Aggiornato il: $(date)" > last_sync.txt
 
