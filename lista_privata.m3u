@@ -375,4 +375,9 @@ https://nodrm.online:6163/stream/test/prime/master.m3u8?u=prime_video&p=26972c05
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=f186d95b2fd25ba6b1a4f0be213b6dea:23a6ef9355c88eabe50c5f20378ddc3b
 https://dca-de-livedazn.daznedge.net/@tend%3A1780135805~geo%3AIT~asn%3A16232~path%3A1_1_5d1f8bca2e766e87ffae38a15a1887dfb5708fe1d6fde65882030386fdc23520~id%3Ac455b0b765db~tk3%3Ac27ea018cb202d29643a47d20d9146435b216b563b1de5ca97ff44eb02bdf8c9/1jfasj71asbwi1po0lv8wy974a/web/stream.mpd?channel=7031&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Fri May 29 17:15:24 UTC 2026
+
+#EXTINF:-1 group-title="DAZN SERIE BKT" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/c9y0xam810l69xw7k40sctq6_image-header_pIt_1779962820000/fill/none/top/none/100/1280/720/png/image",Finale Playoff Ritorno | Monza - Catanzaro
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=a3773d5556d95b0f9662355528dce371:e5d9518ac309f23e2cf707265caef4d6
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1780074910~exp%3D1780161310~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D21acf077d3d449002553392ec3057995d9adb6b94cbf830d2fac9b5265a22549%23wm%3D0~hmac%3Dcb0364172a1fccb68daaa58b83f433bd7144df4d0e7de8ef95bc6cf69d0883fa/1i5p51n4xchi1xrrafb5lgsbd/web/stream.mpd?channel=3932&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Fri May 29 17:30:29 UTC 2026
