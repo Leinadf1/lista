@@ -370,4 +370,14 @@ https://abndy7jaaaaaaaamb5sbzman2g3xq.bia-cf.live.pv-cdn.net/lhr-nitro/live/clie
 https://nodrm.online:6163/stream/test/prime/master.m3u8?u=prime_video&p=26972c05e5cd32b4d006247a875330a1275a60747cd411377cfbb1f15633d612
 
 
-# Ultimo aggiornamento: Thu Jun 11 12:15:22 UTC 2026
+
+#EXTINF:-1 group-title="DAZN COPPA DEL MONDO FIFA" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/e01vr1byanv85xzyyzvlxqce_image-header_pIt_1780823656000/fill/none/top/none/100/1280/720/png/image",Tutti Convocati
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=0fcb111336ee50738d00427d59da0097:e110faa6960bba8b2924e2315d379cc3
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1781180657~exp%3D1781267057~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D73be93ef4731a5265e56989c7e79085a5b0a1fc48b01b37dd531a70ed50428a8%23wm%3D0~hmac%3D5c915e9b470b379af5b098d7547a8cd950eb2dbca9add20992b68a6f7495f01a/1dzhnczetfv6817do9jm5cvogx/web/stream.mpd?channel=1560&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN VOLLEYBALL NATIONS LEAGUE (M)" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/50iwax04zsj3j344vp5cufltk_image-header_pIt_1780469826000/fill/none/top/none/100/1280/720/png/image",Slovenia - Polonia
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=e8d40667da28586dab3f05fb4731d34e:dd9deabb9d830b8d7c34242e0bf2a18b
+https://dca-fs-live-dazn-cdn.dazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODEyNjcxNTAsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoxLCJwYXRoIjoiZmI3NTBkOTAzYmViOWU4Zjk2M2Q5NTFhMzM2N2M1MGIxMzg5OTBhOCIsInNzaWQiOiJjNDU1YjBiNzY1ZGIiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIxNjIzMiJdLCJpYXQiOjE3ODExODA3NTB9.lUk7ZoFRD1Cw7gK-8zu7QoyWPY6wS8r39G7iU6uTwK0/wdc3oyzfrt01jsnibld6lhzs/web/stream.mpd?channel=5062&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Thu Jun 11 12:30:33 UTC 2026
