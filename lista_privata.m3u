@@ -371,28 +371,8 @@ https://nodrm.online:6163/stream/test/prime/master.m3u8?u=prime_video&p=26972c05
 
 
 
-#EXTINF:-1 group-title="DAZN COPPA DEL MONDO FIFA" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/e01vr1byanv85xzyyzvlxqce_image-header_pIt_1780823656000/fill/none/top/none/100/1280/720/png/image",Tutti Convocati
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=0fcb111336ee50738d00427d59da0097:e110faa6960bba8b2924e2315d379cc3
-https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1781180657~exp%3D1781267057~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D73be93ef4731a5265e56989c7e79085a5b0a1fc48b01b37dd531a70ed50428a8%23wm%3D0~hmac%3D5c915e9b470b379af5b098d7547a8cd950eb2dbca9add20992b68a6f7495f01a/1dzhnczetfv6817do9jm5cvogx/web/stream.mpd?channel=1560&mta=it&outlet=dazn-italy&plang=it
-
-#EXTINF:-1 group-title="DAZN VOLLEYBALL NATIONS LEAGUE (M)" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/50iwax04zsj3j344vp5cufltk_image-header_pIt_1780469826000/fill/none/top/none/100/1280/720/png/image",Slovenia - Polonia
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=e8d40667da28586dab3f05fb4731d34e:dd9deabb9d830b8d7c34242e0bf2a18b
-https://dca-fs-live-dazn-cdn.dazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODEyNjcxNTAsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoxLCJwYXRoIjoiZmI3NTBkOTAzYmViOWU4Zjk2M2Q5NTFhMzM2N2M1MGIxMzg5OTBhOCIsInNzaWQiOiJjNDU1YjBiNzY1ZGIiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIxNjIzMiJdLCJpYXQiOjE3ODExODA3NTB9.lUk7ZoFRD1Cw7gK-8zu7QoyWPY6wS8r39G7iU6uTwK0/wdc3oyzfrt01jsnibld6lhzs/web/stream.mpd?channel=5062&mta=it&outlet=dazn-italy&plang=it
-
-#EXTINF:-1 group-title="DAZN COPPA DEL MONDO FIFA" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/8w3tl1ts24seujntttbm172lq_image-header_pIt_1781129111000/fill/none/top/none/100/1280/720/png/image",Messico - Sudafrica
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=7e702ae824b45ff389244e09bf0aa9cb:e419f6cd4e4aa6b43548252a01fe8cd5
-https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1781195104~exp%3D1781281504~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Dcf82757f8b54f1feaaea9896ef3ebc6f2d422607cc2d3f9d7ae4929b49e0b148%23wm%3D0~hmac%3D9d831e15310f71fd8297d09b9ed57e103342474aa4e2d375db4aa6218b97b89c/1oern5ek6yjfe1s08ko8pd0396/web/stream.mpd?channel=1646&mta=it&outlet=dazn-italy&plang=it
-
-#EXTINF:-1 group-title="DAZN VOLLEYBALL NATIONS LEAGUE (M)" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/5mfmmkxs4l9tw8g2hje5wdj6u_image-header_pIt_1779981395000/fill/none/top/none/100/1280/720/png/image",Germania - Italia
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=173f33a98f6851179414a2fe90d93caf:8089adeafba53fb2a6e998a4a8c53683
-https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1781207406~exp%3D1781293806~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D1bdda1bff3c5cf42d63c08b4ec85842ddb71004e95dc1d5f927e91dab3cc0991%23wm%3D0~hmac%3D0ca4778f04f84755900d72036564d1e90e5095d746ef4635eab97f393a7accce/1e9579vseul6z19sqnv3lhaa6w/web/stream.mpd?channel=3931&mta=it&outlet=dazn-italy&plang=it
-
 #EXTINF:-1 group-title="DAZN COPPA DEL MONDO FIFA" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/18y161qh0tvr5n1k9ahdj5ui5_image-header_pIt_1781126112000/fill/none/top/none/100/1280/720/png/image",Corea del Sud - Repubblica Ceca
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=98923c9657fd5db5abb4c076aeda3869:2f9b277a1dfecd9c1d8554b16debd6ff
-https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1781228705~exp%3D1781315105~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Da1553ede8d9037b85c9f404f70b4fdfa011ce8ddfc92c390f5f1408f1104db55%23wm%3D0~hmac%3D65ddb2cda9f0941cad7575f12299a74d72c12fa4d4e222a5f6e7002f957f97d0/3zq05ezf58g81tpgsqdllosiv/web/stream.mpd?channel=1647&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Fri Jun 12 02:45:21 UTC 2026
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1781233205~exp%3D1781319605~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Da1553ede8d9037b85c9f404f70b4fdfa011ce8ddfc92c390f5f1408f1104db55%23wm%3D0~hmac%3Dad24d56febcac99056c6d36091c3357b15ad5f25c42f00f652d7cf1b356ba10d/3zq05ezf58g81tpgsqdllosiv/web/stream.mpd?channel=1647&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Fri Jun 12 03:00:48 UTC 2026
