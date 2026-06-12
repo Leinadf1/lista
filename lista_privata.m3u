@@ -390,4 +390,9 @@ https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1781265905~exp%3D1781352305~acl%3D%2
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=358d1f0cb3b65cfc8aed289dcdc31e16:958c696626f09f235c38f257c540c78e
 https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1781276406~exp%3D1781362806~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D5688ac122980c0845cd667378f5489e0450626051a828fb7110051c3e4666739%23wm%3D0~hmac%3D9f697587d44aaaee4a22d4d55fbfc38b8fd17591c733dfd1dd3077567ccec02b/40rd8ar1saae1uodgnwx2r2rk/web/stream.mpd?channel=1560&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Fri Jun 12 17:00:46 UTC 2026
+
+#EXTINF:-1 group-title="DAZN COPPA DEL MONDO FIFA" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/aufsvd89kcldt3zatdk9somyq_image-header_pIt_1781126112000/fill/none/top/none/100/1280/720/png/image",Canada - Bosnia-Erzegovina
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=514c9e90eb3b50ef90492b25b17b80ea:034b8018b893488e21768720331da3f8
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1781284504~exp%3D1781370904~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Dd68ace504e268d2d2312b805c719519c350818d145cbf633ce29abf5045fd1f0%23wm%3D0~hmac%3D0084d1d57c7925e55da720cf3ddd83e3f0a27ec4d8cf5d75fdb4ea27c7c2ea04/hprgils2c7261m4dp1ualpxew/web/stream.mpd?channel=1646&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Fri Jun 12 17:15:21 UTC 2026
