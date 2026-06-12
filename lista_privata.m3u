@@ -375,4 +375,9 @@ https://nodrm.online:6163/stream/test/prime/master.m3u8?u=prime_video&p=26972c05
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=98923c9657fd5db5abb4c076aeda3869:2f9b277a1dfecd9c1d8554b16debd6ff
 https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1781233205~exp%3D1781319605~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Da1553ede8d9037b85c9f404f70b4fdfa011ce8ddfc92c390f5f1408f1104db55%23wm%3D0~hmac%3Dad24d56febcac99056c6d36091c3357b15ad5f25c42f00f652d7cf1b356ba10d/3zq05ezf58g81tpgsqdllosiv/web/stream.mpd?channel=1647&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Fri Jun 12 11:45:24 UTC 2026
+
+#EXTINF:-1 group-title="DAZN VOLLEYBALL NATIONS LEAGUE (M)" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/emwjtpg7j6u2fbsvspt193ov6_image-header_pIt_1781250771000/fill/none/top/none/100/1280/720/png/image",Giappone - Polonia
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=ca0c57c03f505ba9a296335aabde7b2f:ba8a76c22c084dd64338dd1a6996e801
+https://dca-de-livedazn.daznedge.net/@tend%3A1781351410~geo%3AIT~asn%3A16232~path%3A1_1_95c81495895b089b714f2fe33ed1e7b6f2d1cfaff6e5bc57076f237ae5022c26~id%3Ac455b0b765db~tk3%3A227bc0e366ef5dabcf4c9120b17ed24769451b5a15529fd4a2274db0e49b3ded/aypcapb0ewti180c93hw38ihf/web/stream.mpd?channel=5065&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Fri Jun 12 12:00:44 UTC 2026
