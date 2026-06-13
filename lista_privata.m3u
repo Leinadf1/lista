@@ -385,4 +385,9 @@ https://dca-ac-live.cdn.indazn.com/dugongeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImt
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=92b81044df6854599e729ed056f98ec2:fe93db0aa62bf50fab90e6daa821adfa
 https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1781364305~exp%3D1781450705~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Db162d15b9133c77b07f6fc32d43085f4e2b6977a0c6cc01185490ad44c022cd1%23wm%3D0~hmac%3D3ca44b45b4f7a24c799020c4e324af46081792eb426be766796d18227c342c87/11vmrg9ap2vjv10mym2qr242h0/web/stream.mpd?channel=1560&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Sat Jun 13 17:45:21 UTC 2026
+
+#EXTINF:-1 group-title="DAZN COPPA DEL MONDO FIFA" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/8jeafv7lh1z56t65klc6b6o3k_image-header_pIt_1781126112000/fill/none/top/none/100/1280/720/png/image",Qatar - Svizzera
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=2d87c1cd99cd594d96b801cc0da213c3:e381b20acc1a4c804007aaf4c142863f
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1781373305~exp%3D1781459705~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Dbcecaef1d4a2385fcb2ddb22c3dc9a1ae62bdaca056c80bd16e3066069c873b0%23wm%3D0~hmac%3D2deb927cfcc52c9aaf8851e527994454f8257418567a6ac0aa53c390b99d38b9/wtays9ai68tx1dne3oilrmqlb/web/stream.mpd?channel=1646&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Sat Jun 13 18:00:47 UTC 2026
