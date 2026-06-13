@@ -400,4 +400,9 @@ https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1781284504~exp%3D1781370904~acl%3D%2
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=db2aa48110b95172925ae635e157b5a6:3a450740fb28bef2dcaa63318a95cd32
 https://dca-de-livedazn.daznedge.net/@tend%3A1781380505~geo%3AIT~asn%3A16232~path%3A1_1_6763504ac6af616036e71fad14474624414786ac5f78b34560fca739d00dc446~id%3Ac455b0b765db~tk3%3Ac1ea5a971c6cf9ed5fb64e18fd416526c0e0b96ce4c7119e2b04804feafd5160/z9hd159ex6921rcccd9fhic2y/web/stream.mpd?channel=5064&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Sat Jun 13 00:30:31 UTC 2026
+
+#EXTINF:-1 group-title="DAZN COPPA DEL MONDO FIFA" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/581udfk5ui9kwjmmtlnz0bkz6_image-header_pIt_1781126112000/fill/none/top/none/100/1280/720/png/image",USA - Paraguay
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=5b0e740cec395f20bc1fe1bac43277a7:b0456211e79291d1c0e39eb029e925e9
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1781311205~exp%3D1781397605~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D02b8b2c5e0b50874dbe46b431aff3fde81a826bd0550c81dfbc221947ab3a26b%23wm%3D0~hmac%3Decdbc05ebe22382881abed12258d16b67d509d5dcb406b1f5a6c6d1312ea841e/15z57erxvu5bm1or1v38bel4km/web/stream.mpd?channel=1647&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Sat Jun 13 00:45:21 UTC 2026
