@@ -400,4 +400,9 @@ https://dca-de-livedazn.daznedge.net/@tend%3A1781462410~geo%3AIT~asn%3A16232~pat
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=830bef749b9f5d509a73403d2640bde8:c215460a73daed831dd494e3f2ce8a66
 https://dca-ac-live.cdn.indazn.com/dugongeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvbzI5Mm83bGh4YWhoMThnOGtqNG93dWw1YiJdLCJleGMiOltdLCJoZWFkZXJzIjpbXSwiY28iOnRydWUsImlwIjpmYWxzZSwiYXNuIjpbIjE2MjMyIl0sImludHNpZyI6ImhZcmtHTG9rNUF2TGNEZFNpZXR3ZEpqU21taElDWTVWTGVEclpvWEdVRm8iLCJpYXQiOjE3ODEzODA1MDYsImV4cCI6MTc4MTQ2NjkwNn0.GS8W93mTxF7sebu5lzmXMv8-gjtzDP29WPpZMXcQdYw/o292o7lhxahh18g8kj4owul5b/web/stream.mpd?channel=5065&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Sat Jun 13 21:45:27 UTC 2026
+
+#EXTINF:-1 group-title="DAZN COPPA DEL MONDO FIFA" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/cd4k5q0rz33b2glho40seilcv_image-header_pIt_1781272542000/fill/none/top/none/100/1280/720/png/image",Brasile - Marocco
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=db79de2171ba593b8db28c9260cc4054:84ea3a6dbf9635b8fb06f75d2ed213b7
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1781387405~exp%3D1781473805~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Dd9b07238508b84990b53ec6f6add89df6a6e6c8baab794826ab994e93f7ecefd%23wm%3D0~hmac%3Db8553b03fc6485da3e92f1b65173daf470304b18a6502ac7a196d960207ce3b0/r2ckxxjcovt618wc63bcxchva/web/stream.mpd?channel=1647&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Sat Jun 13 22:00:43 UTC 2026
