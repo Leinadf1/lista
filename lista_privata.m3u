@@ -371,38 +371,8 @@ https://nodrm.online:6163/stream/test/prime/master.m3u8?u=prime_video&p=26972c05
 
 
 
-#EXTINF:-1 group-title="DAZN COPPA DEL MONDO FIFA" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/18y161qh0tvr5n1k9ahdj5ui5_image-header_pIt_1781126112000/fill/none/top/none/100/1280/720/png/image",Corea del Sud - Repubblica Ceca
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=98923c9657fd5db5abb4c076aeda3869:2f9b277a1dfecd9c1d8554b16debd6ff
-https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1781233205~exp%3D1781319605~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Da1553ede8d9037b85c9f404f70b4fdfa011ce8ddfc92c390f5f1408f1104db55%23wm%3D0~hmac%3Dad24d56febcac99056c6d36091c3357b15ad5f25c42f00f652d7cf1b356ba10d/3zq05ezf58g81tpgsqdllosiv/web/stream.mpd?channel=1647&mta=it&outlet=dazn-italy&plang=it
-
-#EXTINF:-1 group-title="DAZN VOLLEYBALL NATIONS LEAGUE (M)" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/emwjtpg7j6u2fbsvspt193ov6_image-header_pIt_1781250771000/fill/none/top/none/100/1280/720/png/image",Giappone - Polonia
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=ca0c57c03f505ba9a296335aabde7b2f:ba8a76c22c084dd64338dd1a6996e801
-https://dca-de-livedazn.daznedge.net/@tend%3A1781351410~geo%3AIT~asn%3A16232~path%3A1_1_95c81495895b089b714f2fe33ed1e7b6f2d1cfaff6e5bc57076f237ae5022c26~id%3Ac455b0b765db~tk3%3A227bc0e366ef5dabcf4c9120b17ed24769451b5a15529fd4a2274db0e49b3ded/aypcapb0ewti180c93hw38ihf/web/stream.mpd?channel=5065&mta=it&outlet=dazn-italy&plang=it
-
-#EXTINF:-1 group-title="DAZN COPPA DEL MONDO FIFA" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/gode7eziwfsnmh2rplkee2ur_image-header_pIt_1780823656000/fill/none/top/none/100/1280/720/png/image",Tutti Convocati
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=fda5fdb02429548495a92de169ee2e31:961d17648cc157481565aec3d37406c4
-https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1781265905~exp%3D1781352305~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Dc082af0016b5fd62905e239289efd2ebae56d6d90976632ccd7440dd43ba47a5%23wm%3D0~hmac%3D5f71d8fd5b3ec8d5cdbe73ee80c9506658f0d35806ee4f578382fcf462dbc5bd/1vf1u09428a7b17av54hu6ikzb/web/stream.mpd?channel=1560&mta=it&outlet=dazn-italy&plang=it
-
-#EXTINF:-1 group-title="DAZN COPPA DEL MONDO FIFA" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/kagy87msh3dgackn3f24rair_image-header_pIt_1781087478000/fill/none/top/none/100/1280/720/png/image",Copa Mundial | Episodio 1
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=358d1f0cb3b65cfc8aed289dcdc31e16:958c696626f09f235c38f257c540c78e
-https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1781276406~exp%3D1781362806~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D5688ac122980c0845cd667378f5489e0450626051a828fb7110051c3e4666739%23wm%3D0~hmac%3D9f697587d44aaaee4a22d4d55fbfc38b8fd17591c733dfd1dd3077567ccec02b/40rd8ar1saae1uodgnwx2r2rk/web/stream.mpd?channel=1560&mta=it&outlet=dazn-italy&plang=it
-
-#EXTINF:-1 group-title="DAZN COPPA DEL MONDO FIFA" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/aufsvd89kcldt3zatdk9somyq_image-header_pIt_1781126112000/fill/none/top/none/100/1280/720/png/image",Canada - Bosnia-Erzegovina
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=514c9e90eb3b50ef90492b25b17b80ea:034b8018b893488e21768720331da3f8
-https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1781284504~exp%3D1781370904~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Dd68ace504e268d2d2312b805c719519c350818d145cbf633ce29abf5045fd1f0%23wm%3D0~hmac%3D0084d1d57c7925e55da720cf3ddd83e3f0a27ec4d8cf5d75fdb4ea27c7c2ea04/hprgils2c7261m4dp1ualpxew/web/stream.mpd?channel=1646&mta=it&outlet=dazn-italy&plang=it
-
-#EXTINF:-1 group-title="DAZN VOLLEYBALL NATIONS LEAGUE (M)" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/9e8rbr2fa48de70wsvozx7d4j_image-header_pIt_1780469843000/fill/none/top/none/100/1280/720/png/image",Germania - Stati Uniti
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=db2aa48110b95172925ae635e157b5a6:3a450740fb28bef2dcaa63318a95cd32
-https://dca-de-livedazn.daznedge.net/@tend%3A1781380505~geo%3AIT~asn%3A16232~path%3A1_1_6763504ac6af616036e71fad14474624414786ac5f78b34560fca739d00dc446~id%3Ac455b0b765db~tk3%3Ac1ea5a971c6cf9ed5fb64e18fd416526c0e0b96ce4c7119e2b04804feafd5160/z9hd159ex6921rcccd9fhic2y/web/stream.mpd?channel=5064&mta=it&outlet=dazn-italy&plang=it
-
 #EXTINF:-1 group-title="DAZN COPPA DEL MONDO FIFA" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/581udfk5ui9kwjmmtlnz0bkz6_image-header_pIt_1781126112000/fill/none/top/none/100/1280/720/png/image",USA - Paraguay
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=5b0e740cec395f20bc1fe1bac43277a7:b0456211e79291d1c0e39eb029e925e9
-https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1781311205~exp%3D1781397605~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D02b8b2c5e0b50874dbe46b431aff3fde81a826bd0550c81dfbc221947ab3a26b%23wm%3D0~hmac%3Decdbc05ebe22382881abed12258d16b67d509d5dcb406b1f5a6c6d1312ea841e/15z57erxvu5bm1or1v38bel4km/web/stream.mpd?channel=1647&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Sat Jun 13 02:45:19 UTC 2026
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1781319606~exp%3D1781406006~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D02b8b2c5e0b50874dbe46b431aff3fde81a826bd0550c81dfbc221947ab3a26b%23wm%3D0~hmac%3Dfaf88640305c1b72cb8b2e8c22e9a222341ce66a505dc8f65e8035cd0e3fe4b7/15z57erxvu5bm1or1v38bel4km/web/stream.mpd?channel=1647&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Sat Jun 13 03:00:41 UTC 2026
