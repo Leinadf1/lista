@@ -375,4 +375,9 @@ https://nodrm.online:6163/stream/test/prime/master.m3u8?u=prime_video&p=26972c05
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=6a194582e4c85b5b98d46346c849c334:a592e7d628078217c4a3b353e65aff5d
 https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1781406007~exp%3D1781492407~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Dc6bcd6950552a7d0e27168e774a51884c3e5ddc6a7cdb1b9afe0ba73880447cb%23wm%3D0~hmac%3D064b1ff79804eb1ea93fb7576e83190b20b53a091a4b24d329b7b3710337eaf5/1oo9zccx3dzn41fkdtnv3xge62/web/stream.mpd?channel=1648&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Sun Jun 14 03:45:20 UTC 2026
+
+#EXTINF:-1 group-title="DAZN COPPA DEL MONDO FIFA" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/9xh30cyiw4c56tmw9vesdtb7j_image-header_pIt_1780575706000/fill/none/top/none/100/1280/720/png/image",Australia - Turchia
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=41c8591d9afc56c7935191a483dc348e:d6cfe2c888b605c9876849cbde9e8938
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1781409610~exp%3D1781496010~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D232341b84db2660fc4c0da4062f3ca8d8f5a86983df1ee849df6cfc8e3b54c12%23wm%3D0~hmac%3Dc77f6f1e44e1968cd78f41ef9a8e277e10f8751e545720d22c3b1f69757fd75d/1qofhwxwzm32a18a248hmpawgf/web/stream.mpd?channel=1649&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Sun Jun 14 04:00:41 UTC 2026
