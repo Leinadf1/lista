@@ -371,48 +371,8 @@ https://nodrm.online:6163/stream/test/prime/master.m3u8?u=prime_video&p=26972c05
 
 
 
-#EXTINF:-1 group-title="DAZN COPPA DEL MONDO FIFA" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/581udfk5ui9kwjmmtlnz0bkz6_image-header_pIt_1781126112000/fill/none/top/none/100/1280/720/png/image",USA - Paraguay
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=5b0e740cec395f20bc1fe1bac43277a7:b0456211e79291d1c0e39eb029e925e9
-https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1781319606~exp%3D1781406006~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D02b8b2c5e0b50874dbe46b431aff3fde81a826bd0550c81dfbc221947ab3a26b%23wm%3D0~hmac%3Dfaf88640305c1b72cb8b2e8c22e9a222341ce66a505dc8f65e8035cd0e3fe4b7/15z57erxvu5bm1or1v38bel4km/web/stream.mpd?channel=1647&mta=it&outlet=dazn-italy&plang=it
-
-#EXTINF:-1 group-title="DAZN VOLLEYBALL NATIONS LEAGUE (M)" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/3fz6rd5naxdifxnun1i5mpjcq_image-header_pIt_1780469837000/fill/none/top/none/100/1280/720/png/image",Brasile - Serbia
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=792620cb2fd35257983f87ca36878aa8:a620b8112fd5fb752e6609e78323403d
-https://dca-ac-live.cdn.indazn.com/dugongeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIveWo5Y2xyOGkxYTBhMTVlaHlmOGZqbzhqZyJdLCJleGMiOltdLCJoZWFkZXJzIjpbXSwiY28iOnRydWUsImlwIjpmYWxzZSwiYXNuIjpbIjE2MjMyIl0sImludHNpZyI6ImhZcmtHTG9rNUF2TGNEZFNpZXR3ZEpqU21taElDWTVWTGVEclpvWEdVRm8iLCJpYXQiOjE3ODEzNTg2MDcsImV4cCI6MTc4MTQ0NTAwN30.OETuRV5obqsaTDPyDUWMXLH-WYs-3FwE_MEgKtMqKJw/yj9clr8i1a0a15ehyf8fjo8jg/web/stream.mpd?channel=5071&mta=it&outlet=dazn-italy&plang=it
-
-#EXTINF:-1 group-title="DAZN COPPA DEL MONDO FIFA" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/a14zq1nia9ydsjhg8nvmguzeb_image-header_pIt_1781087625000/fill/none/top/none/100/1280/720/png/image",Copa Mundial | Episodio 2
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=92b81044df6854599e729ed056f98ec2:fe93db0aa62bf50fab90e6daa821adfa
-https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1781364305~exp%3D1781450705~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Db162d15b9133c77b07f6fc32d43085f4e2b6977a0c6cc01185490ad44c022cd1%23wm%3D0~hmac%3D3ca44b45b4f7a24c799020c4e324af46081792eb426be766796d18227c342c87/11vmrg9ap2vjv10mym2qr242h0/web/stream.mpd?channel=1560&mta=it&outlet=dazn-italy&plang=it
-
-#EXTINF:-1 group-title="DAZN COPPA DEL MONDO FIFA" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/8jeafv7lh1z56t65klc6b6o3k_image-header_pIt_1781126112000/fill/none/top/none/100/1280/720/png/image",Qatar - Svizzera
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=2d87c1cd99cd594d96b801cc0da213c3:e381b20acc1a4c804007aaf4c142863f
-https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1781373305~exp%3D1781459705~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Dbcecaef1d4a2385fcb2ddb22c3dc9a1ae62bdaca056c80bd16e3066069c873b0%23wm%3D0~hmac%3D2deb927cfcc52c9aaf8851e527994454f8257418567a6ac0aa53c390b99d38b9/wtays9ai68tx1dne3oilrmqlb/web/stream.mpd?channel=1646&mta=it&outlet=dazn-italy&plang=it
-
-#EXTINF:-1 group-title="DAZN VOLLEYBALL NATIONS LEAGUE (M)" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/4s69stx15xu7cqczqwvoki0ts_image-header_pIt_1780469819000/fill/none/top/none/100/1280/720/png/image",Bulgaria - Argentina
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=1fde75e8122353c9ad642dc65e948316:ed8959ca9bc5aed070dd08319bd373e4
-https://dca-de-livedazn.daznedge.net/@tend%3A1781462410~geo%3AIT~asn%3A16232~path%3A1_1_be15eca8fd6d7a7d557033b7be5cfa6b63f3f5e8e05a9d9a8dd73448375d8dba~id%3Ac455b0b765db~tk3%3A73d601ef1d014abed92b7ee01f1bc6151cd54a33f09b9b019eaa84bb26574ced/2moumgh1ggiw1bc0ih8sqrjq4/web/stream.mpd?channel=5067&mta=it&outlet=dazn-italy&plang=it
-
-#EXTINF:-1 group-title="DAZN VOLLEYBALL NATIONS LEAGUE (M)" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/8foxcd9bfvu56wdl4eo5kkzkq_image-header_pIt_1780469803000/fill/none/top/none/100/1280/720/png/image",Canada - Stati Uniti
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=830bef749b9f5d509a73403d2640bde8:c215460a73daed831dd494e3f2ce8a66
-https://dca-ac-live.cdn.indazn.com/dugongeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvbzI5Mm83bGh4YWhoMThnOGtqNG93dWw1YiJdLCJleGMiOltdLCJoZWFkZXJzIjpbXSwiY28iOnRydWUsImlwIjpmYWxzZSwiYXNuIjpbIjE2MjMyIl0sImludHNpZyI6ImhZcmtHTG9rNUF2TGNEZFNpZXR3ZEpqU21taElDWTVWTGVEclpvWEdVRm8iLCJpYXQiOjE3ODEzODA1MDYsImV4cCI6MTc4MTQ2NjkwNn0.GS8W93mTxF7sebu5lzmXMv8-gjtzDP29WPpZMXcQdYw/o292o7lhxahh18g8kj4owul5b/web/stream.mpd?channel=5065&mta=it&outlet=dazn-italy&plang=it
-
-#EXTINF:-1 group-title="DAZN COPPA DEL MONDO FIFA" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/cd4k5q0rz33b2glho40seilcv_image-header_pIt_1781272542000/fill/none/top/none/100/1280/720/png/image",Brasile - Marocco
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=db79de2171ba593b8db28c9260cc4054:84ea3a6dbf9635b8fb06f75d2ed213b7
-https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1781387405~exp%3D1781473805~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Dd9b07238508b84990b53ec6f6add89df6a6e6c8baab794826ab994e93f7ecefd%23wm%3D0~hmac%3Db8553b03fc6485da3e92f1b65173daf470304b18a6502ac7a196d960207ce3b0/r2ckxxjcovt618wc63bcxchva/web/stream.mpd?channel=1647&mta=it&outlet=dazn-italy&plang=it
-
-#EXTINF:-1 group-title="DAZN VOLLEYBALL NATIONS LEAGUE (M)" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/4euib33gtahx4ujvsc7s8xdmi_image-header_pIt_1779981385000/fill/none/top/none/100/1280/720/png/image",Turchia - Italia
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=82d833b196555bada5450d46c2da2f3b:bbcd469d8f65da3273d6f3b4c44ef835
-https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1781392805~exp%3D1781479205~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D6bbb94b7591dfb209e4ef6a5132bd9cb8226ab0c7104cf41beaab4159c7c3328%23wm%3D0~hmac%3Dc24176e9b1e8566a3a61b127500ddf568ffe5df68afcc3496b9964ca71236c27/a3l4di1luzy01ln0bxrkqmnpt/web/stream.mpd?channel=3929&mta=it&outlet=dazn-italy&plang=it
-
 #EXTINF:-1 group-title="DAZN COPPA DEL MONDO FIFA" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/8wa5j87zzkuh9zv341c77ym1b_image-header_pIt_1780575624000/fill/none/top/none/100/1280/720/png/image",Haiti - Scozia
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=6a194582e4c85b5b98d46346c849c334:a592e7d628078217c4a3b353e65aff5d
-https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1781398205~exp%3D1781484605~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Dc6bcd6950552a7d0e27168e774a51884c3e5ddc6a7cdb1b9afe0ba73880447cb%23wm%3D0~hmac%3Dcfe63f954700c1493be79519cda8eb26478dba8c242a6131371b83535e201af1/1oo9zccx3dzn41fkdtnv3xge62/web/stream.mpd?channel=1648&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Sun Jun 14 02:45:21 UTC 2026
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1781406007~exp%3D1781492407~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Dc6bcd6950552a7d0e27168e774a51884c3e5ddc6a7cdb1b9afe0ba73880447cb%23wm%3D0~hmac%3D064b1ff79804eb1ea93fb7576e83190b20b53a091a4b24d329b7b3710337eaf5/1oo9zccx3dzn41fkdtnv3xge62/web/stream.mpd?channel=1648&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Sun Jun 14 03:00:42 UTC 2026
