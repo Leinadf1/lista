@@ -380,4 +380,9 @@ https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1781406007~exp%3D1781492407~acl%3D%2
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=41c8591d9afc56c7935191a483dc348e:d6cfe2c888b605c9876849cbde9e8938
 https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1781409610~exp%3D1781496010~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D232341b84db2660fc4c0da4062f3ca8d8f5a86983df1ee849df6cfc8e3b54c12%23wm%3D0~hmac%3Dc77f6f1e44e1968cd78f41ef9a8e277e10f8751e545720d22c3b1f69757fd75d/1qofhwxwzm32a18a248hmpawgf/web/stream.mpd?channel=1649&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Sun Jun 14 14:45:22 UTC 2026
+
+#EXTINF:-1 group-title="DAZN COPPA DEL MONDO FIFA" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/3q2k5oii28f189ii956s6it4n_image-header_pIt_1781087853000/fill/none/top/none/100/1280/720/png/image",Copa Mundial | Episodio 3
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=2292d83f69b05988ac42967ffb7eaf27:c42f21ead51f0efb989601a8e12dbe8f
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1781448905~exp%3D1781535305~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D771361367983f77115951bdde38287c3b2bd8c5738f770f56a51192190982be1%23wm%3D0~hmac%3D77871bece00f29e8c8dc0fb3bb8aa5817be81c4b703403295beb1dc0e4afc823/qkijtnf65vmt1toc1rf5s1r0a/web/stream.mpd?channel=1560&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Sun Jun 14 15:00:44 UTC 2026
