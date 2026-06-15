@@ -1,4 +1,4 @@
-zimport { createClient } from '@vercel/kv';
+import { createClient } from '@vercel/kv';
 
 const CANALI_FISSI = [
     { name: "EUROSPORT 4K", group_title: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020019/tim-ouah/CHN43FN/MONOGRAM_ESP4K_WHITE_V2-BjK0", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport4k)/manifest.mpd", drm: '{"9ceae06c6ad34aada83ba86c0b511452":"406862beb4af1ef8fe04ba15d9936360","fcd924bd2e45470fa2ae50ef05e357c0":"266db84d3572bc889185274a90ff31df","dea135e33341468f8a4e8da806d8a6e6":"fb7423db39e6fab75056f8c83f415847","31911db90ee3410f8b38e45659d01fb1":"ac316ab7dfd2b50faf6d44633e4fedd5","a16f2a39adbb4974b8910cec8a651a09":"c2d55e0111af955f47214af209a2c468"}' },
@@ -11,7 +11,7 @@ const CANALI_FISSI = [
     { name: "EUROSPORT 1", group_title: "EUROSPORT ENG/ITA", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020000/tim-ouah/CHN43FN/MONOGRAM_ESP1_WHITE_V2-Lv2g", url: "https://wp10-s-anp33343334-live-ch-prod.prod.cdn.dmdsdp.com/live/disk1/SV09320/stb-dash-fhd-avc/SV09320.mpd", drm: '{"5697867136904350861b81589b29be76":"35d43b4d23abcfe16b451d7be92ad990","c150a0dc15b73792b9ee5ada5561f793":"d5173922c2c7a8b98510650c3cdb54cd"}' },
     { name: "EUROSPORT 2", group_title: "EUROSPORT ENG/ITA", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020001/tim-ouah/CHN43FN/MONOGRAM_ESP2_WHITE_V2-Zp7E", url: "https://wp2-s-anp31323132-live-ch-prod.prod.cdn.dmdsdp.com/live/disk1/SV09322/stb-dash-fhd-avc/SV09322.mpd", drm: '{"a1387afabdd04dfc939593cb1724e8f7":"38ecd1f7b8f248633490f6717d86e17d","72982d60457c390dbce4e8ba6aa9ff33":"5574602ec1bfeda66f459ce603dc17fd"}' },
     { name: "RSI LA 1", group_title: "RSI", logo: "https://static.wikia.nocookie.net/logopedia/images/b/be/RSI_La_1_2012.svg/revision/latest?cb=20200517122539", url: "https://wp3-s-anp31323132-live-ch-prod.prod.cdn.dmdsdp.com/live/disk1/SV09042/stb-dash-fhd-avc/SV09042.mpd", drm: '{"09af5f6eb89041ca8f5d164165142e86":"1989cc9c9ce5b2b52cb93edaaefe8420","d268d810d8a73bd8b7d54a6a087581d2":"1aaf297543168c625e05aa9e27344471"}' },
-    { name: "RSI LA 2", group_title: "RSI", logo: "https://static.wikia.nocookie.net/logopedia/images/f/f4/RSI_La_2_2012.svg/revision/latest?cb=20200517122649", url: "https://wp2-s-anp31323132-live-ch-prod.prod.cdn.dmdsdp.com/live/disk1/SV09043/stb-dash-fhd-avc/SV09043.mpd", drm: '{"117d07fd98cc46ef8e09936d0d37c506":"b9528cb3f23eaad789f0f33bf6b01868","166b2f0d56fb32d9b46d4b1ca1b5bf16":"d78ee5c91eb3b9b6d37414a4f789bc9b"}' },  
+    { name: "RSI LA 2", group_title: "RSI", logo: "https://static.wikia.nocookie.net/logopedia/images/f/f4/RSI_La_2_2012.svg/revision/latest?cb=20200517122649", url: "https://wp3-s-anp31323132-live-ch-prod.prod.cdn.dmdsdp.com/live/disk1/SV09042/stb-dash-fhd-avc/SV09042.mpd", drm: '{"117d07fd98cc46ef8e09936d0d37c506":"b9528cb3f23eaad789f0f33bf6b01868","166b2f0d56fb32d9b46d4b1ca1b5bf16":"d78ee5c91eb3b9b6d37414a4f789bc9b"}' },  
 ];
 
 const DAZN_FISSI = [
@@ -205,35 +205,8 @@ export default async function handler(req, res) {
             return res.status(200).send(encoded);
         }
 
-        let daznLineare = "";
-        try {
-            const daznResponse = await fetch(`https://nodrm.online/list/dz1.txt?t=${Date.now()}`);
-            if (daznResponse.ok) {
-                daznLineare = await daznResponse.text();
-                daznLineare = daznLineare.replace("#EXTM3U", "").trim();
-            }
-        } catch (e) { console.error("Errore DAZN fetch"); }
-
-        let lines = fileContent.split('\n');
-        let lastChampionsIdx = -1;
-        for (let i = 0; i < lines.length; i++) {
-            if (lines[i].toUpperCase().includes('GROUP-TITLE="CHAMPIONS LEAGUE"')) {
-                for (let k = i + 1; k < lines.length; k++) {
-                    if (lines[k].trim().startsWith('http')) {
-                        lastChampionsIdx = k;
-                        break;
-                    }
-                }
-            }
-        }
-
-        let finalContent = "";
-        if (lastChampionsIdx !== -1) {
-            lines.splice(lastChampionsIdx + 1, 0, "\n" + daznLineare + "\n");
-            finalContent = lines.join('\n');
-        } else {
-            finalContent = fileContent + "\n" + daznLineare;
-        }
+        // Il contenuto finale parte direttamente dalla lista base di GitHub
+        let finalContent = fileContent;
 
         if (newSkyChannels.length > 0) {
             const headerIdx = finalContent.split('\n').findIndex(l => l.trim() === '#EXTM3U');
@@ -247,13 +220,18 @@ export default async function handler(req, res) {
             }
         }
 
-        // --- CORREZIONE / AGGIUNTA QUI ---
-        // Codifica in Base64 anche la risposta finale della lista completa
-        const finalEncoded = Buffer.from(finalContent, 'utf-8').toString('base64');
-        return res.status(200).send(finalEncoded);
+        const daznFissiM3U = DAZN_FISSI.map(c => buildDaznM3U(c)).join('\n');
+        finalContent = finalContent.trimEnd() + "\n" + daznFissiM3U;
+        
+        const eurosportM3U = CANALI_FISSI.map(c => buildM3U(c)).join('\n');
+        finalContent = finalContent.trimEnd() + "\n" + eurosportM3U;
+
+        // Codifica Base64
+        const encoded = Buffer.from(finalContent, 'utf-8').toString('base64');
+        res.status(200).send(encoded);
 
     } catch (error) {
-        console.error("Errore generale nell'handler:", error);
-        return res.status(500).json({ error: "Errore interno del server" });
+        console.error(error);
+        res.status(500).json({ error: "Errore caricamento liste" });
     }
 }
