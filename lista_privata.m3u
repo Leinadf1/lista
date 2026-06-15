@@ -380,4 +380,24 @@ https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1781493005~exp%3D1781579405~acl%3D%2
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=84bfb97c5e5a5b8789633d75ac5ed71e:c9e4c13abf404f7c8586c884911ba3a0
 https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1781524807~exp%3D1781611207~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D95b385e09b46eefac6265be8b35c95977328bf244f5b8d2a63a3955cdf947e6f%23wm%3D0~hmac%3D93d1d5898871ce7ae2a6f831823508fbac0f9c72c103e6026fafd02746c2362a/35smx0qz3bjp1igs4mr6d9wjf/web/stream.mpd?channel=1560&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Mon Jun 15 13:15:31 UTC 2026
+
+#EXTINF:-1 group-title="DAZN COPPA DEL MONDO FIFA" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/c0qeafmkj9af5g6bqaagd5n72_image-header_pIt_1781519141000/fill/none/top/none/100/1280/720/png/image",Copa Mundial | Episodio 4
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=e314a39acce65f5d8c096aa9ca513920:d56a542996fc9d910d27bf76020aa520
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1781535306~exp%3D1781621706~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D4d7764035aa068fc2fecae347831b38d635f45c109119709eb802ab78d87518d%23wm%3D0~hmac%3Dff0ef940c422a1d68b29e2e2702d1df51819cdea82a22e7ff3dd0278b1daaae0/iqk5gmq8rmci1tsubfn20x6xb/web/stream.mpd?channel=1560&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN COPPA DEL MONDO FIFA" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/db6sj7z3aw4jpk32g56alys8u_image-header_pIt_1780576033000/fill/none/top/none/100/1280/720/png/image",Spagna - Capo Verde
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=64b6429070c7530e8566e04e356b450a:6993404a4bd5e941c6ecdba53bb2b8e6
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1781538606~exp%3D1781625006~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D4d0c0bc800555c468302122fcf51014a6b49f16f406ef8a02f4755e16851ea3f%23wm%3D0~hmac%3D7ad30653791cd12fa3709ef32085bc77d2f981394af597bb83b67a23e459076e/snsn4xa96fn71a913gdoir8nv/web/stream.mpd?channel=1646&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN COPPA DEL MONDO FIFA" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/cyulttmq7w7bwlgqaltc0it5u_image-header_pIt_1780576151000/fill/none/top/none/100/1280/720/png/image",Belgio - Egitto
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=ec8da80733c05c848fd99bfa3272faaa:edb40e47c93c48a51400b5f78fc6d54f
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1781550905~exp%3D1781637305~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Db5431d19e9c3244c54b9128ce75af884173a7847ebca126d9a0bc22f93268660%23wm%3D0~hmac%3D3bef7e44ec9512da58d28a17452139d3545e63b45b21bd2b1bc3e9ff5306af60/9v09seeanatp1qx5c8k3ioopi/web/stream.mpd?channel=1647&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN COPPA DEL MONDO FIFA" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/2xr4yu4a75dca2gbomobhp3z4_image-header_pIt_1780576235000/fill/none/top/none/100/1280/720/png/image",Arabia Saudita - Uruguay
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=232693a159cf5f28962f8d4e52da41d3:0706ab9bfd94488f2e05043e36eae533
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1781559906~exp%3D1781646306~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Dff6c2bbb24bfa54d35a412e6c2ae38ae945aef6dc8817b55e08794a81cec4eda%23wm%3D0~hmac%3Db70f66a7f4a7860b7d8097b4525e555061d1b9e138bde750418be5a19b72b172/vhouiinlypoh12z1vvnvjckd4/web/stream.mpd?channel=1648&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Mon Jun 15 23:00:43 UTC 2026
