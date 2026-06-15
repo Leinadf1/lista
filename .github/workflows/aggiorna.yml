@@ -14,7 +14,11 @@ jobs:
 
       - name: Download base list
         run: |
-          curl -sL -k --url "${{ secrets.URL_LISTA }}" > lista_privata.m3u
+          curl -sL -k --max-time 45 \
+            -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
+            -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" \
+            -H "Accept-Language: it-IT,it;q=0.8,en-US;q=0.5,en;q=0.3" \
+            "${{ secrets.URL_LISTA }}" > lista_privata.m3u
           echo "# Ultimo aggiornamento: $(date)" >> lista_privata.m3u
 
       - name: Save
