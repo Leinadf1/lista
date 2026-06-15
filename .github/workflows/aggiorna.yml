@@ -12,17 +12,22 @@ jobs:
         with:
           persist-credentials: true
 
-      # Installiamo Cloudflare WARP per cambiare l'IP di GitHub Actions
+      # Installiamo Cloudflare WARP (VPN)
       - name: Setup Cloudflare WARP (VPN)
         uses: fscarmen/warp-on-actions@v1.1
         with:
-          mode: bridge # Configura un proxy socks5 locale su porta 40000
+          mode: bridge # Crea un proxy socks5 locale su porta 40000
 
       - name: Download base list via WARP
         run: |
-          echo "Download in corso tramite la rete Cloudflare WARP..."
+          echo "Attesa di 10 secondi per l'attivazione completa del tunnel VPN..."
+          sleep 10
           
-          # Forziamo curl a passare per il proxy locale di WARP (porta 40000)
+          echo "Verifica del nuovo indirizzo IP virtuale:"
+          curl -sL --socks5-hostname 127.0.0.1:40000 https://ifconfig.me || echo "Impossibile verificare IP"
+          
+          echo -e "\nDownload della lista in corso..."
+          # Eseguiamo il download usando il proxy SOCKS5 della VPN funzionante
           curl -sL -k --max-time 50 \
             --socks5-hostname 127.0.0.1:40000 \
             -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
