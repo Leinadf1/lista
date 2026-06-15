@@ -124,7 +124,7 @@ export default async function handler(req, res) {
     await kv.set(sessionKey, "active", { ex: 25 });
 
     try {
-        // 1. Scarica la lista base da GitHub (in chiaro)
+        // 1. Scarica la lista base da GitHub
         const githubResponse = await fetch(`https://raw.githubusercontent.com/Leinadf1/lista/main/lista_privata.m3u?t=${Date.now()}`, {
             headers: { 
                 'Authorization': `token ${process.env.GITHUB_TOKEN}`,
@@ -205,36 +205,8 @@ export default async function handler(req, res) {
             return res.status(200).send(encoded);
         }
 
-        // DAZN dinamico
-        let daznLineare = "";
-        try {
-            const daznResponse = await fetch(`https://nodrm.online/list/dz1.txt?t=${Date.now()}`);
-            if (daznResponse.ok) {
-                daznLineare = await daznResponse.text();
-                daznLineare = daznLineare.replace("#EXTM3U", "").trim();
-            }
-        } catch (e) { console.error("Errore DAZN fetch"); }
-
-        let lines = fileContent.split('\n');
-        let lastChampionsIdx = -1;
-        for (let i = 0; i < lines.length; i++) {
-            if (lines[i].toUpperCase().includes('GROUP-TITLE="CHAMPIONS LEAGUE"')) {
-                for (let k = i + 1; k < lines.length; k++) {
-                    if (lines[k].trim().startsWith('http')) {
-                        lastChampionsIdx = k;
-                        break;
-                    }
-                }
-            }
-        }
-
-        let finalContent = "";
-        if (lastChampionsIdx !== -1) {
-            lines.splice(lastChampionsIdx + 1, 0, "\n" + daznLineare + "\n");
-            finalContent = lines.join('\n');
-        } else {
-            finalContent = fileContent + "\n" + daznLineare;
-        }
+        // Usa direttamente il contenuto della lista principale (senza DAZN dinamico)
+        let finalContent = fileContent;
 
         if (newSkyChannels.length > 0) {
             const headerIdx = finalContent.split('\n').findIndex(l => l.trim() === '#EXTM3U');
