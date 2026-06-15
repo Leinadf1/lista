@@ -12,25 +12,23 @@ jobs:
         with:
           persist-credentials: true
 
-      - name: Debug Download Base List
-        run: |
-          echo "=== INIZIO DIAGNOSTICA RETE ==="
-          echo "1. Verifica risoluzione DNS:"
-          nslookup nodrm.online || echo "Risoluzione DNS fallita"
-          
-          echo -e "\n2. Test di Ping/Traceroute rapido (MTR/Ping):"
-          ping -c 3 nodrm.online || echo "Ping non abilitato sul server di destinazione"
+      # Installiamo Cloudflare WARP per cambiare l'IP di GitHub Actions
+      - name: Setup Cloudflare WARP (VPN)
+        uses: fscarmen/warp-on-actions@v1.1
+        with:
+          mode: bridge # Configura un proxy socks5 locale su porta 40000
 
-          echo -e "\n3. Esecuzione CURL in modalità Verbose (Debug Completo):"
-          # -L (segui i redirect), -k (ignora errori certificato se presenti), -v (verbose), --trace-time (timestamp log)
-          curl -L -k -v --trace-time --max-time 30 \
+      - name: Download base list via WARP
+        run: |
+          echo "Download in corso tramite la rete Cloudflare WARP..."
+          
+          # Forziamo curl a passare per il proxy locale di WARP (porta 40000)
+          curl -sL -k --max-time 50 \
+            --socks5-hostname 127.0.0.1:40000 \
             -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
-            -w "\n=== METRICHE CONNESSIONE ===\nRisposta HTTP: %{http_code}\nTempo DNS: %{time_namelookup}s\nTempo Connessione: %{time_connect}s\nTempo SSL: %{time_appconnect}s\nTempo Totale: %{time_total}s\n" \
             "${{ secrets.URL_LISTA }}" > lista_privata.m3u
 
-          echo -e "\n4. Controllo del file scaricato:"
-          ls -la lista_privata.m3u
-          head -n 5 lista_privata.m3u
+          echo "# Ultimo aggiornamento: $(date)" >> lista_privata.m3u
 
       - name: Save
         run: |
