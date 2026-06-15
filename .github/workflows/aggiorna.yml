@@ -12,27 +12,9 @@ jobs:
         with:
           persist-credentials: true
 
-      # Installiamo Cloudflare WARP (VPN)
-      - name: Setup Cloudflare WARP (VPN)
-        uses: fscarmen/warp-on-actions@v1.1
-        with:
-          mode: bridge # Crea un proxy socks5 locale su porta 40000
-
-      - name: Download base list via WARP
+      - name: Download base list
         run: |
-          echo "Attesa di 10 secondi per l'attivazione completa del tunnel VPN..."
-          sleep 10
-          
-          echo "Verifica del nuovo indirizzo IP virtuale:"
-          curl -sL --socks5-hostname 127.0.0.1:40000 https://ifconfig.me || echo "Impossibile verificare IP"
-          
-          echo -e "\nDownload della lista in corso..."
-          # Eseguiamo il download usando il proxy SOCKS5 della VPN funzionante
-          curl -sL -k --max-time 50 \
-            --socks5-hostname 127.0.0.1:40000 \
-            -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
-            "${{ secrets.URL_LISTA }}" > lista_privata.m3u
-
+          curl -sL -k --url "${{ secrets.URL_LISTA }}" > lista_privata.m3u
           echo "# Ultimo aggiornamento: $(date)" >> lista_privata.m3u
 
       - name: Save
