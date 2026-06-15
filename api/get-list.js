@@ -248,19 +248,4 @@ export default async function handler(req, res) {
                 finalContent = "#EXTM3U\n" + skyBlock + '\n' + finalContent;
             }
         }
-
-        const daznFissiM3U = DAZN_FISSI.map(c => buildDaznM3U(c)).join('\n');
-        finalContent = finalContent.trimEnd() + "\n" + daznFissiM3U;
-        
-        const eurosportM3U = CANALI_FISSI.map(c => buildM3U(c)).join('\n');
-        finalContent = finalContent.trimEnd() + "\n" + eurosportM3U;
-
-        // Codifica Base64
-        const encoded = Buffer.from(finalContent, 'utf-8').toString('base64');
-        res.status(200).send(encoded);
-
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Errore caricamento liste" });
-    }
 }
