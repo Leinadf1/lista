@@ -247,5 +247,4 @@ export default async function handler(req, res) {
             } else {
                 finalContent = "#EXTM3U\n" + skyBlock + '\n' + finalContent;
             }
-        }
 }
