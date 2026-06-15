@@ -12,16 +12,27 @@ jobs:
         with:
           persist-credentials: true
 
-      - name: Download base list
+      - name: Download and Encrypt base list
         run: |
-          curl -sL -k "${{ secrets.URL_LISTA }}" > lista_privata.m3u
-          echo "# Ultimo aggiornamento: $(date)" >> lista_privata.m3u
-          echo "Aggiornato il: $(date)" > last_sync.txt
+          # Scarica la lista
+          curl -sL -k "${{ secrets.URL_LISTA }}" > lista_chiaro.m3u
+          echo "# Ultimo aggiornamento: $(date)" >> lista_chiaro.m3u
+          
+          # Cifra con XOR e codifica in Base64 usando la chiave segreta
+          node -e "
+            const fs = require('fs');
+            const key = process.env.ENCRYPTION_KEY;
+            const plain = fs.readFileSync('lista_chiaro.m3u');
+            const cipher = Buffer.from(plain.map((b, i) => b ^ key.charCodeAt(i % key.length)));
+            fs.writeFileSync('lista_privata.m3u', cipher.toString('base64'));
+          "
+        env:
+          ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
 
       - name: Save
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add lista_privata.m3u last_sync.txt
+          git add lista_privata.m3u
           git commit -m "Update list $(date +'%H:%M')" || echo "No changes"
           git push origin main
