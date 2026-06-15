@@ -375,4 +375,9 @@ https://nodrm.online:6163/stream/test/prime/master.m3u8?u=prime_video&p=26972c05
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=dd4f3e29b6525bb39f6fd7bfe545de5b:b7f4e106f1b4037dbbb769fa32aeab01
 https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1781493005~exp%3D1781579405~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D1ef996fa82e213ed239e10c8b63eea6d5dc544b096e6ec361e2d2db47ac6ed82%23wm%3D0~hmac%3D7d0e476e126d40f9c4619bad2e7a834fdf18d74d854ab4cb0c27e911d9440b53/el7t8lvv6fs81oppo2qxzx0jk/web/stream.mpd?channel=1649&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Mon Jun 15 11:45:32 UTC 2026
+
+#EXTINF:-1 group-title="DAZN COPPA DEL MONDO FIFA" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/b2808nbsa8jnjil2e98q90ybe_image-header_pIt_1780823656000/fill/none/top/none/100/1280/720/png/image",Tutti Convocati
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=84bfb97c5e5a5b8789633d75ac5ed71e:c9e4c13abf404f7c8586c884911ba3a0
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1781524807~exp%3D1781611207~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D95b385e09b46eefac6265be8b35c95977328bf244f5b8d2a63a3955cdf947e6f%23wm%3D0~hmac%3D93d1d5898871ce7ae2a6f831823508fbac0f9c72c103e6026fafd02746c2362a/35smx0qz3bjp1igs4mr6d9wjf/web/stream.mpd?channel=1560&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Mon Jun 15 12:00:47 UTC 2026
