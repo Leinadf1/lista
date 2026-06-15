@@ -14,7 +14,17 @@ jobs:
 
       - name: Download base list
         run: |
-          curl -sL -k --url "${{ secrets.URL_LISTA }}" > lista_privata.m3u
+          # Tentativo 1: Con il primo proxy europeo
+          curl -sL -k --max-time 30 \
+            --proxy "http://45.150.147.118:3128" \
+            -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
+            "${{ secrets.URL_LISTA }}" > lista_privata.m3u || \
+          # Tentativo 2: Proxy di riserva se il primo fallisce
+          curl -sL -k --max-time 30 \
+            --proxy "http://185.162.228.167:80" \
+            -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
+            "${{ secrets.URL_LISTA }}" > lista_privata.m3u
+
           echo "# Ultimo aggiornamento: $(date)" >> lista_privata.m3u
 
       - name: Save
