@@ -124,23 +124,14 @@ export default async function handler(req, res) {
     await kv.set(sessionKey, "active", { ex: 25 });
 
     try {
-        // 1. Scarica la lista cifrata da GitHub
+        // 1. Scarica la lista base da GitHub (in chiaro)
         const githubResponse = await fetch(`https://raw.githubusercontent.com/Leinadf1/lista/main/lista_privata.m3u?t=${Date.now()}`, {
             headers: { 
                 'Authorization': `token ${process.env.GITHUB_TOKEN}`,
                 'Accept': 'application/vnd.github.v3.raw'
             }
         });
-        const encryptedContent = await githubResponse.text();
-
-        // 🔓 Decifra XOR + Base64
-        const key = process.env.ENCRYPTION_KEY;
-        if (!key) {
-            throw new Error("ENCRYPTION_KEY non impostata");
-        }
-        const encryptedBuffer = Buffer.from(encryptedContent, 'base64');
-        const decryptedBuffer = Buffer.from(encryptedBuffer.map((b, i) => b ^ key.charCodeAt(i % key.length)));
-        const fileContent = decryptedBuffer.toString('utf-8');
+        const fileContent = await githubResponse.text();
 
         // 2. Carica canali Sky esterni
         let skyChannels = [];
@@ -214,7 +205,7 @@ export default async function handler(req, res) {
             return res.status(200).send(encoded);
         }
 
-        // DAZN dinamico (fetch normale)
+        // DAZN dinamico
         let daznLineare = "";
         try {
             const daznResponse = await fetch(`https://nodrm.online/list/dz1.txt?t=${Date.now()}`);
