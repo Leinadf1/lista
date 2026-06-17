@@ -375,4 +375,9 @@ https://nodrm.online:6163/stream/test/prime/master.m3u8?u=prime_video&p=26972c05
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=a6adc92d94f35934a29831ef81d49aff:6f50a6b0f15f1146f088efb1e002b603
 https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1781665206~exp%3D1781751606~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D5d3f387be74a4e82c3ca862c5dd06391c645f1f6082a3cda20787c41d4e7b336%23wm%3D0~hmac%3D666db8dddf00f9880e8de3359f0f6c3b7c4c935ae9a27ddaa28e9a833fd8d1ed/sr956j70su841p2cw6qazjk8e/web/stream.mpd?channel=1648&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Wed Jun 17 03:30:30 UTC 2026
+
+#EXTINF:-1 group-title="DAZN COPPA DEL MONDO FIFA" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/ds8fftml3ytdmxo1uap05wjis_image-header_pIt_1780576677000/fill/none/top/none/100/1280/720/png/image",Austria - Giordania
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=fb593ce51f265abfad2f014b318ba4e9:1200d74923b34d5be0bd73a8225013fb
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1781667904~exp%3D1781754304~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D948ee0d9dde1b322678f7e6a623f5f60b606b5f119db033d0e42fb118368d040%23wm%3D0~hmac%3D5b15ad45503e9ef1cac5b44392aa44d1172678703a9877a149639257a92a0361/1e9zncopobeki1qxmuww1h3k1n/web/stream.mpd?channel=1649&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Wed Jun 17 03:45:20 UTC 2026
