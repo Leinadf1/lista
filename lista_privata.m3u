@@ -385,4 +385,14 @@ https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1781667904~exp%3D1781754304~acl%3D%2
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=145413c1ac245ea9ab706a94be22b7e9:ba58d50ab044aa8c7b50d4f4230d930b
 https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1781682306~exp%3D1781768706~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D2995da95e4c41e12639a53fe224dd3237c3f965ae145d9ed225e888dc1e6759e%23wm%3D0~hmac%3Dde6b469e38f033e7731a7ee6976b993d6cc8df2a54088c034e4b9aebaaeed18f/3nrzr46zmbiy17hf9lnq0kapi/web/stream.mpd?channel=6949&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Wed Jun 17 17:00:48 UTC 2026
+
+#EXTINF:-1 group-title="DAZN COPPA DEL MONDO FIFA" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/20fk6id37tno2quikifwlavu8_image-header_pIt_1780576733000/fill/none/top/none/100/1280/720/png/image",Portogallo - RD Congo
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=a75a926f2ac6588f93917590f404ad2a:22d3c28d7a2cddec84161aacdab48f8e
+https://dch-tm-livedazn.dazn.ticdn.it/@st%3D1781716440~exp%3D1781802840~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D8ec8ed77352b384e32a4f77bd4159ff15493f0680527338f9d76b654277b4583~hmac%3D3df1dad229e4a1a64b0b4123ce4aa0f20310358099656c12dfa9827667e620cc/15qqbfghmcy6317klhb75ddjaf/web/stream.mpd?channel=1646&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 group-title="DAZN VOLLEYBALL NATIONS LEAGUE (F)" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/95iobbmhk1m1jxxc4qoydp2rv_image-header_pIt_1780339781000/fill/none/top/none/100/1280/720/png/image",Turchia - Belgio
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=1cee607ff248574a927a967190def4e0:f921676d521e46fb695a3753e503d307
+https://dca-ac-live.cdn.indazn.com/dugongeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvd2xycmJkZGZicjVvMWIwM25sOHhiMGJzZyJdLCJleGMiOltdLCJoZWFkZXJzIjpbXSwiY28iOnRydWUsImlwIjpmYWxzZSwiYXNuIjpbIjE2MjMyIl0sImludHNpZyI6ImhZcmtHTG9rNUF2TGNEZFNpZXR3ZEpqU21taElDWTVWTGVEclpvWEdVRm8iLCJpYXQiOjE3ODE3MTY0NDMsImV4cCI6MTc4MTgwMjg0M30.DH2U1ZjXhZ_w-_SXe1NoyLjHOlMJ43DSoS7UOu10wU8/wlrrbddfbr5o1b03nl8xb0bsg/web/stream.mpd?channel=5063&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Wed Jun 17 17:15:41 UTC 2026
