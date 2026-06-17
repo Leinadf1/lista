@@ -395,4 +395,9 @@ https://dch-tm-livedazn.dazn.ticdn.it/@st%3D1781716440~exp%3D1781802840~acl%3D%2
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=1cee607ff248574a927a967190def4e0:f921676d521e46fb695a3753e503d307
 https://dca-ac-live.cdn.indazn.com/dugongeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvd2xycmJkZGZicjVvMWIwM25sOHhiMGJzZyJdLCJleGMiOltdLCJoZWFkZXJzIjpbXSwiY28iOnRydWUsImlwIjpmYWxzZSwiYXNuIjpbIjE2MjMyIl0sImludHNpZyI6ImhZcmtHTG9rNUF2TGNEZFNpZXR3ZEpqU21taElDWTVWTGVEclpvWEdVRm8iLCJpYXQiOjE3ODE3MTY0NDMsImV4cCI6MTc4MTgwMjg0M30.DH2U1ZjXhZ_w-_SXe1NoyLjHOlMJ43DSoS7UOu10wU8/wlrrbddfbr5o1b03nl8xb0bsg/web/stream.mpd?channel=5063&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Wed Jun 17 18:45:27 UTC 2026
+
+#EXTINF:-1 group-title="DAZN COPPA DEL MONDO FIFA" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/aq9txlqsdwgufuc8wo88npm5y_image-header_pIt_1780576796000/fill/none/top/none/100/1280/720/png/image",Inghilterra - Croazia
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=c6a49addb1ec50ee85fb581c75e47305:87d07808926be3f74d342ac88d71d3fc
+https://dch-tm-livedazn.dazn.ticdn.it/@st%3D1781722506~exp%3D1781808906~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D69c5ea0fb6b7582eb02348dff5505daded1b5360391cc3fd6fa21fbc5cf46623~hmac%3D9d1ebd950bb254997bd9e391450af4ed6f7f6ebb6ee7089ec9ebe57355e5fd24/1ht5nrlcpsg521mjo6nk5bibtq/web/stream.mpd?channel=1647&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Wed Jun 17 19:00:48 UTC 2026
