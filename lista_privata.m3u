@@ -390,4 +390,9 @@ https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1781784005~exp%3D1781870405~acl%3D%2
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=8b50833bf32c5732b6e3a3a9d8765345:fa409d80c8d8c1e0effeccdd82ced52f
 https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1781794505~exp%3D1781880905~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D8b73369092ec41cde128ebae444c1da8351936650c5d41c1df748db83387112d%23wm%3D0~hmac%3D5c0d8a07863978367bddcf58bddafd4038b9b44eee6e531fa7a7e31bd18e2225/19uzil2b7pw1u1233ykwgjz0ob/web/stream.mpd?channel=1560&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Thu Jun 18 15:30:43 UTC 2026
+
+#EXTINF:-1 group-title="DAZN COPPA DEL MONDO FIFA" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/3dam9kbncp90rmfkpb6bai9jr_image-header_pIt_1780577032000/fill/none/top/none/100/1280/720/png/image",Repubblica Ceca - Sudafrica
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=cdf34bb351595131bb85c1761682834a:e5f7be4c528866951765741c2367df1d
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1781797507~exp%3D1781883907~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Da7afafdab2bdcc8491bbd9e972faffc5eee675879c1a24ae4d139b2f25b00384%23wm%3D0~hmac%3Dfcc31e30d35df927d0bec92d0662e28b4916cf770a25a375489d7b8320e24020/1dvv36gw57su017mcr84kkyvwj/web/stream.mpd?channel=1646&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Thu Jun 18 15:45:27 UTC 2026
