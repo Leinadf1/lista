@@ -126,7 +126,7 @@ export default async function handler(req, res) {
     await kv.set(sessionKey, "active", { ex: 25 });
 
     try {
-        // 1. Scarica la lista base dal Gist Segreto usando la nuova variabile dedicata protetta
+        // 1. Scarica la lista base dal Gist Segreto usando la variabile d'ambiente protetta di Vercel
         const githubResponse = await fetch(`${process.env.GIST_RAW_URL}?t=${Date.now()}`);
         const fileContent = await githubResponse.text();
 
@@ -202,7 +202,6 @@ export default async function handler(req, res) {
             return res.status(200).send(encoded);
         }
 
-        // Usa direttamente il contenuto della lista principale (senza DAZN dinamico)
         let finalContent = fileContent;
 
         if (newSkyChannels.length > 0) {
@@ -217,11 +216,9 @@ export default async function handler(req, res) {
             }
         }
 
-        // Aggiunge prima il DAZN fisso (così appare sopra Eurosport)
         const daznFissiM3U = DAZN_FISSI.map(c => buildDaznM3U(c)).join('\n');
         finalContent = finalContent.trimEnd() + "\n" + daznFissiM3U;
 
-        // Poi gli Eurosport fissi
         const eurosportM3U = CANALI_FISSI.map(c => buildM3U(c)).join('\n');
         finalContent = finalContent.trimEnd() + "\n" + eurosportM3U;
 
