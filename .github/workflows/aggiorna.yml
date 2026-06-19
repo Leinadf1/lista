@@ -17,10 +17,10 @@ jobs:
           curl -sL -k --url "${{ secrets.URL_LISTA }}" > lista_privata.m3u
           echo "# Ultimo aggiornamento: $(date)" >> lista_privata.m3u
 
-      - name: Save
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add lista_privata.m3u
-          git commit -m "Update list $(date +'%H:%M')" || echo "No changes"
-          git push origin main
+      - name: Aggiorna il Gist Segreto
+        uses: exuanbo/actions-deploy-gist@v1
+        with:
+          token: ${{ secrets.GIST_TOKEN }}
+          gist_id: 6683b8b70c663778105f98b0266979a3
+          file_path: lista_privata.m3u
+          file_type: text
