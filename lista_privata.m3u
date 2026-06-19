@@ -410,4 +410,9 @@ https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1781805610~exp%3D1781892010~acl%3D%2
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=d45c8ac35e9a56c1ae4e82de38e52e7d:7ecdd89cd5cbd0b8b9cf956e7cf80345
 https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1781819105~exp%3D1781905505~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D7dce7564f704d8b685c1efb8cddfd54d0713553390c189b73c7ca0ee40d4482f%23wm%3D0~hmac%3D53969846e0878d2840240adc0a1778d3803512bd4ba3218d8f3c98209520ce6b/cmhc8d711xh71rgmk4mayybdm/web/stream.mpd?channel=1648&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Fri Jun 19 00:30:34 UTC 2026
+
+#EXTINF:-1 group-title="DAZN COPPA DEL MONDO FIFA" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/2ndutfb17pb5sv95va9kvidtc_image-header_pIt_1780577310000/fill/none/top/none/100/1280/720/png/image",Messico - Corea del Sud
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=f5e76787e169546986f79bdb7a03b9aa:d49c9e0e19dd8986ba92e115708f63df
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1781829907~exp%3D1781916307~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3Dfacde24b37f7d3d644a36ab72f8592a59f7c4e15a919da29e690061b421cd32f%23wm%3D0~hmac%3Dc21616f9e3b2f7602e531f6637f533b5bfc26e340c0496183b810185a74f6441/2qv1sp4218cr1poyxp1h4pxbx/web/stream.mpd?channel=1649&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Fri Jun 19 00:45:20 UTC 2026
