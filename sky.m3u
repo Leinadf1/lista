@@ -89,12 +89,6 @@ https://g006-lin-it-cmaf-prd-cf.pcdn07.cssott02.com/v~1-0-0_e~1781971772_f~0_g~1
 #KODIPROP:inputstream.adaptive.license_key=11187f0771eface703670c2e03f25c60:f1a4f55221438edfad33f71ce8d11e53
 https://g006-lin-it-cmaf-prd-cf.pcdn07.cssott02.com/v~1-0-0_e~1781971771_f~0_g~1_s~6e5a852b-a583-41b8-bc43-71b876e8d2af_u~0dd96564587fac598e695339a3aca9367db5494019cdd2b7567b04cd465abfbaed65c29353ca67ed8bead8fe496a4867_k~A_l~60_x~0459c460ac900e57bbfc5cb8a361fe61/nowitlin2/Content/CMAF_CTR_H1/Live/channel(skycinemadrama)/master_2hr-all.mpd
 
-#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Sky_Cinema_Due_-_2021_logo.svg/1280px-Sky_Cinema_Due_-_2021_logo.svg.png?_=20250819043219" group-title="SKY ITALIA",Sky Cinema Due
-#KODIPROP:inputstream.adaptive.manifest_type=mpd
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key=1118b6884f019a3b4c9657a368e7e6d4:f567d90f134739c815029b7df7de8648
-https://g006-lin-it-cmaf-prd-cf.pcdn07.cssott02.com/v~1-0-0_e~1779387242_f~0_g~1_s~33a1fa80-8885-423a-9a57-7102857439b1_u~34ad4d27b4be8814a226e5d1988e5ef2672e52641e8a9810966a6836e1d0b47e6d7cd465a11781e84822643f5d38a1dc_k~A_l~62_x~e8ce71c2f6c5860b3bafc75593faedd8/nowitlin2/Content/CMAF_CTR_H1/Live/channel(skycinemastories)/master_2hr-all.mpd
-
 #EXTINF:-1 tvg-logo="https://liveac.net/sb/storage/v1/object/public/logos/ext_sky_cinema_illumination.png" group-title="SKY ITALIA",Sky Cinema Illumination
 #KODIPROP:inputstream.adaptive.manifest_type=mpd
 #KODIPROP:inputstream.adaptive.license_type=clearkey
