@@ -21,6 +21,6 @@ jobs:
         uses: exuanbo/actions-deploy-gist@v1
         with:
           token: ${{ secrets.GIST_TOKEN }}
-          gist_id: 6683b8b70c663778105f98b0266979a3
+          gist_id: ${{ secrets.GIST_ID }}
           file_path: lista_privata.m3u
           file_type: text
