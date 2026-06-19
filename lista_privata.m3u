@@ -380,4 +380,9 @@ https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1781838006~exp%3D1781924406~acl%3D%2
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=539acb46e3ae5eaaac0ecc3c46085a3b:88ba376b66606075b285da2ffc497e33
 https://dch-tm-livedazn.dazn.ticdn.it/@st%3D1781871907~exp%3D1781958307~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D7fef94a20c991b5b61eb7c6e3e40ef0b65170823225cfedaa6c15f1c0b898f72~hmac%3D6dc29212e11762826f3c2768bdf5e02790d40e409a49e29a0a4f2ab4edba7319/ah14b0d3dq0d1ovujzmsvhknn/web/stream.mpd?channel=1560&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Fri Jun 19 14:45:22 UTC 2026
+
+#EXTINF:-1 group-title="DAZN COPPA DEL MONDO FIFA" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/dh0m3o5e5r88ehz6tms7risp6_image-header_pIt_1781519359000/fill/none/top/none/100/1280/720/png/image",Copa Mundial | Episodio 8
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=6b22c2bea21a5b669a1897b28839d8b0:61c8c3c69584f819268a1b525b1bcabc
+https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1781880904~exp%3D1781967304~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D283f2dbe0abcac3f68e8c7dc5b9ce758dc4fd3fb1f6be425fd5157728ae0c74d%23wm%3D0~hmac%3Dc344b0046a61a52419280d93ad282981b0a0f24c81a2b9ff93e94085d2432b6b/fid8tpolaa0217s4m9rukwdt6/web/stream.mpd?channel=1560&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Fri Jun 19 15:00:46 UTC 2026
