@@ -6,7 +6,7 @@ const CANALI_FISSI = [
     { name: "EUROSPORT 2", group_title: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020001/tim-ouah/CHN43FN/MONOGRAM_ESP2_WHITE_V2-Zp7E", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport2)/manifest.mpd", drm: '{"edb40da832c44957b49a30351ebccee3":"37979044fd480ae10a441c6c8547b38a"}' },
     { name: "EUROSPORT 3", group_title: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020002/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-yiID", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport3)/manifest.mpd", drm: '{"1f0db319a1e3492ca02d1dbcfef176ac":"ef3bc3b15caf33064d1e8f9d0b46b4b1"}' },
     { name: "EUROSPORT 4", group_title: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020003/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-3YSY", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport4)/manifest.mpd", drm: '{"eade7aa2314a407da820d6c81167cb90":"c6b701dae6c8bdead2cbe6ecde0769bb"}' },
-    { name: "EUROSPORT 5", group_title: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020004/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-sv5m", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport5)/manifest.mpd", drm: '{"da9e85e0a6f4459f9344cdb544c22a4e":"6af3a1f0911da1e5f6a196872ab5fbfe"}' },
+    { name: "EUROSPORT 5", group_title: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020004/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-sv5m", url: "https://timlivetu0.cb.tim.cptech.pro/Content/DASH/Live/channel(eurosport5)/manifest.mpd", drm: '{"da9e85e0a6f4459f9344cdb544c22a4e":"6af3a1f0911da1e5f6a196872ab5fbfe"}' },
     { name: "EUROSPORT 6", group_title: "EUROSPORT", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020005/tim-ouah/CHN43FN/MONOGRAM_ESP360_WHITE_V4-H53i", url: "https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport6)/manifest.mpd", drm: '{"7395986fd46d4d0ab472471c224621e3":"adf1f40a8db52e319a18ca00a4dbe0aa"}' },
     { name: "EUROSPORT 1", group_title: "EUROSPORT ENG/ITA", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020000/tim-ouah/CHN43FN/MONOGRAM_ESP1_WHITE_V2-Lv2g", url: "https://wp10-s-anp33343334-live-ch-prod.prod.cdn.dmdsdp.com/live/disk1/SV09320/stb-dash-fhd-avc/SV09320.mpd", drm: '{"5697867136904350861b81589b29be76":"35d43b4d23abcfe16b451d7be92ad990","c150a0dc15b73792b9ee5ada5561f793":"d5173922c2c7a8b98510650c3cdb54cd"}' },
     { name: "EUROSPORT 2", group_title: "EUROSPORT ENG/ITA", logo: "https://thumb.prod.front.tim.cptech.pro/http/unsafe/120x90/img-cdn.prod.catalog.tim.cptech.pro/p1/channel/90020001/tim-ouah/CHN43FN/MONOGRAM_ESP2_WHITE_V2-Zp7E", url: "https://wp2-s-anp31323132-live-ch-prod.prod.cdn.dmdsdp.com/live/disk1/SV09322/stb-dash-fhd-avc/SV09322.mpd", drm: '{"a1387afabdd04dfc939593cb1724e8f7":"38ecd1f7b8f248633490f6717d86e17d","72982d60457c390dbce4e8ba6aa9ff33":"5574602ec1bfeda66f459ce603dc17fd"}' },
@@ -126,13 +126,8 @@ export default async function handler(req, res) {
     await kv.set(sessionKey, "active", { ex: 25 });
 
     try {
-        // 1. Scarica la lista base da GitHub
-        const githubResponse = await fetch(`https://raw.githubusercontent.com/Leinadf1/lista/main/lista_privata.m3u?t=${Date.now()}`, {
-            headers: { 
-                'Authorization': `token ${process.env.GITHUB_TOKEN}`,
-                'Accept': 'application/vnd.github.v3.raw'
-            }
-        });
+        // 1. Scarica la lista base dal Gist Segreto usando la nuova variabile dedicata protetta
+        const githubResponse = await fetch(`${process.env.GIST_RAW_URL}?t=${Date.now()}`);
         const fileContent = await githubResponse.text();
 
         // 2. Carica canali Sky esterni
