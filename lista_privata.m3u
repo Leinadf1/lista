@@ -385,4 +385,9 @@ https://dch-tm-livedazn.dazn.ticdn.it/@st%3D1781871907~exp%3D1781958307~acl%3D%2
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=6b22c2bea21a5b669a1897b28839d8b0:61c8c3c69584f819268a1b525b1bcabc
 https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1781880904~exp%3D1781967304~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D283f2dbe0abcac3f68e8c7dc5b9ce758dc4fd3fb1f6be425fd5157728ae0c74d%23wm%3D0~hmac%3Dc344b0046a61a52419280d93ad282981b0a0f24c81a2b9ff93e94085d2432b6b/fid8tpolaa0217s4m9rukwdt6/web/stream.mpd?channel=1560&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Fri Jun 19 16:15:23 UTC 2026
+
+#EXTINF:-1 group-title="DAZN VOLLEYBALL NATIONS LEAGUE (F)" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/armgklzsge3ymeegwkg5jr7ff_image-header_pIt_1780339730000/fill/none/top/none/100/1280/720/png/image",Belgio - Germania
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=e089b547159a547c813b796bf21913c7:429885c0a66eddacc437c70f77e8a590
+https://dca-de-livedazn.daznedge.net/@tend%3A1781972706~geo%3AIT~asn%3A16232~path%3A1_1_bcc27d88bf113534cbd0c0d3fb9db65cb3fe7b57fee932f188d5b835a307ac41~id%3Ac455b0b765db~tk3%3A150f971f312120f404d76ee67a0efd254138c903cded3ee18dc8782f76b95488/15hg4otaj5sd51ucsfcnx6gpmy/web/stream.mpd?channel=5065&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Fri Jun 19 16:30:34 UTC 2026
