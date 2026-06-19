@@ -390,4 +390,9 @@ https://dcb-tm-livedazn.dazn.ticdn.it/@st%3D1781880904~exp%3D1781967304~acl%3D%2
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=e089b547159a547c813b796bf21913c7:429885c0a66eddacc437c70f77e8a590
 https://dca-de-livedazn.daznedge.net/@tend%3A1781972706~geo%3AIT~asn%3A16232~path%3A1_1_bcc27d88bf113534cbd0c0d3fb9db65cb3fe7b57fee932f188d5b835a307ac41~id%3Ac455b0b765db~tk3%3A150f971f312120f404d76ee67a0efd254138c903cded3ee18dc8782f76b95488/15hg4otaj5sd51ucsfcnx6gpmy/web/stream.mpd?channel=5065&mta=it&outlet=dazn-italy&plang=it
-# Ultimo aggiornamento: Fri Jun 19 17:45:25 UTC 2026
+
+#EXTINF:-1 group-title="DAZN COPPA DEL MONDO FIFA" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/5ulnsqed8io4axy2ulc5y5sdh_image-header_pIt_1780577359000/fill/none/top/none/100/1280/720/png/image",USA - Australia
+#KODIPROP:inputstream.adaptive.license_type=clearkey
+#KODIPROP:inputstream.adaptive.license_key=f851e5cbc40657bfb3d74cc4c709f003:9ae1f36c627c6c818fdc55fcb70fec74
+https://dca-tm-livedazn.dazn.ticdn.it/@st%3D1781892006~exp%3D1781978406~acl%3D%2F*~id%3Dc455b0b765db~data%3Dcountry%3Dit%23path%3D1s%2C1d%23hashp%3D23a02baf3748da1d6628b8b2ab3901f64dc8ec78ba6d72eedde7339c9a2619ce%23wm%3D0~hmac%3D7a20cf9fe6c920de7603b215d67b1f88822444486da7d84d5869801f0ad50256/n0f7vghq58iu1688veps1o5dt/web/stream.mpd?channel=1646&mta=it&outlet=dazn-italy&plang=it
+# Ultimo aggiornamento: Fri Jun 19 18:00:44 UTC 2026
