@@ -1,11 +1,11 @@
-// AutoDecrypt.js (versione per GitHub Actions)
+// AutoDecrypt.js – versione per GitHub Actions
 import crypto from 'crypto';
 import fs from 'fs';
 
-// Legge i parametri dalle variabili d'ambiente
+// Legge i parametri dalle variabili d'ambiente (segrete)
 const URLS = process.env.SKY_SOURCE_URL ? [process.env.SKY_SOURCE_URL] : ["https://skycript.blacksea2026.workers.dev/"];
 const DECRYPT_PASSWORD = process.env.SKY_DECRYPT_PASSWORD;
-const OUTPUT_FILE = 'sky.m3u';  // Salva direttamente nella working directory
+const OUTPUT_FILE = 'sky.m3u';  // salva nella working directory del runner
 
 if (!DECRYPT_PASSWORD) {
     console.error("❌ Variabile SKY_DECRYPT_PASSWORD non impostata");
@@ -14,7 +14,6 @@ if (!DECRYPT_PASSWORD) {
 
 function decryptM3U(base64Data, password) {
     const encryptedData = Buffer.from(base64Data, 'base64');
-    
     if (encryptedData.length < 32) {
         throw new Error("I dati cifrati ricevuti sono troppo corti o corrotti.");
     }
@@ -22,11 +21,10 @@ function decryptM3U(base64Data, password) {
     const iv = encryptedData.subarray(0, 16);
     const ciphertext = encryptedData.subarray(16);
     const key = crypto.createHash('sha256').update(password).digest();
-    
+
     const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
     let decrypted = decipher.update(ciphertext);
     decrypted = Buffer.concat([decrypted, decipher.final()]);
-    
     return decrypted.toString('utf8');
 }
 
@@ -64,17 +62,18 @@ async function fetchAndDecrypt() {
     }
 
     console.log(`📥 Payload ricevuto. Avvio decodifica crittografica...`);
-    
+
     try {
         const decryptedPlaylist = decryptM3U(cleanBlob, DECRYPT_PASSWORD);
-        
+
+        // Pulisce intestazione multipla #EXTM3U e formatta
         let cleanedHeader = decryptedPlaylist.replace(/^(?:\s*#EXTM3U\s*)+/i, '');
         cleanedHeader = "#EXTM3U\n" + cleanedHeader;
         const formattedPlaylist = cleanedHeader.replace(/#EXTINF/g, '\n#EXTINF');
-        
+
         console.log(`💾 Scrittura del file ${OUTPUT_FILE} in corso...`);
         fs.writeFileSync(OUTPUT_FILE, formattedPlaylist, 'utf8');
-        console.log(`✅ File ${OUTPUT_FILE} creato con successo.`);
+        console.log(`\n✅ Successo! Playlist salvata in: ${OUTPUT_FILE}\n`);
     } catch (error) {
         console.error("\n❌ Errore durante la decifratura o il salvataggio:");
         console.error(error.message);
@@ -82,4 +81,5 @@ async function fetchAndDecrypt() {
     }
 }
 
+// Avvia l'esecuzione
 fetchAndDecrypt();
