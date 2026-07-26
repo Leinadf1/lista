@@ -24,8 +24,9 @@ jobs:
           SKY_DECRYPT_PASSWORD: ${{ secrets.SKY_DECRYPT_PASSWORD }}
           SKY_SOURCE_URL: ${{ secrets.SKY_SOURCE_URL }}
 
-      # Carica lista_privata.m3u sul Gist (come già facevi)
+      # Carica lista_privata.m3u sul Gist (momentaneamente disattivato)
       - name: Aggiorna il Gist Segreto
+        if: false   # <-- DISATTIVATO: rimuovi questa riga per riattivare
         uses: exuanbo/actions-deploy-gist@v1
         with:
           token: ${{ secrets.GIST_TOKEN }}
