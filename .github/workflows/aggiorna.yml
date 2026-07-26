@@ -12,21 +12,21 @@ jobs:
         with:
           persist-credentials: true
 
+      # -------- LISTA PRINCIPALE (invariata) --------
       - name: Download base list
         run: |
           curl -sL -k --url "${{ secrets.URL_LISTA }}" > lista_privata.m3u
           echo "# Ultimo aggiornamento: $(date)" >> lista_privata.m3u
 
-      # Nuovo step: genera sky.m3u usando il tuo script di decifratura
-      - name: Generate sky.m3u
-        run: node AutoDecrypt.js
-        env:
-          SKY_DECRYPT_PASSWORD: ${{ secrets.SKY_DECRYPT_PASSWORD }}
-          SKY_SOURCE_URL: ${{ secrets.SKY_SOURCE_URL }}
+      # -------- NUOVO: genera sky.m3u da Supabase --------
+      - name: Generate sky.m3u (Supabase)
+        run: |
+          pip install requests
+          python sky_lc.py
 
-      # Carica lista_privata.m3u sul Gist (momentaneamente disattivato)
+      # -------- GIST (momentaneamente disattivato) --------
       - name: Aggiorna il Gist Segreto
-        if: false   # <-- DISATTIVATO: rimuovi questa riga per riattivare
+        if: false   # rimuovi questa riga per riattivare
         uses: exuanbo/actions-deploy-gist@v1
         with:
           token: ${{ secrets.GIST_TOKEN }}
@@ -34,11 +34,15 @@ jobs:
           file_path: lista_privata.m3u
           file_type: text
 
-      # Commit e push di sky.m3u (e anche di lista_privata.m3u se vuoi tenerlo in chiaro su GitHub)
+      # -------- COMMIT E PUSH DI sky.m3u --------
       - name: Save sky.m3u to GitHub
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add sky.m3u
-          git commit -m "Update sky.m3u $(date +'%H:%M')" || echo "No changes"
-          git push origin main
+          if git diff --staged --quiet; then
+            echo "No changes to sky.m3u"
+          else
+            git commit -m "Update sky.m3u $(date +'%H:%M')"
+            git push origin main
+          fi
