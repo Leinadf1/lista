@@ -21,7 +21,7 @@ const DAZN_FISSI = [
         group_title: "DAZN LINEARI",
         license_type: "clearkey",
         license_key: "6164a0abaa7c53c6875fa1e7fe0bb463:271510d3e1259571dcc568a232e397eb",
-        url: "https://dct-ac-live.cdn.indazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvZGFzaC9kYXpuLWxpbmVhci0yMDYiXSwiZXhjIjpbXSwiaGVhZGVycyI6W10sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIxMzMzNSJdLCJpbnRzaWciOiJTajdhRjhCcnpiMkljTzI4a0xKcldBcDQ3LV92SmRkanROOWw5VzBTdndNIiwiaWF0IjoxNzg0NjI5NDA5LCJleHAiOjE3ODQ3MTU4MDl9.-qQ27oFjpSsUUVttPb-mqf7hKDSgwnJgwA5pDy8m_rU/dash/dazn-linear-206/stream.mpd?p=web"
+        url: "https://dct-ac-live.cdn.indazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvZGFzaC9kYXpuLWxpbmVhci0yMDYiXSwiZXhjIjpbXSwiaGVhZGVycyI6W10sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIyMTAyNzgiXSwiaW50c2lnIjoia0cxRjc0NlBKNjVLSHV0RmVyVkdSSllKYjZEUXBvR1Y1UC00SXBoVVd4RSIsImlhdCI6MTc4NTA1OTk4MCwiZXhwIjoxNzg1MTQ2MzgwfQ.ukJiJqY8f0HM0XeFWh8DN1MsABqfKZgawS7SsViNVNQ/dash/dazn-linear-206/stream.mpd?p=web"
     },
     {
         name: "DAZN 1 WARP",
