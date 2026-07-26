@@ -33,10 +33,12 @@ jobs:
 
       - name: Save sky.m3u to GitHub
         run: |
-          # Forza sempre un cambiamento (così il commit avviene sempre)
-          echo "# Aggiornamento forzato: $(date)" >> sky.m3u
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add sky.m3u
-          git commit -m "Update sky.m3u $(date +'%H:%M')"
-          git push origin main
+          if git diff --staged --quiet; then
+            echo "No changes to sky.m3u"
+          else
+            git commit -m "Update sky.m3u $(date +'%H:%M')"
+            git push origin main
+          fi
