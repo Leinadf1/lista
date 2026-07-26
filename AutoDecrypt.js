@@ -1,4 +1,4 @@
-// AutoDecrypt.js – versione per GitHub Actions con filtro Sky e ordinamento
+// AutoDecrypt.js – versione per GitHub Actions con filtro Sky e ordinamento predefinito dei canali
 import crypto from 'crypto';
 import fs from 'fs';
 
@@ -6,8 +6,70 @@ const URLS = process.env.SKY_SOURCE_URL ? [process.env.SKY_SOURCE_URL] : ["https
 const DECRYPT_PASSWORD = process.env.SKY_DECRYPT_PASSWORD;
 const OUTPUT_FILE = 'sky.m3u';
 
-// Ordine desiderato dei gruppi Sky
-const GROUP_ORDER = ["SPORT", "CINEMA", "INTRATTENIMENTO", "BAMBINI"];
+// Ordine delle categorie (modifica se necessario)
+const GROUP_ORDER = ["INTRATTENIMENTO", "CINEMA", "SPORT", "BAMBINI"];
+
+// Ordine predefinito dei canali per ogni gruppo (basato sulla lista di esempio)
+const CHANNEL_ORDER = {
+    "INTRATTENIMENTO": [
+        "Sky TG24",
+        "Sky Uno",
+        "Sky Uno Plus",
+        "Sky Atlantic",
+        "Sky Serie",
+        "Sky Investigation",
+        "Sky Collection",
+        "Sky Documentaries",
+        "Sky Crime",
+        "History",
+        "Sky Nature",
+        "Sky Arte",
+        "Sky Adventure",
+        "MTV",
+        "Comedy Central"
+    ],
+    "CINEMA": [
+        "Sky Cinema Uno",
+        "Sky Cinema Collection",
+        "Sky Cinema Comedy",
+        "Sky Cinema Action",
+        "Sky Cinema Stories",
+        "Sky Cinema Illumination",
+        "Sky Cinema Drama",
+        "Sky Cinema Romance",
+        "Sky Cinema Suspense"
+    ],
+    "SPORT": [
+        "Sky Sport 24",
+        "Sky Sport Uno",
+        "Sky Sport F1",
+        "Sky Sport Calcio",
+        "Sky Sport Tennis",
+        "Sky Sport MotoGP",
+        "Sky Sport Arena",
+        "Sky Sport Max",
+        "Sky Sport Basket",
+        "Sky Sport Legend",
+        "Sky Sport Mix",
+        "Sky Sport 251",
+        "Sky Sport 252",
+        "Sky Sport 253",
+        "Sky Sport 254",
+        "Sky Sport 255",
+        "Sky Sport 256",
+        "Sky Sport 257",
+        "Sky Sport 258",
+        "Sky Sport 259",
+        "Sky Sport Golf"
+    ],
+    "BAMBINI": [
+        "Cartoon Network",
+        "Nickelodeon",
+        "DeAKids",
+        "Nick Jr",
+        "Boomerang"
+    ]
+};
 
 if (!DECRYPT_PASSWORD) {
     console.error("❌ Variabile SKY_DECRYPT_PASSWORD non impostata");
@@ -42,25 +104,30 @@ function getGroup(line) {
     return match ? match[1].toUpperCase() : null;
 }
 
-// Filtra e ordina i canali Sky
+// Estrae il nome del canale (dopo la virgola)
+function getChannelName(line) {
+    const match = line.match(/,(.*)$/);
+    return match ? match[1].trim() : "";
+}
+
+// Raccoglie i canali, li ordina e ricostruisce la playlist
 function filterAndSortSkyChannels(playlist) {
     const lines = playlist.split('\n');
     const channelsByGroup = {};
-    
+
     // Inizializza i gruppi
     GROUP_ORDER.forEach(group => channelsByGroup[group] = []);
 
     let currentGroup = null;
     let currentChannelLines = [];
 
-    // Raccoglie i canali in base al gruppo
     for (let line of lines) {
         if (line.startsWith('#EXTINF:')) {
-            // Se c'era un canale precedente, salvalo se appartiene a un gruppo valido
             if (currentGroup && currentChannelLines.length > 0) {
                 const groupKey = GROUP_ORDER.find(g => currentGroup.includes(g));
                 if (groupKey && channelsByGroup[groupKey]) {
-                    channelsByGroup[groupKey].push(...currentChannelLines);
+                    // Memorizza l'intero blocco di canale (EXTINF + KODIPROP + URL)
+                    channelsByGroup[groupKey].push([...currentChannelLines]);
                 }
             }
             currentChannelLines = [line];
@@ -78,15 +145,34 @@ function filterAndSortSkyChannels(playlist) {
     if (currentGroup && currentChannelLines.length > 0) {
         const groupKey = GROUP_ORDER.find(g => currentGroup.includes(g));
         if (groupKey && channelsByGroup[groupKey]) {
-            channelsByGroup[groupKey].push(...currentChannelLines);
+            channelsByGroup[groupKey].push([...currentChannelLines]);
         }
     }
 
-    // Costruisce l'output nell'ordine desiderato
+    // Ordina i canali all'interno di ogni gruppo secondo l'ordine predefinito
+    GROUP_ORDER.forEach(group => {
+        const order = CHANNEL_ORDER[group];
+        if (order && channelsByGroup[group]) {
+            channelsByGroup[group].sort((a, b) => {
+                const nameA = getChannelName(a[0]); // la prima riga è l'EXTINF
+                const nameB = getChannelName(b[0]);
+                const indexA = order.indexOf(nameA);
+                const indexB = order.indexOf(nameB);
+                // Se il nome non è nell'ordine, mettiamolo in fondo
+                if (indexA === -1) return 1;
+                if (indexB === -1) return -1;
+                return indexA - indexB;
+            });
+        }
+    });
+
+    // Costruisce l'output
     let result = ['#EXTM3U'];
     GROUP_ORDER.forEach(group => {
-        if (channelsByGroup[group].length > 0) {
-            result.push(...channelsByGroup[group]);
+        if (channelsByGroup[group]) {
+            channelsByGroup[group].forEach(channelLines => {
+                result.push(...channelLines);
+            });
         }
     });
 
@@ -109,11 +195,10 @@ function filterAndSortSkyChannels(playlist) {
         out = "#EXTM3U\n" + out;
         out = out.replace(/#EXTINF/g, '\n#EXTINF');
 
-        // Filtra e ordina i canali Sky
         out = filterAndSortSkyChannels(out);
 
         fs.writeFileSync(OUTPUT_FILE, out, 'utf8');
         const channelCount = out.split('\n').filter(l => l.startsWith('#EXTINF:')).length;
-        console.log(`✅ sky.m3u generato (${channelCount} canali Sky, ordinati per gruppo)`);
+        console.log(`✅ sky.m3u generato (${channelCount} canali Sky, ordine personalizzato per ogni gruppo)`);
     } catch (e) { console.error("❌ Decifratura fallita:", e.message); process.exit(1); }
 })();
