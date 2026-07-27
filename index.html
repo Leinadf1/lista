@@ -174,14 +174,37 @@ function startHeartbeat(password) {
     }, 15000);
 }
 
+// Funzione universale per estrarre la scadenza (Sky o DAZN)
 function getExpiryFromUrl(url) {
-    const match = url.match(/e~(\d+)/);
-    if (!match) return null;
-    const timestamp = parseInt(match[1]) * 1000;
-    const now = Date.now();
-    if (now > timestamp) return "Scaduto";
-    const date = new Date(timestamp);
-    return date.toLocaleString('it-IT', { timeZone: 'Europe/Rome' });
+    // 1. Prova formato Sky: e~xxxxxxxxxx
+    let match = url.match(/e~(\d+)/);
+    if (match) {
+        const ts = parseInt(match[1]) * 1000;
+        const now = Date.now();
+        if (now > ts) return "Scaduto";
+        return new Date(ts).toLocaleString('it-IT', { timeZone: 'Europe/Rome' });
+    }
+
+    // 2. Prova formato DAZN: token JWT nell'URL (dopo @)
+    match = url.match(/@(eyJ[A-Za-z0-9\-_]+?\.[A-Za-z0-9\-_]+?\.[A-Za-z0-9\-_]+)/);
+    if (match) {
+        try {
+            const token = match[1];
+            const payloadBase64 = token.split('.')[1];
+            const payloadJson = atob(payloadBase64.replace(/-/g, '+').replace(/_/g, '/'));
+            const payload = JSON.parse(payloadJson);
+            if (payload.exp) {
+                const exp = payload.exp * 1000;
+                const now = Date.now();
+                if (now > exp) return "Scaduto";
+                return new Date(exp).toLocaleString('it-IT', { timeZone: 'Europe/Rome' });
+            }
+        } catch (e) {
+            // token non valido, ignora
+        }
+    }
+
+    return null; // nessuna scadenza trovata
 }
 
 async function checkAccess() {
@@ -261,7 +284,7 @@ async function init(m3uContent) {
 
             await player.load(ch.url);
 
-            // Mostra scadenza
+            // Mostra scadenza (Sky o DAZN)
             if (expiryDiv) {
                 const expiry = getExpiryFromUrl(ch.url);
                 if (expiry) {
