@@ -1,6 +1,7 @@
 import requests
 import sys
 import os
+import json
 
 # === CONFIGURAZIONE SUPABASE ===
 SUPABASE_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtxaGFzZXZneWxmdGx2cWVzbW9kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NDQ4ODMsImV4cCI6MjA4ODMyMDg4M30.VpVgQ0x7tCxKRwyqqVW5szEPUUGW0BLEHBh0KAJf7oc"
@@ -9,7 +10,7 @@ CATEGORY_NAME = "SKY ITALIA"          # Categoria da cui prendere i canali
 OLD_SKY_FILE = "sky.m3u"             # File già esistente (per preservare i loghi)
 OUTPUT_FILE = "sky.m3u"
 
-# Ordine desiderato delle categorie e dei canali (come nel vecchio script)
+# Ordine desiderato delle categorie e dei canali
 GROUP_ORDER = ["INTRATTENIMENTO", "CINEMA", "SPORT", "BAMBINI"]
 
 CHANNEL_ORDER = {
@@ -142,7 +143,7 @@ def generate_sky_m3u(channels, old_logos):
         group = determine_group(title)
         if group not in grouped:
             group = 'INTRATTENIMENTO'  # fallback
-        # Logo: prima cerca nel vecchio, altrimenti usa il nuovo da Supabase
+        # Logo: **priorità al logo esistente**, altrimenti usa il nuovo da Supabase
         logo = old_logos.get(title) or ch.get('thumbnail_url', '')
         kids = ch.get('drm_key_id', '')
         keys = ch.get('drm_key', '')
