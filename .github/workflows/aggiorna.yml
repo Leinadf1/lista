@@ -12,8 +12,9 @@ jobs:
         with:
           persist-credentials: true
 
-      # 1. Lista principale (nodrm)
+      # 1. Lista principale
       - name: Download base list
+        if: false   # <-- rimuovi questa riga per riattivare
         run: |
           curl -sL -k --url "${{ secrets.URL_LISTA }}" > lista_privata.m3u
           echo "# Ultimo aggiornamento: $(date)" >> lista_privata.m3u
