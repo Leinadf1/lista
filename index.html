@@ -44,7 +44,6 @@
         }
         video { width: 100%; aspect-ratio: 16/9; display: block; }
 
-        /* Nuovo stile per la scadenza */
         #expiry-info {
             text-align: center;
             margin-top: 5px;
@@ -154,7 +153,6 @@
     <div class="player-container" data-shaka-player-container>
         <video autoplay data-shaka-player id="video"></video>
     </div>
-    <!-- Indicatore di scadenza -->
     <div id="expiry-info"></div>
 
     <div id="main-list" style="width: 100%;"></div>
@@ -176,11 +174,12 @@ function startHeartbeat(password) {
     }, 15000);
 }
 
-// Estrae il timestamp di scadenza dall'URL (e~......)
 function getExpiryFromUrl(url) {
     const match = url.match(/e~(\d+)/);
     if (!match) return null;
-    const timestamp = parseInt(match[1]) * 1000; // in millisecondi
+    const timestamp = parseInt(match[1]) * 1000;
+    const now = Date.now();
+    if (now > timestamp) return "Scaduto";
     const date = new Date(timestamp);
     return date.toLocaleString('it-IT', { timeZone: 'Europe/Rome' });
 }
@@ -203,13 +202,11 @@ async function checkAccess() {
             return;
         }
 
-        // Decodifica Base64
         const m3uEncoded = await response.text();
         const m3uData = atob(m3uEncoded);
         
         passwordGlobale = psw;
         document.getElementById('mainBody').style.display = "flex";
-        // Pulisce eventuale scadenza precedente
         document.getElementById('expiry-info').textContent = '';
         startHeartbeat(psw);
         init(m3uData);
@@ -225,7 +222,7 @@ async function init(m3uContent) {
     const player = ui.getControls().getPlayer();
     const mainList = document.getElementById('main-list');
     const countHeader = document.getElementById('chan-count');
-    const expiryDiv = document.getElementById('expiry-info'); // Ottiene il div della scadenza
+    const expiryDiv = document.getElementById('expiry-info');
 
     player.configure({ streaming: { jumpLargeGaps: true } });
 
@@ -254,10 +251,8 @@ async function init(m3uContent) {
             card.classList.add('active');
             await player.unload();
             
-            // DRM
             player.configure({ drm: { clearKeys: ch.drm || {} } });
 
-            // HEADERS PERSONALIZZATI
             if (ch.streamHeaders && Object.keys(ch.streamHeaders).length > 0) {
                 player.configure({ streaming: { customHttpHeaders: ch.streamHeaders } });
             } else {
@@ -266,10 +261,11 @@ async function init(m3uContent) {
 
             await player.load(ch.url);
 
-            // Mostra la scadenza se disponibile
+            // Mostra scadenza
             if (expiryDiv) {
-                if (ch.expiry) {
-                    expiryDiv.textContent = `⏳ Scade il: ${ch.expiry}`;
+                const expiry = getExpiryFromUrl(ch.url);
+                if (expiry) {
+                    expiryDiv.textContent = `⏳ ${expiry === "Scaduto" ? "Scaduto" : `Scade il: ${expiry}`}`;
                 } else {
                     expiryDiv.textContent = '';
                 }
@@ -317,8 +313,6 @@ async function init(m3uContent) {
         } 
         else if (line.startsWith('http')) {
             currentChannel.url = line;
-            // Calcola la scadenza una volta sola durante il parsing
-            currentChannel.expiry = getExpiryFromUrl(line);
             createCard(currentChannel);
             loadedCount++;
             currentChannel = { name: "", logo: "", group: "LISTA", drm: {}, url: "", streamHeaders: {} };
