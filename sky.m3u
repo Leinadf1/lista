@@ -9,7 +9,7 @@ https://g006-lin-it-cmaf-prd-cf.pcdn07.cssott02.com/v~1-0-0_e~1785176512_f~0_g~1
 #KODIPROP:inputstream.adaptive.manifest_type=mpd
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=11189b91ffdab15f5abbd9b60f2c609a:702032f22df8b1f3a2aaa924134e3361
-https://g006-lin-it-cmaf-prd-cf.pcdn07.cssott02.com/v~1-0-0_e~1785142465_f~0_g~1_s~d8d5632c-1ccc-4210-9478-46b40ec479c9_u~c0712fe81439b039492d5b58a626d540e0f19c1da6e63a813cb8c4d6f65e95b309ba4ab0223c0a47120cc0d2625c6b24_k~A_l~52_x~7938e91824374267dcbcb0de7ef7cfb0/nowitlin2/Content/CMAF_CTR_H1/Live/channel(skyuno)/master_2hr-all.mpd
+https://g006-lin-it-cmaf-prd-cf.pcdn07.cssott02.com/v~1-0-0_e~1785232468_f~0_g~1_s~91b075b4-7671-4dff-b026-3f8237438efc_u~c0712fe81439b039492d5b58a626d540e0f19c1da6e63a813cb8c4d6f65e95b309ba4ab0223c0a47120cc0d2625c6b24_k~A_l~52_x~10a5c7df135e2d38c051049e8b98c36d/nowitlin2/Content/CMAF_CTR_H1/Live/channel(skyuno)/master_2hr-all.mpd
 
 #EXTINF:-1 tvg-logo="https://pixel.disco.nowtv.it/logo/skychb_432_darknow/LOGO_CHANNEL_LIGHT/512/512?language=it-IT&proposition=NOWOTT" group-title="INTRATTENIMENTO",Sky Uno Plus
 #KODIPROP:inputstream.adaptive.manifest_type=mpd
