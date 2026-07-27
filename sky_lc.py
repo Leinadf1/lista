@@ -108,7 +108,7 @@ def parse_existing_channels(filepath):
             # Estrai nome
             name_match = line.split(',', 1)
             name = name_match[1].strip() if len(name_match) > 1 else ""
-            # Estrai logo
+            # Estrai logo (sarà sempre salvato così com'è)
             logo = ""
             logo_match = line.find('tvg-logo="')
             if logo_match != -1:
@@ -168,36 +168,31 @@ def determine_group(channel_name):
     return 'INTRATTENIMENTO'
 
 def generate_sky_m3u(supabase_channels, existing_channels):
-    """Crea il file sky.m3u preservando TUTTI i loghi esistenti (case‑insensitive)."""
+    """
+    Crea il file sky.m3u.
+    - I canali già esistenti mantengono ESATTAMENTE il loro logo originale.
+    - I canali nuovi vengono ignorati (non aggiunti).
+    """
     grouped = {g: [] for g in GROUP_ORDER}
 
     for ch in supabase_channels:
         title = ch.get('title', '').strip()
-        if not title: continue
+        if not title:
+            continue
         normalized_title = normalize_name(title)
-        group = determine_group(normalized_title)
-
-        # Cerchiamo nel dizionario esistente in modo case‑insensitive
         existing_key = normalized_title.lower()
+
         if existing_key in existing_channels:
-            # Canale già presente: mantieni logo, nome e gruppo originali
             old = existing_channels[existing_key]
-            grouped[group].append({
+            # Usa il logo, il nome e il gruppo originali – MAI MODIFICATI
+            grouped[old['group']].append({
                 'name': old['name'],
-                'logo': old['logo'],   # LOGO ORIGINALE – MAI SOSTITUITO
+                'logo': old['logo'],
                 'kids': ch.get('drm_key_id', ''),
                 'keys': ch.get('drm_key', ''),
                 'mpd': ch.get('mpd_url', '')
             })
-        else:
-            # Canale NUOVO: aggiungilo SENZA logo (logo vuoto)
-            grouped[group].append({
-                'name': normalized_title,
-                'logo': '',            # NESSUN LOGO
-                'kids': ch.get('drm_key_id', ''),
-                'keys': ch.get('drm_key', ''),
-                'mpd': ch.get('mpd_url', '')
-            })
+        # I canali non presenti non vengono aggiunti (nessun logo vuoto)
 
     # Ordina i canali secondo CHANNEL_ORDER
     for group, order_list in CHANNEL_ORDER.items():
