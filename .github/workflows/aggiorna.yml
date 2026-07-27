@@ -12,28 +12,27 @@ jobs:
         with:
           persist-credentials: true
 
-      # Lista principale
+      # 1. Lista principale (nodrm)
       - name: Download base list
         run: |
           curl -sL -k --url "${{ secrets.URL_LISTA }}" > lista_privata.m3u
           echo "# Ultimo aggiornamento: $(date)" >> lista_privata.m3u
 
-      # Sky primaria (Python)
+      # 2. Sky primaria (Python)
       - name: Generate sky.m3u (Supabase)
         run: |
           pip install requests
           python sky_lc.py
 
-      # Sky secondaria (Node)
+      # 3. Sky secondaria (Node)
       - name: Generate sky2.m3u (AutoDecrypt)
         run: node AutoDecrypt.js
         env:
           SKY_DECRYPT_PASSWORD: ${{ secrets.SKY_DECRYPT_PASSWORD }}
           SKY_SOURCE_URL: ${{ secrets.SKY_SOURCE_URL }}
 
-      # Gist disattivato (puoi riattivarlo rimuovendo if: false)
-      - name: Aggiorna il Gist Segreto
-        if: false
+      # 4. Carica TUTTO sullo stesso Gist segreto
+      - name: Deploy lista_privata.m3u to Gist
         uses: exuanbo/actions-deploy-gist@v1
         with:
           token: ${{ secrets.GIST_TOKEN }}
@@ -41,15 +40,18 @@ jobs:
           file_path: lista_privata.m3u
           file_type: text
 
-      # Commit di entrambi i file Sky
-      - name: Save sky files to GitHub
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add sky.m3u sky2.m3u
-          if git diff --staged --quiet; then
-            echo "No changes to sky files"
-          else
-            git commit -m "Update sky lists $(TZ='Europe/Rome' date +'%H:%M')"
-            git push origin main
-          fi
+      - name: Deploy sky.m3u to Gist
+        uses: exuanbo/actions-deploy-gist@v1
+        with:
+          token: ${{ secrets.GIST_TOKEN }}
+          gist_id: ${{ secrets.GIST_ID }}
+          file_path: sky.m3u
+          file_type: text
+
+      - name: Deploy sky2.m3u to Gist
+        uses: exuanbo/actions-deploy-gist@v1
+        with:
+          token: ${{ secrets.GIST_TOKEN }}
+          gist_id: ${{ secrets.GIST_ID }}
+          file_path: sky2.m3u
+          file_type: text
