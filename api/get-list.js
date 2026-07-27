@@ -21,7 +21,7 @@ const DAZN_FISSI = [
         group_title: "DAZN LINEARI",
         license_type: "clearkey",
         license_key: "6164a0abaa7c53c6875fa1e7fe0bb463:271510d3e1259571dcc568a232e397eb",
-        url: "https://dct-ac-live.cdn.indazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvZGFzaC9kYXpuLWxpbmVhci0yMDYiXSwiZXhjIjpbXSwiaGVhZGVycyI6W10sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIyMTAyNzgiXSwiaW50c2lnIjoia0cxRjc0NlBKNjVLSHV0RmVyVkdSSllKYjZEUXBvR1Y1UC00SXBoVVd4RSIsImlhdCI6MTc4NTE2MjY3MSwiZXhwIjoxNzg1MjQ5MDcxfQ.o75zU7Mi6r4ERRMNpk1rGnhGONplo4qnM3Zgfcno3Xg/dash/dazn-linear-206/stream.mpd?p=web"
+        url: "https://dct-ac-live.cdn.indazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvZGFzaC9kYXpuLWxpbmVhci0yMDYiXSwiZXhjIjpbXSwiaGVhZGVycyI6W10sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIyMTAyNzgiXSwiaW50c2lnIjoia0cxRjc0NlBKNjVLSHV0RmVyVkdSSllKYjZEUXBvR1Y1UC00SXBoVVd4RSIsImlhdCI6MTc4NTA1OTk4MCwiZXhwIjoxNzg1MTQ2MzgwfQ.ukJiJqY8f0HM0XeFWh8DN1MsABqfKZgawS7SsViNVNQ/dash/dazn-linear-206/stream.mpd?p=web"
     },
     {
         name: "DAZN 1 WARP",
@@ -29,7 +29,7 @@ const DAZN_FISSI = [
         group_title: "DAZN LINEARI",
         license_type: "clearkey",
         license_key: "6164a0abaa7c53c6875fa1e7fe0bb463:271510d3e1259571dcc568a232e397eb",
-        url: "https://dct-ac-live.cdn.indazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvZGFzaC9kYXpuLWxpbmVhci0yMDYiXSwiZXhjIjpbXSwiaGVhZGVycyI6W10sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIxMzMzNSJdLCJpbnRzaWciOiJTajdhRjhCcnpiMkljTzI4a0xKcldBcDQ3LV92SmRkanROOWw5VzBTdndNIiwiaWF0IjoxNzg1MTYzOTE2LCJleHAiOjE3ODUyNTAzMTZ9.Cv6kssh0XLJbrTtZgVENHNoM3sZiRI1SIEUB_KNIBkM/dash/dazn-linear-206/stream.mpd?p=web"
+        url: "https://dct-ac-live.cdn.indazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvZGFzaC9kYXpuLWxpbmVhci0yMDYiXSwiZXhjIjpbXSwiaGVhZGVycyI6W10sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIxMzMzNSJdLCJpbnRzaWciOiJTajdhRjhCcnpiMkljTzI4a0xKcldBcDQ3LV92SmRkanROOWw5VzBTdndNIiwiaWF0IjoxNzg0NjI5NDA5LCJleHAiOjE3ODQ3MTU4MDl9.-qQ27oFjpSsUUVttPb-mqf7hKDSgwnJgwA5pDy8m_rU/dash/dazn-linear-206/stream.mpd?p=web"
     }
 ];
 
@@ -155,15 +155,13 @@ export default async function handler(req, res) {
         const githubResponse = await fetch(`${process.env.GIST_RAW_URL}?t=${Date.now()}`);
         const fileContent = await githubResponse.text();
 
-        // 2. Carica canali Sky primari (sky.m3u)
+        // 2. Carica canali Sky primari (sky.m3u) dallo stesso Gist
         let skyChannels = [];
         try {
-            const skyResponse = await fetch(`https://raw.githubusercontent.com/Leinadf1/lista/main/sky.m3u?t=${Date.now()}`, {
-                headers: { 
-                    'Authorization': `token ${process.env.GITHUB_TOKEN}`,
-                    'Accept': 'application/vnd.github.v3.raw'
-                }
-            });
+            // Ricava l'URL base del Gist rimuovendo il nome file da GIST_RAW_URL
+            const gistBase = process.env.GIST_RAW_URL.replace(/\/[^\/]+$/, '');
+            const skyUrl = `${gistBase}/sky.m3u?t=${Date.now()}`;
+            const skyResponse = await fetch(skyUrl);
             if (skyResponse.ok) {
                 const skyContent = await skyResponse.text();
                 skyChannels = parseM3U(skyContent);
@@ -172,15 +170,12 @@ export default async function handler(req, res) {
             console.error("Errore nel caricamento sky.m3u:", e);
         }
 
-        // 3. Carica canali Sky secondari (sky2.m3u) per backup
+        // 3. Carica canali Sky secondari (sky2.m3u) dallo stesso Gist
         let backupChannels = [];
         try {
-            const backupResponse = await fetch(`https://raw.githubusercontent.com/Leinadf1/lista/main/sky2.m3u?t=${Date.now()}`, {
-                headers: { 
-                    'Authorization': `token ${process.env.GITHUB_TOKEN}`,
-                    'Accept': 'application/vnd.github.v3.raw'
-                }
-            });
+            const gistBase = process.env.GIST_RAW_URL.replace(/\/[^\/]+$/, '');
+            const backupUrl = `${gistBase}/sky2.m3u?t=${Date.now()}`;
+            const backupResponse = await fetch(backupUrl);
             if (backupResponse.ok) {
                 const backupContent = await backupResponse.text();
                 backupChannels = parseM3U(backupContent);
@@ -206,7 +201,6 @@ export default async function handler(req, res) {
             if (isChannelExpired(ch)) {
                 const backup = findBackupChannel(ch.name, backupChannels);
                 if (backup) {
-                    // Mantiene il logo originale ma usa URL e DRM del backup
                     return { ...ch, url: backup.url, drm: backup.drm };
                 }
             }
@@ -282,4 +276,4 @@ export default async function handler(req, res) {
         console.error(error);
         res.status(500).json({ error: "Errore caricamento liste" });
     }
-}
+        }
