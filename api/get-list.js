@@ -91,6 +91,24 @@ function parseM3U(content) {
     return channels;
 }
 
+// --- Helper per gestione scadenza Sky ---
+function getExpiryTimestampFromUrl(url) {
+    const match = url.match(/e~(\d+)/);
+    return match ? parseInt(match[1]) * 1000 : null;
+}
+
+function isChannelExpired(channel) {
+    const exp = getExpiryTimestampFromUrl(channel.url);
+    if (!exp) return false;
+    return Date.now() > exp;
+}
+
+function findBackupChannel(name, backupList) {
+    const searchName = name.trim().toUpperCase();
+    return backupList.find(ch => ch.name.trim().toUpperCase() === searchName);
+}
+// ---------------------------------------
+
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -133,11 +151,11 @@ export default async function handler(req, res) {
     await kv.set(sessionKey, "active", { ex: 25 });
 
     try {
-        // 1. Scarica la lista base dal Gist Segreto usando la variabile d'ambiente protetta di Vercel
+        // 1. Scarica la lista base dal Gist Segreto
         const githubResponse = await fetch(`${process.env.GIST_RAW_URL}?t=${Date.now()}`);
         const fileContent = await githubResponse.text();
 
-        // 2. Carica canali Sky esterni
+        // 2. Carica canali Sky primari (sky.m3u)
         let skyChannels = [];
         try {
             const skyResponse = await fetch(`https://raw.githubusercontent.com/Leinadf1/lista/main/sky.m3u?t=${Date.now()}`, {
@@ -154,6 +172,21 @@ export default async function handler(req, res) {
             console.error("Errore nel caricamento sky.m3u:", e);
         }
 
+        // 3. Carica canali Sky secondari (sky2.m3u) per backup
+        let backupChannels = [];
+        try {
+            const backupResponse = await fetch(`https://raw.githubusercontent.com/Leinadf1/lista/main/sky2.m3u?t=${Date.now()}`, {
+                headers: { 
+                    'Authorization': `token ${process.env.GITHUB_TOKEN}`,
+                    'Accept': 'application/vnd.github.v3.raw'
+                }
+            });
+            if (backupResponse.ok) {
+                const backupContent = await backupResponse.text();
+                backupChannels = parseM3U(backupContent);
+            }
+        } catch (e) { console.error("Errore nel caricamento sky2.m3u:", e); }
+
         const existingNames = new Set();
         const baseLines = fileContent.split('\n');
         for (let i = 0; i < baseLines.length; i++) {
@@ -165,7 +198,20 @@ export default async function handler(req, res) {
             }
         }
 
-        const newSkyChannels = skyChannels.filter(ch => !existingNames.has(ch.name.toUpperCase()));
+        // Filtra canali Sky non ancora presenti nella lista principale
+        let newSkyChannels = skyChannels.filter(ch => !existingNames.has(ch.name.toUpperCase()));
+
+        // Sostituisce i canali scaduti con quelli di backup (se disponibili)
+        newSkyChannels = newSkyChannels.map(ch => {
+            if (isChannelExpired(ch)) {
+                const backup = findBackupChannel(ch.name, backupChannels);
+                if (backup) {
+                    // Mantiene il logo originale ma usa URL e DRM del backup
+                    return { ...ch, url: backup.url, drm: backup.drm };
+                }
+            }
+            return ch;
+        });
 
         const f1OnlyPasswords = (process.env.F1_ONLY_PASSWORD || "").split(',').map(p => p.trim().toLowerCase());
         const isF1Only = f1OnlyPasswords.includes(psw.toLowerCase());
