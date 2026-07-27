@@ -39,6 +39,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes to sky.m3u"
           else
-            git commit -m "Update sky.m3u $(date +'%H:%M')"
+            git commit -m "Update sky.m3u $(TZ='Europe/Rome' date +'%H:%M')"
             git push origin main
           fi
