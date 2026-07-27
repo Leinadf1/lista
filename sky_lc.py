@@ -156,33 +156,76 @@ def get_all_channels():
     filtered = [c for c in data if c.get('category', '').strip().lower() == CATEGORY_NAME.lower()]
     return filtered
 
-def parse_existing_logos(filepath):
-    """Legge il vecchio sky.m3u e restituisce un dizionario {nome_canale_normalizzato: logo_url}."""
-    logos = {}
+def parse_existing_channels(filepath):
+    """
+    Legge il vecchio sky.m3u e restituisce un dizionario:
+    { nome_canale_normalizzato: { 'logo': ..., 'group': ..., 'name': ..., 'url': ..., 'drm': ... } }
+    """
+    channels = {}
     if not os.path.exists(filepath):
-        return logos
+        return channels
 
     with open(filepath, 'r', encoding='utf-8') as f:
         lines = f.readlines()
 
-    current_name = None
-    for line in lines:
+    i = 0
+    while i < len(lines):
+        line = lines[i].strip()
         if line.startswith('#EXTINF:'):
-            # Estrae il nome dopo la virgola
-            parts = line.split(',', 1)
-            if len(parts) == 2:
-                current_name = parts[1].strip()
-            # Estrae il logo
-            match = line.find('tvg-logo="')
-            if match != -1:
-                start = match + len('tvg-logo="')
+            # Estrai nome
+            name_match = line.split(',', 1)
+            name = name_match[1].strip() if len(name_match) > 1 else ""
+            # Estrai logo
+            logo = ""
+            logo_match = line.find('tvg-logo="')
+            if logo_match != -1:
+                start = logo_match + len('tvg-logo="')
                 end = line.find('"', start)
                 if end != -1:
                     logo = line[start:end]
-                    if current_name and logo:
-                        normalized = normalize_name(current_name)
-                        logos[normalized] = logo
-    return logos
+            # Estrai gruppo
+            group = "INTRATTENIMENTO"  # default
+            group_match = line.find('group-title="')
+            if group_match != -1:
+                start = group_match + len('group-title="')
+                end = line.find('"', start)
+                if end != -1:
+                    group = line[start:end]
+
+            # Cerca le righe KODIPROP e l'URL
+            drm = {}
+            url = ""
+            i += 1
+            while i < len(lines) and not lines[i].strip().startswith('http'):
+                kodiline = lines[i].strip()
+                if kodiline.startswith('#KODIPROP:inputstream.adaptive.license_key='):
+                    val = kodiline.split('=', 1)[1]
+                    try:
+                        drm = json.loads(val)
+                    except:
+                        # provo formato key:value
+                        if ':' in val:
+                            k, v = val.split(':', 1)
+                            drm = {k.strip(): v.strip()}
+                        else:
+                            drm = {}
+                i += 1
+            if i < len(lines) and lines[i].strip().startswith('http'):
+                url = lines[i].strip()
+
+            if name and url:
+                normalized = normalize_name(name)
+                channels[normalized] = {
+                    'logo': logo,
+                    'group': group,
+                    'name': normalized,  # useremo il nome normalizzato per coerenza
+                    'url': url,
+                    'drm': json.dumps(drm) if drm else ''
+                }
+        else:
+            i += 1
+
+    return channels
 
 def determine_group(channel_name):
     """Decide a quale gruppo appartiene un canale in base al nome."""
@@ -195,29 +238,38 @@ def determine_group(channel_name):
         return 'BAMBINI'
     return 'INTRATTENIMENTO'
 
-def generate_sky_m3u(channels, old_logos):
-    """Crea il file sky.m3u con l'ordine e i loghi corretti."""
+def generate_sky_m3u(supabase_channels, existing_channels):
+    """Crea il file sky.m3u preservando i loghi esistenti e ignorando quelli di Supabase."""
     grouped = {g: [] for g in GROUP_ORDER}
-    for ch in channels:
+
+    for ch in supabase_channels:
         title = ch.get('title', '').strip()
         if not title:
             continue
         normalized_title = normalize_name(title)
         group = determine_group(normalized_title)
-        if group not in grouped:
-            group = 'INTRATTENIMENTO'  # fallback
-        # Logo: **priorità al logo esistente**, altrimenti usa il nuovo da Supabase
-        logo = old_logos.get(normalized_title) or ch.get('thumbnail_url', '')
-        kids = ch.get('drm_key_id', '')
-        keys = ch.get('drm_key', '')
-        mpd = ch.get('mpd_url', '')
-        grouped[group].append({
-            'name': normalized_title,  # usa il nome normalizzato per coerenza
-            'logo': logo,
-            'kids': kids,
-            'keys': keys,
-            'mpd': mpd
-        })
+
+        # Se il canale esiste già, mantieni logo, nome e gruppo originali
+        if normalized_title in existing_channels:
+            old = existing_channels[normalized_title]
+            grouped[group].append({
+                'name': old['name'],
+                'logo': old['logo'],          # LOGO ORIGINALE (MAI SOSTITUITO)
+                'kids': ch.get('drm_key_id', ''),
+                'keys': ch.get('drm_key', ''),
+                'mpd': ch.get('mpd_url', '')
+            })
+        else:
+            # Canale NUOVO: NON USARE IL LOGO DI SUPABASE (per evitare liveac.net)
+            # Puoi impostare un logo di default o lasciare vuoto.
+            # Qui mettiamo una stringa vuota, così non avrai loghi indesiderati.
+            grouped[group].append({
+                'name': normalized_title,
+                'logo': '',                   # LOGO VUOTO PER I NUOVI CANALI
+                'kids': ch.get('drm_key_id', ''),
+                'keys': ch.get('drm_key', ''),
+                'mpd': ch.get('mpd_url', '')
+            })
 
     # Ordina i canali all'interno di ogni gruppo secondo CHANNEL_ORDER
     for group, order_list in CHANNEL_ORDER.items():
@@ -251,11 +303,11 @@ def generate_sky_m3u(channels, old_logos):
 
 if __name__ == "__main__":
     print("📡 Recupero canali da Supabase...")
-    channels = get_all_channels()
-    if not channels:
+    supabase_channels = get_all_channels()
+    if not supabase_channels:
         print("❌ Nessun canale trovato.")
         sys.exit(1)
-    print(f"📌 Trovati {len(channels)} canali nella categoria '{CATEGORY_NAME}'.")
-    old_logos = parse_existing_logos(OLD_SKY_FILE)
-    print(f"🔍 Loghi esistenti caricati: {len(old_logos)}")
-    generate_sky_m3u(channels, old_logos)
+    print(f"📌 Trovati {len(supabase_channels)} canali nella categoria '{CATEGORY_NAME}'.")
+    existing_channels = parse_existing_channels(OLD_SKY_FILE)
+    print(f"🔍 Canali esistenti caricati: {len(existing_channels)}")
+    generate_sky_m3u(supabase_channels, existing_channels)
