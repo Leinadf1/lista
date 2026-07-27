@@ -1,5 +1,5 @@
 #EXTM3U
-#EXTINF:-1 tvg-logo="https://liveac.net/sb/storage/v1/object/public/logos/ext_sky_tg24.png" group-title="INTRATTENIMENTO",Sky TG24
+#EXTINF:-1 tvg-logo="https://pixel.disco.nowtv.it/logo/skychb_519_darknow/LOGO_CHANNEL_LIGHT/4000?language=it-IT&proposition=NOWOTT" group-title="INTRATTENIMENTO",Sky TG24
 #KODIPROP:inputstream.adaptive.manifest_type=mpd
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=1118a48358c744f5075ddd54441c9207:c0cd1f001bba58b1261d12ff04e4d5bd
@@ -11,7 +11,7 @@ https://g006-lin-it-cmaf-prd-cf.pcdn07.cssott02.com/v~1-0-0_e~1785176512_f~0_g~1
 #KODIPROP:inputstream.adaptive.license_key=11189b91ffdab15f5abbd9b60f2c609a:702032f22df8b1f3a2aaa924134e3361
 https://g006-lin-it-cmaf-prd-cf.pcdn07.cssott02.com/v~1-0-0_e~1785232468_f~0_g~1_s~91b075b4-7671-4dff-b026-3f8237438efc_u~c0712fe81439b039492d5b58a626d540e0f19c1da6e63a813cb8c4d6f65e95b309ba4ab0223c0a47120cc0d2625c6b24_k~A_l~52_x~10a5c7df135e2d38c051049e8b98c36d/nowitlin2/Content/CMAF_CTR_H1/Live/channel(skyuno)/master_2hr-all.mpd
 
-#EXTINF:-1 tvg-logo="https://liveac.net/sb/storage/v1/object/public/logos/ext_sky_uno_plus.png" group-title="INTRATTENIMENTO",Sky Uno Plus
+#EXTINF:-1 tvg-logo="https://pixel.disco.nowtv.it/logo/skychb_432_darknow/LOGO_CHANNEL_LIGHT/512/512?language=it-IT&proposition=NOWOTT" group-title="INTRATTENIMENTO",Sky Uno Plus
 #KODIPROP:inputstream.adaptive.manifest_type=mpd
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=111837d963caccec0b164c590eda3f71:106882727b6a74b4a5ca965f9412aa5b
@@ -281,7 +281,7 @@ https://g006-lin-it-cmaf-prd-cf.pcdn07.cssott02.com/v~1-0-0_e~1785176953_f~0_g~1
 #KODIPROP:inputstream.adaptive.license_key=11184d4970ee622e9acdc10016b4112e:d4e99a107ba1c7ab10e0494285bbacf7
 https://g006-lin-it-cmaf-prd-cf.pcdn07.cssott02.com/v~1-0-0_e~1785176963_f~0_g~1_s~1f13794a-e069-4265-b188-7ac6bf077895_u~c0712fe81439b039492d5b58a626d540e0f19c1da6e63a813cb8c4d6f65e95b309ba4ab0223c0a47120cc0d2625c6b24_k~A_l~57_x~856a83f3845ff2fbe04103b70ec9109c/nowitlin2/Content/CMAF_CTR_H1/Live/channel(nickelodeon)/master_2hr-all.mpd
 
-#EXTINF:-1 tvg-logo="https://liveac.net/sb/storage/v1/object/public/logos/ext_deakids.png" group-title="BAMBINI",DeAKids
+#EXTINF:-1 tvg-logo="https://pixel.disco.nowtv.it/logo/skychb_460_darknow/LOGO_CHANNEL_LIGHT/4000?language=it-IT&proposition=NOWOTT" group-title="BAMBINI",DeAKids
 #KODIPROP:inputstream.adaptive.manifest_type=mpd
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=11186c855368b14808a44caa148954db:779ac5495ac22c6458b6f705c46b9aef
@@ -298,4 +298,3 @@ https://g006-lin-it-cmaf-prd-cf.pcdn07.cssott02.com/v~1-0-0_e~1785176983_f~0_g~1
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=1118ba94e4aef8a14f6a0a8427eb25dc:a7d17a614e2ac297c248d9435c99d6e3
 https://g006-lin-it-cmaf-prd-cf.pcdn07.cssott02.com/v~1-0-0_e~1785176995_f~0_g~1_s~f927e26d-c1ab-4910-a9d9-0baed3507f78_u~c0712fe81439b039492d5b58a626d540e0f19c1da6e63a813cb8c4d6f65e95b309ba4ab0223c0a47120cc0d2625c6b24_k~A_l~55_x~bb18dd57507a4b1fc59069d5c6277853/nowitlin2/Content/CMAF_CTR_H1/Live/channel(boomerang)/master_2hr-all.mpd
-
