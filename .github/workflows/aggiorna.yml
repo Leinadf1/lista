@@ -19,20 +19,27 @@ jobs:
           curl -sL -k --url "${{ secrets.URL_LISTA }}" > lista_privata.m3u
           echo "# Ultimo aggiornamento: $(date)" >> lista_privata.m3u
 
-      # 2. Sky primaria (Python)
-      - name: Generate sky.m3u (Supabase)
+      # 2. Scarica il sky.m3u attuale dal Gist (così lo script può aggiornarlo)
+      - name: Fetch current sky.m3u from Gist
+        run: |
+          curl -sL "https://gist.githubusercontent.com/Leinadf1/${{ secrets.GIST_ID }}/raw/sky.m3u" -o sky.m3u
+          echo "File scaricato:"
+          head -5 sky.m3u
+
+      # 3. Genera sky.m3u (aggiorna solo URL/DRM, non tocca loghi)
+      - name: Update sky.m3u (Supabase)
         run: |
           pip install requests
           python sky_lc.py
 
-      # 3. Sky secondaria (Node)
+      # 4. Genera sky2.m3u (Node)
       - name: Generate sky2.m3u (AutoDecrypt)
         run: node AutoDecrypt.js
         env:
           SKY_DECRYPT_PASSWORD: ${{ secrets.SKY_DECRYPT_PASSWORD }}
           SKY_SOURCE_URL: ${{ secrets.SKY_SOURCE_URL }}
 
-      # 4. Carica TUTTO sullo stesso Gist segreto
+      # 5. Carica i file aggiornati sul Gist
       - name: Deploy lista_privata.m3u to Gist
         if: false   # <-- rimuovi per riattivare (insieme a quello sopra)
         uses: exuanbo/actions-deploy-gist@v1
