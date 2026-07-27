@@ -74,6 +74,67 @@ CHANNEL_ORDER = {
     ]
 }
 
+# Normalizzazione dei nomi per uniformare le varianti
+NAME_NORMALIZATION = {
+    "sky tg24": "Sky TG24",
+    "sky uno": "Sky Uno",
+    "sky uno +": "Sky Uno Plus",
+    "sky uno plus": "Sky Uno Plus",
+    "sky atlantic": "Sky Atlantic",
+    "sky serie": "Sky Serie",
+    "sky investigation": "Sky Investigation",
+    "sky collection": "Sky Collection",
+    "sky documentaries": "Sky Documentaries",
+    "sky crime": "Sky Crime",
+    "history": "History",
+    "sky nature": "Sky Nature",
+    "sky arte": "Sky Arte",
+    "sky adventure": "Sky Adventure",
+    "mtv": "MTV",
+    "comedy central": "Comedy Central",
+    "sky cinema uno": "Sky Cinema Uno",
+    "sky cinema collection": "Sky Cinema Collection",
+    "sky cinema comedy": "Sky Cinema Comedy",
+    "sky cinema action": "Sky Cinema Action",
+    "sky cinema stories": "Sky Cinema Stories",
+    "sky cinema illumination": "Sky Cinema Illumination",
+    "sky cinema family": "Sky Cinema Illumination",
+    "sky cinema drama": "Sky Cinema Drama",
+    "sky cinema romance": "Sky Cinema Romance",
+    "sky cinema suspense": "Sky Cinema Suspense",
+    "sky sport 24": "Sky Sport 24",
+    "sky sport uno": "Sky Sport Uno",
+    "sky sport f1": "Sky Sport F1",
+    "sky sport calcio": "Sky Sport Calcio",
+    "sky sport tennis": "Sky Sport Tennis",
+    "sky sport motogp": "Sky Sport MotoGP",
+    "sky sport arena": "Sky Sport Arena",
+    "sky sport max": "Sky Sport Max",
+    "sky sport basket": "Sky Sport Basket",
+    "sky sport legend": "Sky Sport Legend",
+    "sky sport mix": "Sky Sport Mix",
+    "sky sport 251": "Sky Sport 251",
+    "sky sport 252": "Sky Sport 252",
+    "sky sport 253": "Sky Sport 253",
+    "sky sport 254": "Sky Sport 254",
+    "sky sport 255": "Sky Sport 255",
+    "sky sport 256": "Sky Sport 256",
+    "sky sport 257": "Sky Sport 257",
+    "sky sport 258": "Sky Sport 258",
+    "sky sport 259": "Sky Sport 259",
+    "sky sport golf": "Sky Sport Golf",
+    "cartoon network": "Cartoon Network",
+    "nickelodeon": "Nickelodeon",
+    "deakids": "DeAKids",
+    "nick jr": "Nick Jr",
+    "boomerang": "Boomerang"
+}
+
+def normalize_name(name):
+    """Restituisce il nome normalizzato, se presente nel dizionario."""
+    key = name.strip().lower()
+    return NAME_NORMALIZATION.get(key, name)
+
 def get_all_channels():
     """Recupera tutti i canali da Supabase e restituisce quelli della categoria scelta."""
     headers = {
@@ -96,7 +157,7 @@ def get_all_channels():
     return filtered
 
 def parse_existing_logos(filepath):
-    """Legge il vecchio sky.m3u e restituisce un dizionario {nome_canale: logo_url}."""
+    """Legge il vecchio sky.m3u e restituisce un dizionario {nome_canale_normalizzato: logo_url}."""
     logos = {}
     if not os.path.exists(filepath):
         return logos
@@ -118,7 +179,9 @@ def parse_existing_logos(filepath):
                 end = line.find('"', start)
                 if end != -1:
                     logo = line[start:end]
-                    logos[current_name] = logo
+                    if current_name and logo:
+                        normalized = normalize_name(current_name)
+                        logos[normalized] = logo
     return logos
 
 def determine_group(channel_name):
@@ -134,22 +197,22 @@ def determine_group(channel_name):
 
 def generate_sky_m3u(channels, old_logos):
     """Crea il file sky.m3u con l'ordine e i loghi corretti."""
-    # Raggruppa
     grouped = {g: [] for g in GROUP_ORDER}
     for ch in channels:
         title = ch.get('title', '').strip()
         if not title:
             continue
-        group = determine_group(title)
+        normalized_title = normalize_name(title)
+        group = determine_group(normalized_title)
         if group not in grouped:
             group = 'INTRATTENIMENTO'  # fallback
         # Logo: **priorità al logo esistente**, altrimenti usa il nuovo da Supabase
-        logo = old_logos.get(title) or ch.get('thumbnail_url', '')
+        logo = old_logos.get(normalized_title) or ch.get('thumbnail_url', '')
         kids = ch.get('drm_key_id', '')
         keys = ch.get('drm_key', '')
         mpd = ch.get('mpd_url', '')
         grouped[group].append({
-            'name': title,
+            'name': normalized_title,  # usa il nome normalizzato per coerenza
             'logo': logo,
             'kids': kids,
             'keys': keys,
