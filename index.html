@@ -272,6 +272,17 @@ async function init(m3uContent) {
         card.onclick = async () => {
             document.querySelectorAll('.channel-card').forEach(c => c.classList.remove('active'));
             card.classList.add('active');
+            
+            // Mostra subito la scadenza, anche prima di avviare il player
+            if (expiryDiv) {
+                const expiry = ch.expiry;  // usiamo la scadenza già calcolata
+                if (expiry) {
+                    expiryDiv.textContent = `⏳ ${expiry === "Scaduto" ? "Scaduto" : `Scade il: ${expiry}`}`;
+                } else {
+                    expiryDiv.textContent = '';
+                }
+            }
+
             await player.unload();
             
             player.configure({ drm: { clearKeys: ch.drm || {} } });
@@ -283,16 +294,6 @@ async function init(m3uContent) {
             }
 
             await player.load(ch.url);
-
-            // Mostra scadenza (Sky o DAZN)
-            if (expiryDiv) {
-                const expiry = getExpiryFromUrl(ch.url);
-                if (expiry) {
-                    expiryDiv.textContent = `⏳ ${expiry === "Scaduto" ? "Scaduto" : `Scade il: ${expiry}`}`;
-                } else {
-                    expiryDiv.textContent = '';
-                }
-            }
 
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
@@ -336,6 +337,8 @@ async function init(m3uContent) {
         } 
         else if (line.startsWith('http')) {
             currentChannel.url = line;
+            // Calcola subito la scadenza e la salva nel canale
+            currentChannel.expiry = getExpiryFromUrl(line);
             createCard(currentChannel);
             loadedCount++;
             currentChannel = { name: "", logo: "", group: "LISTA", drm: {}, url: "", streamHeaders: {} };
