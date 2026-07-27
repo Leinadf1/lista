@@ -15,125 +15,58 @@ GROUP_ORDER = ["INTRATTENIMENTO", "CINEMA", "SPORT", "BAMBINI"]
 
 CHANNEL_ORDER = {
     "INTRATTENIMENTO": [
-        "Sky TG24",
-        "Sky Uno",
-        "Sky Uno Plus",
-        "Sky Atlantic",
-        "Sky Serie",
-        "Sky Investigation",
-        "Sky Collection",
-        "Sky Documentaries",
-        "Sky Crime",
-        "History",
-        "Sky Nature",
-        "Sky Arte",
-        "Sky Adventure",
-        "MTV",
-        "Comedy Central"
+        "Sky TG24", "Sky Uno", "Sky Uno Plus", "Sky Atlantic", "Sky Serie",
+        "Sky Investigation", "Sky Collection", "Sky Documentaries", "Sky Crime",
+        "History", "Sky Nature", "Sky Arte", "Sky Adventure", "MTV", "Comedy Central"
     ],
     "CINEMA": [
-        "Sky Cinema Uno",
-        "Sky Cinema Collection",
-        "Sky Cinema Comedy",
-        "Sky Cinema Action",
-        "Sky Cinema Stories",
-        "Sky Cinema Illumination",
-        "Sky Cinema Drama",
-        "Sky Cinema Romance",
+        "Sky Cinema Uno", "Sky Cinema Collection", "Sky Cinema Comedy", "Sky Cinema Action",
+        "Sky Cinema Stories", "Sky Cinema Illumination", "Sky Cinema Drama", "Sky Cinema Romance",
         "Sky Cinema Suspense"
     ],
     "SPORT": [
-        "Sky Sport 24",
-        "Sky Sport Uno",
-        "Sky Sport F1",
-        "Sky Sport Calcio",
-        "Sky Sport Tennis",
-        "Sky Sport MotoGP",
-        "Sky Sport Arena",
-        "Sky Sport Max",
-        "Sky Sport Basket",
-        "Sky Sport Legend",
-        "Sky Sport Mix",
-        "Sky Sport 251",
-        "Sky Sport 252",
-        "Sky Sport 253",
-        "Sky Sport 254",
-        "Sky Sport 255",
-        "Sky Sport 256",
-        "Sky Sport 257",
-        "Sky Sport 258",
-        "Sky Sport 259",
-        "Sky Sport Golf"
+        "Sky Sport 24", "Sky Sport Uno", "Sky Sport F1", "Sky Sport Calcio", "Sky Sport Tennis",
+        "Sky Sport MotoGP", "Sky Sport Arena", "Sky Sport Max", "Sky Sport Basket",
+        "Sky Sport Legend", "Sky Sport Mix", "Sky Sport 251", "Sky Sport 252", "Sky Sport 253",
+        "Sky Sport 254", "Sky Sport 255", "Sky Sport 256", "Sky Sport 257", "Sky Sport 258",
+        "Sky Sport 259", "Sky Sport Golf"
     ],
     "BAMBINI": [
-        "Cartoon Network",
-        "Nickelodeon",
-        "DeAKids",
-        "Nick Jr",
-        "Boomerang"
+        "Cartoon Network", "Nickelodeon", "DeAKids", "Nick Jr", "Boomerang"
     ]
 }
 
-# Normalizzazione dei nomi per uniformare le varianti
+# Normalizzazione dei nomi solo per uniformare l'aspetto (opzionale)
 NAME_NORMALIZATION = {
-    "sky tg24": "Sky TG24",
-    "sky uno": "Sky Uno",
-    "sky uno +": "Sky Uno Plus",
-    "sky uno plus": "Sky Uno Plus",
-    "sky atlantic": "Sky Atlantic",
-    "sky serie": "Sky Serie",
-    "sky investigation": "Sky Investigation",
-    "sky collection": "Sky Collection",
-    "sky documentaries": "Sky Documentaries",
-    "sky crime": "Sky Crime",
-    "history": "History",
-    "sky nature": "Sky Nature",
-    "sky arte": "Sky Arte",
-    "sky adventure": "Sky Adventure",
-    "mtv": "MTV",
-    "comedy central": "Comedy Central",
-    "sky cinema uno": "Sky Cinema Uno",
-    "sky cinema collection": "Sky Cinema Collection",
-    "sky cinema comedy": "Sky Cinema Comedy",
-    "sky cinema action": "Sky Cinema Action",
-    "sky cinema stories": "Sky Cinema Stories",
-    "sky cinema illumination": "Sky Cinema Illumination",
-    "sky cinema family": "Sky Cinema Illumination",
-    "sky cinema drama": "Sky Cinema Drama",
-    "sky cinema romance": "Sky Cinema Romance",
-    "sky cinema suspense": "Sky Cinema Suspense",
-    "sky sport 24": "Sky Sport 24",
-    "sky sport uno": "Sky Sport Uno",
-    "sky sport f1": "Sky Sport F1",
-    "sky sport calcio": "Sky Sport Calcio",
-    "sky sport tennis": "Sky Sport Tennis",
-    "sky sport motogp": "Sky Sport MotoGP",
-    "sky sport arena": "Sky Sport Arena",
-    "sky sport max": "Sky Sport Max",
-    "sky sport basket": "Sky Sport Basket",
-    "sky sport legend": "Sky Sport Legend",
-    "sky sport mix": "Sky Sport Mix",
-    "sky sport 251": "Sky Sport 251",
-    "sky sport 252": "Sky Sport 252",
-    "sky sport 253": "Sky Sport 253",
-    "sky sport 254": "Sky Sport 254",
-    "sky sport 255": "Sky Sport 255",
-    "sky sport 256": "Sky Sport 256",
-    "sky sport 257": "Sky Sport 257",
-    "sky sport 258": "Sky Sport 258",
-    "sky sport 259": "Sky Sport 259",
-    "sky sport golf": "Sky Sport Golf",
-    "cartoon network": "Cartoon Network",
-    "nickelodeon": "Nickelodeon",
-    "deakids": "DeAKids",
-    "nick jr": "Nick Jr",
-    "boomerang": "Boomerang"
+    "sky tg24": "Sky TG24", "sky uno": "Sky Uno", "sky uno +": "Sky Uno Plus",
+    "sky uno plus": "Sky Uno Plus", "sky atlantic": "Sky Atlantic", "sky serie": "Sky Serie",
+    "sky investigation": "Sky Investigation", "sky collection": "Sky Collection",
+    "sky documentaries": "Sky Documentaries", "sky crime": "Sky Crime", "history": "History",
+    "sky nature": "Sky Nature", "sky arte": "Sky Arte", "sky adventure": "Sky Adventure",
+    "mtv": "MTV", "comedy central": "Comedy Central", "sky cinema uno": "Sky Cinema Uno",
+    "sky cinema collection": "Sky Cinema Collection", "sky cinema comedy": "Sky Cinema Comedy",
+    "sky cinema action": "Sky Cinema Action", "sky cinema stories": "Sky Cinema Stories",
+    "sky cinema illumination": "Sky Cinema Illumination", "sky cinema family": "Sky Cinema Illumination",
+    "sky cinema drama": "Sky Cinema Drama", "sky cinema romance": "Sky Cinema Romance",
+    "sky cinema suspense": "Sky Cinema Suspense", "sky sport 24": "Sky Sport 24",
+    "sky sport uno": "Sky Sport Uno", "sky sport f1": "Sky Sport F1",
+    "sky sport calcio": "Sky Sport Calcio", "sky sport tennis": "Sky Sport Tennis",
+    "sky sport motogp": "Sky Sport MotoGP", "sky sport arena": "Sky Sport Arena",
+    "sky sport max": "Sky Sport Max", "sky sport basket": "Sky Sport Basket",
+    "sky sport legend": "Sky Sport Legend", "sky sport mix": "Sky Sport Mix",
+    "sky sport 251": "Sky Sport 251", "sky sport 252": "Sky Sport 252",
+    "sky sport 253": "Sky Sport 253", "sky sport 254": "Sky Sport 254",
+    "sky sport 255": "Sky Sport 255", "sky sport 256": "Sky Sport 256",
+    "sky sport 257": "Sky Sport 257", "sky sport 258": "Sky Sport 258",
+    "sky sport 259": "Sky Sport 259", "sky sport golf": "Sky Sport Golf",
+    "cartoon network": "Cartoon Network", "nickelodeon": "Nickelodeon",
+    "deakids": "DeAKids", "nick jr": "Nick Jr", "boomerang": "Boomerang"
 }
 
 def normalize_name(name):
     """Restituisce il nome normalizzato, se presente nel dizionario."""
     key = name.strip().lower()
-    return NAME_NORMALIZATION.get(key, name)
+    return NAME_NORMALIZATION.get(key, name.strip())
 
 def get_all_channels():
     """Recupera tutti i canali da Supabase e restituisce quelli della categoria scelta."""
@@ -158,8 +91,8 @@ def get_all_channels():
 
 def parse_existing_channels(filepath):
     """
-    Legge il vecchio sky.m3u e restituisce un dizionario:
-    { nome_canale_normalizzato: { 'logo': ..., 'group': ..., 'name': ..., 'url': ..., 'drm': ... } }
+    Legge il vecchio sky.m3u e restituisce un dizionario CASE‑INSENSITIVE:
+    { nome_in_minuscolo: { 'logo': ..., 'group': ..., 'name': ..., 'url': ..., 'drm': ... } }
     """
     channels = {}
     if not os.path.exists(filepath):
@@ -184,7 +117,7 @@ def parse_existing_channels(filepath):
                 if end != -1:
                     logo = line[start:end]
             # Estrai gruppo
-            group = "INTRATTENIMENTO"  # default
+            group = "INTRATTENIMENTO"
             group_match = line.find('group-title="')
             if group_match != -1:
                 start = group_match + len('group-title="')
@@ -203,7 +136,6 @@ def parse_existing_channels(filepath):
                     try:
                         drm = json.loads(val)
                     except:
-                        # provo formato key:value
                         if ':' in val:
                             k, v = val.split(':', 1)
                             drm = {k.strip(): v.strip()}
@@ -214,11 +146,12 @@ def parse_existing_channels(filepath):
                 url = lines[i].strip()
 
             if name and url:
-                normalized = normalize_name(name)
-                channels[normalized] = {
+                # Chiave case‑insensitive (minuscolo)
+                key = normalize_name(name).lower()
+                channels[key] = {
                     'logo': logo,
                     'group': group,
-                    'name': normalized,  # useremo il nome normalizzato per coerenza
+                    'name': name,          # Nome originale
                     'url': url,
                     'drm': json.dumps(drm) if drm else ''
                 }
@@ -228,50 +161,45 @@ def parse_existing_channels(filepath):
     return channels
 
 def determine_group(channel_name):
-    """Decide a quale gruppo appartiene un canale in base al nome."""
     name_upper = channel_name.upper()
-    if any(w in name_upper for w in ['CINEMA']):
-        return 'CINEMA'
-    if any(w in name_upper for w in ['SPORT', 'F1', 'MOTOGP', 'BASKET', 'GOLF', 'LEGEND', 'ARENA', 'MAX', 'MIX', 'CALCIO', 'TENNIS']):
-        return 'SPORT'
-    if any(w in name_upper for w in ['BAMBINI', 'CARTOON', 'NICK', 'BOOMERANG', 'DEAKIDS']):
-        return 'BAMBINI'
+    if any(w in name_upper for w in ['CINEMA']): return 'CINEMA'
+    if any(w in name_upper for w in ['SPORT', 'F1', 'MOTOGP', 'BASKET', 'GOLF', 'LEGEND', 'ARENA', 'MAX', 'MIX', 'CALCIO', 'TENNIS']): return 'SPORT'
+    if any(w in name_upper for w in ['BAMBINI', 'CARTOON', 'NICK', 'BOOMERANG', 'DEAKIDS']): return 'BAMBINI'
     return 'INTRATTENIMENTO'
 
 def generate_sky_m3u(supabase_channels, existing_channels):
-    """Crea il file sky.m3u preservando i loghi esistenti e ignorando quelli di Supabase."""
+    """Crea il file sky.m3u preservando TUTTI i loghi esistenti (case‑insensitive)."""
     grouped = {g: [] for g in GROUP_ORDER}
 
     for ch in supabase_channels:
         title = ch.get('title', '').strip()
-        if not title:
-            continue
+        if not title: continue
         normalized_title = normalize_name(title)
         group = determine_group(normalized_title)
 
-        # Se il canale esiste già, mantieni logo, nome e gruppo originali
-        if normalized_title in existing_channels:
-            old = existing_channels[normalized_title]
+        # Cerchiamo nel dizionario esistente in modo case‑insensitive
+        existing_key = normalized_title.lower()
+        if existing_key in existing_channels:
+            # Canale già presente: mantieni logo, nome e gruppo originali
+            old = existing_channels[existing_key]
             grouped[group].append({
                 'name': old['name'],
-                'logo': old['logo'],          # LOGO ORIGINALE (MAI SOSTITUITO)
+                'logo': old['logo'],   # LOGO ORIGINALE – MAI SOSTITUITO
                 'kids': ch.get('drm_key_id', ''),
                 'keys': ch.get('drm_key', ''),
                 'mpd': ch.get('mpd_url', '')
             })
         else:
-            # Canale NUOVO: NON USARE IL LOGO DI SUPABASE (per evitare liveac.net)
-            # Puoi impostare un logo di default o lasciare vuoto.
-            # Qui mettiamo una stringa vuota, così non avrai loghi indesiderati.
+            # Canale NUOVO: aggiungilo SENZA logo (logo vuoto)
             grouped[group].append({
                 'name': normalized_title,
-                'logo': '',                   # LOGO VUOTO PER I NUOVI CANALI
+                'logo': '',            # NESSUN LOGO
                 'kids': ch.get('drm_key_id', ''),
                 'keys': ch.get('drm_key', ''),
                 'mpd': ch.get('mpd_url', '')
             })
 
-    # Ordina i canali all'interno di ogni gruppo secondo CHANNEL_ORDER
+    # Ordina i canali secondo CHANNEL_ORDER
     for group, order_list in CHANNEL_ORDER.items():
         if group in grouped:
             ordered = []
