@@ -153,25 +153,34 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("Errore nel caricamento sky2.m3u:", e); }
 
-        // 4. DAZN da Gist privato (con log per debug)
+        // 4. DAZN da Gist privato (ID nascosto in variabile d'ambiente)
         let daznContent = "";
         try {
-            const daznUrl = `${process.env.DAZN_GIST_RAW_URL}?t=${Date.now()}`;
-            console.log("[DAZN] Fetching:", daznUrl);
-            const daznResponse = await fetch(daznUrl, {
-                headers: {
-                    'Authorization': `token ${process.env.GIST_TOKEN}`
-                }
-            });
-            console.log("[DAZN] Status:", daznResponse.status);
-            if (daznResponse.ok) {
-                let rawDazn = await daznResponse.text();
-                console.log("[DAZN] Raw length:", rawDazn.length);
-                console.log("[DAZN] First 200 chars:", rawDazn.substring(0, 200));
-                // Rimuove l'header #EXTM3U se presente, per non duplicarlo
-                daznContent = rawDazn.replace(/^#EXTM3U\s*\n?/i, '').trim();
+            const gistId = process.env.DAZN_GIST_ID;
+            if (!gistId) {
+                console.error("[DAZN] DAZN_GIST_ID non impostata");
             } else {
-                console.error("[DAZN] Fetch failed with status:", daznResponse.status);
+                const apiUrl = `https://api.github.com/gists/${gistId}`;
+                const gistResponse = await fetch(apiUrl, {
+                    headers: {
+                        'Authorization': `token ${process.env.GIST_TOKEN}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                if (gistResponse.ok) {
+                    const gistData = await gistResponse.json();
+                    const daznFile = gistData.files['dazn.m3u'];
+                    if (daznFile && daznFile.content) {
+                        let rawDazn = daznFile.content;
+                        console.log("[DAZN] Contenuto ricevuto, lunghezza:", rawDazn.length);
+                        // Rimuove l'header #EXTM3U se presente
+                        daznContent = rawDazn.replace(/^#EXTM3U\s*\n?/i, '').trim();
+                    } else {
+                        console.error("[DAZN] File dazn.m3u non trovato nel Gist o vuoto.");
+                    }
+                } else {
+                    console.error("[DAZN] API request failed:", gistResponse.status);
+                }
             }
         } catch (e) { console.error("[DAZN] Error:", e); }
 
