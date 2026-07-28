@@ -153,21 +153,27 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("Errore nel caricamento sky2.m3u:", e); }
 
-        // 4. DAZN da Gist privato (URL in variabile d'ambiente DAZN_GIST_RAW_URL)
+        // 4. DAZN da Gist privato (con log per debug)
         let daznContent = "";
         try {
             const daznUrl = `${process.env.DAZN_GIST_RAW_URL}?t=${Date.now()}`;
+            console.log("[DAZN] Fetching:", daznUrl);
             const daznResponse = await fetch(daznUrl, {
                 headers: {
                     'Authorization': `token ${process.env.GIST_TOKEN}`
                 }
             });
+            console.log("[DAZN] Status:", daznResponse.status);
             if (daznResponse.ok) {
                 let rawDazn = await daznResponse.text();
+                console.log("[DAZN] Raw length:", rawDazn.length);
+                console.log("[DAZN] First 200 chars:", rawDazn.substring(0, 200));
                 // Rimuove l'header #EXTM3U se presente, per non duplicarlo
                 daznContent = rawDazn.replace(/^#EXTM3U\s*\n?/i, '').trim();
+            } else {
+                console.error("[DAZN] Fetch failed with status:", daznResponse.status);
             }
-        } catch (e) { console.error("Errore nel caricamento DAZN:", e); }
+        } catch (e) { console.error("[DAZN] Error:", e); }
 
         const existingNames = new Set();
         const baseLines = fileContent.split('\n');
