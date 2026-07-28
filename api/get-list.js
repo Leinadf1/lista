@@ -153,36 +153,19 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("Errore nel caricamento sky2.m3u:", e); }
 
-        // 4. DAZN da Gist segreto (via API GitHub)
+        // 4. DAZN da Gist segreto (raw URL, senza token – potrebbero esserci ritardi di cache)
         let daznContent = "";
         try {
-            const daznGistId = process.env.DAZN_GIST_ID;
-            if (!daznGistId) {
-                console.error("[DAZN] DAZN_GIST_ID non impostata");
+            const daznGistId = process.env.DAZN_GIST_ID;  // "85d9fbc82ebaa9314b1614b0086dac03"
+            const daznUrl = `https://gist.githubusercontent.com/Leinadf1/${daznGistId}/raw/dazn.m3u?t=${Date.now()}`;
+            const daznResponse = await fetch(daznUrl);   // nessuna autenticazione
+            if (daznResponse.ok) {
+                let rawDazn = await daznResponse.text();
+                daznContent = rawDazn.replace(/^#EXTM3U\s*\n?/i, '').trim();
             } else {
-                // Usa GIST_TOKEN se ha scope 'gist', altrimenti un token separato
-                const token = process.env.GIST_TOKEN;
-                const apiUrl = `https://api.github.com/gists/${daznGistId}`;
-                const daznResponse = await fetch(apiUrl, {
-                    headers: {
-                        'Authorization': `token ${token}`,
-                        'Accept': 'application/vnd.github.v3+json'
-                    }
-                });
-                if (daznResponse.ok) {
-                    const gistData = await daznResponse.json();
-                    const daznFile = gistData.files['dazn.m3u'];
-                    if (daznFile && daznFile.content) {
-                        daznContent = daznFile.content.replace(/^#EXTM3U\s*\n?/i, '').trim();
-                        console.log("[DAZN] Contenuto ricevuto, lunghezza:", daznContent.length);
-                    } else {
-                        console.error("[DAZN] File dazn.m3u non trovato nel Gist o vuoto.");
-                    }
-                } else {
-                    console.error("[DAZN] API request failed:", daznResponse.status);
-                }
+                console.error("[DAZN] Fetch failed:", daznResponse.status);
             }
-        } catch (e) { console.error("[DAZN] Error:", e); }
+        } catch (e) { console.error("[DAZN] Errore:", e); }
 
         const existingNames = new Set();
         const baseLines = fileContent.split('\n');
@@ -277,4 +260,4 @@ export default async function handler(req, res) {
         console.error(error);
         res.status(500).json({ error: "Errore caricamento liste" });
     }
-}
+                  }
