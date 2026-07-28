@@ -14,38 +14,10 @@ const CANALI_FISSI = [
     { name: "RSI LA 2", group_title: "RSI", logo: "https://static.wikia.nocookie.net/logopedia/images/f/f4/RSI_La_2_2012.svg/revision/latest?cb=20200517122649", url: "https://wp2-s-anp31323132-live-ch-prod.prod.cdn.dmdsdp.com/live/disk1/SV09043/stb-dash-fhd-avc/SV09043.mpd", drm: '{"117d07fd98cc46ef8e09936d0d37c506":"b9528cb3f23eaad789f0f33bf6b01868","166b2f0d56fb32d9b46d4b1ca1b5bf16":"d78ee5c91eb3b9b6d37414a4f789bc9b"}' },
 ];
 
-const DAZN_FISSI = [
-    {
-        name: "DAZN 1 WIFI",
-        logo: "https://static.wikia.nocookie.net/logopedia/images/1/18/DAZN_1_2024.svg",
-        group_title: "DAZN LINEARI",
-        license_type: "clearkey",
-        license_key: "6164a0abaa7c53c6875fa1e7fe0bb463:271510d3e1259571dcc568a232e397eb",
-        url: "https://dct-ac-live.cdn.indazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvZGFzaC9kYXpuLWxpbmVhci0yMDYiXSwiZXhjIjpbXSwiaGVhZGVycyI6W10sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIyMTAyNzgiXSwiaW50c2lnIjoia0cxRjc0NlBKNjVLSHV0RmVyVkdSSllKYjZEUXBvR1Y1UC00SXBoVVd4RSIsImlhdCI6MTc4NTE4MTUzOCwiZXhwIjoxNzg1MjY3OTM4fQ.Oth6swahOWyJuNVFUN4wgiHgiYUokcgIxflf9Atv6HM/dash/dazn-linear-206/stream.mpd?p=tv"
-    },
-    {
-        name: "DAZN 1 WARP",
-        logo: "https://static.wikia.nocookie.net/logopedia/images/1/18/DAZN_1_2024.svg",
-        group_title: "DAZN LINEARI",
-        license_type: "clearkey",
-        license_key: "6164a0abaa7c53c6875fa1e7fe0bb463:271510d3e1259571dcc568a232e397eb",
-        url: "https://dct-ac-live.cdn.indazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvZGFzaC9kYXpuLWxpbmVhci0yMDYiXSwiZXhjIjpbXSwiaGVhZGVycyI6W10sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIxMzMzNSJdLCJpbnRzaWciOiJTajdhRjhCcnpiMkljTzI4a0xKcldBcDQ3LV92SmRkanROOWw5VzBTdndNIiwiaWF0IjoxNzg0NjI5NDA5LCJleHAiOjE3ODQ3MTU4MDl9.-qQ27oFjpSsUUVttPb-mqf7hKDSgwnJgwA5pDy8m_rU/dash/dazn-linear-206/stream.mpd?p=web"
-    }
-];
-
 function buildM3U(channel) {
     let out = '';
     out += `#EXTINF:-1 tvg-logo="${channel.logo}" group-title="${channel.group_title || 'EUROSPORT'}",${channel.name}\n`;
     out += `#KODIPROP:inputstream.adaptive.license_key=${channel.drm}\n`;
-    out += channel.url + '\n';
-    return out;
-}
-
-function buildDaznM3U(channel) {
-    let out = '';
-    out += `#EXTINF:-1 group-title="${channel.group_title}" tvg-logo="${channel.logo}" tvg-id="${channel.name.replace(/\s/g, '')}",${channel.name}\n`;
-    out += `#KODIPROP:inputstream.adaptive.license_type=${channel.license_type}\n`;
-    out += `#KODIPROP:inputstream.adaptive.license_key=${channel.license_key}\n`;
     out += channel.url + '\n';
     return out;
 }
@@ -158,7 +130,6 @@ export default async function handler(req, res) {
         // 2. Carica canali Sky primari (sky.m3u) dallo stesso Gist
         let skyChannels = [];
         try {
-            // Ricava l'URL base del Gist rimuovendo il nome file da GIST_RAW_URL
             const gistBase = process.env.GIST_RAW_URL.replace(/\/[^\/]+$/, '');
             const skyUrl = `${gistBase}/sky.m3u?t=${Date.now()}`;
             const skyResponse = await fetch(skyUrl);
@@ -170,7 +141,7 @@ export default async function handler(req, res) {
             console.error("Errore nel caricamento sky.m3u:", e);
         }
 
-        // 3. Carica canali Sky secondari (sky2.m3u) dallo stesso Gist
+        // 3. Carica canali Sky secondari (sky2.m3u) per backup
         let backupChannels = [];
         try {
             const gistBase = process.env.GIST_RAW_URL.replace(/\/[^\/]+$/, '');
@@ -181,6 +152,22 @@ export default async function handler(req, res) {
                 backupChannels = parseM3U(backupContent);
             }
         } catch (e) { console.error("Errore nel caricamento sky2.m3u:", e); }
+
+        // 4. DAZN da Gist privato (URL in variabile d'ambiente DAZN_GIST_RAW_URL)
+        let daznContent = "";
+        try {
+            const daznUrl = `${process.env.DAZN_GIST_RAW_URL}?t=${Date.now()}`;
+            const daznResponse = await fetch(daznUrl, {
+                headers: {
+                    'Authorization': `token ${process.env.GIST_TOKEN}`
+                }
+            });
+            if (daznResponse.ok) {
+                let rawDazn = await daznResponse.text();
+                // Rimuove l'header #EXTM3U se presente, per non duplicarlo
+                daznContent = rawDazn.replace(/^#EXTM3U\s*\n?/i, '').trim();
+            }
+        } catch (e) { console.error("Errore nel caricamento DAZN:", e); }
 
         const existingNames = new Set();
         const baseLines = fileContent.split('\n');
@@ -263,9 +250,12 @@ export default async function handler(req, res) {
             }
         }
 
-        const daznFissiM3U = DAZN_FISSI.map(c => buildDaznM3U(c)).join('\n');
-        finalContent = finalContent.trimEnd() + "\n" + daznFissiM3U;
+        // Aggiunge DAZN (se presente)
+        if (daznContent) {
+            finalContent = finalContent.trimEnd() + "\n" + daznContent;
+        }
 
+        // Aggiunge gli Eurosport fissi in fondo
         const eurosportM3U = CANALI_FISSI.map(c => buildM3U(c)).join('\n');
         finalContent = finalContent.trimEnd() + "\n" + eurosportM3U;
 
@@ -276,4 +266,4 @@ export default async function handler(req, res) {
         console.error(error);
         res.status(500).json({ error: "Errore caricamento liste" });
     }
-        }
+}
