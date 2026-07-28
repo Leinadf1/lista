@@ -153,19 +153,37 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("Errore nel caricamento sky2.m3u:", e); }
 
-        // 4. DAZN da Gist segreto (raw URL, senza token – potrebbero esserci ritardi di cache)
+        // 4. DAZN principale (dazn.m3u) dallo stesso Gist
         let daznContent = "";
         try {
-            const daznGistId = process.env.DAZN_GIST_ID;  // "85d9fbc82ebaa9314b1614b0086dac03"
-            const daznUrl = `https://gist.githubusercontent.com/Leinadf1/${daznGistId}/raw/dazn.m3u?t=${Date.now()}`;
-            const daznResponse = await fetch(daznUrl);   // nessuna autenticazione
-            if (daznResponse.ok) {
-                let rawDazn = await daznResponse.text();
-                daznContent = rawDazn.replace(/^#EXTM3U\s*\n?/i, '').trim();
-            } else {
-                console.error("[DAZN] Fetch failed:", daznResponse.status);
+            const daznGistId = process.env.DAZN_GIST_ID;
+            if (daznGistId) {
+                const daznUrl = `https://gist.githubusercontent.com/Leinadf1/${daznGistId}/raw/dazn.m3u?t=${Date.now()}`;
+                const daznResponse = await fetch(daznUrl);
+                if (daznResponse.ok) {
+                    let rawDazn = await daznResponse.text();
+                    daznContent = rawDazn.replace(/^#EXTM3U\s*\n?/i, '').trim();
+                } else {
+                    console.error("[DAZN] Fetch dazn.m3u failed:", daznResponse.status);
+                }
             }
-        } catch (e) { console.error("[DAZN] Errore:", e); }
+        } catch (e) { console.error("[DAZN] Errore dazn.m3u:", e); }
+
+        // 5. DAZN Events (dazn_events.m3u) dallo stesso Gist
+        let daznEventsContent = "";
+        try {
+            const daznGistId = process.env.DAZN_GIST_ID;
+            if (daznGistId) {
+                const eventsUrl = `https://gist.githubusercontent.com/Leinadf1/${daznGistId}/raw/dazn_events.m3u?t=${Date.now()}`;
+                const eventsResponse = await fetch(eventsUrl);
+                if (eventsResponse.ok) {
+                    let rawEvents = await eventsResponse.text();
+                    daznEventsContent = rawEvents.replace(/^#EXTM3U\s*\n?/i, '').trim();
+                } else {
+                    console.error("[DAZN] Fetch dazn_events.m3u failed:", eventsResponse.status);
+                }
+            }
+        } catch (e) { console.error("[DAZN] Errore dazn_events.m3u:", e); }
 
         const existingNames = new Set();
         const baseLines = fileContent.split('\n');
@@ -246,8 +264,12 @@ export default async function handler(req, res) {
             }
         }
 
+        // Aggiunge entrambi i DAZN (prima dazn.m3u, poi dazn_events.m3u)
         if (daznContent) {
             finalContent = finalContent.trimEnd() + "\n" + daznContent;
+        }
+        if (daznEventsContent) {
+            finalContent = finalContent.trimEnd() + "\n" + daznEventsContent;
         }
 
         const eurosportM3U = CANALI_FISSI.map(c => buildM3U(c)).join('\n');
@@ -260,4 +282,4 @@ export default async function handler(req, res) {
         console.error(error);
         res.status(500).json({ error: "Errore caricamento liste" });
     }
-                  }
+}
