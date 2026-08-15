@@ -7,21 +7,16 @@ let epgCache = null;
 let lastFetch = 0;
 const CACHE_TTL = 1000 * 60 * 30; // 30 minuti
 
-// Rimuove spazi, punteggiatura e rende minuscolo per confronto robusto
+// Rimuove spazi, punteggiatura, e rende minuscolo
 function normalizeName(name) {
     return name
         .toLowerCase()
-        .replace(/[^a-z0-9]+/g, ''); // elimina tutto tranne lettere e numeri
+        .replace(/[^a-z0-9]+/g, '');
 }
 
-// Alias per le varianti comuni (puoi estenderlo se trovi altre differenze)
+// Aggiunge eventuale alias se necessario
 const ALIASES = {
-    'skyuno': 'skyuno',      // la normalizzazione già gestisce "sky uno" -> "skyuno"
-    'skytg24': 'skytg24',
-    'skysportf1': 'skysportf1',
-    'dazn1': 'dazn1',
-    'eurosport1': 'eurosport1',
-    // aggiungi qui altri alias se necessario
+    // Se trovi altre variazioni, aggiungile qui
 };
 
 async function getEPG() {
@@ -65,6 +60,29 @@ async function getEPG() {
     return epgCache;
 }
 
+// Cerca la chiave migliore nell'EPG
+function findChannelKey(epgChannels, requestedName) {
+    const requestedNormalized = normalizeName(requestedName);
+    // 1. Controllo esatto
+    if (epgChannels.has(requestedNormalized)) return requestedNormalized;
+
+    // 2. Prova ad aggiungere "it" alla fine (es. "skysportf1" -> "skysportf1it")
+    const withIt = requestedNormalized + 'it';
+    if (epgChannels.has(withIt)) return withIt;
+
+    // 3. Cerca se esiste una chiave che inizia con la richiesta (es. "skysportf1" inizia con "skysportf1it")
+    for (const key of epgChannels.keys()) {
+        if (key.startsWith(requestedNormalized)) return key;
+    }
+
+    // 4. Cerca se la richiesta inizia con una chiave (es. "skysportf1it" inizia con "skysportf1")
+    for (const key of epgChannels.keys()) {
+        if (requestedNormalized.startsWith(key)) return key;
+    }
+
+    return null;
+}
+
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -78,11 +96,8 @@ export default async function handler(req, res) {
 
     try {
         const epg = await getEPG();
-        // Normalizza il nome richiesto e applica eventuale alias
-        let normalized = normalizeName(channelName);
-        if (ALIASES[normalized]) normalized = ALIASES[normalized];
-
-        const programs = epg.channels.get(normalized) || [];
+        const key = findChannelKey(epg.channels, channelName);
+        const programs = key ? (epg.channels.get(key) || []) : [];
 
         programs.sort((a, b) => a.start.localeCompare(b.start));
         const now = new Date();
