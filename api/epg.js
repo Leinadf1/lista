@@ -7,12 +7,22 @@ let epgCache = null;
 let lastFetch = 0;
 const CACHE_TTL = 1000 * 60 * 30; // 30 minuti
 
+// Rimuove spazi, punteggiatura e rende minuscolo per confronto robusto
 function normalizeName(name) {
     return name
         .toLowerCase()
-        .replace(/\s+/g, ' ')
-        .trim();
+        .replace(/[^a-z0-9]+/g, ''); // elimina tutto tranne lettere e numeri
 }
+
+// Alias per le varianti comuni (puoi estenderlo se trovi altre differenze)
+const ALIASES = {
+    'skyuno': 'skyuno',      // la normalizzazione già gestisce "sky uno" -> "skyuno"
+    'skytg24': 'skytg24',
+    'skysportf1': 'skysportf1',
+    'dazn1': 'dazn1',
+    'eurosport1': 'eurosport1',
+    // aggiungi qui altri alias se necessario
+};
 
 async function getEPG() {
     const now = Date.now();
@@ -25,16 +35,16 @@ async function getEPG() {
     const xmlText = decompressed.toString('utf-8');
 
     const channels = new Map();
-
-    // 1. Mappa id -> display-name
     const idToName = {};
+
+    // Mappa id -> display-name
     const channelRegex = /<channel id="([^"]+)">[\s\S]*?<display-name>([^<]+)<\/display-name>/g;
     let match;
     while ((match = channelRegex.exec(xmlText)) !== null) {
         idToName[match[1]] = match[2];
     }
 
-    // 2. Parsa i programmi
+    // Parsa i programmi
     const progRegex = /<programme channel="([^"]+)" start="([^"]+)" stop="([^"]+)">[\s\S]*?<title>([^<]+)<\/title>/g;
     while ((match = progRegex.exec(xmlText)) !== null) {
         const channelId = match[1];
@@ -68,7 +78,10 @@ export default async function handler(req, res) {
 
     try {
         const epg = await getEPG();
-        const normalized = normalizeName(channelName);
+        // Normalizza il nome richiesto e applica eventuale alias
+        let normalized = normalizeName(channelName);
+        if (ALIASES[normalized]) normalized = ALIASES[normalized];
+
         const programs = epg.channels.get(normalized) || [];
 
         programs.sort((a, b) => a.start.localeCompare(b.start));
