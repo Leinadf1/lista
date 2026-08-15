@@ -79,12 +79,55 @@
 
     <script>
         const EPG_URL = "https://epgshare01.online/epgshare01/epg_ripper_IT1.xml.gz";
+        const PROXY_URL = "https://api.allorigins.win/raw?url="; // Proxy CORS
         let allChannels = [];
+        let userChannels = [];
 
+        // --- Recupera i canali dalla playlist utente ---
+        async function getUserChannels() {
+            const password = sessionStorage.getItem('tv_password');
+            if (!password) {
+                alert('Devi prima effettuare il login nella dashboard.');
+                return [];
+            }
+            try {
+                const response = await fetch('/api/get-list', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+                if (!response.ok) return [];
+                const data = await response.text();
+                const decoded = atob(data); // decodifica Base64
+                const lines = decoded.split('\n');
+                const channels = new Set();
+                for (let line of lines) {
+                    if (line.startsWith('#EXTINF:')) {
+                        const nameMatch = line.match(/,(.*)$/);
+                        if (nameMatch) {
+                            const chName = nameMatch[1].trim().toLowerCase();
+                            channels.add(chName);
+                        }
+                    }
+                }
+                return Array.from(channels);
+            } catch (e) {
+                return [];
+            }
+        }
+
+        // --- Carica EPG e filtra i canali utente ---
         async function loadEPG() {
             try {
-                const response = await fetch(EPG_URL);
-                if (!response.ok) throw new Error("Errore nel download dell'EPG");
+                const userChans = await getUserChannels();
+                userChannels = userChans;
+                if (userChannels.length === 0) {
+                    document.getElementById('loading').textContent = 'Nessun canale trovato. Effettua il login.';
+                    return;
+                }
+
+                const response = await fetch(PROXY_URL + encodeURIComponent(EPG_URL));
+                if (!response.ok) throw new Error('Errore nel download dell EPG');
                 const arrayBuffer = await response.arrayBuffer();
                 const decompressed = pako.ungzip(new Uint8Array(arrayBuffer));
                 const xmlText = new TextDecoder('utf-8').decode(decompressed);
@@ -120,10 +163,11 @@
 
                 for (let [channelId, progs] of channelMap) {
                     const name = channelNames[channelId] || channelId;
-                    // Ordina per inizio
+                    // Filtra solo i canali presenti nella playlist utente
+                    if (!userChannels.includes(name.toLowerCase())) continue;
+
                     progs.sort((a, b) => a.start.localeCompare(b.start));
 
-                    // Trova il programma corrente e il successivo
                     let current = null;
                     let next = null;
                     for (let i = 0; i < progs.length; i++) {
@@ -132,11 +176,6 @@
                         if (start <= now && now < stop) {
                             current = progs[i];
                             if (i + 1 < progs.length) next = progs[i + 1];
-                            break;
-                        }
-                        // Se siamo prima del primo programma del giorno, prendi il primo come next
-                        if (start > now && i === 0) {
-                            next = progs[i];
                             break;
                         }
                     }
