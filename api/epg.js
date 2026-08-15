@@ -100,8 +100,9 @@ export default async function handler(req, res) {
         }
 
         res.status(200).json({ channel: channelName, current, next });
-    } catch (error) {
-        console.error('Errore EPG:', error);
-        res.status(500).json({ error: 'Errore nel recupero EPG' });
+} catch (error) {
+    console.error('Errore EPG:', error);
+    res.status(500).json({ error: error.message });
+}
     }
 }
