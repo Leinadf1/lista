@@ -1,11 +1,12 @@
 import zlib from 'zlib';
 import { promisify } from 'util';
+import { XMLParser } from 'fast-xml-parser';
 
 const gunzip = promisify(zlib.gunzip);
 
 let epgCache = null;
 let lastFetch = 0;
-const CACHE_TTL = 1000 * 60 * 30;
+const CACHE_TTL = 1000 * 60 * 30; // 30 minuti
 
 function normalizeName(name) {
     return name
@@ -19,25 +20,50 @@ async function getEPG() {
 
     const epgUrl = 'https://epgshare01.online/epgshare01/epg_ripper_IT1.xml.gz';
     const response = await fetch(epgUrl);
-    const buffer = Buffer.from(await response.arrayBuffer());
-    const decompressed = await gunzip(buffer);
+    if (!response.ok) {
+        throw new Error(`EPG download failed: ${response.status}`);
+    }
+    const arrayBuffer = await response.arrayBuffer();
+    const decompressed = await gunzip(Buffer.from(arrayBuffer));
     const xmlText = decompressed.toString('utf-8');
 
-    const channels = new Map();
-    const idToName = {};
+    // Parsing robusto con fast-xml-parser
+    const parser = new XMLParser({
+        ignoreAttributes: false,
+        attributeNamePrefix: '',
+        textNodeName: 'text'
+    });
+    const json = parser.parse(xmlText);
 
-    const channelRegex = /<channel id="([^"]+)">[\s\S]*?<display-name>([^<]+)<\/display-name>/g;
-    let match;
-    while ((match = channelRegex.exec(xmlText)) !== null) {
-        idToName[match[1]] = match[2];
+    const channels = new Map();
+    const channelList = json.tv?.channel || [];
+    const programmes = json.tv?.programme || [];
+
+    // Mappa id -> display-name
+    const idToName = {};
+    for (const ch of channelList) {
+        const id = ch.id;
+        if (!id) continue;
+        let displayName = '';
+        if (typeof ch['display-name'] === 'string') {
+            displayName = ch['display-name'];
+        } else if (Array.isArray(ch['display-name'])) {
+            displayName = ch['display-name'][0]?.text || '';
+        } else if (ch['display-name']?.text) {
+            displayName = ch['display-name'].text;
+        }
+        idToName[id] = displayName || id;
     }
 
-    const progRegex = /<programme channel="([^"]+)" start="([^"]+)" stop="([^"]+)">[\s\S]*?<title>([^<]+)<\/title>/g;
-    while ((match = progRegex.exec(xmlText)) !== null) {
-        const channelId = match[1];
-        const start = match[2];
-        const stop = match[3];
-        const title = match[4];
+    // Popola i programmi
+    for (const prog of programmes) {
+        const channelId = prog.channel;
+        const start = prog.start;
+        const stop = prog.stop;
+        const title = typeof prog.title === 'string' ? prog.title : (prog.title?.text || 'Senza titolo');
+
+        if (!channelId || !start || !stop) continue;
+
         const displayName = idToName[channelId] || channelId;
         const key = normalizeName(displayName);
 
@@ -47,27 +73,9 @@ async function getEPG() {
         channels.get(key).push({ start, stop, title });
     }
 
-    epgCache = { channels, idToName };
+    epgCache = { channels };
     lastFetch = now;
     return epgCache;
-}
-
-function findChannelKey(epgChannels, requestedName) {
-    const requestedNormalized = normalizeName(requestedName);
-    if (epgChannels.has(requestedNormalized)) return requestedNormalized;
-
-    const withIt = requestedNormalized + 'it';
-    if (epgChannels.has(withIt)) return withIt;
-
-    for (const key of epgChannels.keys()) {
-        if (key.startsWith(requestedNormalized)) return key;
-    }
-
-    for (const key of epgChannels.keys()) {
-        if (requestedNormalized.startsWith(key)) return key;
-    }
-
-    return null;
 }
 
 export default async function handler(req, res) {
@@ -83,38 +91,31 @@ export default async function handler(req, res) {
 
     try {
         const epg = await getEPG();
-        const requestedNormalized = normalizeName(channelName);
+        const normalizedRequest = normalizeName(channelName);
 
-        if (req.query.debug === '1') {
-            const matchingKeys = [];
-            for (const key of epg.channels.keys()) {
-                if (key.includes(requestedNormalized) || requestedNormalized.includes(key)) {
-                    matchingKeys.push(key);
+        // Cerca la chiave migliore
+        let key = null;
+        if (epg.channels.has(normalizedRequest)) {
+            key = normalizedRequest;
+        } else {
+            const withIt = normalizedRequest + 'it';
+            if (epg.channels.has(withIt)) key = withIt;
+            else {
+                for (const k of epg.channels.keys()) {
+                    if (k.startsWith(normalizedRequest)) {
+                        key = k;
+                        break;
+                    }
                 }
             }
-
-            const displayNames = Object.values(epg.idToName).filter(name =>
-                name.toLowerCase().includes(channelName.toLowerCase())
-            );
-
-            return res.status(200).json({
-                requested: channelName,
-                requestedNormalized,
-                totalChannels: epg.channels.size,
-                matchingKeys,
-                displayNamesMatching: displayNames.slice(0, 10),  // massimo 10 per non esplodere
-                sampleChannelKeys: Array.from(epg.channels.keys()).slice(0, 20)  // prime 20 chiavi
-            });
         }
 
-        const key = findChannelKey(epg.channels, channelName);
         const programs = key ? (epg.channels.get(key) || []) : [];
-
         programs.sort((a, b) => a.start.localeCompare(b.start));
+
         const now = new Date();
         let current = null;
         let next = null;
-
         for (let i = 0; i < programs.length; i++) {
             const start = new Date(programs[i].start);
             const stop = new Date(programs[i].stop);
