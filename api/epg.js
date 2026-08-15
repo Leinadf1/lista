@@ -2,21 +2,22 @@ import { XMLParser } from 'fast-xml-parser';
 
 let epgCache = null;
 let lastFetch = 0;
-const CACHE_TTL = 1000 * 60 * 30;
+const CACHE_TTL = 1000 * 60 * 30; // 30 minuti
+
+const EPG_URL = 'https://gist.githubusercontent.com/Leinadf1/TUO_ID/raw/epg_ripper_IT1.txt';
 
 function normalizeName(name) {
-    return name.toLowerCase().replace(/[^a-z0-9]+/g, '');
+    return name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '');
 }
 
 async function getEPG() {
     const now = Date.now();
     if (epgCache && (now - lastFetch < CACHE_TTL)) return epgCache;
 
-    // Usa il file TXT (XML non compresso) per semplicità
-    const epgUrl = 'https://epgshare01.online/epgshare01/epg_ripper_IT1.txt';
-    const response = await fetch(epgUrl);
+    const response = await fetch(EPG_URL);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
     const xmlText = await response.text();
 
     const parser = new XMLParser({
