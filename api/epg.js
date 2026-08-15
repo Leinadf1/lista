@@ -5,19 +5,13 @@ const gunzip = promisify(zlib.gunzip);
 
 let epgCache = null;
 let lastFetch = 0;
-const CACHE_TTL = 1000 * 60 * 30; // 30 minuti
+const CACHE_TTL = 1000 * 60 * 30;
 
-// Rimuove spazi, punteggiatura, e rende minuscolo
 function normalizeName(name) {
     return name
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '');
 }
-
-// Aggiunge eventuale alias se necessario
-const ALIASES = {
-    // Se trovi altre variazioni, aggiungile qui
-};
 
 async function getEPG() {
     const now = Date.now();
@@ -32,14 +26,12 @@ async function getEPG() {
     const channels = new Map();
     const idToName = {};
 
-    // Mappa id -> display-name
     const channelRegex = /<channel id="([^"]+)">[\s\S]*?<display-name>([^<]+)<\/display-name>/g;
     let match;
     while ((match = channelRegex.exec(xmlText)) !== null) {
         idToName[match[1]] = match[2];
     }
 
-    // Parsa i programmi
     const progRegex = /<programme channel="([^"]+)" start="([^"]+)" stop="([^"]+)">[\s\S]*?<title>([^<]+)<\/title>/g;
     while ((match = progRegex.exec(xmlText)) !== null) {
         const channelId = match[1];
@@ -55,27 +47,22 @@ async function getEPG() {
         channels.get(key).push({ start, stop, title });
     }
 
-    epgCache = { channels };
+    epgCache = { channels, idToName };
     lastFetch = now;
     return epgCache;
 }
 
-// Cerca la chiave migliore nell'EPG
 function findChannelKey(epgChannels, requestedName) {
     const requestedNormalized = normalizeName(requestedName);
-    // 1. Controllo esatto
     if (epgChannels.has(requestedNormalized)) return requestedNormalized;
 
-    // 2. Prova ad aggiungere "it" alla fine (es. "skysportf1" -> "skysportf1it")
     const withIt = requestedNormalized + 'it';
     if (epgChannels.has(withIt)) return withIt;
 
-    // 3. Cerca se esiste una chiave che inizia con la richiesta (es. "skysportf1" inizia con "skysportf1it")
     for (const key of epgChannels.keys()) {
         if (key.startsWith(requestedNormalized)) return key;
     }
 
-    // 4. Cerca se la richiesta inizia con una chiave (es. "skysportf1it" inizia con "skysportf1")
     for (const key of epgChannels.keys()) {
         if (requestedNormalized.startsWith(key)) return key;
     }
@@ -96,6 +83,30 @@ export default async function handler(req, res) {
 
     try {
         const epg = await getEPG();
+        const requestedNormalized = normalizeName(channelName);
+
+        if (req.query.debug === '1') {
+            const matchingKeys = [];
+            for (const key of epg.channels.keys()) {
+                if (key.includes(requestedNormalized) || requestedNormalized.includes(key)) {
+                    matchingKeys.push(key);
+                }
+            }
+
+            const displayNames = Object.values(epg.idToName).filter(name =>
+                name.toLowerCase().includes(channelName.toLowerCase())
+            );
+
+            return res.status(200).json({
+                requested: channelName,
+                requestedNormalized,
+                totalChannels: epg.channels.size,
+                matchingKeys,
+                displayNamesMatching: displayNames.slice(0, 10),  // massimo 10 per non esplodere
+                sampleChannelKeys: Array.from(epg.channels.keys()).slice(0, 20)  // prime 20 chiavi
+            });
+        }
+
         const key = findChannelKey(epg.channels, channelName);
         const programs = key ? (epg.channels.get(key) || []) : [];
 
