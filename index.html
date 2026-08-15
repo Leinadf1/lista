@@ -229,6 +229,9 @@ async function checkAccess() {
         const m3uData = atob(m3uEncoded);
         
         passwordGlobale = psw;
+        // 👇 Salva la password in sessionStorage per la Guida TV
+        sessionStorage.setItem('tv_password', psw);
+        
         document.getElementById('mainBody').style.display = "flex";
         document.getElementById('expiry-info').textContent = '';
         startHeartbeat(psw);
