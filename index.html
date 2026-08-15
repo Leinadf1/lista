@@ -44,24 +44,14 @@
         }
         video { width: 100%; aspect-ratio: 16/9; display: block; }
 
-        #expiry-info, #program-info {
+        #expiry-info {
             text-align: center;
             margin-top: 5px;
-            margin-bottom: 15px;
+            margin-bottom: 25px;
             color: #f1e05a;
             font-size: 14px;
             font-weight: 600;
             min-height: 20px;
-        }
-        #program-info {
-            color: #c9d1d9;
-            font-weight: 400;
-        }
-        .program-now {
-            color: #f0f6fc;
-        }
-        .program-next {
-            color: #58a6ff;
         }
 
         .category-container { width: 100%; margin-bottom: 45px; box-sizing: border-box; }
@@ -164,7 +154,6 @@
         <video autoplay data-shaka-player id="video"></video>
     </div>
     <div id="expiry-info"></div>
-    <div id="program-info"></div>
 
     <div id="main-list" style="width: 100%;"></div>
 
@@ -185,14 +174,18 @@ function startHeartbeat(password) {
     }, 15000);
 }
 
-// Estrae scadenza (Sky o DAZN)
+// Funzione universale per estrarre la scadenza (Sky o DAZN)
 function getExpiryFromUrl(url) {
+    // 1. Prova formato Sky: e~xxxxxxxxxx
     let match = url.match(/e~(\d+)/);
     if (match) {
         const ts = parseInt(match[1]) * 1000;
-        if (Date.now() > ts) return "Scaduto";
+        const now = Date.now();
+        if (now > ts) return "Scaduto";
         return new Date(ts).toLocaleString('it-IT', { timeZone: 'Europe/Rome' });
     }
+
+    // 2. Prova formato DAZN: token JWT nell'URL (dopo @)
     match = url.match(/@(eyJ[A-Za-z0-9\-_]+?\.[A-Za-z0-9\-_]+?\.[A-Za-z0-9\-_]+)/);
     if (match) {
         try {
@@ -202,51 +195,16 @@ function getExpiryFromUrl(url) {
             const payload = JSON.parse(payloadJson);
             if (payload.exp) {
                 const exp = payload.exp * 1000;
-                if (Date.now() > exp) return "Scaduto";
+                const now = Date.now();
+                if (now > exp) return "Scaduto";
                 return new Date(exp).toLocaleString('it-IT', { timeZone: 'Europe/Rome' });
             }
-        } catch (e) {}
-    }
-    return null;
-}
-
-// Recupera informazioni sul programma dal server
-async function fetchProgramInfo(channelName) {
-    try {
-        const response = await fetch(`/api/epg?channel=${encodeURIComponent(channelName)}`);
-        if (!response.ok) return null;
-        const data = await response.json();
-        return data;
-    } catch (e) {
-        return null;
-    }
-}
-
-// Mostra programma attuale/successivo
-async function updateProgramInfo(channelName) {
-    const programInfoDiv = document.getElementById('program-info');
-    if (!programInfoDiv) return;
-
-    const epgData = await fetchProgramInfo(channelName);
-    if (epgData && (epgData.current || epgData.next)) {
-        let html = '';
-        if (epgData.current) {
-            const time = `${formatTime(epgData.current.start)} - ${formatTime(epgData.current.stop)}`;
-            html += `<div class="program-now">${time} ${epgData.current.title}</div>`;
+        } catch (e) {
+            // token non valido, ignora
         }
-        if (epgData.next) {
-            const time = `${formatTime(epgData.next.start)} - ${formatTime(epgData.next.stop)}`;
-            html += `<div class="program-next">${time} ${epgData.next.title}</div>`;
-        }
-        programInfoDiv.innerHTML = html;
-    } else {
-        programInfoDiv.innerHTML = '';
     }
-}
 
-function formatTime(dateStr) {
-    const d = new Date(dateStr);
-    return d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+    return null; // nessuna scadenza trovata
 }
 
 async function checkAccess() {
@@ -271,10 +229,8 @@ async function checkAccess() {
         const m3uData = atob(m3uEncoded);
         
         passwordGlobale = psw;
-        sessionStorage.setItem('tv_password', psw);
         document.getElementById('mainBody').style.display = "flex";
         document.getElementById('expiry-info').textContent = '';
-        document.getElementById('program-info').innerHTML = '';
         startHeartbeat(psw);
         init(m3uData);
 
@@ -317,9 +273,9 @@ async function init(m3uContent) {
             document.querySelectorAll('.channel-card').forEach(c => c.classList.remove('active'));
             card.classList.add('active');
             
-            // Mostra scadenza
+            // Mostra subito la scadenza, anche prima di avviare il player
             if (expiryDiv) {
-                const expiry = ch.expiry;
+                const expiry = ch.expiry;  // usiamo la scadenza già calcolata
                 if (expiry) {
                     expiryDiv.textContent = `⏳ ${expiry === "Scaduto" ? "Scaduto" : `Scade il: ${expiry}`}`;
                 } else {
@@ -327,17 +283,18 @@ async function init(m3uContent) {
                 }
             }
 
-            // Mostra programma attuale/successivo
-            await updateProgramInfo(ch.name);
-
             await player.unload();
+            
             player.configure({ drm: { clearKeys: ch.drm || {} } });
+
             if (ch.streamHeaders && Object.keys(ch.streamHeaders).length > 0) {
                 player.configure({ streaming: { customHttpHeaders: ch.streamHeaders } });
             } else {
                 player.configure({ streaming: { customHttpHeaders: {} } });
             }
+
             await player.load(ch.url);
+
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
         grid.appendChild(card);
@@ -380,6 +337,7 @@ async function init(m3uContent) {
         } 
         else if (line.startsWith('http')) {
             currentChannel.url = line;
+            // Calcola subito la scadenza e la salva nel canale
             currentChannel.expiry = getExpiryFromUrl(line);
             createCard(currentChannel);
             loadedCount++;
