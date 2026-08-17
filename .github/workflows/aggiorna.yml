@@ -12,11 +12,12 @@ jobs:
         with:
           persist-credentials: true
 
-      # 1. Lista principale (momentaneamente disattivata)
+      # 1. Lista principale
       - name: Download base list
-        if: false   # <-- rimuovi per riattivare
         run: |
-          curl -sL -k --url "${{ secrets.URL_LISTA }}" > lista_privata.m3u
+          curl -sL -k \
+            -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36" \
+            "${{ secrets.URL_LISTA }}" > lista_privata.m3u
           echo "# Ultimo aggiornamento: $(date)" >> lista_privata.m3u
 
       # 2. Scarica il sky.m3u attuale dal Gist (così lo script può aggiornarlo)
@@ -39,9 +40,8 @@ jobs:
           SKY_DECRYPT_PASSWORD: ${{ secrets.SKY_DECRYPT_PASSWORD }}
           SKY_SOURCE_URL: ${{ secrets.SKY_SOURCE_URL }}
 
-      # 5. Carica i file aggiornati sul Gist
+      # 5. Carica i file aggiornati sui Gist
       - name: Deploy lista_privata.m3u to Gist
-        if: false   # <-- rimuovi per riattivare (insieme a quello sopra)
         uses: exuanbo/actions-deploy-gist@v1
         with:
           token: ${{ secrets.GIST_TOKEN }}
