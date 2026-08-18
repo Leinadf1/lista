@@ -185,6 +185,20 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("[DAZN] Errore dazn_events.m3u:", e); }
 
+        // 6. DAZN Swiss (dazn_swiss.m3u) dallo stesso Gist di Sky
+        let daznSwissContent = "";
+        try {
+            const gistBase = process.env.GIST_RAW_URL.replace(/\/[^\/]+$/, '');
+            const swissUrl = `${gistBase}/z_dazn_swiss.m3u?t=${Date.now()}`;
+            const swissResponse = await fetch(swissUrl);
+            if (swissResponse.ok) {
+                let rawSwiss = await swissResponse.text();
+                daznSwissContent = rawSwiss.replace(/^#EXTM3U\s*\n?/i, '').trim();
+            } else {
+                console.error("[DAZN Swiss] Fetch failed:", swissResponse.status);
+            }
+        } catch (e) { console.error("[DAZN Swiss] Errore:", e); }
+
         const existingNames = new Set();
         const baseLines = fileContent.split('\n');
         for (let i = 0; i < baseLines.length; i++) {
@@ -272,6 +286,11 @@ export default async function handler(req, res) {
             finalContent = finalContent.trimEnd() + "\n" + daznEventsContent;
         }
 
+        // Aggiunge DAZN Swiss appena sopra gli Eurosport
+        if (daznSwissContent) {
+            finalContent = finalContent.trimEnd() + "\n" + daznSwissContent;
+        }
+
         const eurosportM3U = CANALI_FISSI.map(c => buildM3U(c)).join('\n');
         finalContent = finalContent.trimEnd() + "\n" + eurosportM3U;
 
@@ -282,4 +301,4 @@ export default async function handler(req, res) {
         console.error(error);
         res.status(500).json({ error: "Errore caricamento liste" });
     }
-}
+        }
