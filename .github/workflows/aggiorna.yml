@@ -71,5 +71,5 @@ jobs:
         with:
           token: ${{ secrets.GIST_TOKEN }}
           gist_id: ${{ secrets.GIST_ID }}
-          file_path: dazn_swiss.m3u
+          file_path: z_dazn_swiss.m3u
           file_type: text
