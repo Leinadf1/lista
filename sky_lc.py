@@ -6,12 +6,74 @@ import json
 # === CONFIGURAZIONE SUPABASE ===
 SUPABASE_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtxaGFzZXZneWxmdGx2cWVzbW9kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NDQ4ODMsImV4cCI6MjA4ODMyMDg4M30.VpVgQ0x7tCxKRwyqqVW5szEPUUGW0BLEHBh0KAJf7oc"
 SUPABASE_URL = "https://liveac.net/sb/rest/v1/events"
-CATEGORY_NAME = "SKY ITALIA"
-OLD_SKY_FILE = "sky.m3u"
-OUTPUT_FILE = "sky.m3u"
 
-def get_all_channels():
-    """Recupera tutti i canali da Supabase."""
+CATEGORY_NAME = "SKY ITALIA"          # Categoria per sky.m3u
+DAZN_CATEGORY_NAME = "DAZN"           # Categoria per dazn_swiss.m3u (modifica se serve)
+
+OLD_SKY_FILE = "sky.m3u"             # File già esistente (per preservare i loghi)
+OUTPUT_FILE = "sky.m3u"
+DAZN_OUTPUT_FILE = "dazn_swiss.m3u"
+
+# Ordine desiderato delle categorie e dei canali Sky
+GROUP_ORDER = ["INTRATTENIMENTO", "CINEMA", "SPORT", "BAMBINI"]
+
+CHANNEL_ORDER = {
+    "INTRATTENIMENTO": [
+        "Sky TG24", "Sky Uno", "Sky Uno Plus", "Sky Atlantic", "Sky Serie",
+        "Sky Investigation", "Sky Collection", "Sky Documentaries", "Sky Crime",
+        "History", "Sky Nature", "Sky Arte", "Sky Adventure", "MTV", "Comedy Central"
+    ],
+    "CINEMA": [
+        "Sky Cinema Uno", "Sky Cinema Collection", "Sky Cinema Comedy", "Sky Cinema Action",
+        "Sky Cinema Stories", "Sky Cinema Illumination", "Sky Cinema Drama", "Sky Cinema Romance",
+        "Sky Cinema Suspense"
+    ],
+    "SPORT": [
+        "Sky Sport 24", "Sky Sport Uno", "Sky Sport F1", "Sky Sport Calcio", "Sky Sport Tennis",
+        "Sky Sport MotoGP", "Sky Sport Arena", "Sky Sport Max", "Sky Sport Basket",
+        "Sky Sport Legend", "Sky Sport Mix", "Sky Sport 251", "Sky Sport 252", "Sky Sport 253",
+        "Sky Sport 254", "Sky Sport 255", "Sky Sport 256", "Sky Sport 257", "Sky Sport 258",
+        "Sky Sport 259", "Sky Sport Golf"
+    ],
+    "BAMBINI": [
+        "Cartoon Network", "Nickelodeon", "DeAKids", "Nick Jr", "Boomerang"
+    ]
+}
+
+# Normalizzazione dei nomi per uniformare le varianti
+NAME_NORMALIZATION = {
+    "sky tg24": "Sky TG24", "sky uno": "Sky Uno", "sky uno +": "Sky Uno Plus",
+    "sky uno plus": "Sky Uno Plus", "sky atlantic": "Sky Atlantic", "sky serie": "Sky Serie",
+    "sky investigation": "Sky Investigation", "sky collection": "Sky Collection",
+    "sky documentaries": "Sky Documentaries", "sky crime": "Sky Crime", "history": "History",
+    "sky nature": "Sky Nature", "sky arte": "Sky Arte", "sky adventure": "Sky Adventure",
+    "mtv": "MTV", "comedy central": "Comedy Central", "sky cinema uno": "Sky Cinema Uno",
+    "sky cinema collection": "Sky Cinema Collection", "sky cinema comedy": "Sky Cinema Comedy",
+    "sky cinema action": "Sky Cinema Action", "sky cinema stories": "Sky Cinema Stories",
+    "sky cinema illumination": "Sky Cinema Illumination", "sky cinema family": "Sky Cinema Illumination",
+    "sky cinema drama": "Sky Cinema Drama", "sky cinema romance": "Sky Cinema Romance",
+    "sky cinema suspense": "Sky Cinema Suspense", "sky sport 24": "Sky Sport 24",
+    "sky sport uno": "Sky Sport Uno", "sky sport f1": "Sky Sport F1",
+    "sky sport calcio": "Sky Sport Calcio", "sky sport tennis": "Sky Sport Tennis",
+    "sky sport motogp": "Sky Sport MotoGP", "sky sport arena": "Sky Sport Arena",
+    "sky sport max": "Sky Sport Max", "sky sport basket": "Sky Sport Basket",
+    "sky sport legend": "Sky Sport Legend", "sky sport mix": "Sky Sport Mix",
+    "sky sport 251": "Sky Sport 251", "sky sport 252": "Sky Sport 252",
+    "sky sport 253": "Sky Sport 253", "sky sport 254": "Sky Sport 254",
+    "sky sport 255": "Sky Sport 255", "sky sport 256": "Sky Sport 256",
+    "sky sport 257": "Sky Sport 257", "sky sport 258": "Sky Sport 258",
+    "sky sport 259": "Sky Sport 259", "sky sport golf": "Sky Sport Golf",
+    "cartoon network": "Cartoon Network", "nickelodeon": "Nickelodeon",
+    "deakids": "DeAKids", "nick jr": "Nick Jr", "boomerang": "Boomerang"
+}
+
+def normalize_name(name):
+    """Restituisce il nome normalizzato, se presente nel dizionario."""
+    key = name.strip().lower()
+    return NAME_NORMALIZATION.get(key, name.strip())
+
+def fetch_category_channels(category):
+    """Recupera i canali di una categoria da Supabase."""
     headers = {
         "user-agent": "Mozilla/5.0",
         'x-client-info': 'supabase-js-web/2.99.3',
@@ -22,120 +84,185 @@ def get_all_channels():
     try:
         r = requests.get(SUPABASE_URL, headers=headers, params=params, timeout=15)
         r.raise_for_status()
-        return r.json()
+        data = r.json()
     except Exception as e:
-        print(f"⚠️  Errore Supabase: {e}", file=sys.stderr)
-        return None
+        print(f"❌ Errore nel recupero canali: {e}", file=sys.stderr)
+        sys.exit(1)
 
-def parse_old_file(filepath):
-    """
-    Legge il vecchio sky.m3u e restituisce una lista ordinata di blocchi.
-    Ogni blocco è un dizionario con chiavi: 'lines' (tutte le righe del blocco),
-    'name' (normalizzato), 'group', 'logo', 'url'.
-    """
+    return [c for c in data if c.get('category', '').strip().lower() == category.lower()]
+
+def parse_existing_channels(filepath):
+    """Legge il vecchio sky.m3u e restituisce un dizionario case‑insensitive."""
+    channels = {}
     if not os.path.exists(filepath):
-        return []
+        return channels
 
     with open(filepath, 'r', encoding='utf-8') as f:
         lines = f.readlines()
 
-    blocks = []
     i = 0
     while i < len(lines):
         line = lines[i].strip()
         if line.startswith('#EXTINF:'):
-            # Raccogli il blocco fino all'URL incluso
-            block_start = i
-            # Estrai nome
-            name = line.split(',', 1)[-1].strip()
-            # Estrai gruppo
+            name_match = line.split(',', 1)
+            name = name_match[1].strip() if len(name_match) > 1 else ""
+            logo = ""
+            logo_match = line.find('tvg-logo="')
+            if logo_match != -1:
+                start = logo_match + len('tvg-logo="')
+                end = line.find('"', start)
+                if end != -1:
+                    logo = line[start:end]
             group = "INTRATTENIMENTO"
-            grp_match = line.find('group-title="')
-            if grp_match != -1:
-                start = grp_match + len('group-title="')
+            group_match = line.find('group-title="')
+            if group_match != -1:
+                start = group_match + len('group-title="')
                 end = line.find('"', start)
                 if end != -1:
                     group = line[start:end]
+
+            drm = {}
+            url = ""
             i += 1
             while i < len(lines) and not lines[i].strip().startswith('http'):
+                kodiline = lines[i].strip()
+                if kodiline.startswith('#KODIPROP:inputstream.adaptive.license_key='):
+                    val = kodiline.split('=', 1)[1]
+                    try:
+                        drm = json.loads(val)
+                    except:
+                        if ':' in val:
+                            k, v = val.split(':', 1)
+                            drm = {k.strip(): v.strip()}
+                        else:
+                            drm = {}
                 i += 1
             if i < len(lines) and lines[i].strip().startswith('http'):
                 url = lines[i].strip()
-                blocks.append({
-                    'lines': lines[block_start:i+1],  # tutte le righe del blocco
-                    'name': name.strip().lower(),
+
+            if name and url:
+                key = normalize_name(name).lower()
+                channels[key] = {
+                    'logo': logo,
                     'group': group,
-                    'url': url
-                })
+                    'name': name,
+                    'url': url,
+                    'drm': json.dumps(drm) if drm else ''
+                }
         else:
             i += 1
-    return blocks
 
-def find_in_supabase(name, supabase_data):
-    """Cerca il canale in Supabase (confronto case‑insensitive)."""
-    if not supabase_data:
-        return None
-    target = name.lower()
-    for item in supabase_data:
-        title = item.get('title', '').strip().lower()
-        if title == target:
-            return item
-    return None
+    return channels
 
-def main():
-    print("📡 Recupero canali da Supabase...")
-    supabase_data = get_all_channels()
-    if supabase_data is None:
-        print("⚠️  Supabase irraggiungibile. La lista non verrà modificata.")
-        # Se il file esiste già, non facciamo nulla; altrimenti errore
-        if not os.path.exists(OLD_SKY_FILE):
-            print("❌ Il file sky.m3u non esiste e non possiamo generarlo.")
-            sys.exit(1)
-        return
-    # Filtra per categoria
-    supabase_channels = [c for c in supabase_data if c.get('category', '').strip().lower() == CATEGORY_NAME.lower()]
-    print(f"📌 Trovati {len(supabase_channels)} canali in Supabase.")
+def determine_group(channel_name):
+    name_upper = channel_name.upper()
+    if any(w in name_upper for w in ['CINEMA']): return 'CINEMA'
+    if any(w in name_upper for w in ['SPORT', 'F1', 'MOTOGP', 'BASKET', 'GOLF', 'LEGEND', 'ARENA', 'MAX', 'MIX', 'CALCIO', 'TENNIS']): return 'SPORT'
+    if any(w in name_upper for w in ['BAMBINI', 'CARTOON', 'NICK', 'BOOMERANG', 'DEAKIDS']): return 'BAMBINI'
+    return 'INTRATTENIMENTO'
 
-    old_blocks = parse_old_file(OLD_SKY_FILE)
-    if not old_blocks:
-        print("❌ Il file sky.m3u è vuoto o non esiste. Nessun aggiornamento possibile.")
-        sys.exit(1)
+def generate_sky_m3u(supabase_channels, existing_channels):
+    """Crea sky.m3u preservando i loghi esistenti."""
+    grouped = {g: [] for g in GROUP_ORDER}
 
-    updated_blocks = []
-    for block in old_blocks:
-        name = block['name']
-        sup_item = find_in_supabase(name, supabase_channels)
-        if sup_item:
-            # Aggiorna solo URL e DRM; il resto (logo, gruppo, nome) resta uguale
-            kids = sup_item.get('drm_key_id', '')
-            keys = sup_item.get('drm_key', '')
-            mpd = sup_item.get('mpd_url', '')
-            # Ricostruisci le righe KODIPROP
-            new_lines = [block['lines'][0]]  # EXTINF (logo, gruppo, nome originali)
+    for ch in supabase_channels:
+        title = ch.get('title', '').strip()
+        if not title:
+            continue
+        normalized_title = normalize_name(title)
+        group = determine_group(normalized_title)
+        existing_key = normalized_title.lower()
+
+        if existing_key in existing_channels:
+            old = existing_channels[existing_key]
+            grouped[group].append({
+                'name': old['name'],
+                'logo': old['logo'],
+                'kids': ch.get('drm_key_id', ''),
+                'keys': ch.get('drm_key', ''),
+                'mpd': ch.get('mpd_url', '')
+            })
+        else:
+            grouped[group].append({
+                'name': normalized_title,
+                'logo': '',
+                'kids': ch.get('drm_key_id', ''),
+                'keys': ch.get('drm_key', ''),
+                'mpd': ch.get('mpd_url', '')
+            })
+
+    for group, order_list in CHANNEL_ORDER.items():
+        if group in grouped:
+            ordered = []
+            for name in order_list:
+                for ch in grouped[group]:
+                    if ch['name'] == name:
+                        ordered.append(ch)
+                        break
+            grouped[group] = ordered
+
+    with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
+        f.write("#EXTM3U\n")
+        for group in GROUP_ORDER:
+            for ch in grouped.get(group, []):
+                f.write(f'#EXTINF:-1 tvg-logo="{ch["logo"]}" group-title="{group}",{ch["name"]}\n')
+                if ch['kids'] and ch['keys']:
+                    kids_list = [k.strip() for k in ch['kids'].split(',') if k.strip()]
+                    keys_list = [k.strip() for k in ch['keys'].split(',') if k.strip()]
+                    if len(kids_list) == len(keys_list):
+                        license_key = ','.join(f"{kid}:{key}" for kid, key in zip(kids_list, keys_list))
+                    else:
+                        license_key = f"{ch['kids']}:{ch['keys']}"
+                    f.write('#KODIPROP:inputstream.adaptive.manifest_type=mpd\n')
+                    f.write('#KODIPROP:inputstream.adaptive.license_type=clearkey\n')
+                    f.write(f'#KODIPROP:inputstream.adaptive.license_key={license_key}\n')
+                f.write(f'{ch["mpd"]}\n\n')
+    print(f"✅ {OUTPUT_FILE} generato con {sum(len(v) for v in grouped.values())} canali.")
+
+def generate_dazn_m3u(channels):
+    """Crea dazn_swiss.m3u dai canali della categoria DAZN."""
+    with open(DAZN_OUTPUT_FILE, 'w', encoding='utf-8') as f:
+        f.write("#EXTM3U\n")
+        for ch in channels:
+            title = ch.get('title', '').strip()
+            logo = ch.get('thumbnail_url', '')
+            kids = ch.get('drm_key_id', '')
+            keys = ch.get('drm_key', '')
+            mpd = ch.get('mpd_url', '')
+
+            if not title or not mpd:
+                continue
+
+            f.write(f'#EXTINF:-1 tvg-logo="{logo}" group-title="DAZN",{title}\n')
             if kids and keys:
                 kids_list = [k.strip() for k in kids.split(',') if k.strip()]
                 keys_list = [k.strip() for k in keys.split(',') if k.strip()]
-                license_key = ','.join(f"{kid}:{key}" for kid, key in zip(kids_list, keys_list))
-                new_lines.append('#KODIPROP:inputstream.adaptive.manifest_type=mpd\n')
-                new_lines.append('#KODIPROP:inputstream.adaptive.license_type=clearkey\n')
-                new_lines.append(f'#KODIPROP:inputstream.adaptive.license_key={license_key}\n')
-            else:
-                # Mantieni le vecchie righe KODIPROP se non ci sono nuove chiavi
-                # Prendi tutte le righe dopo EXTINF fino all'URL escluso
-                old_kodis = block['lines'][1:-1]  # escludendo EXTINF e URL
-                new_lines.extend(old_kodis)
-            new_lines.append(mpd + '\n')
-            updated_blocks.append(''.join(new_lines))
-        else:
-            # Canale non trovato in Supabase: mantieni il blocco originale
-            updated_blocks.append(''.join(block['lines']))
-
-    # Scrivi il file
-    with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
-        f.write("#EXTM3U\n")
-        for blk in updated_blocks:
-            f.write(blk)
-    print(f"✅ sky.m3u aggiornato ({len(old_blocks)} canali).")
+                if len(kids_list) == len(keys_list):
+                    license_key = ','.join(f"{kid}:{key}" for kid, key in zip(kids_list, keys_list))
+                else:
+                    license_key = f"{kids}:{keys}"
+                f.write('#KODIPROP:inputstream.adaptive.manifest_type=mpd\n')
+                f.write('#KODIPROP:inputstream.adaptive.license_type=clearkey\n')
+                f.write(f'#KODIPROP:inputstream.adaptive.license_key={license_key}\n')
+            f.write(f'{mpd}\n\n')
+    print(f"✅ {DAZN_OUTPUT_FILE} generato con {len(channels)} canali.")
 
 if __name__ == "__main__":
-    main()
+    # --- SKY ---
+    print("📡 Recupero canali Sky da Supabase...")
+    sky_channels = fetch_category_channels(CATEGORY_NAME)
+    if not sky_channels:
+        print("❌ Nessun canale Sky trovato.")
+        sys.exit(1)
+    print(f"📌 Trovati {len(sky_channels)} canali Sky.")
+    existing_channels = parse_existing_channels(OLD_SKY_FILE)
+    generate_sky_m3u(sky_channels, existing_channels)
+
+    # --- DAZN ---
+    print("📡 Recupero canali DAZN da Supabase...")
+    dazn_channels = fetch_category_channels(DAZN_CATEGORY_NAME)
+    if dazn_channels:
+        print(f"📌 Trovati {len(dazn_channels)} canali DAZN.")
+        generate_dazn_m3u(dazn_channels)
+    else:
+        print("⚠️ Nessun canale DAZN trovato.")
