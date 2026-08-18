@@ -194,14 +194,26 @@ function decodeBase32(input) {
     return output;
 }
 
-// ---- ESTRAI SCADENZA DA z32 ----
+// ---- ESTRAI SCADENZA DA z32 (con debug) ----
 function getExpiryFromZ32(url) {
     const match = url.match(/z32=([A-Za-z0-9]+)/);
     if (!match) return null;
 
     try {
         const decoded = decodeBase32(match[1]);
-        const json = JSON.parse(decoded);
+        console.log('[z32] Parametro trovato:', match[1]);
+        console.log('[z32] Decodificato (stringa):', decoded);
+        
+        let json;
+        try {
+            json = JSON.parse(decoded);
+            console.log('[z32] JSON decodificato:', json);
+        } catch (e) {
+            console.error('[z32] Errore nel parsing JSON:', e);
+            console.log('[z32] Primi 200 caratteri decodificati:', decoded.substring(0, 200));
+            return null;
+        }
+
         // Cerca i campi comuni di scadenza
         const expiryFields = ['exp', 'expires', 'expiry', 'expires_at', 'valid_until'];
         for (const field of expiryFields) {
@@ -209,15 +221,18 @@ function getExpiryFromZ32(url) {
                 const ts = typeof json[field] === 'number' ? json[field] * 1000 : Date.parse(json[field]);
                 if (!isNaN(ts)) {
                     const date = new Date(ts);
+                    console.log(`[z32] Scadenza trovata in campo '${field}':`, date.toLocaleString('it-IT', { timeZone: 'Europe/Rome' }));
                     if (Date.now() > ts) return "Scaduto";
                     return date.toLocaleString('it-IT', { timeZone: 'Europe/Rome' });
                 }
             }
         }
+        console.warn('[z32] Nessun campo di scadenza riconosciuto nel JSON:', json);
+        return null;
     } catch (e) {
-        // Non è un JSON valido, nessuna scadenza
+        console.error('[z32] Errore generico:', e);
+        return null;
     }
-    return null;
 }
 
 // Funzione universale per estrarre la scadenza (Sky, DAZN, DAZN Swiss)
@@ -329,7 +344,12 @@ async function init(m3uContent) {
                 if (expiry) {
                     expiryDiv.textContent = `⏳ ${expiry === "Scaduto" ? "Scaduto" : `Scade il: ${expiry}`}`;
                 } else {
-                    expiryDiv.textContent = '';
+                    // Debug: se l'URL contiene z32, mostra un messaggio temporaneo
+                    if (ch.url && ch.url.includes('z32=')) {
+                        expiryDiv.textContent = '🔍 Debug z32: nessuna scadenza trovata (vedi console)';
+                    } else {
+                        expiryDiv.textContent = '';
+                    }
                 }
             }
 
