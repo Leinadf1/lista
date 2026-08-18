@@ -28,8 +28,8 @@ jobs:
           echo "File scaricato:"
           head -5 sky.m3u
 
-      # 3. Genera sky.m3u (aggiorna solo URL/DRM, non tocca loghi)
-      - name: Update sky.m3u (Supabase)
+      # 3. Genera sky.m3u e dazn_swiss.m3u (aggiorna solo URL/DRM, non tocca loghi)
+      - name: Update lists from Supabase
         run: |
           pip install requests
           python sky_lc.py
@@ -64,4 +64,12 @@ jobs:
           token: ${{ secrets.GIST_TOKEN }}
           gist_id: ${{ secrets.GIST_ID }}
           file_path: sky2.m3u
+          file_type: text
+
+      - name: Deploy dazn_swiss.m3u to Gist
+        uses: exuanbo/actions-deploy-gist@v1
+        with:
+          token: ${{ secrets.GIST_TOKEN }}
+          gist_id: ${{ secrets.GIST_ID }}
+          file_path: dazn_swiss.m3u
           file_type: text
