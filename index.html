@@ -174,9 +174,59 @@ function startHeartbeat(password) {
     }, 15000);
 }
 
-// Funzione universale per estrarre la scadenza (Sky o DAZN)
+// ---- DECODIFICA BASE32 ----
+function decodeBase32(input) {
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+    let bits = 0;
+    let value = 0;
+    let output = '';
+    for (let i = 0; i < input.length; i++) {
+        const c = input.charAt(i).toUpperCase();
+        const idx = alphabet.indexOf(c);
+        if (idx === -1) continue;
+        value = (value << 5) | idx;
+        bits += 5;
+        if (bits >= 8) {
+            output += String.fromCharCode((value >>> (bits - 8)) & 255);
+            bits -= 8;
+        }
+    }
+    return output;
+}
+
+// ---- ESTRAI SCADENZA DA z32 ----
+function getExpiryFromZ32(url) {
+    const match = url.match(/z32=([A-Za-z0-9]+)/);
+    if (!match) return null;
+
+    try {
+        const decoded = decodeBase32(match[1]);
+        const json = JSON.parse(decoded);
+        // Cerca i campi comuni di scadenza
+        const expiryFields = ['exp', 'expires', 'expiry', 'expires_at', 'valid_until'];
+        for (const field of expiryFields) {
+            if (json[field]) {
+                const ts = typeof json[field] === 'number' ? json[field] * 1000 : Date.parse(json[field]);
+                if (!isNaN(ts)) {
+                    const date = new Date(ts);
+                    if (Date.now() > ts) return "Scaduto";
+                    return date.toLocaleString('it-IT', { timeZone: 'Europe/Rome' });
+                }
+            }
+        }
+    } catch (e) {
+        // Non è un JSON valido, nessuna scadenza
+    }
+    return null;
+}
+
+// Funzione universale per estrarre la scadenza (Sky, DAZN, DAZN Swiss)
 function getExpiryFromUrl(url) {
-    // 1. Prova formato Sky: e~xxxxxxxxxx
+    // 1. Prova z32 (DAZN Swiss)
+    let expiry = getExpiryFromZ32(url);
+    if (expiry) return expiry;
+
+    // 2. Prova formato Sky: e~xxxxxxxxxx
     let match = url.match(/e~(\d+)/);
     if (match) {
         const ts = parseInt(match[1]) * 1000;
@@ -185,7 +235,7 @@ function getExpiryFromUrl(url) {
         return new Date(ts).toLocaleString('it-IT', { timeZone: 'Europe/Rome' });
     }
 
-    // 2. Prova formato DAZN: token JWT nell'URL (dopo @)
+    // 3. Prova formato DAZN: token JWT nell'URL (dopo @)
     match = url.match(/@(eyJ[A-Za-z0-9\-_]+?\.[A-Za-z0-9\-_]+?\.[A-Za-z0-9\-_]+)/);
     if (match) {
         try {
