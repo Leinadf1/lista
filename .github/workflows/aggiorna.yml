@@ -20,7 +20,6 @@ jobs:
           curl -sL -k \
             -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36" \
             "${{ secrets.URL_LISTA }}" >> lista_privata.m3u
-          echo "# Ultimo aggiornamento: $(date)" >> lista_privata.m3u
 
       # 2. Scarica il sky.m3u attuale dal Gist (così lo script può aggiornarlo)
       - name: Fetch current sky.m3u from Gist
