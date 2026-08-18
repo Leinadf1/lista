@@ -12,7 +12,7 @@ DAZN_CATEGORY_NAME = "DAZN"           # Categoria per dazn_swiss.m3u (modifica s
 
 OLD_SKY_FILE = "sky.m3u"             # File già esistente (per preservare i loghi)
 OUTPUT_FILE = "sky.m3u"
-DAZN_OUTPUT_FILE = "dazn_swiss.m3u"
+DAZN_OUTPUT_FILE = "z_dazn_swiss.m3u"
 
 # Ordine desiderato delle categorie e dei canali Sky
 GROUP_ORDER = ["INTRATTENIMENTO", "CINEMA", "SPORT", "BAMBINI"]
