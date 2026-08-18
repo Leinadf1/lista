@@ -2,6 +2,7 @@ import requests
 import sys
 import os
 import json
+import re
 
 # === CONFIGURAZIONE SUPABASE ===
 SUPABASE_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtxaGFzZXZneWxmdGx2cWVzbW9kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NDQ4ODMsImV4cCI6MjA4ODMyMDg4M30.VpVgQ0x7tCxKRwyqqVW5szEPUUGW0BLEHBh0KAJf7oc"
@@ -12,7 +13,7 @@ DAZN_CATEGORY_NAME = "DAZN"           # Categoria per dazn_swiss.m3u (modifica s
 
 OLD_SKY_FILE = "sky.m3u"             # File già esistente (per preservare i loghi)
 OUTPUT_FILE = "sky.m3u"
-DAZN_OUTPUT_FILE = "z_dazn_swiss.m3u"
+DAZN_OUTPUT_FILE = "z_dazn_swiss.m3u"   # ← nome aggiornato
 
 # Ordine desiderato delle categorie e dei canali Sky
 GROUP_ORDER = ["INTRATTENIMENTO", "CINEMA", "SPORT", "BAMBINI"]
@@ -220,10 +221,20 @@ def generate_sky_m3u(supabase_channels, existing_channels):
     print(f"✅ {OUTPUT_FILE} generato con {sum(len(v) for v in grouped.values())} canali.")
 
 def generate_dazn_m3u(channels):
-    """Crea dazn_swiss.m3u dai canali della categoria DAZN."""
+    """Crea z_dazn_swiss.m3u con categoria 'DAZN Svizzeri' e ordinamento numerico."""
+    # Ordina numericamente i canali DAZN in base al numero nel titolo
+    def sort_key(ch):
+        title = ch.get('title', '').strip()
+        m = re.search(r'(\d+)', title)
+        if m:
+            return (0, int(m.group(1)), title)
+        return (1, 0, title)
+
+    channels_sorted = sorted(channels, key=sort_key)
+
     with open(DAZN_OUTPUT_FILE, 'w', encoding='utf-8') as f:
         f.write("#EXTM3U\n")
-        for ch in channels:
+        for ch in channels_sorted:
             title = ch.get('title', '').strip()
             logo = ch.get('thumbnail_url', '')
             kids = ch.get('drm_key_id', '')
@@ -233,7 +244,7 @@ def generate_dazn_m3u(channels):
             if not title or not mpd:
                 continue
 
-            f.write(f'#EXTINF:-1 tvg-logo="{logo}" group-title="DAZN",{title}\n')
+            f.write(f'#EXTINF:-1 tvg-logo="{logo}" group-title="DAZN Svizzeri",{title}\n')
             if kids and keys:
                 kids_list = [k.strip() for k in kids.split(',') if k.strip()]
                 keys_list = [k.strip() for k in keys.split(',') if k.strip()]
@@ -245,7 +256,7 @@ def generate_dazn_m3u(channels):
                 f.write('#KODIPROP:inputstream.adaptive.license_type=clearkey\n')
                 f.write(f'#KODIPROP:inputstream.adaptive.license_key={license_key}\n')
             f.write(f'{mpd}\n\n')
-    print(f"✅ {DAZN_OUTPUT_FILE} generato con {len(channels)} canali.")
+    print(f"✅ {DAZN_OUTPUT_FILE} generato con {len(channels_sorted)} canali DAZN Svizzeri.")
 
 if __name__ == "__main__":
     # --- SKY ---
@@ -258,8 +269,8 @@ if __name__ == "__main__":
     existing_channels = parse_existing_channels(OLD_SKY_FILE)
     generate_sky_m3u(sky_channels, existing_channels)
 
-    # --- DAZN ---
-    print("📡 Recupero canali DAZN da Supabase...")
+    # --- DAZN Svizzeri ---
+    print("📡 Recupero canali DAZN Svizzeri da Supabase...")
     dazn_channels = fetch_category_channels(DAZN_CATEGORY_NAME)
     if dazn_channels:
         print(f"📌 Trovati {len(dazn_channels)} canali DAZN.")
