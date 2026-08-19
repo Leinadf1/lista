@@ -261,46 +261,19 @@ async function init(m3uContent) {
 
     player.configure({ streaming: { jumpLargeGaps: true } });
 
-    // Funzione per rinominare le tracce audio
-    function renameAudioTracks() {
-        const tracks = player.getAudioTracks();
-        tracks.forEach(track => {
-            const code = (track.id || track.language || track.label || '').toLowerCase();
-            const friendlyName = audioTrackNames[code];
-            if (friendlyName) {
-                track.label = friendlyName;
-                track.language = friendlyName;
-            } else {
-                // Prova a cercare una corrispondenza parziale
-                for (const key in audioTrackNames) {
-                    if (code.includes(key)) {
-                        track.label = audioTrackNames[key];
-                        track.language = audioTrackNames[key];
-                        break;
-                    }
-                }
+    // --- Osserva il DOM per sostituire automaticamente i testi audio ---
+    const observer = new MutationObserver(() => {
+        // Sostituisci i testi qae, qaf, ecc. con i nomi amichevoli
+        const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+        while (walker.nextNode()) {
+            const node = walker.currentNode;
+            const text = node.nodeValue.trim().toLowerCase();
+            if (audioTrackNames[text]) {
+                node.nodeValue = audioTrackNames[text];
             }
-        });
-
-        // Forza l'aggiornamento del menu audio dopo un breve ritardo
-        setTimeout(() => {
-            const audioMenuItems = document.querySelectorAll('.shaka-audio-language .shaka-menu-item, .shaka-audio-language .shaka-track');
-            audioMenuItems.forEach(item => {
-                const originalText = item.textContent.trim();
-                const lower = originalText.toLowerCase();
-                if (audioTrackNames[lower]) {
-                    item.textContent = audioTrackNames[lower];
-                } else {
-                    for (const key in audioTrackNames) {
-                        if (lower.includes(key)) {
-                            item.textContent = audioTrackNames[key];
-                            break;
-                        }
-                    }
-                }
-            });
-        }, 100);
-    }
+        }
+    });
+    observer.observe(document.body, { childList: true, subtree: true, characterData: true });
 
     function createCard(ch) {
         const name = (ch.group || "LISTA").toUpperCase().trim();
@@ -347,9 +320,6 @@ async function init(m3uContent) {
             }
 
             await player.load(ch.url);
-
-            // Rinomina le tracce audio dopo il caricamento
-            renameAudioTracks();
 
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
