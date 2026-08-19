@@ -161,7 +161,7 @@
 let passwordGlobale = "";
 let heartbeatInterval;
 
-// Mappa fissa ID audio → nome leggibile
+// Mappa ID audio → nome leggibile
 const audioTrackNames = {
     'qae': 'AMBIENTALE',
     'qaf': 'INGLESE',
@@ -261,19 +261,34 @@ async function init(m3uContent) {
 
     player.configure({ streaming: { jumpLargeGaps: true } });
 
-    // --- Osserva il DOM per sostituire automaticamente i testi audio ---
-    const observer = new MutationObserver(() => {
-        // Sostituisci i testi qae, qaf, ecc. con i nomi amichevoli
-        const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-        while (walker.nextNode()) {
-            const node = walker.currentNode;
-            const text = node.nodeValue.trim().toLowerCase();
-            if (audioTrackNames[text]) {
-                node.nodeValue = audioTrackNames[text];
-            }
-        }
-    });
-    observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+    // ====== NUOVO: response filter per modificare il manifest e le etichette audio ======
+    if (!window.__audioFilterRegistered) {
+        window.__audioFilterRegistered = true;
+        player.getNetworkingEngine().registerResponseFilter(async (type, response) => {
+            if (type !== 'manifest') return;
+
+            // Decodifica il manifest XML
+            const text = new TextDecoder().decode(response.data);
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(text, 'application/xml');
+
+            // Trova tutti gli elementi che rappresentano tracce audio e aggiungi label
+            const audioElements = doc.querySelectorAll('Representation, AdaptationSet');
+            audioElements.forEach(el => {
+                const idAttr = el.getAttribute('id') || el.getAttribute('audioTrackId') || el.getAttribute('value');
+                const id = idAttr ? idAttr.toLowerCase() : '';
+                if (audioTrackNames[id]) {
+                    el.setAttribute('label', audioTrackNames[id]);
+                    el.setAttribute('lang', audioTrackNames[id]);
+                }
+            });
+
+            // Serializza il manifest modificato
+            const serializer = new XMLSerializer();
+            const modifiedText = serializer.serializeToString(doc);
+            response.data = new TextEncoder().encode(modifiedText);
+        });
+    }
 
     function createCard(ch) {
         const name = (ch.group || "LISTA").toUpperCase().trim();
@@ -299,7 +314,6 @@ async function init(m3uContent) {
             document.querySelectorAll('.channel-card').forEach(c => c.classList.remove('active'));
             card.classList.add('active');
             
-            // Mostra subito la scadenza, anche prima di avviare il player
             if (expiryDiv) {
                 const expiry = ch.expiry;
                 if (expiry) {
@@ -310,7 +324,6 @@ async function init(m3uContent) {
             }
 
             await player.unload();
-            
             player.configure({ drm: { clearKeys: ch.drm || {} } });
 
             if (ch.streamHeaders && Object.keys(ch.streamHeaders).length > 0) {
@@ -320,7 +333,6 @@ async function init(m3uContent) {
             }
 
             await player.load(ch.url);
-
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
         grid.appendChild(card);
