@@ -161,7 +161,7 @@
 let passwordGlobale = "";
 let heartbeatInterval;
 
-// Mappa ID audio → nome leggibile
+// Mappa fissa ID audio → nome leggibile
 const audioTrackNames = {
     'qae': 'AMBIENTALE',
     'qaf': 'INGLESE',
@@ -265,12 +265,41 @@ async function init(m3uContent) {
     function renameAudioTracks() {
         const tracks = player.getAudioTracks();
         tracks.forEach(track => {
-            const id = track.id;
-            if (audioTrackNames[id]) {
-                track.label = audioTrackNames[id];
-                track.language = audioTrackNames[id];
+            const code = (track.id || track.language || track.label || '').toLowerCase();
+            const friendlyName = audioTrackNames[code];
+            if (friendlyName) {
+                track.label = friendlyName;
+                track.language = friendlyName;
+            } else {
+                // Prova a cercare una corrispondenza parziale
+                for (const key in audioTrackNames) {
+                    if (code.includes(key)) {
+                        track.label = audioTrackNames[key];
+                        track.language = audioTrackNames[key];
+                        break;
+                    }
+                }
             }
         });
+
+        // Forza l'aggiornamento del menu audio dopo un breve ritardo
+        setTimeout(() => {
+            const audioMenuItems = document.querySelectorAll('.shaka-audio-language .shaka-menu-item, .shaka-audio-language .shaka-track');
+            audioMenuItems.forEach(item => {
+                const originalText = item.textContent.trim();
+                const lower = originalText.toLowerCase();
+                if (audioTrackNames[lower]) {
+                    item.textContent = audioTrackNames[lower];
+                } else {
+                    for (const key in audioTrackNames) {
+                        if (lower.includes(key)) {
+                            item.textContent = audioTrackNames[key];
+                            break;
+                        }
+                    }
+                }
+            });
+        }, 100);
     }
 
     function createCard(ch) {
@@ -299,7 +328,7 @@ async function init(m3uContent) {
             
             // Mostra subito la scadenza, anche prima di avviare il player
             if (expiryDiv) {
-                const expiry = ch.expiry;  // usiamo la scadenza già calcolata
+                const expiry = ch.expiry;
                 if (expiry) {
                     expiryDiv.textContent = `⏳ ${expiry === "Scaduto" ? "Scaduto" : `Scade il: ${expiry}`}`;
                 } else {
@@ -326,30 +355,6 @@ async function init(m3uContent) {
         };
         grid.appendChild(card);
     }
-
-    // Listener per aggiornare il menu audio quando viene aperto
-    document.addEventListener('click', function(e) {
-        if (e.target.closest('.shaka-audio-language')) {
-            setTimeout(() => {
-                const items = document.querySelectorAll('.shaka-audio-language .shaka-menu-item, .shaka-audio-language .shaka-track');
-                items.forEach(item => {
-                    const original = item.textContent.trim();
-                    // Se il testo coincide con uno degli ID, sostituiscilo
-                    if (audioTrackNames[original]) {
-                        item.textContent = audioTrackNames[original];
-                    } else {
-                        // Prova a estrarre l'ID dal testo
-                        for (const key in audioTrackNames) {
-                            if (original.includes(key)) {
-                                item.textContent = audioTrackNames[key];
-                                break;
-                            }
-                        }
-                    }
-                });
-            }, 50);
-        }
-    });
 
     const lines = m3uContent.split('\n');
     let currentChannel = { name: "", logo: "", group: "LISTA", drm: {}, url: "", streamHeaders: {} };
@@ -388,7 +393,6 @@ async function init(m3uContent) {
         } 
         else if (line.startsWith('http')) {
             currentChannel.url = line;
-            // Calcola subito la scadenza e la salva nel canale
             currentChannel.expiry = getExpiryFromUrl(line);
             createCard(currentChannel);
             loadedCount++;
