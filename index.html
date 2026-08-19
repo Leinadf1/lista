@@ -161,6 +161,18 @@
 let passwordGlobale = "";
 let heartbeatInterval;
 
+// Mappa ID audio → nome leggibile
+const audioTrackNames = {
+    'qae': 'AMBIENTALE',
+    'qaf': 'INGLESE',
+    'qag': 'AMBIENTALE',
+    'qah': 'TEDESCO',
+    'qai': 'AMBIENTALE',
+    'qaj': 'SPAGNOLO',
+    'qak': 'ITALIANO',
+    'qal': 'AMBIENTALE'
+};
+
 function startHeartbeat(password) {
     if (heartbeatInterval) clearInterval(heartbeatInterval);
     heartbeatInterval = setInterval(async () => {
@@ -249,6 +261,18 @@ async function init(m3uContent) {
 
     player.configure({ streaming: { jumpLargeGaps: true } });
 
+    // Funzione per rinominare le tracce audio
+    function renameAudioTracks() {
+        const tracks = player.getAudioTracks();
+        tracks.forEach(track => {
+            const id = track.id;
+            if (audioTrackNames[id]) {
+                track.label = audioTrackNames[id];
+                track.language = audioTrackNames[id];
+            }
+        });
+    }
+
     function createCard(ch) {
         const name = (ch.group || "LISTA").toUpperCase().trim();
         let gridId = `grid-${name.replace(/[^a-z0-9]/gi, '-')}`;
@@ -295,10 +319,37 @@ async function init(m3uContent) {
 
             await player.load(ch.url);
 
+            // Rinomina le tracce audio dopo il caricamento
+            renameAudioTracks();
+
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
         grid.appendChild(card);
     }
+
+    // Listener per aggiornare il menu audio quando viene aperto
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.shaka-audio-language')) {
+            setTimeout(() => {
+                const items = document.querySelectorAll('.shaka-audio-language .shaka-menu-item, .shaka-audio-language .shaka-track');
+                items.forEach(item => {
+                    const original = item.textContent.trim();
+                    // Se il testo coincide con uno degli ID, sostituiscilo
+                    if (audioTrackNames[original]) {
+                        item.textContent = audioTrackNames[original];
+                    } else {
+                        // Prova a estrarre l'ID dal testo
+                        for (const key in audioTrackNames) {
+                            if (original.includes(key)) {
+                                item.textContent = audioTrackNames[key];
+                                break;
+                            }
+                        }
+                    }
+                });
+            }, 50);
+        }
+    });
 
     const lines = m3uContent.split('\n');
     let currentChannel = { name: "", logo: "", group: "LISTA", drm: {}, url: "", streamHeaders: {} };
