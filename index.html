@@ -161,18 +161,6 @@
 let passwordGlobale = "";
 let heartbeatInterval;
 
-// Mappa ID audio → nome leggibile
-const audioTrackNames = {
-    'qae': 'AMBIENTALE',
-    'qaf': 'INGLESE',
-    'qag': 'AMBIENTALE',
-    'qah': 'TEDESCO',
-    'qai': 'AMBIENTALE',
-    'qaj': 'SPAGNOLO',
-    'qak': 'ITALIANO',
-    'qal': 'AMBIENTALE'
-};
-
 function startHeartbeat(password) {
     if (heartbeatInterval) clearInterval(heartbeatInterval);
     heartbeatInterval = setInterval(async () => {
@@ -261,35 +249,6 @@ async function init(m3uContent) {
 
     player.configure({ streaming: { jumpLargeGaps: true } });
 
-    // ====== NUOVO: response filter per modificare il manifest e le etichette audio ======
-    if (!window.__audioFilterRegistered) {
-        window.__audioFilterRegistered = true;
-        player.getNetworkingEngine().registerResponseFilter(async (type, response) => {
-            if (type !== 'manifest') return;
-
-            // Decodifica il manifest XML
-            const text = new TextDecoder().decode(response.data);
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(text, 'application/xml');
-
-            // Trova tutti gli elementi che rappresentano tracce audio e aggiungi label
-            const audioElements = doc.querySelectorAll('Representation, AdaptationSet');
-            audioElements.forEach(el => {
-                const idAttr = el.getAttribute('id') || el.getAttribute('audioTrackId') || el.getAttribute('value');
-                const id = idAttr ? idAttr.toLowerCase() : '';
-                if (audioTrackNames[id]) {
-                    el.setAttribute('label', audioTrackNames[id]);
-                    el.setAttribute('lang', audioTrackNames[id]);
-                }
-            });
-
-            // Serializza il manifest modificato
-            const serializer = new XMLSerializer();
-            const modifiedText = serializer.serializeToString(doc);
-            response.data = new TextEncoder().encode(modifiedText);
-        });
-    }
-
     function createCard(ch) {
         const name = (ch.group || "LISTA").toUpperCase().trim();
         let gridId = `grid-${name.replace(/[^a-z0-9]/gi, '-')}`;
@@ -314,8 +273,9 @@ async function init(m3uContent) {
             document.querySelectorAll('.channel-card').forEach(c => c.classList.remove('active'));
             card.classList.add('active');
             
+            // Mostra subito la scadenza, anche prima di avviare il player
             if (expiryDiv) {
-                const expiry = ch.expiry;
+                const expiry = ch.expiry;  // usiamo la scadenza già calcolata
                 if (expiry) {
                     expiryDiv.textContent = `⏳ ${expiry === "Scaduto" ? "Scaduto" : `Scade il: ${expiry}`}`;
                 } else {
@@ -324,6 +284,7 @@ async function init(m3uContent) {
             }
 
             await player.unload();
+            
             player.configure({ drm: { clearKeys: ch.drm || {} } });
 
             if (ch.streamHeaders && Object.keys(ch.streamHeaders).length > 0) {
@@ -333,6 +294,7 @@ async function init(m3uContent) {
             }
 
             await player.load(ch.url);
+
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
         grid.appendChild(card);
@@ -375,6 +337,7 @@ async function init(m3uContent) {
         } 
         else if (line.startsWith('http')) {
             currentChannel.url = line;
+            // Calcola subito la scadenza e la salva nel canale
             currentChannel.expiry = getExpiryFromUrl(line);
             createCard(currentChannel);
             loadedCount++;
