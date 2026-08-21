@@ -185,7 +185,7 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("[DAZN] Errore dazn_events.m3u:", e); }
 
-        // 6. DAZN Swiss (dazn_swiss.m3u) dallo stesso Gist di Sky
+        // 6. DAZN Swiss (z_dazn_swiss.m3u) dallo stesso Gist di Sky
         let daznSwissContent = "";
         try {
             const gistBase = process.env.GIST_RAW_URL.replace(/\/[^\/]+$/, '');
@@ -198,6 +198,20 @@ export default async function handler(req, res) {
                 console.error("[DAZN Swiss] Fetch failed:", swissResponse.status);
             }
         } catch (e) { console.error("[DAZN Swiss] Errore:", e); }
+
+        // 7. Primevideo (z_primevideo.m3u) dallo stesso Gist
+        let primevideoContent = "";
+        try {
+            const gistBase = process.env.GIST_RAW_URL.replace(/\/[^\/]+$/, '');
+            const primevideoUrl = `${gistBase}/z_primevideo.m3u?t=${Date.now()}`;
+            const primevideoResponse = await fetch(primevideoUrl);
+            if (primevideoResponse.ok) {
+                let rawPrimevideo = await primevideoResponse.text();
+                primevideoContent = rawPrimevideo.replace(/^#EXTM3U\s*\n?/i, '').trim();
+            } else {
+                console.error("[Primevideo] Fetch failed:", primevideoResponse.status);
+            }
+        } catch (e) { console.error("[Primevideo] Errore:", e); }
 
         const existingNames = new Set();
         const baseLines = fileContent.split('\n');
@@ -286,9 +300,12 @@ export default async function handler(req, res) {
             finalContent = finalContent.trimEnd() + "\n" + daznEventsContent;
         }
 
-        // Aggiunge DAZN Swiss appena sopra gli Eurosport
+        // Aggiunge DAZN Swiss e Primevideo appena sopra gli Eurosport
         if (daznSwissContent) {
             finalContent = finalContent.trimEnd() + "\n" + daznSwissContent;
+        }
+        if (primevideoContent) {
+            finalContent = finalContent.trimEnd() + "\n" + primevideoContent;
         }
 
         const eurosportM3U = CANALI_FISSI.map(c => buildM3U(c)).join('\n');
@@ -301,4 +318,4 @@ export default async function handler(req, res) {
         console.error(error);
         res.status(500).json({ error: "Errore caricamento liste" });
     }
-        }
+}
