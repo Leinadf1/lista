@@ -37,7 +37,7 @@ jobs:
           curl -sL "https://gist.githubusercontent.com/Leinadf1/${{ secrets.GIST_ID }}/raw/sky.m3u" -o sky.m3u
           head -5 sky.m3u
 
-      # 4. Genera sky.m3u e z_dazn_swiss.m3u
+      # 4. Genera sky.m3u, z_dazn_swiss.m3u e z_primevideo.m3u
       - name: Update lists from Supabase
         run: |
           pip install requests
@@ -81,4 +81,12 @@ jobs:
           token: ${{ secrets.GIST_TOKEN }}
           gist_id: ${{ secrets.GIST_ID }}
           file_path: z_dazn_swiss.m3u
+          file_type: text
+
+      - name: Deploy z_primevideo.m3u to Gist
+        uses: exuanbo/actions-deploy-gist@v1
+        with:
+          token: ${{ secrets.GIST_TOKEN }}
+          gist_id: ${{ secrets.GIST_ID }}
+          file_path: z_primevideo.m3u
           file_type: text
