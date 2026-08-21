@@ -27,9 +27,12 @@ jobs:
             "https://gist.githubusercontent.com/Leinadf1/${{ secrets.SKY_SCRIPTS_GIST_ID }}/raw/AutoDecrypt.js" -o AutoDecrypt.js
           curl -sL -H "Authorization: token ${{ secrets.GIST_TOKEN }}" \
             "https://gist.githubusercontent.com/Leinadf1/${{ secrets.SKY_SCRIPTS_GIST_ID }}/raw/sky_lc.py" -o sky_lc.py
+          curl -sL -H "Authorization: token ${{ secrets.GIST_TOKEN }}" \
+            "https://gist.githubusercontent.com/Leinadf1/${{ secrets.SKY_SCRIPTS_GIST_ID }}/raw/mandrakodi.py" -o mandrakodi.py
           # Verifica che i file siano stati scaricati correttamente
           if [ ! -s AutoDecrypt.js ]; then echo "Errore: AutoDecrypt.js vuoto"; exit 1; fi
           if [ ! -s sky_lc.py ]; then echo "Errore: sky_lc.py vuoto"; exit 1; fi
+          if [ ! -s mandrakodi.py ]; then echo "Errore: mandrakodi.py vuoto"; exit 1; fi
 
       # 3. Scarica il sky.m3u attuale dal Gist delle liste
       - name: Fetch current sky.m3u from Gist
@@ -50,7 +53,11 @@ jobs:
           SKY_DECRYPT_PASSWORD: ${{ secrets.SKY_DECRYPT_PASSWORD }}
           SKY_SOURCE_URL: ${{ secrets.SKY_SOURCE_URL }}
 
-      # 6. Deploy dei file sui Gist
+      # 6. Genera z_dazn_mandrakodi.m3u
+      - name: Generate z_dazn_mandrakodi.m3u
+        run: python3 mandrakodi.py
+
+      # 7. Deploy dei file sui Gist
       - name: Deploy lista_privata.m3u to Gist
         uses: exuanbo/actions-deploy-gist@v1
         with:
@@ -89,4 +96,12 @@ jobs:
           token: ${{ secrets.GIST_TOKEN }}
           gist_id: ${{ secrets.GIST_ID }}
           file_path: z_primevideo.m3u
+          file_type: text
+
+      - name: Deploy z_dazn_mandrakodi.m3u to Gist
+        uses: exuanbo/actions-deploy-gist@v1
+        with:
+          token: ${{ secrets.GIST_TOKEN }}
+          gist_id: ${{ secrets.GIST_ID }}
+          file_path: z_dazn_mandrakodi.m3u
           file_type: text
