@@ -36,6 +36,7 @@
         #chan-count { font-size: 13px; color: #8b949e; font-weight: 600; background: #21262d; padding: 4px 12px; border-radius: 20px; }
         
         .player-container { 
+            position: relative;
             width: 100%; 
             max-width: 820px; 
             background: #000; 
@@ -44,13 +45,28 @@
         }
         video { width: 100%; aspect-ratio: 16/9; display: block; }
 
-        /* 🔧 Fix fullscreen: il video mantiene le proporzioni corrette */
-        video:fullscreen {
-            width: 100vw !important;
-            height: 100vh !important;
-            object-fit: contain !important;
-            background: #000;
+        /* 🔧 Nuovo pulsante fullscreen */
+        .custom-fullscreen-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 20;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            line-height: 1;
+            padding: 0;
+            transition: background 0.2s;
         }
+        .custom-fullscreen-btn:hover { background: rgba(0,0,0,0.8); }
 
         /* 🔲 Contenitore iframe Prime Video */
         .iframe-container {
@@ -62,6 +78,7 @@
             display: none; /* nascosto di default */
             z-index: 10;
             overflow: hidden; /* blocca scroll */
+            position: relative;
         }
         .iframe-container iframe {
             width: 100%;
@@ -69,6 +86,11 @@
             border: 0;
             display: block;
             overflow: hidden; /* blocca scroll */
+        }
+
+        /* Nascondi il pulsante fullscreen di Shaka UI (lo sostituiamo) */
+        .shaka-fullscreen-button {
+            display: none !important;
         }
 
         #expiry-info {
@@ -180,6 +202,8 @@
     <!-- Player Shaka (normale) -->
     <div class="player-container" id="player-container" data-shaka-player-container>
         <video autoplay data-shaka-player id="video"></video>
+        <!-- Pulsante fullscreen personalizzato -->
+        <button class="custom-fullscreen-btn" id="fullscreen-btn" title="Schermo intero">⛶</button>
     </div>
 
     <!-- 🔲 Iframe per Prime Video -->
@@ -299,11 +323,39 @@ async function init(m3uContent) {
     const playerContainer = document.getElementById('player-container');
     const iframeContainer = document.getElementById('iframe-container');
     const primeIframe = document.getElementById('prime-iframe');
+    const fullscreenBtn = document.getElementById('fullscreen-btn');
 
-    // 🔧 Configura Shaka UI per usare il video come elemento fullscreen
-    if (ui.configure) {
-        ui.configure({ fullscreenElement: video });
+    // 🔧 Disabilita il pulsante fullscreen di Shaka UI (lo sostituiamo)
+    // Nascondiamo solo il pulsante, ma Shaka UI potrebbe ancora gestire il fullscreen via overflow menu.
+    // Per sicurezza, rimuoviamo anche l'elemento dall'overflow menu se possibile.
+    const config = ui.getConfiguration();
+    if (config && config.controlPanelElements) {
+        // rimuovi 'fullscreen' dagli elementi del pannello
+        config.controlPanelElements = config.controlPanelElements.filter(el => el !== 'fullscreen');
+        ui.configure(config);
     }
+
+    // Aggiungi listener al pulsante fullscreen personalizzato
+    fullscreenBtn.addEventListener('click', () => {
+        if (document.fullscreenElement) {
+            document.exitFullscreen();
+        } else {
+            if (video.requestFullscreen) {
+                video.requestFullscreen().catch(err => {
+                    console.error("Errore fullscreen:", err);
+                });
+            }
+        }
+    });
+
+    // Aggiorna icona del pulsante a seconda dello stato fullscreen
+    document.addEventListener('fullscreenchange', () => {
+        if (document.fullscreenElement) {
+            fullscreenBtn.textContent = '✕';
+        } else {
+            fullscreenBtn.textContent = '⛶';
+        }
+    });
 
     player.configure({ streaming: { jumpLargeGaps: true } });
 
