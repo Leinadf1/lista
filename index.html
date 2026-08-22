@@ -44,6 +44,14 @@
         }
         video { width: 100%; aspect-ratio: 16/9; display: block; }
 
+        /* 🔧 Fix fullscreen: il video mantiene le proporzioni corrette */
+        video:fullscreen {
+            width: 100vw !important;
+            height: 100vh !important;
+            object-fit: contain !important;
+            background: #000;
+        }
+
         /* 🔲 Contenitore iframe Prime Video */
         .iframe-container {
             width: 100%;
@@ -291,6 +299,11 @@ async function init(m3uContent) {
     const playerContainer = document.getElementById('player-container');
     const iframeContainer = document.getElementById('iframe-container');
     const primeIframe = document.getElementById('prime-iframe');
+
+    // 🔧 Configura Shaka UI per usare il video come elemento fullscreen
+    if (ui.configure) {
+        ui.configure({ fullscreenElement: video });
+    }
 
     player.configure({ streaming: { jumpLargeGaps: true } });
 
