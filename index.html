@@ -44,25 +44,18 @@
         }
         video { width: 100%; aspect-ratio: 16/9; display: block; }
 
-        /* MODIFICHE ANTI-SCROLL */
         #prime-iframe-container {
             width: 100%;
             max-width: 820px;
             background: #000;
             margin-bottom: 10px;
             z-index: 10;
-            position: relative;
-            aspect-ratio: 16/9;
-            overflow: hidden;
         }
         #prime-iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
             width: 100%;
-            height: 100%;
-            border: none;
+            aspect-ratio: 16/9;
             display: block;
+            border: none;
         }
 
         #expiry-info {
@@ -175,10 +168,9 @@
         <video autoplay data-shaka-player id="video"></video>
     </div>
 
-    <!-- Contenitore iframe per Prime Video -->
+    <!-- NUOVO: contenitore iframe per Prime Video -->
     <div id="prime-iframe-container" style="display:none;">
         <iframe id="prime-iframe" 
-                scrolling="no"
                 allowfullscreen 
                 allow="autoplay; encrypted-media">
         </iframe>
@@ -304,7 +296,7 @@ async function init(m3uContent) {
             document.querySelectorAll('.channel-card').forEach(c => c.classList.remove('active'));
             card.classList.add('active');
             
-            // Mostra subito la scadenza
+            // Mostra subito la scadenza, anche prima di avviare il player
             if (expiryDiv) {
                 const expiry = ch.expiry;
                 if (expiry) {
@@ -314,7 +306,7 @@ async function init(m3uContent) {
                 }
             }
 
-            // ========== LOGICA PRIME VIDEO ==========
+            // ========== NUOVA LOGICA PER PRIME VIDEO ==========
             const isPrimeVideo = (ch.group && ch.group.toLowerCase() === 'prime video');
             const shakaContainer = document.querySelector('[data-shaka-player-container]');
             const primeContainer = document.getElementById('prime-iframe-container');
@@ -325,7 +317,7 @@ async function init(m3uContent) {
                 shakaContainer.style.display = 'none';
                 primeContainer.style.display = 'block';
 
-                // Estrai KID e KEY
+                // Estrai KID e KEY dal canale (ch.drm)
                 let kid = '', key = '';
                 if (ch.drm && Object.keys(ch.drm).length > 0) {
                     const firstKey = Object.keys(ch.drm)[0];
@@ -335,23 +327,25 @@ async function init(m3uContent) {
                 
                 // Costruisci URL per l'iframe
                 const baseIframe = 'https://hugoedgar.com/drm-player/';
-                const embedUrl = ch.url;
+                const embedUrl = ch.url;           // MPD URL
                 const iframeSrc = `${baseIframe}?embed-url=${encodeURIComponent(embedUrl)}&kid=${encodeURIComponent(kid)}&key=${encodeURIComponent(key)}`;
                 
                 primeIframe.src = iframeSrc;
                 
-                // Ferma Shaka
+                // Ferma Shaka (opzionale ma pulito)
                 try { await player.unload(); } catch(e) {}
                 
                 window.scrollTo({ top: 0, behavior: 'smooth' });
-                return;
+                return; // Non caricare Shaka
             } else {
                 // Mostra Shaka, nascondi iframe
                 shakaContainer.style.display = 'block';
                 primeContainer.style.display = 'none';
-                primeIframe.src = ''; // Ferma riproduzione precedente
+                primeIframe.src = ''; // Ferma l'eventuale riproduzione precedente
                 
-                // Carica con Shaka
+                // ========== FINE NUOVA LOGICA ==========
+                
+                // Ora carica con Shaka come facevi prima
                 await player.unload();
                 
                 player.configure({ drm: { clearKeys: ch.drm || {} } });
@@ -407,6 +401,7 @@ async function init(m3uContent) {
         } 
         else if (line.startsWith('http')) {
             currentChannel.url = line;
+            // Calcola subito la scadenza e la salva nel canale
             currentChannel.expiry = getExpiryFromUrl(line);
             createCard(currentChannel);
             loadedCount++;
