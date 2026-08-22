@@ -23,11 +23,10 @@
         
         #header { 
             width: 100%; 
-            max-width: 820px;
-            margin: 0 auto 25px;
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
+            margin-bottom: 25px; 
             border-bottom: 1px solid #30363d; 
             padding-bottom: 15px; 
             box-sizing: border-box; 
@@ -36,12 +35,12 @@
         h1 { font-size: 22px; font-weight: 700; color: #58a6ff; margin: 0; letter-spacing: -0.5px; }
         #chan-count { font-size: 13px; color: #8b949e; font-weight: 600; background: #21262d; padding: 4px 12px; border-radius: 20px; }
         
-        /* Player container: posizionato relative per ospitare l'iframe sovrapposto */
+        /* Player container: larghezza limitata per il player 16:9 */
         .player-container { 
             position: relative;
             width: 100%; 
             max-width: 820px; 
-            margin: 0 auto 10px;   /* centrato */
+            margin: 0 auto 10px;
             background: #000; 
             z-index: 10; 
         }
@@ -56,8 +55,8 @@
             height: 100%;
             background: #000;
             z-index: 20;
-            display: none; /* nascosto di default, verrà mostrato con .active */
-            overflow: hidden; /* blocca scroll */
+            display: none;
+            overflow: hidden;
         }
         .iframe-container.active {
             display: block;
@@ -72,19 +71,17 @@
 
         #expiry-info {
             text-align: center;
-            margin: 5px auto 25px;   /* centrato */
+            margin: 5px auto 25px;
             color: #f1e05a;
             font-size: 14px;
             font-weight: 600;
             min-height: 20px;
             width: 100%;
-            max-width: 820px;
         }
 
         .category-container { 
             width: 100%; 
-            max-width: 820px;
-            margin: 0 auto 45px;   /* centrato */
+            margin: 0 auto 45px;
             box-sizing: border-box; 
         }
         .category-title { 
@@ -292,7 +289,7 @@ async function init(m3uContent) {
     const countHeader = document.getElementById('chan-count');
     const expiryDiv = document.getElementById('expiry-info');
 
-    // 🔲 Riferimenti al contenitore del player
+    // Riferimento al contenitore del player
     const playerContainer = document.querySelector('.player-container');
 
     player.configure({ streaming: { jumpLargeGaps: true } });
@@ -321,7 +318,7 @@ async function init(m3uContent) {
             document.querySelectorAll('.channel-card').forEach(c => c.classList.remove('active'));
             card.classList.add('active');
             
-            // Mostra subito la scadenza, anche prima di avviare il player
+            // Mostra subito la scadenza
             if (expiryDiv) {
                 const expiry = ch.expiry;
                 if (expiry) {
@@ -331,11 +328,11 @@ async function init(m3uContent) {
                 }
             }
 
-            // 🔲 Rimuovi eventuale iframe precedente
+            // Rimuovi eventuale iframe precedente
             const oldIframeContainer = playerContainer.querySelector('.iframe-container');
             if (oldIframeContainer) oldIframeContainer.remove();
 
-            // 🔲 Se il canale è Prime Video, usa l'iframe
+            // Se il canale è Prime Video, usa l'iframe
             const groupName = (ch.group || '').toUpperCase();
             if (groupName === 'PRIME VIDEO') {
                 const { kid, key } = getKidKey(ch.drm);
@@ -352,7 +349,7 @@ async function init(m3uContent) {
                     iframeContainer.appendChild(iframe);
                     playerContainer.appendChild(iframeContainer);
 
-                    // Metti in pausa e unload del player Shaka
+                    // Metti in pausa il player Shaka
                     await player.unload();
                 } else {
                     alert("Canale Prime Video non valido");
@@ -361,7 +358,7 @@ async function init(m3uContent) {
                 return;
             }
 
-            // 🔲 Per gli altri canali, usa il player Shaka normalmente
+            // Per gli altri canali, usa il player Shaka normalmente
             player.configure({ drm: { clearKeys: ch.drm || {} } });
 
             if (ch.streamHeaders && Object.keys(ch.streamHeaders).length > 0) {
@@ -414,7 +411,6 @@ async function init(m3uContent) {
         } 
         else if (line.startsWith('http')) {
             currentChannel.url = line;
-            // Calcola subito la scadenza e la salva nel canale
             currentChannel.expiry = getExpiryFromUrl(line);
             createCard(currentChannel);
             loadedCount++;
