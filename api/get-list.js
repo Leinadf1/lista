@@ -213,19 +213,19 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("[Primevideo] Errore:", e); }
 
-        // 8. Mandrakodi (z_dazn_mandrakodi.m3u) dallo stesso Gist principale
-        let mandrakodiContent = "";
+        // 8. NeroZone (z_dazn_nerozone.m3u) dallo stesso Gist principale
+        let nerozoneContent = "";
         try {
             const gistBase = process.env.GIST_RAW_URL.replace(/\/[^\/]+$/, '');
-            const mandrakodiUrl = `${gistBase}/z_dazn_mandrakodi.m3u?t=${Date.now()}`;
-            const mandrakodiResponse = await fetch(mandrakodiUrl);
-            if (mandrakodiResponse.ok) {
-                let rawMandrakodi = await mandrakodiResponse.text();
-                mandrakodiContent = rawMandrakodi.replace(/^#EXTM3U\s*\n?/i, '').trim();
+            const nerozoneUrl = `${gistBase}/z_dazn_nerozone.m3u?t=${Date.now()}`;
+            const nerozoneResponse = await fetch(nerozoneUrl);
+            if (nerozoneResponse.ok) {
+                let rawNerozone = await nerozoneResponse.text();
+                nerozoneContent = rawNerozone.replace(/^#EXTM3U\s*\n?/i, '').trim();
             } else {
-                console.error("[Mandrakodi] Fetch failed:", mandrakodiResponse.status);
+                console.error("[NeroZone] Fetch failed:", nerozoneResponse.status);
             }
-        } catch (e) { console.error("[Mandrakodi] Errore:", e); }
+        } catch (e) { console.error("[NeroZone] Errore:", e); }
 
         const existingNames = new Set();
         const baseLines = fileContent.split('\n');
@@ -306,10 +306,9 @@ export default async function handler(req, res) {
             }
         }
 
-        // *** MODIFICA IMPORTANTE ***
-        // Aggiunge Mandrakodi appena prima dei DAZN lineari (dazn.m3u)
-        if (mandrakodiContent) {
-            finalContent = finalContent.trimEnd() + "\n" + mandrakodiContent;
+        // Aggiunge NeroZone appena prima dei DAZN lineari (dazn.m3u)
+        if (nerozoneContent) {
+            finalContent = finalContent.trimEnd() + "\n" + nerozoneContent;
         }
 
         // Aggiunge entrambi i DAZN (prima dazn.m3u, poi dazn_events.m3u)
