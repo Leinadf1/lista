@@ -58,6 +58,8 @@ jobs:
         run: |
           pip install requests cryptography
           python dazn_nerozone.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # 7. Deploy dei file sui Gist
       - name: Deploy lista_privata.m3u to Gist
