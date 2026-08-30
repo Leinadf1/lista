@@ -14,6 +14,7 @@ jobs:
 
       # 1. Lista principale
       - name: Download base list
+        continue-on-error: true
         run: |
           echo "#EXTM3U" > lista_privata.m3u
           curl -sL -k \
@@ -29,25 +30,27 @@ jobs:
             "https://gist.githubusercontent.com/Leinadf1/${{ secrets.SKY_SCRIPTS_GIST_ID }}/raw/sky_lc.py" -o sky_lc.py
           curl -sL -H "Authorization: token ${{ secrets.GIST_TOKEN }}" \
             "https://gist.githubusercontent.com/Leinadf1/${{ secrets.SKY_SCRIPTS_GIST_ID }}/raw/dazn_nerozone.py" -o dazn_nerozone.py
-          # Verifica che i file siano stati scaricati correttamente
           if [ ! -s AutoDecrypt.js ]; then echo "Errore: AutoDecrypt.js vuoto"; exit 1; fi
           if [ ! -s sky_lc.py ]; then echo "Errore: sky_lc.py vuoto"; exit 1; fi
           if [ ! -s dazn_nerozone.py ]; then echo "Errore: dazn_nerozone.py vuoto"; exit 1; fi
 
       # 3. Scarica il sky.m3u attuale dal Gist delle liste
       - name: Fetch current sky.m3u from Gist
+        continue-on-error: true
         run: |
           curl -sL "https://gist.githubusercontent.com/Leinadf1/${{ secrets.GIST_ID }}/raw/sky.m3u" -o sky.m3u
           head -5 sky.m3u
 
       # 4. Genera sky.m3u, z_dazn_swiss.m3u e z_primevideo.m3u
       - name: Update lists from Supabase
+        continue-on-error: true
         run: |
           pip install requests
           python sky_lc.py
 
       # 5. Genera sky2.m3u
       - name: Generate sky2.m3u (AutoDecrypt)
+        continue-on-error: true
         run: node AutoDecrypt.js
         env:
           SKY_DECRYPT_PASSWORD: ${{ secrets.SKY_DECRYPT_PASSWORD }}
@@ -55,6 +58,7 @@ jobs:
 
       # 6. Genera z_dazn_nerozone.m3u
       - name: Generate z_dazn_nerozone.m3u
+        continue-on-error: true
         run: |
           pip install requests cryptography
           python dazn_nerozone.py
@@ -63,6 +67,7 @@ jobs:
 
       # 7. Deploy dei file sui Gist
       - name: Deploy lista_privata.m3u to Gist
+        continue-on-error: true
         uses: exuanbo/actions-deploy-gist@v1
         with:
           token: ${{ secrets.GIST_TOKEN }}
@@ -71,6 +76,7 @@ jobs:
           file_type: text
 
       - name: Deploy sky.m3u to Gist
+        continue-on-error: true
         uses: exuanbo/actions-deploy-gist@v1
         with:
           token: ${{ secrets.GIST_TOKEN }}
@@ -79,6 +85,7 @@ jobs:
           file_type: text
 
       - name: Deploy sky2.m3u to Gist
+        continue-on-error: true
         uses: exuanbo/actions-deploy-gist@v1
         with:
           token: ${{ secrets.GIST_TOKEN }}
@@ -87,6 +94,7 @@ jobs:
           file_type: text
 
       - name: Deploy z_dazn_swiss.m3u to Gist
+        continue-on-error: true
         uses: exuanbo/actions-deploy-gist@v1
         with:
           token: ${{ secrets.GIST_TOKEN }}
@@ -95,6 +103,7 @@ jobs:
           file_type: text
 
       - name: Deploy z_primevideo.m3u to Gist
+        continue-on-error: true
         uses: exuanbo/actions-deploy-gist@v1
         with:
           token: ${{ secrets.GIST_TOKEN }}
@@ -103,6 +112,7 @@ jobs:
           file_type: text
 
       - name: Deploy z_dazn_nerozone.m3u to Gist
+        continue-on-error: true
         uses: exuanbo/actions-deploy-gist@v1
         with:
           token: ${{ secrets.GIST_TOKEN }}
