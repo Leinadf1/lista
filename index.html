@@ -274,11 +274,6 @@ async function checkAccess() {
         document.getElementById('mainBody').style.display = "flex";
         document.getElementById('expiry-info').textContent = '';
         startHeartbeat(psw);
-        
-        // 🔥 MODIFICA: Riscalda il worker del proxy per evitare cold start
-        fetch('https://dazn-ua-proxy.stefanoaccuont.workers.dev/', { mode: 'no-cors' })
-            .catch(() => {});
-
         init(m3uData);
 
     } catch (error) {
