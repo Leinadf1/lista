@@ -410,20 +410,23 @@ async function init(m3uContent) {
         else if (line.startsWith('http')) {
             let url = line;
             const targetUA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0';
-            if (url.includes('dca-fs-live-dazn-cdn.dazn.com') || currentChannel.userAgent === targetUA) {
+            
+            // Determina se il canale appartiene a DAZN NeroZone (case-insensitive)
+            const isNeroZone = currentChannel.group && currentChannel.group.toLowerCase().includes('nerozone');
+            
+            // Applica il proxy solo se NON è NeroZone e se soddisfa le condizioni precedenti
+            if (!isNeroZone && (url.includes('dca-fs-live-dazn-cdn.dazn.com') || currentChannel.userAgent === targetUA)) {
                 url = 'https://dazn-ua-proxy.stefanoaccuont.workers.dev/' + url;
             }
+            
             currentChannel.url = url;
             currentChannel.expiry = getExpiryFromUrl(line);
-
-            // 🔥 ESCLUSIONE: salta i canali con group-title contenente "nerozone" (case-insensitive)
-            if (currentChannel.group && currentChannel.group.toLowerCase().includes('nerozone')) {
-                currentChannel = { name: "", logo: "", group: "LISTA", drm: {}, url: "", streamHeaders: {}, userAgent: null };
-                continue;
-            }
-
+            
+            // Nessuna esclusione: crea sempre la card
             createCard(currentChannel);
             loadedCount++;
+            
+            // Reset per il prossimo canale
             currentChannel = { 
                 name: "", 
                 logo: "", 
