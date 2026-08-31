@@ -369,7 +369,7 @@ async function init(m3uContent) {
         drm: {}, 
         url: "", 
         streamHeaders: {},
-        userAgent: null   // 🔥 Nuovo campo per lo user agent
+        userAgent: null
     };
     let loadedCount = 0;
 
@@ -396,7 +396,6 @@ async function init(m3uContent) {
                 });
             }
         }
-        // 🔥 NUOVO: cattura #EXTVLCOPT:http-user-agent
         else if (line.startsWith('#EXTVLCOPT:http-user-agent=')) {
             currentChannel.userAgent = line.substring(line.indexOf('=') + 1).trim();
         }
@@ -410,16 +409,21 @@ async function init(m3uContent) {
         } 
         else if (line.startsWith('http')) {
             let url = line;
-            // 🔥 MODIFICA: applica proxy se URL DAZN o se lo user agent è quello specificato
             const targetUA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0';
             if (url.includes('dca-fs-live-dazn-cdn.dazn.com') || currentChannel.userAgent === targetUA) {
                 url = 'https://dazn-ua-proxy.stefanoaccuont.workers.dev/' + url;
             }
             currentChannel.url = url;
-            currentChannel.expiry = getExpiryFromUrl(line); // usa l'originale per la scadenza
+            currentChannel.expiry = getExpiryFromUrl(line);
+
+            // 🔥 ESCLUSIONE: salta i canali con group-title contenente "nerozone" (case-insensitive)
+            if (currentChannel.group && currentChannel.group.toLowerCase().includes('nerozone')) {
+                currentChannel = { name: "", logo: "", group: "LISTA", drm: {}, url: "", streamHeaders: {}, userAgent: null };
+                continue;
+            }
+
             createCard(currentChannel);
             loadedCount++;
-            // Reset dell'oggetto per il prossimo canale, includendo userAgent
             currentChannel = { 
                 name: "", 
                 logo: "", 
