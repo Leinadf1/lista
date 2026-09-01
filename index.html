@@ -63,7 +63,6 @@
             transition: all 0.2s ease;
             justify-self: start;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            /* Font F1 con fallback */
             font-family: 'Formula1 Display Bold', 'Inter', sans-serif;
         }
         .reload-btn:hover {
@@ -213,13 +212,13 @@
             background-color: #21262d; 
         }
         
-        /* Cuore preferiti: più piccolo e in alto a destra */
+        /* Cuore preferiti: rimpicciolito ulteriormente */
         .fav-heart {
             position: absolute;
-            top: 2px;      /* prima era 8px */
-            right: 2px;    /* prima era 8px */
-            width: 24px;   /* prima era 32px */
-            height: 24px;  /* prima era 32px */
+            top: 2px;
+            right: 2px;
+            width: 18px;   /* ridotto da 24px a 18px */
+            height: 18px;
             cursor: pointer;
             z-index: 5;
             user-select: none;
@@ -301,8 +300,8 @@
                 padding: 0;
             }
             .fav-heart {
-                width: 20px;   /* ridotto per mobile */
-                height: 20px;
+                width: 16px;   /* ridotto per mobile */
+                height: 16px;
                 top: 2px;
                 right: 2px;
             }
