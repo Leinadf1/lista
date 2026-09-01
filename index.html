@@ -7,7 +7,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
     
-    <!-- Font Formula1 Display Bold -->
     <style>
         @font-face {
             font-family: 'Formula1 Display Bold';
@@ -169,11 +168,29 @@
             border-radius: 6px;
             padding: 12px 16px;
             box-sizing: border-box;
+            transition: border-left-color 0.3s ease;
+        }
+        #epg-info.live {
+            border-left-color: #2ea44f; /* verde per live */
         }
         #epg-info .program-title {
             font-size: 17px;
             font-weight: 700;
             margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .live-badge {
+            background: #d73a49;
+            color: white;
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 0.5px;
         }
         #epg-info .program-time {
             font-size: 13px;
@@ -189,22 +206,31 @@
             gap: 6px;
             margin-bottom: 10px;
         }
-        .epg-nav button {
-            background: #2d3741;
+        .epg-btn {
+            background: #1f6feb;
             color: white;
             border: none;
-            border-radius: 6px;
-            padding: 6px 12px;
-            font-size: 16px;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            font-size: 22px;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: background 0.2s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            line-height: 1;
         }
-        .epg-nav button:hover {
-            background: #4a5a6a;
+        .epg-btn:hover {
+            background: #58a6ff;
+            transform: scale(1.05);
         }
-        .epg-nav button:disabled {
+        .epg-btn:disabled {
             opacity: 0.4;
             cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
         .category-container { 
@@ -351,6 +377,11 @@
                 height: 18px;
                 top: 2px;
                 right: 2px;
+            }
+            .epg-btn {
+                width: 28px;
+                height: 28px;
+                font-size: 18px;
             }
         }
     </style>
@@ -562,7 +593,8 @@ function getCurrentProgram(ch) {
 let epgState = {
     channel: null,
     programs: [],
-    currentIndex: -1
+    currentIndex: -1,
+    liveIndex: -1  // indice del programma live
 };
 
 function displayEPG(ch) {
@@ -577,6 +609,7 @@ function displayEPG(ch) {
     epgState.channel = ch;
     epgState.programs = result.programs;
     epgState.currentIndex = result.currentIndex;
+    epgState.liveIndex = result.currentIndex; // il programma corrente è live
     
     renderEPG();
 }
@@ -593,28 +626,36 @@ function renderEPG() {
     const stopDate = new Date(program.stop);
     const timeStr = `${startDate.toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'})} - ${stopDate.toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'})}`;
     
+    const isLive = epgState.currentIndex === epgState.liveIndex;
+    
     const prevDisabled = epgState.currentIndex === 0;
     const nextDisabled = epgState.currentIndex === epgState.programs.length - 1;
     
-    // Pulsanti di navigazione migliorati
+    // Pulsanti di navigazione solo frecce
     const navHtml = `
         <div class="epg-nav">
-            <button id="epg-prev" ${prevDisabled ? 'disabled' : ''}>
-                <span style="font-size:18px;">‹</span> Precedente
-            </button>
-            <button id="epg-next" ${nextDisabled ? 'disabled' : ''}>
-                Successivo <span style="font-size:18px;">›</span>
-            </button>
+            <button id="epg-prev" class="epg-btn" ${prevDisabled ? 'disabled' : ''}>‹</button>
+            <button id="epg-next" class="epg-btn" ${nextDisabled ? 'disabled' : ''}>›</button>
         </div>
     `;
     
     epgDiv.style.display = 'block';
     epgDiv.innerHTML = `
         ${navHtml}
-        <div class="program-title">${program.title}</div>
+        <div class="program-title">
+            ${program.title}
+            ${isLive ? '<span class="live-badge">In onda</span>' : ''}
+        </div>
         <div class="program-time">${timeStr}</div>
         ${program.desc ? `<div class="program-desc">${program.desc}</div>` : ''}
     `;
+    
+    // Evidenzia bordo live
+    if (isLive) {
+        epgDiv.classList.add('live');
+    } else {
+        epgDiv.classList.remove('live');
+    }
     
     const prevBtn = epgDiv.querySelector('#epg-prev');
     const nextBtn = epgDiv.querySelector('#epg-next');
@@ -1018,4 +1059,4 @@ document.addEventListener('shaka-ui-loaded', () => {
 });
 </script>
 </body>
-    </html>
+</html>
