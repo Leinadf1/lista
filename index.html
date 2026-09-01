@@ -489,13 +489,12 @@ async function loadEPG() {
                 displayName = displayNames[0].textContent.trim();
             }
             const normName = normalizeName(displayName);
-            const normId = normalizeName(id); // <-- AGGIUNTO: normalizzazione ID
+            const normId = normalizeName(id); // AGGIUNTO
             channelMap.set(id, normName);
             epgNames.add(normName);
-            // Aggiungi sia l'ID originale che la sua versione normalizzata
             epgChannels.set(id, []);
             if (!epgChannels.has(normName)) epgChannels.set(normName, []);
-            if (!epgChannels.has(normId)) epgChannels.set(normId, []); // <-- AGGIUNTO
+            if (!epgChannels.has(normId)) epgChannels.set(normId, []); // AGGIUNTO
         });
         
         xmlDoc.querySelectorAll('programme').forEach(prog => {
@@ -509,12 +508,9 @@ async function loadEPG() {
             const start = parseXmltvTime(startStr);
             const stop = parseXmltvTime(stopStr);
             const program = { start, stop, title, desc };
-            // Aggiungi per ID originale
             if (epgChannels.has(channelId)) epgChannels.get(channelId).push(program);
-            // Aggiungi per ID normalizzato (per coprire il doppio punto)
             const normChannelId = normalizeName(channelId);
             if (epgChannels.has(normChannelId)) epgChannels.get(normChannelId).push(program);
-            // Aggiungi per nome normalizzato
             if (channelMap.has(channelId)) {
                 const norm = channelMap.get(channelId);
                 if (epgChannels.has(norm)) epgChannels.get(norm).push(program);
@@ -569,12 +565,11 @@ function getCurrentProgram(ch) {
     const candidates = [];
     if (ch.tvgId) {
         candidates.push(ch.tvgId);
-        candidates.push(normalizeName(ch.tvgId)); // <-- AGGIUNTO: tvg-id normalizzato
+        candidates.push(normalizeName(ch.tvgId));
     }
     const normName = normalizeName(ch.name);
     candidates.push(normName);
     
-    // Aggiungi alias normalizzati
     const aliases = getAliasesForChannel(ch);
     candidates.push(...aliases.map(normalizeName));
     
@@ -582,9 +577,15 @@ function getCurrentProgram(ch) {
     for (const key of candidates) {
         if (epgChannels.has(key)) {
             const programs = epgChannels.get(key);
+            // Cerca programma corrente
             const currentIndex = programs.findIndex(p => p.start <= now && now < p.stop);
             if (currentIndex !== -1) {
-                return { status: 'ok', programs, currentIndex, matchedKey: key };
+                return { status: 'ok', programs, currentIndex, matchedKey: key, isLive: true };
+            }
+            // Se non trovato, cerca il prossimo programma futuro
+            const nextIndex = programs.findIndex(p => p.start > now);
+            if (nextIndex !== -1) {
+                return { status: 'ok', programs, currentIndex: nextIndex, matchedKey: key, isLive: false };
             }
         }
     }
@@ -602,9 +603,9 @@ function getCurrentProgram(ch) {
     if (bestKey && bestDist <= 2 && epgChannels.has(bestKey)) {
         const programs = epgChannels.get(bestKey);
         const currentIndex = programs.findIndex(p => p.start <= now && now < p.stop);
-        if (currentIndex !== -1) {
-            return { status: 'ok', programs, currentIndex, matchedKey: bestKey };
-        }
+        if (currentIndex !== -1) return { status: 'ok', programs, currentIndex, matchedKey: bestKey, isLive: true };
+        const nextIndex = programs.findIndex(p => p.start > now);
+        if (nextIndex !== -1) return { status: 'ok', programs, currentIndex: nextIndex, matchedKey: bestKey, isLive: false };
     }
     
     return { status: 'notfound', candidates, bestKey, bestDist };
@@ -631,10 +632,9 @@ function displayEPG(ch) {
         epgState.channel = ch;
         epgState.programs = result.programs;
         epgState.currentIndex = result.currentIndex;
-        epgState.liveIndex = result.currentIndex;
+        epgState.liveIndex = result.isLive ? result.currentIndex : -1;
         renderEPG();
     } else {
-        // Mostra debug se non trovato
         let debugHtml = '';
         if (result.status === 'loading') {
             debugHtml = 'EPG in caricamento...';
