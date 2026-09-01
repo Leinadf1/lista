@@ -361,11 +361,11 @@ let favoriteIds = new Set(JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]'
 let allChannels = [];
 
 // -------------------- EPG --------------------
-const EPG_URL = 'https://epgshare01.online/epgshare01/epg_ripper_IT1.xml.gz';
-let epgChannels = new Map(); // chiave: id o nome normalizzato -> array di programmi
-let epgNames = new Set();    // insieme di nomi normalizzati per fuzzy matching
+const EPG_URL = 'https://raw.githubusercontent.com/Leinadf1/lista/main/epg_ripper_IT1.xml';
+let epgChannels = new Map();
+let epgNames = new Set();
 let epgReady = false;
-let epgError = null; // per memorizzare l'errore
+let epgError = null;
 
 function normalizeName(name) {
     return name.toLowerCase().replace(/[^a-z0-9]/gi, '');
@@ -403,24 +403,10 @@ async function loadEPG() {
     epgReady = false;
     try {
         console.log('Caricamento EPG...');
+        const response = await fetch(EPG_URL);
+        if (!response.ok) throw new Error('HTTP ' + response.status);
         
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000);
-        
-        const response = await fetch(EPG_URL, { signal: controller.signal });
-        clearTimeout(timeoutId);
-        
-        if (!response.ok) {
-            throw new Error('HTTP ' + response.status);
-        }
-        
-        let text;
-        if (typeof DecompressionStream === 'undefined') {
-            throw new Error('DecompressionStream non supportato dal browser. Serve un browser moderno (Chrome, Edge, Firefox).');
-        }
-        
-        const decompressedStream = response.body.pipeThrough(new DecompressionStream('gzip'));
-        text = await new Response(decompressedStream).text();
+        const text = await response.text(); // legge direttamente l'XML
         
         console.log('EPG scaricato, parsing...');
         const parser = new DOMParser();
@@ -486,7 +472,6 @@ function getCurrentProgram(ch) {
     const normName = normalizeName(ch.name);
     candidates.push(normName);
     
-    // Corrispondenza esatta
     for (const key of candidates) {
         if (epgChannels.has(key)) {
             const programs = epgChannels.get(key);
@@ -495,7 +480,6 @@ function getCurrentProgram(ch) {
         }
     }
     
-    // Fuzzy matching
     let bestKey = null;
     let bestDist = Infinity;
     for (const epgName of epgNames) {
@@ -532,7 +516,6 @@ function displayEPG(ch) {
         epgDiv.innerHTML = `<div class="debug">Nessun programma trovato per "${ch.name}"<br>Chiavi cercate: ${result.candidates.join(', ')}<br>Migliore match fuzzy: ${result.bestKey || 'nessuno'} (distanza ${result.bestDist ?? '-'})</div>`;
         return;
     }
-    // Trovato
     const program = result.program;
     const startDate = new Date(program.start);
     const stopDate = new Date(program.stop);
