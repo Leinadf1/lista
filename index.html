@@ -33,6 +33,7 @@
             box-sizing: border-box; 
         }
         
+        /* Pulsante ricarica playlist */
         #reload-btn { 
             font-size: 22px; 
             font-weight: 700; 
@@ -47,6 +48,7 @@
             display: flex;
             align-items: center;
             gap: 5px;
+            transition: opacity 0.2s;
         }
         #reload-btn:hover { opacity: 0.8; }
         #reload-btn:disabled { opacity: 0.5; cursor: wait; }
@@ -168,7 +170,7 @@
             overflow: hidden; 
             display: flex; 
             flex-direction: column; 
-            position: relative; /* per la stella */
+            position: relative;
         }
         .channel-card:hover { 
             transform: translateY(-5px); 
@@ -180,16 +182,18 @@
             background-color: #21262d; 
         }
         
+        /* Stella preferiti ingrandita */
         .fav-star {
             position: absolute;
-            top: 8px;
-            right: 8px;
-            font-size: 18px;
+            top: 10px;
+            right: 10px;
+            font-size: 28px;          /* ingrandita da 18 a 28 */
             color: #8b949e;
             cursor: pointer;
             z-index: 5;
             user-select: none;
             transition: color 0.2s;
+            line-height: 1;
         }
         .fav-star.active {
             color: #f1c40f;
@@ -228,13 +232,14 @@
             line-height: 1.3;
         }
 
+        /* Media query mobile */
         @media (max-width: 600px) {
             .grid { 
-                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); 
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); /* card più grandi */
                 gap: 12px; 
             }
-            .logo-box { height: 80px; padding: 10px; }
-            .name { font-size: 11.5px; }
+            .logo-box { height: 90px; padding: 12px; }  /* leggermente più alta */
+            .name { font-size: 12px; }
             body { padding: 10px; }
             
             #header {
@@ -250,6 +255,12 @@
                 width: 100%;
                 max-width: 100%;
                 padding: 0;
+            }
+            /* Stella un po' più piccola su mobile ma comunque ben visibile */
+            .fav-star {
+                font-size: 24px;
+                top: 8px;
+                right: 8px;
             }
         }
     </style>
@@ -277,6 +288,7 @@
 <script type="module">
 let passwordGlobale = "";
 let heartbeatInterval;
+let lastM3UData = null; // Memorizza l'ultimo contenuto M3U per il reload
 const FAVORITES_KEY = 'favoriteChannels';
 let favoriteIds = new Set(JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]'));
 let allChannels = []; // array di oggetti canale per i preferiti
@@ -352,6 +364,7 @@ async function checkAccess() {
         const m3uData = atob(m3uEncoded);
         
         passwordGlobale = psw;
+        lastM3UData = m3uData; // Salva per future ricariche
         document.getElementById('mainBody').style.display = "flex";
         document.getElementById('expiry-info').textContent = '';
         startHeartbeat(psw);
@@ -366,36 +379,28 @@ async function checkAccess() {
     }
 }
 
-async function reloadPlaylist() {
-    if (!passwordGlobale) return;
+// Ricarica la playlist usando i dati M3U già in memoria (nessuna richiesta al server)
+function reloadPlaylist() {
+    if (!lastM3UData) {
+        alert("Nessun dato playlist disponibile. Ricarica la pagina.");
+        return;
+    }
     const btn = document.getElementById('reload-btn');
     btn.disabled = true;
     btn.querySelector('#reload-icon').textContent = '⏳';
-    try {
-        const response = await fetch("/api/get-list", {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ password: passwordGlobale })
-        });
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            alert(errorData.error || "Errore nel ricaricamento");
-            return;
-        }
-        const m3uEncoded = await response.text();
-        const m3uData = atob(m3uEncoded);
+    
+    // Simula un breve ritardo per feedback visivo
+    setTimeout(() => {
         // Pulisci la lista attuale
         document.getElementById('main-list').innerHTML = '';
-        // Rimuovi eventuali categorie preferiti precedenti
-        // (verrà ricreata da renderFavorites)
+        // Reset variabili
         allChannels = [];
-        init(m3uData);
-    } catch (e) {
-        alert("Errore di rete");
-    } finally {
+        // Riprocessa la playlist salvata
+        init(lastM3UData);
+        
         btn.disabled = false;
         btn.querySelector('#reload-icon').textContent = '🔄';
-    }
+    }, 300); // 300 ms per mostrare l'animazione
 }
 
 async function init(m3uContent) {
@@ -420,7 +425,6 @@ async function init(m3uContent) {
             <div class="info-box"><div class="name">${ch.name}</div></div>
         `;
         
-        // Listener stella preferiti
         const star = card.querySelector('.fav-star');
         star.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -507,7 +511,6 @@ async function init(m3uContent) {
     }
 
     function renderFavorites() {
-        // Rimuovi eventuale categoria Preferiti esistente
         const existingFav = document.getElementById('favorites-category');
         if (existingFav) existingFav.remove();
 
@@ -541,6 +544,10 @@ async function init(m3uContent) {
         id: ""
     };
     let loadedCount = 0;
+
+    // Svuota la lista prima di riempirla
+    mainList.innerHTML = '';
+    allChannels = [];
 
     for (let line of lines) {
         line = line.trim();
@@ -592,16 +599,24 @@ async function init(m3uContent) {
             
             currentChannel.url = url;
             currentChannel.expiry = getExpiryFromUrl(line);
-            // Genera ID univoco
             currentChannel.id = `${currentChannel.name}|${currentChannel.group}|${url}`;
             
-            // Salva nei preferiti per uso successivo
             allChannels.push({ ...currentChannel });
             
-            // Crea la card nella categoria originale
-            createCardElement(currentChannel);
-            loadedCount++;
+            const catName = (currentChannel.group || "LISTA").toUpperCase().trim();
+            let gridId = `grid-${catName.replace(/[^a-z0-9]/gi, '-')}`;
+            let grid = document.getElementById(gridId);
+            if (!grid) {
+                const container = document.createElement('div');
+                container.className = 'category-container';
+                container.innerHTML = `<div class="category-title">${catName}</div><div class="grid" id="${gridId}"></div>`;
+                mainList.appendChild(container);
+                grid = document.getElementById(gridId);
+            }
+            const cardElement = createCardElement(currentChannel);
+            grid.appendChild(cardElement);
             
+            loadedCount++;
             currentChannel = { 
                 name: "", 
                 logo: "", 
@@ -615,29 +630,10 @@ async function init(m3uContent) {
         }
     }
 
-    // Ora crea le categorie con le card già pronte
-    // (abbiamo già aggiunto le card direttamente alle griglie? No, dobbiamo ancora farlo)
-    // Riscriviamo la logica di creazione categorie:
-    // In realtà prima chiamavamo createCard che aggiungeva alla griglia della categoria.
-    // Ora createCardElement non aggiunge alla griglia. Dobbiamo creare le griglie e poi appendere le card.
-    // Per semplicità, rifacciamo il parsing con createCard che fa tutto.
-    // Ma per non riscrivere troppo, possiamo mantenere createCard ma separare.
-    // Però ho già scritto createCardElement, quindi lo uso.
-    
-    // NOTA: La parte sopra non aggiunge le card alle griglie! Dobbiamo correggere.
-    // Semplice soluzione: ricreo la funzione createCard che usi createCardElement.
-    
-    // Svuoto mainList e riparto da zero per evitare duplicati
-    mainList.innerHTML = '';
-    allChannels = [];
-    loadedCount = 0;
-    // Riprocesso la M3U con la funzione corretta
-    processM3U(m3uContent);
-    
     countHeader.innerText = loadedCount + " CANALI";
     renderFavorites();
     
-    // Aggiungi listener ricerca
+    // Listener ricerca
     const searchInput = document.getElementById('search-input');
     searchInput.addEventListener('input', () => {
         const query = searchInput.value.toLowerCase().trim();
@@ -672,86 +668,9 @@ async function init(m3uContent) {
             }
         });
     });
-
-    // Funzione processM3U definita dentro init
-    function processM3U(content) {
-        const lines = content.split('\n');
-        let currentChannel = { name: "", logo: "", group: "LISTA", drm: {}, url: "", streamHeaders: {}, userAgent: null, id: "" };
-        
-        for (let line of lines) {
-            line = line.trim();
-            if (line.startsWith('#KODIPROP:inputstream.adaptive.license_key=')) {
-                const val = line.split('=')[1];
-                try {
-                    currentChannel.drm = JSON.parse(val);
-                } catch (e) {
-                    const parts = val.split(':');
-                    if (parts.length === 2) currentChannel.drm[parts[0].toLowerCase()] = parts[1].toLowerCase();
-                }
-            } 
-            else if (line.startsWith('#KODIPROP:inputstream.adaptive.stream_headers=')) {
-                const val = line.split('=')[1];
-                if (val) {
-                    const pairs = val.split('&');
-                    pairs.forEach(pair => {
-                        const [headerKey, headerValue] = pair.split('=');
-                        if (headerKey && headerValue) {
-                            currentChannel.streamHeaders[headerKey.trim()] = headerValue.trim();
-                        }
-                    });
-                }
-            }
-            else if (line.startsWith('#EXTVLCOPT:http-user-agent=')) {
-                currentChannel.userAgent = line.substring(line.indexOf('=') + 1).trim();
-            }
-            else if (line.startsWith('#EXTINF:')) {
-                const logo = line.match(/tvg-logo="([^"]+)"/i);
-                const group = line.match(/group-title="([^"]+)"/i);
-                const name = line.match(/,(.*)/);
-                if (logo) currentChannel.logo = logo[1];
-                if (group) currentChannel.group = group[1];
-                if (name) currentChannel.name = name[1].trim();
-            } 
-            else if (line.startsWith('http')) {
-                let url = line;
-                const targetUA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0';
-                
-                const isNeroZone = currentChannel.group && currentChannel.group.toLowerCase().includes('nerozone');
-                const isDazn1Lineare = currentChannel.name && currentChannel.name.toLowerCase() === 'dazn 1' && currentChannel.group && currentChannel.group.toLowerCase() === 'dazn lineari';
-                
-                if (!isNeroZone && !isDazn1Lineare && (url.includes('dca-fs-live-dazn-cdn.dazn.com') || currentChannel.userAgent === targetUA)) {
-                    url = 'https://dazn-ua-proxy.stefanoaccuont.workers.dev/' + url;
-                }
-                
-                currentChannel.url = url;
-                currentChannel.expiry = getExpiryFromUrl(line);
-                currentChannel.id = `${currentChannel.name}|${currentChannel.group}|${url}`;
-                
-                allChannels.push({ ...currentChannel });
-                
-                // Crea categoria se non esiste
-                const catName = (currentChannel.group || "LISTA").toUpperCase().trim();
-                let gridId = `grid-${catName.replace(/[^a-z0-9]/gi, '-')}`;
-                let grid = document.getElementById(gridId);
-                if (!grid) {
-                    const container = document.createElement('div');
-                    container.className = 'category-container';
-                    container.innerHTML = `<div class="category-title">${catName}</div><div class="grid" id="${gridId}"></div>`;
-                    mainList.appendChild(container);
-                    grid = document.getElementById(gridId);
-                }
-                const cardElement = createCardElement(currentChannel);
-                grid.appendChild(cardElement);
-                
-                loadedCount++;
-                currentChannel = { name: "", logo: "", group: "LISTA", drm: {}, url: "", streamHeaders: {}, userAgent: null, id: "" };
-            }
-        }
-    }
 }
 
 document.addEventListener('shaka-ui-loaded', () => {
-    // Aggiungi listener al pulsante di reload
     document.getElementById('reload-btn').addEventListener('click', reloadPlaylist);
     checkAccess();
 });
