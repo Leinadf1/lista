@@ -34,25 +34,36 @@
         }
         
         /* Pulsante ricarica playlist */
-        #reload-btn { 
-            font-size: 22px; 
-            font-weight: 700; 
-            color: #58a6ff; 
-            background: none; 
-            border: none; 
-            cursor: pointer; 
-            padding: 0; 
-            margin: 0; 
-            letter-spacing: -0.5px; 
-            justify-self: start;
-            display: flex;
+        .reload-btn {
+            display: inline-flex;
             align-items: center;
-            gap: 5px;
-            transition: opacity 0.2s;
+            gap: 8px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #1f6feb, #58a6ff);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            justify-self: start;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
-        #reload-btn:hover { opacity: 0.8; }
-        #reload-btn:disabled { opacity: 0.5; cursor: wait; }
-        #reload-icon { font-size: 18px; }
+        .reload-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(0,0,0,0.4);
+        }
+        .reload-btn:disabled {
+            opacity: 0.6;
+            cursor: wait;
+            transform: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .reload-icon {
+            font-size: 18px;
+        }
         
         #search-container {
             display: flex;
@@ -182,24 +193,36 @@
             background-color: #21262d; 
         }
         
-        /* Stella preferiti ingrandita */
+        /* Stella preferiti rotonda */
         .fav-star {
             position: absolute;
-            top: 10px;
-            right: 10px;
-            font-size: 28px;          /* ingrandita da 18 a 28 */
+            top: 8px;
+            right: 8px;
+            width: 34px;
+            height: 34px;
+            background-color: rgba(13, 17, 23, 0.85);
+            border: 1px solid #30363d;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
             color: #8b949e;
             cursor: pointer;
             z-index: 5;
             user-select: none;
-            transition: color 0.2s;
+            transition: all 0.2s ease;
             line-height: 1;
         }
         .fav-star.active {
             color: #f1c40f;
+            border-color: #f1c40f;
+            background-color: rgba(241, 196, 15, 0.1);
         }
         .fav-star:hover {
             color: #f1c40f;
+            border-color: #f1c40f;
+            transform: scale(1.1);
         }
         
         .logo-box { 
@@ -235,10 +258,10 @@
         /* Media query mobile */
         @media (max-width: 600px) {
             .grid { 
-                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); /* card più grandi */
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
                 gap: 12px; 
             }
-            .logo-box { height: 90px; padding: 12px; }  /* leggermente più alta */
+            .logo-box { height: 90px; padding: 12px; }
             .name { font-size: 12px; }
             body { padding: 10px; }
             
@@ -247,7 +270,11 @@
                 grid-template-rows: auto auto;
                 gap: 10px;
             }
-            #reload-btn { justify-self: start; }
+            .reload-btn { 
+                justify-self: start; 
+                padding: 8px 14px;
+                font-size: 13px;
+            }
             #chan-count { justify-self: end; }
             #search-container {
                 grid-column: 1 / -1;
@@ -256,11 +283,12 @@
                 max-width: 100%;
                 padding: 0;
             }
-            /* Stella un po' più piccola su mobile ma comunque ben visibile */
             .fav-star {
-                font-size: 24px;
-                top: 8px;
-                right: 8px;
+                width: 30px;
+                height: 30px;
+                font-size: 16px;
+                top: 6px;
+                right: 6px;
             }
         }
     </style>
@@ -268,8 +296,8 @@
 <body id="mainBody" style="display:none;">
 
     <div id="header">
-        <button id="reload-btn" title="Ricarica playlist">
-            <span id="reload-icon">🔄</span> DASHBOARD TV
+        <button id="reload-btn" class="reload-btn" title="Ricarica playlist">
+            <span id="reload-icon" class="reload-icon">🔄</span> Ricarica playlist
         </button>
         <div id="search-container">
             <input type="text" id="search-input" placeholder="Cerca canali o categorie...">
@@ -288,10 +316,10 @@
 <script type="module">
 let passwordGlobale = "";
 let heartbeatInterval;
-let lastM3UData = null; // Memorizza l'ultimo contenuto M3U per il reload
+let lastM3UData = null;
 const FAVORITES_KEY = 'favoriteChannels';
 let favoriteIds = new Set(JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]'));
-let allChannels = []; // array di oggetti canale per i preferiti
+let allChannels = [];
 
 function startHeartbeat(password) {
     if (heartbeatInterval) clearInterval(heartbeatInterval);
@@ -364,7 +392,7 @@ async function checkAccess() {
         const m3uData = atob(m3uEncoded);
         
         passwordGlobale = psw;
-        lastM3UData = m3uData; // Salva per future ricariche
+        lastM3UData = m3uData;
         document.getElementById('mainBody').style.display = "flex";
         document.getElementById('expiry-info').textContent = '';
         startHeartbeat(psw);
@@ -379,7 +407,6 @@ async function checkAccess() {
     }
 }
 
-// Ricarica la playlist usando i dati M3U già in memoria (nessuna richiesta al server)
 function reloadPlaylist() {
     if (!lastM3UData) {
         alert("Nessun dato playlist disponibile. Ricarica la pagina.");
@@ -387,20 +414,16 @@ function reloadPlaylist() {
     }
     const btn = document.getElementById('reload-btn');
     btn.disabled = true;
-    btn.querySelector('#reload-icon').textContent = '⏳';
+    btn.querySelector('.reload-icon').textContent = '⏳';
     
-    // Simula un breve ritardo per feedback visivo
     setTimeout(() => {
-        // Pulisci la lista attuale
         document.getElementById('main-list').innerHTML = '';
-        // Reset variabili
         allChannels = [];
-        // Riprocessa la playlist salvata
         init(lastM3UData);
         
         btn.disabled = false;
-        btn.querySelector('#reload-icon').textContent = '🔄';
-    }, 300); // 300 ms per mostrare l'animazione
+        btn.querySelector('.reload-icon').textContent = '🔄';
+    }, 300);
 }
 
 async function init(m3uContent) {
@@ -414,7 +437,6 @@ async function init(m3uContent) {
 
     player.configure({ streaming: { jumpLargeGaps: true } });
 
-    // Funzione per creare l'elemento card (senza aggiungerlo al DOM)
     function createCardElement(ch) {
         const card = document.createElement('div');
         card.className = 'channel-card';
@@ -531,7 +553,9 @@ async function init(m3uContent) {
         });
     }
 
-    // Parsing M3U
+    mainList.innerHTML = '';
+    allChannels = [];
+
     const lines = m3uContent.split('\n');
     let currentChannel = { 
         name: "", 
@@ -544,10 +568,6 @@ async function init(m3uContent) {
         id: ""
     };
     let loadedCount = 0;
-
-    // Svuota la lista prima di riempirla
-    mainList.innerHTML = '';
-    allChannels = [];
 
     for (let line of lines) {
         line = line.trim();
@@ -633,7 +653,6 @@ async function init(m3uContent) {
     countHeader.innerText = loadedCount + " CANALI";
     renderFavorites();
     
-    // Listener ricerca
     const searchInput = document.getElementById('search-input');
     searchInput.addEventListener('input', () => {
         const query = searchInput.value.toLowerCase().trim();
