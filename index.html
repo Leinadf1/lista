@@ -489,10 +489,13 @@ async function loadEPG() {
                 displayName = displayNames[0].textContent.trim();
             }
             const normName = normalizeName(displayName);
+            const normId = normalizeName(id); // <-- AGGIUNTO: normalizzazione ID
             channelMap.set(id, normName);
             epgNames.add(normName);
+            // Aggiungi sia l'ID originale che la sua versione normalizzata
             epgChannels.set(id, []);
             if (!epgChannels.has(normName)) epgChannels.set(normName, []);
+            if (!epgChannels.has(normId)) epgChannels.set(normId, []); // <-- AGGIUNTO
         });
         
         xmlDoc.querySelectorAll('programme').forEach(prog => {
@@ -506,7 +509,12 @@ async function loadEPG() {
             const start = parseXmltvTime(startStr);
             const stop = parseXmltvTime(stopStr);
             const program = { start, stop, title, desc };
+            // Aggiungi per ID originale
             if (epgChannels.has(channelId)) epgChannels.get(channelId).push(program);
+            // Aggiungi per ID normalizzato (per coprire il doppio punto)
+            const normChannelId = normalizeName(channelId);
+            if (epgChannels.has(normChannelId)) epgChannels.get(normChannelId).push(program);
+            // Aggiungi per nome normalizzato
             if (channelMap.has(channelId)) {
                 const norm = channelMap.get(channelId);
                 if (epgChannels.has(norm)) epgChannels.get(norm).push(program);
@@ -559,7 +567,10 @@ function getCurrentProgram(ch) {
     if (!epgReady) return { status: 'loading' };
     const now = Date.now();
     const candidates = [];
-    if (ch.tvgId) candidates.push(ch.tvgId);
+    if (ch.tvgId) {
+        candidates.push(ch.tvgId);
+        candidates.push(normalizeName(ch.tvgId)); // <-- AGGIUNTO: tvg-id normalizzato
+    }
     const normName = normalizeName(ch.name);
     candidates.push(normName);
     
