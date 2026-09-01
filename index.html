@@ -155,7 +155,7 @@
             width: 100%;
         }
         
-        /* EPG migliorato: allineato a sinistra, card con bordo laterale */
+        /* EPG */
         #epg-info {
             display: none;
             text-align: left;
@@ -183,6 +183,27 @@
         #epg-info .program-desc {
             font-size: 13px;
             color: #c9d1d9;
+        }
+        .epg-nav {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .epg-nav button {
+            background: #2d3741;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 10px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .epg-nav button:hover {
+            background: #3a4753;
+        }
+        .epg-nav button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
         }
 
         .category-container { 
@@ -463,11 +484,18 @@ async function loadEPG() {
     }
 }
 
-// Aggiunta alias per DAZN 1 Warp -> DAZN 1
+// Alias per canali speciali
 function getAliasesForChannel(ch) {
     const aliases = [];
-    if (ch.name && ch.name.toLowerCase().includes('dazn 1 warp')) {
-        aliases.push('dazn 1');
+    const nameLower = ch.name.toLowerCase();
+    if (nameLower.includes('dazn 1 warp')) {
+        aliases.push('dazn1');
+    }
+    if (nameLower.includes('eurosport 1')) {
+        aliases.push('eurosportitaliait');
+    }
+    if (nameLower.includes('eurosport 2')) {
+        aliases.push('eurosport2italiait');
     }
     return aliases;
 }
@@ -480,16 +508,19 @@ function getCurrentProgram(ch) {
     const normName = normalizeName(ch.name);
     candidates.push(normName);
     
-    // Aggiungi alias
+    // Aggiungi alias normalizzati
     const aliases = getAliasesForChannel(ch);
     candidates.push(...aliases.map(normalizeName));
     
-    // Corrispondenza esatta
+    // Cerca corrispondenza esatta
     for (const key of candidates) {
         if (epgChannels.has(key)) {
             const programs = epgChannels.get(key);
-            const current = programs.find(p => p.start <= now && now < p.stop);
-            if (current) return { status: 'ok', program: current, matchedKey: key };
+            // Trova indice del programma corrente
+            const currentIndex = programs.findIndex(p => p.start <= now && now < p.stop);
+            if (currentIndex !== -1) {
+                return { status: 'ok', programs, currentIndex, matchedKey: key };
+            }
         }
     }
     
@@ -505,34 +536,84 @@ function getCurrentProgram(ch) {
     }
     if (bestKey && bestDist <= 2 && epgChannels.has(bestKey)) {
         const programs = epgChannels.get(bestKey);
-        const current = programs.find(p => p.start <= now && now < p.stop);
-        if (current) return { status: 'ok', program: current, matchedKey: bestKey };
+        const currentIndex = programs.findIndex(p => p.start <= now && now < p.stop);
+        if (currentIndex !== -1) {
+            return { status: 'ok', programs, currentIndex, matchedKey: bestKey };
+        }
     }
     
     return { status: 'notfound' };
 }
 
+// Variabile globale per tenere traccia della navigazione EPG corrente
+let epgState = {
+    channel: null,
+    programs: [],
+    currentIndex: -1
+};
+
 function displayEPG(ch) {
     const epgDiv = document.getElementById('epg-info');
     const result = getCurrentProgram(ch);
     
-    // Nascondi sempre se non c'è un programma
     if (result.status !== 'ok') {
         epgDiv.style.display = 'none';
         return;
     }
     
-    const program = result.program;
+    // Salva lo stato
+    epgState.channel = ch;
+    epgState.programs = result.programs;
+    epgState.currentIndex = result.currentIndex;
+    
+    renderEPG();
+}
+
+function renderEPG() {
+    const epgDiv = document.getElementById('epg-info');
+    if (!epgState.programs || epgState.currentIndex < 0 || epgState.currentIndex >= epgState.programs.length) {
+        epgDiv.style.display = 'none';
+        return;
+    }
+    
+    const program = epgState.programs[epgState.currentIndex];
     const startDate = new Date(program.start);
     const stopDate = new Date(program.stop);
     const timeStr = `${startDate.toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'})} - ${stopDate.toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'})}`;
     
+    // Genera pulsanti di navigazione (due set: sopra e sotto)
+    const prevDisabled = epgState.currentIndex === 0;
+    const nextDisabled = epgState.currentIndex === epgState.programs.length - 1;
+    
+    const navHtml = `
+        <div class="epg-nav">
+            <button id="epg-prev" ${prevDisabled ? 'disabled' : ''}>◀</button>
+            <button id="epg-next" ${nextDisabled ? 'disabled' : ''}>▶</button>
+        </div>
+    `;
+    
     epgDiv.style.display = 'block';
     epgDiv.innerHTML = `
+        ${navHtml}
         <div class="program-title">${program.title}</div>
         <div class="program-time">${timeStr}</div>
         ${program.desc ? `<div class="program-desc">${program.desc}</div>` : ''}
+        ${navHtml}
     `;
+    
+    // Aggiungi listener ai pulsanti
+    const prevBtn = epgDiv.querySelector('#epg-prev');
+    const nextBtn = epgDiv.querySelector('#epg-next');
+    if (prevBtn) prevBtn.addEventListener('click', () => navigateEPG(-1));
+    if (nextBtn) nextBtn.addEventListener('click', () => navigateEPG(1));
+}
+
+function navigateEPG(direction) {
+    const newIndex = epgState.currentIndex + direction;
+    if (newIndex >= 0 && newIndex < epgState.programs.length) {
+        epgState.currentIndex = newIndex;
+        renderEPG();
+    }
 }
 // -------------------- Fine EPG --------------------
 
