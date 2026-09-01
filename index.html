@@ -112,23 +112,6 @@
             font-family: 'Formula1 Display Bold', 'Inter', sans-serif;
         }
         
-        /* Indicatore EPG */
-        #epg-status {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 12px;
-            color: #8b949e;
-            font-family: 'Formula1 Display Bold', 'Inter', sans-serif;
-        }
-        #epg-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #8b949e;
-            display: inline-block;
-        }
-        
         .player-container { 
             position: relative;
             width: 100%; 
@@ -182,7 +165,7 @@
             font-weight: 500;
             width: 100%;
             background: #1a2028;
-            border-left: 4px solid #00e676; /* verde vivace */
+            border-left: 4px solid #00e676;
             border-radius: 6px;
             padding: 12px 16px;
             box-sizing: border-box;
@@ -190,7 +173,7 @@
             --epg-accent: #00e676;
         }
         #epg-info.live {
-            border-left-color: #ff1744; /* rosso acceso */
+            border-left-color: #ff1744;
             --epg-accent: #ff1744;
         }
         #epg-info .program-title {
@@ -417,9 +400,6 @@
             <input type="text" id="search-input" placeholder="Cerca canali o categorie...">
         </div>
         <div id="chan-count">Caricamento...</div>
-        <span id="epg-status">
-            <span id="epg-dot"></span> EPG
-        </span>
     </div>
 
     <div class="player-container" data-shaka-player-container>
@@ -480,7 +460,6 @@ function parseXmltvTime(str) {
 async function loadEPG() {
     epgError = null;
     epgReady = false;
-    document.getElementById('epg-dot').style.backgroundColor = '#8b949e'; // grigio (caricamento)
     try {
         console.log('Caricamento EPG...');
         const response = await fetch(EPG_URL);
@@ -537,13 +516,11 @@ async function loadEPG() {
         }
         
         epgReady = true;
-        document.getElementById('epg-dot').style.backgroundColor = '#00e676'; // verde (pronto)
         console.log('EPG caricato con', epgChannels.size, 'voci');
     } catch (error) {
         console.error('Errore EPG:', error);
         epgReady = false;
         epgError = error.message || 'Errore sconosciuto';
-        document.getElementById('epg-dot').style.backgroundColor = '#ff1744'; // rosso (errore)
     }
 }
 
@@ -1099,4 +1076,4 @@ document.addEventListener('shaka-ui-loaded', () => {
 });
 </script>
 </body>
-    </html>
+</html>
