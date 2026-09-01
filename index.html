@@ -236,12 +236,6 @@
             transform: none;
             box-shadow: none;
         }
-        .debug-info {
-            font-size: 12px;
-            color: #ff9999;
-            margin-top: 5px;
-            white-space: pre-wrap;
-        }
 
         .category-container { 
             width: 100%; 
@@ -489,12 +483,12 @@ async function loadEPG() {
                 displayName = displayNames[0].textContent.trim();
             }
             const normName = normalizeName(displayName);
-            const normId = normalizeName(id); // AGGIUNTO
+            const normId = normalizeName(id);
             channelMap.set(id, normName);
             epgNames.add(normName);
             epgChannels.set(id, []);
             if (!epgChannels.has(normName)) epgChannels.set(normName, []);
-            if (!epgChannels.has(normId)) epgChannels.set(normId, []); // AGGIUNTO
+            if (!epgChannels.has(normId)) epgChannels.set(normId, []);
         });
         
         xmlDoc.querySelectorAll('programme').forEach(prog => {
@@ -534,7 +528,6 @@ function getAliasesForChannel(ch) {
     const aliases = [];
     const normName = normalizeName(ch.name);
     
-    // Eurosport: se il nome normalizzato contiene 'eurosport'
     if (normName.includes('eurosport')) {
         if (normName.includes('2')) {
             aliases.push('eurosport2italiait');
@@ -543,7 +536,6 @@ function getAliasesForChannel(ch) {
         }
     }
     
-    // Sky Sport numerati: es. "sky sport 251" -> skysport251it
     const skyMatch = normName.match(/skysport(\d{1,3})/);
     if (skyMatch) {
         const num = skyMatch[1];
@@ -551,7 +543,6 @@ function getAliasesForChannel(ch) {
         aliases.push(`skysport${num}`);
     }
     
-    // DAZN 1 Warp -> dazn1
     if (normName.includes('dazn1warp')) {
         aliases.push('dazn1');
     }
@@ -573,16 +564,13 @@ function getCurrentProgram(ch) {
     const aliases = getAliasesForChannel(ch);
     candidates.push(...aliases.map(normalizeName));
     
-    // Cerca corrispondenza esatta
     for (const key of candidates) {
         if (epgChannels.has(key)) {
             const programs = epgChannels.get(key);
-            // Cerca programma corrente
             const currentIndex = programs.findIndex(p => p.start <= now && now < p.stop);
             if (currentIndex !== -1) {
                 return { status: 'ok', programs, currentIndex, matchedKey: key, isLive: true };
             }
-            // Se non trovato, cerca il prossimo programma futuro
             const nextIndex = programs.findIndex(p => p.start > now);
             if (nextIndex !== -1) {
                 return { status: 'ok', programs, currentIndex: nextIndex, matchedKey: key, isLive: false };
@@ -590,7 +578,6 @@ function getCurrentProgram(ch) {
         }
     }
     
-    // Fuzzy matching
     let bestKey = null;
     let bestDist = Infinity;
     for (const epgName of epgNames) {
@@ -608,7 +595,7 @@ function getCurrentProgram(ch) {
         if (nextIndex !== -1) return { status: 'ok', programs, currentIndex: nextIndex, matchedKey: bestKey, isLive: false };
     }
     
-    return { status: 'notfound', candidates, bestKey, bestDist };
+    return { status: 'notfound' };
 }
 
 let epgState = {
@@ -619,7 +606,6 @@ let epgState = {
 };
 
 function displayEPG(ch) {
-    // Se il canale appartiene alla categoria DAZN Svizzeri, non mostrare EPG
     if (ch.group && ch.group.toLowerCase().includes('svizzeri')) {
         document.getElementById('epg-info').style.display = 'none';
         return;
@@ -628,25 +614,17 @@ function displayEPG(ch) {
     const epgDiv = document.getElementById('epg-info');
     const result = getCurrentProgram(ch);
     
-    if (result.status === 'ok') {
-        epgState.channel = ch;
-        epgState.programs = result.programs;
-        epgState.currentIndex = result.currentIndex;
-        epgState.liveIndex = result.isLive ? result.currentIndex : -1;
-        renderEPG();
-    } else {
-        let debugHtml = '';
-        if (result.status === 'loading') {
-            debugHtml = 'EPG in caricamento...';
-        } else if (result.status === 'error') {
-            debugHtml = `Errore EPG: ${result.message}`;
-        } else if (result.status === 'notfound') {
-            debugHtml = `Nessun EPG per "${ch.name}" (tvgId: ${ch.tvgId || 'nessuno'})\nChiavi cercate: ${result.candidates?.join(', ') || 'nessuna'}\nMiglior match fuzzy: ${result.bestKey || 'nessuno'} (distanza ${result.bestDist ?? '-'})`;
-        }
-        epgDiv.style.display = 'block';
-        epgDiv.innerHTML = `<div class="debug-info">${debugHtml}</div>`;
-        epgDiv.classList.remove('live');
+    if (result.status !== 'ok') {
+        epgDiv.style.display = 'none';
+        return;
     }
+    
+    epgState.channel = ch;
+    epgState.programs = result.programs;
+    epgState.currentIndex = result.currentIndex;
+    epgState.liveIndex = result.isLive ? result.currentIndex : -1;
+    
+    renderEPG();
 }
 
 function renderEPG() {
