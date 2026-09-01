@@ -414,8 +414,17 @@ async function init(m3uContent) {
             // Determina se il canale appartiene a DAZN NeroZone (case-insensitive)
             const isNeroZone = currentChannel.group && currentChannel.group.toLowerCase().includes('nerozone');
             
-            // Applica il proxy solo se NON è NeroZone e se soddisfa le condizioni precedenti
-            if (!isNeroZone && (url.includes('dca-fs-live-dazn-cdn.dazn.com') || currentChannel.userAgent === targetUA)) {
+            // 🔥 NUOVA ECCEZIONE: esclude "DAZN 1" del gruppo "DAZN Lineari" dall'uso del proxy
+            const isDazn1Lineare = 
+                currentChannel.name && currentChannel.name.toLowerCase() === 'dazn 1' &&
+                currentChannel.group && currentChannel.group.toLowerCase() === 'dazn lineari';
+            
+            // Applica il proxy solo se:
+            // - NON è NeroZone
+            // - NON è il canale DAZN 1 Lineari
+            // - e soddisfa le condizioni precedenti (URL DAZN o user agent specifico)
+            if (!isNeroZone && !isDazn1Lineare && 
+                (url.includes('dca-fs-live-dazn-cdn.dazn.com') || currentChannel.userAgent === targetUA)) {
                 url = 'https://dazn-ua-proxy.stefanoaccuont.workers.dev/' + url;
             }
             
