@@ -393,7 +393,6 @@
             width: 100%;
             aspect-ratio: 16/9;
         }
-        /* Layout dinamici */
         .ms-grid-1 { grid-template-columns: 1fr; }
         .ms-grid-2 { grid-template-columns: 1fr 1fr; }
         .ms-grid-3 { grid-template-columns: 1fr 1fr; }
@@ -936,8 +935,13 @@ function exitMultistream() {
 
 function openSlotSelector(slotIndex) {
     activeSlot = slotIndex;
-    document.getElementById('channel-selector-overlay').classList.add('active');
-    populateChannelSelector('');
+    const overlay = document.getElementById('channel-selector-overlay');
+    overlay.classList.add('active');
+    if (allChannels.length === 0) {
+        document.getElementById('channel-selector-list').innerHTML = '<div style="padding:20px; text-align:center;">Caricamento canali...</div>';
+    } else {
+        populateChannelSelector('');
+    }
 }
 
 function closeSlotSelector() {
@@ -948,14 +952,19 @@ function closeSlotSelector() {
 function populateChannelSelector(query) {
     const list = document.getElementById('channel-selector-list');
     list.innerHTML = '';
-    const filtered = allChannels.filter(ch => 
-        ch.name.toLowerCase().includes(query.toLowerCase()) ||
-        (ch.group && ch.group.toLowerCase().includes(query.toLowerCase()))
-    );
+    const filtered = allChannels.filter(ch => {
+        const name = ch.name || '';
+        const group = ch.group || '';
+        return name.toLowerCase().includes(query.toLowerCase()) || group.toLowerCase().includes(query.toLowerCase());
+    });
+    if (filtered.length === 0) {
+        list.innerHTML = '<div style="padding:20px; text-align:center;">Nessun canale trovato</div>';
+        return;
+    }
     filtered.forEach(ch => {
         const item = document.createElement('div');
         item.className = 'ch-item';
-        item.innerHTML = `<img src="${ch.logo}" onerror="this.src='https://via.placeholder.com/30x30?text=TV'"><span>${ch.name}</span>`;
+        item.innerHTML = `<img src="${ch.logo || 'https://via.placeholder.com/30x30?text=TV'}" onerror="this.src='https://via.placeholder.com/30x30?text=TV'"><span>${ch.name}</span>`;
         item.addEventListener('click', () => {
             loadChannelInSlot(activeSlot, ch);
             closeSlotSelector();
@@ -989,7 +998,6 @@ function loadChannelInSlot(slotIndex, ch) {
 function updateMultistreamLayout() {
     const grid = document.getElementById('ms-grid');
     const activeCount = slotPlayers.filter(p => p !== null).length;
-    // Rimuovi classi esistenti
     grid.classList.remove('ms-grid-1', 'ms-grid-2', 'ms-grid-3', 'ms-grid-4');
     if (activeCount === 1) {
         grid.classList.add('ms-grid-1');
@@ -1011,7 +1019,6 @@ function requestFullscreenMultistream() {
     }
 }
 
-// Inizializzazione eventi multistream (subito dopo la definizione delle funzioni)
 function initMultistreamEvents() {
     document.getElementById('multistream-btn').addEventListener('click', toggleMultistream);
     document.getElementById('exit-multistream-btn').addEventListener('click', exitMultistream);
@@ -1405,7 +1412,7 @@ async function init(m3uContent) {
         });
     });
 
-    // Inizializza eventi multistream (dopo che la UI principale è pronta)
+    // Inizializza eventi multistream dopo che la UI principale è pronta
     initMultistreamEvents();
 }
 
