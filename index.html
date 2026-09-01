@@ -351,7 +351,7 @@
 
         /* Multistream */
         #multistream-btn {
-            display: none; /* visibile solo su desktop */
+            display: none;
         }
         @media (min-width: 900px) {
             #multistream-btn { display: inline-flex; }
@@ -389,10 +389,17 @@
         }
         .ms-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
             gap: 10px;
+            width: 100%;
             aspect-ratio: 16/9;
         }
+        /* Layout dinamici */
+        .ms-grid-1 { grid-template-columns: 1fr; }
+        .ms-grid-2 { grid-template-columns: 1fr 1fr; }
+        .ms-grid-3 { grid-template-columns: 1fr 1fr; }
+        .ms-grid-3 .ms-slot:nth-child(3) { grid-column: span 2; }
+        .ms-grid-4 { grid-template-columns: 1fr 1fr; }
+
         .ms-slot {
             background: #1a2028;
             border: 2px solid #30363d;
@@ -542,6 +549,13 @@
             }
             .ms-grid {
                 grid-template-columns: 1fr;
+                aspect-ratio: auto;
+            }
+            .ms-grid-2, .ms-grid-3, .ms-grid-4 {
+                grid-template-columns: 1fr;
+            }
+            .ms-grid-3 .ms-slot:nth-child(3) {
+                grid-column: span 1;
             }
         }
     </style>
@@ -574,7 +588,7 @@
             <button id="exit-multistream-btn">✕ Esci</button>
             <button id="fullscreen-multistream-btn">⛶ Schermo intero</button>
         </div>
-        <div class="ms-grid">
+        <div class="ms-grid" id="ms-grid">
             <div class="ms-slot" data-slot="0"><div class="ms-placeholder">Slot 1<br>Seleziona canale</div></div>
             <div class="ms-slot" data-slot="1"><div class="ms-placeholder">Slot 2<br>Seleziona canale</div></div>
             <div class="ms-slot" data-slot="2"><div class="ms-placeholder">Slot 3<br>Seleziona canale</div></div>
@@ -877,7 +891,7 @@ function navigateEPG(direction) {
 
 // -------------------- Multistream --------------------
 let multistreamActive = false;
-let slotPlayers = [null, null, null, null]; // Shaka Player instances
+let slotPlayers = [null, null, null, null];
 let activeSlot = null;
 
 function toggleMultistream() {
@@ -896,18 +910,17 @@ function enterMultistream() {
     document.querySelector('.player-container').style.display = 'none';
     document.getElementById('multistream-container').classList.add('active');
     document.getElementById('multistream-btn').textContent = '✕ Chiudi multi';
+    updateMultistreamLayout();
 }
 
 function exitMultistream() {
     multistreamActive = false;
-    // Distruggi player esistenti
     for (let i = 0; i < slotPlayers.length; i++) {
         if (slotPlayers[i]) {
             slotPlayers[i].destroy();
             slotPlayers[i] = null;
         }
     }
-    // Ripristina UI
     document.getElementById('main-list').style.display = '';
     document.getElementById('expiry-info').style.display = '';
     document.getElementById('epg-info').style.display = 'none';
@@ -918,6 +931,7 @@ function exitMultistream() {
     document.querySelectorAll('.ms-slot').forEach(slot => {
         slot.innerHTML = `<div class="ms-placeholder">Slot ${slot.dataset.slot} <br> Seleziona canale</div>`;
     });
+    updateMultistreamLayout();
 }
 
 function openSlotSelector(slotIndex) {
@@ -952,28 +966,40 @@ function populateChannelSelector(query) {
 
 function loadChannelInSlot(slotIndex, ch) {
     const slot = document.querySelector(`.ms-slot[data-slot="${slotIndex}"]`);
-    // Rimuovi contenuto esistente
     slot.innerHTML = '';
-    // Crea video element
     const video = document.createElement('video');
     video.autoplay = true;
     video.controls = true;
     slot.appendChild(video);
-    // Crea player Shaka
     const player = new shaka.Player(video);
     slotPlayers[slotIndex] = player;
-    // Configura DRM e header
     if (ch.drm && Object.keys(ch.drm).length > 0) {
         player.configure({ drm: { clearKeys: ch.drm } });
     }
     if (ch.streamHeaders && Object.keys(ch.streamHeaders).length > 0) {
         player.configure({ streaming: { customHttpHeaders: ch.streamHeaders } });
     }
-    // Carica URL
     player.load(ch.url).catch(err => {
         console.error('Errore caricamento slot', slotIndex, err);
         slot.innerHTML = `<div class="ms-placeholder">Errore: ${err.message}</div>`;
     });
+    updateMultistreamLayout();
+}
+
+function updateMultistreamLayout() {
+    const grid = document.getElementById('ms-grid');
+    const activeCount = slotPlayers.filter(p => p !== null).length;
+    // Rimuovi classi esistenti
+    grid.classList.remove('ms-grid-1', 'ms-grid-2', 'ms-grid-3', 'ms-grid-4');
+    if (activeCount === 1) {
+        grid.classList.add('ms-grid-1');
+    } else if (activeCount === 2) {
+        grid.classList.add('ms-grid-2');
+    } else if (activeCount === 3) {
+        grid.classList.add('ms-grid-3');
+    } else {
+        grid.classList.add('ms-grid-4');
+    }
 }
 
 function requestFullscreenMultistream() {
@@ -985,8 +1011,8 @@ function requestFullscreenMultistream() {
     }
 }
 
-// Inizializzazione eventi multistream
-document.addEventListener('DOMContentLoaded', () => {
+// Inizializzazione eventi multistream (subito dopo la definizione delle funzioni)
+function initMultistreamEvents() {
     document.getElementById('multistream-btn').addEventListener('click', toggleMultistream);
     document.getElementById('exit-multistream-btn').addEventListener('click', exitMultistream);
     document.getElementById('fullscreen-multistream-btn').addEventListener('click', requestFullscreenMultistream);
@@ -995,7 +1021,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.ms-slot').forEach(slot => {
         slot.addEventListener('click', () => openSlotSelector(parseInt(slot.dataset.slot)));
     });
-});
+}
 // -------------------- Fine Multistream --------------------
 
 function startHeartbeat(password) {
@@ -1378,6 +1404,9 @@ async function init(m3uContent) {
             }
         });
     });
+
+    // Inizializza eventi multistream (dopo che la UI principale è pronta)
+    initMultistreamEvents();
 }
 
 document.addEventListener('shaka-ui-loaded', () => {
