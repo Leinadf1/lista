@@ -6,13 +6,17 @@
     <title>TV Dashboard PRO</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
+    
+    <!-- Font Formula1 Display Bold -->
+    <link href="https://blogfonts.com/css/aWQ9MTUxNTEzJnN1Yj01MTMmYz1mJnR0Zj1Gb3JtdWxhMS1Cb2xkX3dlYl8wLnR0ZiZuPWZvcm11bGExLWRpc3BsYXktYm9sZC0x/Formula1-Bold_web_0.ttf" rel="stylesheet" type="text/css"/>
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
         body { 
             background-color: #0d1117; 
             color: #c9d1d9; 
-            font-family: 'Inter', sans-serif; 
+            font-family: 'formula1-display-bold', 'Inter', sans-serif; 
             margin: 0; 
             padding: 20px; 
             display: flex; 
@@ -39,24 +43,26 @@
             align-items: center;
             gap: 8px;
             padding: 10px 20px;
-            background: linear-gradient(135deg, #1f6feb, #58a6ff);
+            background: #0a2540; /* blu scuro */
             color: white;
             border: none;
             border-radius: 25px;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
             cursor: pointer;
             transition: all 0.2s ease;
             justify-self: start;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
         .reload-btn:hover {
-            opacity: 0.9;
+            background: #123b66;
             transform: translateY(-2px);
             box-shadow: 0 6px 14px rgba(0,0,0,0.4);
         }
         .reload-btn:disabled {
-            opacity: 0.6;
+            opacity: 0.7;
             cursor: wait;
             transform: none;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
@@ -83,6 +89,7 @@
             font-size: 14px;
             outline: none;
             transition: border-color 0.2s;
+            font-family: inherit;
         }
         #search-input:focus {
             border-color: #58a6ff;
@@ -193,36 +200,35 @@
             background-color: #21262d; 
         }
         
-        /* Stella preferiti rotonda */
-        .fav-star {
+        /* Cuore preferiti */
+        .fav-heart {
             position: absolute;
-            top: 8px;
-            right: 8px;
-            width: 34px;
-            height: 34px;
-            background-color: rgba(13, 17, 23, 0.85);
-            border: 1px solid #30363d;
+            top: 4px;
+            right: 4px;
+            width: 30px;
+            height: 30px;
+            background-color: rgba(13, 17, 23, 0.8);
+            border: 1px solid red;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 18px;
-            color: #8b949e;
+            color: red;
             cursor: pointer;
             z-index: 5;
             user-select: none;
             transition: all 0.2s ease;
             line-height: 1;
         }
-        .fav-star.active {
-            color: #f1c40f;
-            border-color: #f1c40f;
-            background-color: rgba(241, 196, 15, 0.1);
-        }
-        .fav-star:hover {
-            color: #f1c40f;
-            border-color: #f1c40f;
+        .fav-heart:hover {
             transform: scale(1.1);
+            background-color: rgba(13, 17, 23, 0.9);
+        }
+        .fav-heart.active {
+            color: red;
+            border-color: #ff3333;
+            background-color: rgba(255, 0, 0, 0.15);
         }
         
         .logo-box { 
@@ -255,7 +261,6 @@
             line-height: 1.3;
         }
 
-        /* Media query mobile */
         @media (max-width: 600px) {
             .grid { 
                 grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
@@ -283,12 +288,12 @@
                 max-width: 100%;
                 padding: 0;
             }
-            .fav-star {
-                width: 30px;
-                height: 30px;
+            .fav-heart {
+                width: 26px;
+                height: 26px;
                 font-size: 16px;
-                top: 6px;
-                right: 6px;
+                top: 3px;
+                right: 3px;
             }
         }
     </style>
@@ -441,14 +446,15 @@ async function init(m3uContent) {
         const card = document.createElement('div');
         card.className = 'channel-card';
         card.dataset.id = ch.id;
+        const isFav = favoriteIds.has(ch.id);
         card.innerHTML = `
-            <span class="fav-star ${favoriteIds.has(ch.id) ? 'active' : ''}">★</span>
+            <span class="fav-heart ${isFav ? 'active' : ''}">${isFav ? '♥' : '♡'}</span>
             <div class="logo-box"><img src="${ch.logo}" onerror="this.src='https://via.placeholder.com/150x80?text=TV'"></div>
             <div class="info-box"><div class="name">${ch.name}</div></div>
         `;
         
-        const star = card.querySelector('.fav-star');
-        star.addEventListener('click', (e) => {
+        const heart = card.querySelector('.fav-heart');
+        heart.addEventListener('click', (e) => {
             e.stopPropagation();
             toggleFavorite(ch.id);
         });
@@ -520,14 +526,12 @@ async function init(m3uContent) {
 
     function updateFavoriteUI() {
         document.querySelectorAll('.channel-card').forEach(card => {
-            const star = card.querySelector('.fav-star');
-            if (star) {
+            const heart = card.querySelector('.fav-heart');
+            if (heart) {
                 const id = card.dataset.id;
-                if (favoriteIds.has(id)) {
-                    star.classList.add('active');
-                } else {
-                    star.classList.remove('active');
-                }
+                const isFav = favoriteIds.has(id);
+                heart.classList.toggle('active', isFav);
+                heart.textContent = isFav ? '♥' : '♡';
             }
         });
     }
