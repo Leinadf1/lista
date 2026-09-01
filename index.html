@@ -7,6 +7,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
     
+    <!-- Font Formula1 Display Bold -->
     <style>
         @font-face {
             font-family: 'Formula1 Display Bold';
@@ -16,6 +17,7 @@
         }
     </style>
     
+    <!-- Font di backup Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
@@ -177,12 +179,9 @@
             font-size: 17px;
             font-weight: 700;
             margin-bottom: 4px;
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
         }
         .live-badge {
+            display: inline-block;
             background: #d73a49;
             color: white;
             font-size: 12px;
@@ -191,6 +190,7 @@
             text-transform: uppercase;
             font-weight: bold;
             letter-spacing: 0.5px;
+            margin-top: 4px; /* spazio sopra la riga */
         }
         #epg-info .program-time {
             font-size: 13px;
@@ -207,10 +207,10 @@
             margin-bottom: 10px;
         }
         .epg-btn {
-            background: #1f6feb;
+            background: #2ea44f; /* verde */
             color: white;
             border: none;
-            border-radius: 50%;
+            border-radius: 6px; /* quadrato con angoli arrotondati */
             width: 32px;
             height: 32px;
             font-size: 22px;
@@ -534,7 +534,6 @@ function getAliasesForChannel(ch) {
     if (skyMatch) {
         const num = skyMatch[1];
         aliases.push(`skysport${num}it`);
-        // Alcuni EPG potrebbero non avere "it" finale: aggiungi anche senza
         aliases.push(`skysport${num}`);
     }
     
@@ -594,7 +593,7 @@ let epgState = {
     channel: null,
     programs: [],
     currentIndex: -1,
-    liveIndex: -1  // indice del programma live
+    liveIndex: -1
 };
 
 function displayEPG(ch) {
@@ -609,7 +608,7 @@ function displayEPG(ch) {
     epgState.channel = ch;
     epgState.programs = result.programs;
     epgState.currentIndex = result.currentIndex;
-    epgState.liveIndex = result.currentIndex; // il programma corrente è live
+    epgState.liveIndex = result.currentIndex;
     
     renderEPG();
 }
@@ -631,7 +630,6 @@ function renderEPG() {
     const prevDisabled = epgState.currentIndex === 0;
     const nextDisabled = epgState.currentIndex === epgState.programs.length - 1;
     
-    // Pulsanti di navigazione solo frecce
     const navHtml = `
         <div class="epg-nav">
             <button id="epg-prev" class="epg-btn" ${prevDisabled ? 'disabled' : ''}>‹</button>
@@ -642,15 +640,12 @@ function renderEPG() {
     epgDiv.style.display = 'block';
     epgDiv.innerHTML = `
         ${navHtml}
-        <div class="program-title">
-            ${program.title}
-            ${isLive ? '<span class="live-badge">In onda</span>' : ''}
-        </div>
+        <div class="program-title">${program.title}</div>
+        ${isLive ? '<span class="live-badge">In onda</span>' : ''}
         <div class="program-time">${timeStr}</div>
         ${program.desc ? `<div class="program-desc">${program.desc}</div>` : ''}
     `;
     
-    // Evidenzia bordo live
     if (isLive) {
         epgDiv.classList.add('live');
     } else {
@@ -827,7 +822,7 @@ async function init(m3uContent) {
                 }
             }
 
-            displayEPG(ch); // Mostra EPG o nascondi
+            displayEPG(ch);
 
             const oldIframeContainer = playerContainer.querySelector('.iframe-container');
             if (oldIframeContainer) oldIframeContainer.remove();
