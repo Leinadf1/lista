@@ -8,7 +8,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
     
     <!-- Font Formula1 Display Bold -->
-    <link href="https://blogfonts.com/css/aWQ9MTUxNTEzJnN1Yj01MTMmYz1mJnR0Zj1Gb3JtdWxhMS1Cb2xkX3dlYl8wLnR0ZiZuPWZvcm11bGExLWRpc3BsYXktYm9sZC0x/Formula1-Bold_web_0.ttf" rel="stylesheet" type="text/css"/>
+    <style>
+        @font-face {
+            font-family: 'Formula1 Display Bold';
+            src: url('https://blogfonts.com/css/aWQ9MTUxNTEzJnN1Yj01MTMmYz1mJnR0Zj1Gb3JtdWxhMS1Cb2xkX3dlYl8wLnR0ZiZuPWZvcm11bGExLWRpc3BsYXktYm9sZC0x/Formula1-Bold_web_0.ttf') format('truetype');
+            font-weight: bold;
+            font-style: normal;
+        }
+    </style>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     
@@ -16,7 +23,7 @@
         body { 
             background-color: #0d1117; 
             color: #c9d1d9; 
-            font-family: 'formula1-display-bold', 'Inter', sans-serif; 
+            font-family: 'Formula1 Display Bold', 'Inter', sans-serif; 
             margin: 0; 
             padding: 20px; 
             display: flex; 
@@ -184,7 +191,7 @@
             border: 1px solid #30363d; 
             border-radius: 12px; 
             cursor: pointer; 
-            transition: all 0.25s ease; 
+            transition: transform 0.25s ease, border-color 0.25s ease, background-color 0.25s ease; 
             overflow: hidden; 
             display: flex; 
             flex-direction: column; 
@@ -200,35 +207,33 @@
             background-color: #21262d; 
         }
         
-        /* Cuore preferiti */
+        /* Cuore preferiti senza cerchio */
         .fav-heart {
             position: absolute;
-            top: 4px;
-            right: 4px;
-            width: 30px;
-            height: 30px;
-            background-color: rgba(13, 17, 23, 0.8);
-            border: 1px solid red;
-            border-radius: 50%;
+            top: 8px;
+            right: 8px;
+            width: auto;
+            height: auto;
+            background: none;
+            border: none;
+            border-radius: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
-            color: red;
+            font-size: 28px;  /* più grande */
+            color: #ff0000;
             cursor: pointer;
             z-index: 5;
             user-select: none;
-            transition: all 0.2s ease;
+            transition: color 0.2s ease; /* solo colore, no transform */
             line-height: 1;
         }
-        .fav-heart:hover {
-            transform: scale(1.1);
-            background-color: rgba(13, 17, 23, 0.9);
-        }
         .fav-heart.active {
-            color: red;
-            border-color: #ff3333;
-            background-color: rgba(255, 0, 0, 0.15);
+            color: #ff3333;
+        }
+        .fav-heart:hover {
+            color: #ff3333;
+            /* nessun transform per evitare flicker */
         }
         
         .logo-box { 
@@ -289,11 +294,9 @@
                 padding: 0;
             }
             .fav-heart {
-                width: 26px;
-                height: 26px;
-                font-size: 16px;
-                top: 3px;
-                right: 3px;
+                font-size: 24px; /* leggermente più piccolo su mobile */
+                top: 6px;
+                right: 6px;
             }
         }
     </style>
