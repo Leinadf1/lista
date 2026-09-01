@@ -190,7 +190,7 @@
             text-transform: uppercase;
             font-weight: bold;
             letter-spacing: 0.5px;
-            margin-top: 4px;
+            margin-top: 8px; /* distanziato dall'orario */
         }
         #epg-info .program-time {
             font-size: 13px;
@@ -209,7 +209,7 @@
         .epg-btn {
             background: #1a2028;
             color: #ffffff;
-            border: 2px solid #2ea44f;
+            border: 2px solid #d73a49; /* rosso per i pulsanti */
             border-radius: 8px;
             width: 36px;
             height: 36px;
@@ -224,7 +224,7 @@
             font-family: 'Formula1 Display Bold', 'Inter', sans-serif;
         }
         .epg-btn:hover {
-            background: #2ea44f;
+            background: #d73a49;
             color: white;
             transform: scale(1.05);
         }
@@ -233,6 +233,11 @@
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
+        }
+        .debug-info {
+            font-size: 12px;
+            color: #ff9999;
+            margin-top: 5px;
         }
 
         .category-container { 
@@ -588,7 +593,7 @@ function getCurrentProgram(ch) {
         }
     }
     
-    return { status: 'notfound' };
+    return { status: 'notfound', candidates, bestKey, bestDist };
 }
 
 let epgState = {
@@ -602,17 +607,26 @@ function displayEPG(ch) {
     const epgDiv = document.getElementById('epg-info');
     const result = getCurrentProgram(ch);
     
-    if (result.status !== 'ok') {
-        epgDiv.style.display = 'none';
-        return;
+    if (result.status === 'ok') {
+        epgState.channel = ch;
+        epgState.programs = result.programs;
+        epgState.currentIndex = result.currentIndex;
+        epgState.liveIndex = result.currentIndex;
+        renderEPG();
+    } else {
+        // Mostra debug se non trovato
+        let debugHtml = '';
+        if (result.status === 'loading') {
+            debugHtml = 'EPG in caricamento...';
+        } else if (result.status === 'error') {
+            debugHtml = `Errore EPG: ${result.message}`;
+        } else if (result.status === 'notfound') {
+            debugHtml = `Nessun EPG per "${ch.name}" (tvgId: ${ch.tvgId || 'nessuno'})<br>Chiavi cercate: ${result.candidates?.join(', ') || 'nessuna'}<br>Miglior match fuzzy: ${result.bestKey || 'nessuno'} (distanza ${result.bestDist ?? '-'})`;
+        }
+        epgDiv.style.display = 'block';
+        epgDiv.innerHTML = `<div class="debug-info">${debugHtml}</div>`;
+        epgDiv.classList.remove('live');
     }
-    
-    epgState.channel = ch;
-    epgState.programs = result.programs;
-    epgState.currentIndex = result.currentIndex;
-    epgState.liveIndex = result.currentIndex;
-    
-    renderEPG();
 }
 
 function renderEPG() {
@@ -632,7 +646,6 @@ function renderEPG() {
     const prevDisabled = epgState.currentIndex === 0;
     const nextDisabled = epgState.currentIndex === epgState.programs.length - 1;
     
-    // Uso frecce spesse "◀" e "▶"
     const navHtml = `
         <div class="epg-nav">
             <button id="epg-prev" class="epg-btn" ${prevDisabled ? 'disabled' : ''}>◀</button>
@@ -649,7 +662,6 @@ function renderEPG() {
         ${program.desc ? `<div class="program-desc">${program.desc}</div>` : ''}
     `;
     
-    // Gestione bordo verde/rosso
     if (isLive) {
         epgDiv.classList.add('live');
     } else {
