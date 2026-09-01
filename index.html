@@ -17,7 +17,6 @@
         }
     </style>
     
-    <!-- Font di backup Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
@@ -156,31 +155,34 @@
             width: 100%;
         }
         
+        /* EPG migliorato: allineato a sinistra, card con bordo laterale */
         #epg-info {
-            text-align: center;
-            margin: -15px auto 15px;
-            color: #ffffff;
+            display: none;
+            text-align: left;
+            margin: -10px auto 15px;
+            color: #f0f6fc;
             font-size: 15px;
             font-weight: 500;
-            min-height: 20px;
             width: 100%;
-            background: #21262d;
-            border-radius: 8px;
-            padding: 10px;
+            background: #1a2028;
+            border-left: 4px solid #58a6ff;
+            border-radius: 6px;
+            padding: 12px 16px;
             box-sizing: border-box;
         }
         #epg-info .program-title {
             font-size: 17px;
             font-weight: 700;
+            margin-bottom: 4px;
+        }
+        #epg-info .program-time {
+            font-size: 13px;
+            color: #b0b7c0;
+            margin-bottom: 6px;
         }
         #epg-info .program-desc {
             font-size: 13px;
-            color: #b0b7c0;
-            margin-top: 5px;
-        }
-        #epg-info .debug {
-            color: #ff9999;
-            font-size: 13px;
+            color: #c9d1d9;
         }
 
         .category-container { 
@@ -348,7 +350,7 @@
     </div>
 
     <div id="expiry-info"></div>
-    <div id="epg-info" style="display:none;"></div>
+    <div id="epg-info"></div>
 
     <div id="main-list" style="width: 100%;"></div>
 
@@ -406,8 +408,7 @@ async function loadEPG() {
         const response = await fetch(EPG_URL);
         if (!response.ok) throw new Error('HTTP ' + response.status);
         
-        const text = await response.text(); // legge direttamente l'XML
-        
+        const text = await response.text();
         console.log('EPG scaricato, parsing...');
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(text, 'text/xml');
@@ -417,7 +418,6 @@ async function loadEPG() {
         }
         
         const channelMap = new Map();
-        
         xmlDoc.querySelectorAll('channel').forEach(ch => {
             const id = ch.getAttribute('id');
             const displayNames = ch.querySelectorAll('display-name');
@@ -463,8 +463,16 @@ async function loadEPG() {
     }
 }
 
+// Aggiunta alias per DAZN 1 Warp -> DAZN 1
+function getAliasesForChannel(ch) {
+    const aliases = [];
+    if (ch.name && ch.name.toLowerCase().includes('dazn 1 warp')) {
+        aliases.push('dazn 1');
+    }
+    return aliases;
+}
+
 function getCurrentProgram(ch) {
-    if (epgError) return { status: 'error', message: epgError };
     if (!epgReady) return { status: 'loading' };
     const now = Date.now();
     const candidates = [];
@@ -472,6 +480,11 @@ function getCurrentProgram(ch) {
     const normName = normalizeName(ch.name);
     candidates.push(normName);
     
+    // Aggiungi alias
+    const aliases = getAliasesForChannel(ch);
+    candidates.push(...aliases.map(normalizeName));
+    
+    // Corrispondenza esatta
     for (const key of candidates) {
         if (epgChannels.has(key)) {
             const programs = epgChannels.get(key);
@@ -480,6 +493,7 @@ function getCurrentProgram(ch) {
         }
     }
     
+    // Fuzzy matching (se non trovato)
     let bestKey = null;
     let bestDist = Infinity;
     for (const epgName of epgNames) {
@@ -495,35 +509,28 @@ function getCurrentProgram(ch) {
         if (current) return { status: 'ok', program: current, matchedKey: bestKey };
     }
     
-    return { status: 'notfound', candidates, bestKey, bestDist };
+    return { status: 'notfound' };
 }
 
 function displayEPG(ch) {
     const epgDiv = document.getElementById('epg-info');
     const result = getCurrentProgram(ch);
-    if (result.status === 'loading') {
-        epgDiv.style.display = 'block';
-        epgDiv.innerHTML = `<div class="debug">EPG in caricamento...</div>`;
+    
+    // Nascondi sempre se non c'è un programma
+    if (result.status !== 'ok') {
+        epgDiv.style.display = 'none';
         return;
     }
-    if (result.status === 'error') {
-        epgDiv.style.display = 'block';
-        epgDiv.innerHTML = `<div class="debug">Errore EPG: ${result.message}</div>`;
-        return;
-    }
-    if (result.status === 'notfound') {
-        epgDiv.style.display = 'block';
-        epgDiv.innerHTML = `<div class="debug">Nessun programma trovato per "${ch.name}"<br>Chiavi cercate: ${result.candidates.join(', ')}<br>Migliore match fuzzy: ${result.bestKey || 'nessuno'} (distanza ${result.bestDist ?? '-'})</div>`;
-        return;
-    }
+    
     const program = result.program;
     const startDate = new Date(program.start);
     const stopDate = new Date(program.stop);
     const timeStr = `${startDate.toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'})} - ${stopDate.toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'})}`;
+    
     epgDiv.style.display = 'block';
     epgDiv.innerHTML = `
         <div class="program-title">${program.title}</div>
-        <div>${timeStr}</div>
+        <div class="program-time">${timeStr}</div>
         ${program.desc ? `<div class="program-desc">${program.desc}</div>` : ''}
     `;
 }
@@ -609,7 +616,7 @@ async function checkAccess() {
             .catch(() => {});
 
         init(m3uData);
-        loadEPG(); // avvia caricamento EPG
+        loadEPG();
 
     } catch (error) {
         alert("Errore server.");
@@ -684,7 +691,7 @@ async function init(m3uContent) {
                 }
             }
 
-            displayEPG(ch); // Mostra EPG o debug
+            displayEPG(ch); // Mostra EPG o nascondi
 
             const oldIframeContainer = playerContainer.querySelector('.iframe-container');
             if (oldIframeContainer) oldIframeContainer.remove();
