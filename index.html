@@ -7,7 +7,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
     
-    <!-- Font Formula1 Display Bold -->
     <style>
         @font-face {
             font-family: 'Formula1 Display Bold';
@@ -186,20 +185,21 @@
         }
         .epg-nav {
             display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
+            gap: 6px;
+            margin-bottom: 10px;
         }
         .epg-nav button {
             background: #2d3741;
             color: white;
             border: none;
-            border-radius: 4px;
-            padding: 4px 10px;
-            font-size: 14px;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 16px;
             cursor: pointer;
+            transition: background 0.2s;
         }
         .epg-nav button:hover {
-            background: #3a4753;
+            background: #4a5a6a;
         }
         .epg-nav button:disabled {
             opacity: 0.4;
@@ -484,19 +484,30 @@ async function loadEPG() {
     }
 }
 
-// Alias per canali speciali
 function getAliasesForChannel(ch) {
     const aliases = [];
-    const nameLower = ch.name.toLowerCase();
-    if (nameLower.includes('dazn 1 warp')) {
-        aliases.push('dazn1');
-    }
-    if (nameLower.includes('eurosport 1')) {
+    const normName = normalizeName(ch.name);
+    
+    // Eurosport 1 -> eurosportitaliait
+    if (normName.includes('eurosport1')) {
         aliases.push('eurosportitaliait');
     }
-    if (nameLower.includes('eurosport 2')) {
+    // Eurosport 2 -> eurosport2italiait
+    if (normName.includes('eurosport2')) {
         aliases.push('eurosport2italiait');
     }
+    
+    // Sky Sport numerati: es. "sky sport 251" -> skysport251it
+    const skyMatch = normName.match(/skysport(\d{1,3})/);
+    if (skyMatch) {
+        aliases.push(`skysport${skyMatch[1]}it`);
+    }
+    
+    // DAZN 1 Warp -> dazn1
+    if (normName.includes('dazn1warp')) {
+        aliases.push('dazn1');
+    }
+    
     return aliases;
 }
 
@@ -516,7 +527,6 @@ function getCurrentProgram(ch) {
     for (const key of candidates) {
         if (epgChannels.has(key)) {
             const programs = epgChannels.get(key);
-            // Trova indice del programma corrente
             const currentIndex = programs.findIndex(p => p.start <= now && now < p.stop);
             if (currentIndex !== -1) {
                 return { status: 'ok', programs, currentIndex, matchedKey: key };
@@ -524,7 +534,7 @@ function getCurrentProgram(ch) {
         }
     }
     
-    // Fuzzy matching (se non trovato)
+    // Fuzzy matching
     let bestKey = null;
     let bestDist = Infinity;
     for (const epgName of epgNames) {
@@ -545,7 +555,6 @@ function getCurrentProgram(ch) {
     return { status: 'notfound' };
 }
 
-// Variabile globale per tenere traccia della navigazione EPG corrente
 let epgState = {
     channel: null,
     programs: [],
@@ -561,7 +570,6 @@ function displayEPG(ch) {
         return;
     }
     
-    // Salva lo stato
     epgState.channel = ch;
     epgState.programs = result.programs;
     epgState.currentIndex = result.currentIndex;
@@ -581,10 +589,10 @@ function renderEPG() {
     const stopDate = new Date(program.stop);
     const timeStr = `${startDate.toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'})} - ${stopDate.toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'})}`;
     
-    // Genera pulsanti di navigazione (due set: sopra e sotto)
     const prevDisabled = epgState.currentIndex === 0;
     const nextDisabled = epgState.currentIndex === epgState.programs.length - 1;
     
+    // Solo una riga di navigazione sopra
     const navHtml = `
         <div class="epg-nav">
             <button id="epg-prev" ${prevDisabled ? 'disabled' : ''}>◀</button>
@@ -598,10 +606,8 @@ function renderEPG() {
         <div class="program-title">${program.title}</div>
         <div class="program-time">${timeStr}</div>
         ${program.desc ? `<div class="program-desc">${program.desc}</div>` : ''}
-        ${navHtml}
     `;
     
-    // Aggiungi listener ai pulsanti
     const prevBtn = epgDiv.querySelector('#epg-prev');
     const nextBtn = epgDiv.querySelector('#epg-next');
     if (prevBtn) prevBtn.addEventListener('click', () => navigateEPG(-1));
