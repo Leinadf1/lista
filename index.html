@@ -937,7 +937,7 @@ function openSlotSelector(slotIndex) {
     activeSlot = slotIndex;
     const overlay = document.getElementById('channel-selector-overlay');
     overlay.classList.add('active');
-    // Mostra subito la lista (ora allChannels dovrebbe essere popolato)
+    console.log('Slot aperto:', slotIndex, 'Canali:', allChannels.length);
     populateChannelSelector('');
 }
 
@@ -949,7 +949,6 @@ function closeSlotSelector() {
 function populateChannelSelector(query) {
     const list = document.getElementById('channel-selector-list');
     list.innerHTML = '';
-    console.log('Numero canali disponibili:', allChannels.length);
     const filtered = allChannels.filter(ch => {
         const name = ch.name || '';
         const group = ch.group || '';
@@ -1017,15 +1016,21 @@ function requestFullscreenMultistream() {
     }
 }
 
-// Inizializzazione eventi multistream (subito dopo la definizione delle funzioni)
+// Inizializzazione eventi multistream (chiamata subito, non dentro init)
 function initMultistreamEvents() {
+    console.log('Inizializzazione eventi multistream');
     document.getElementById('multistream-btn').addEventListener('click', toggleMultistream);
     document.getElementById('exit-multistream-btn').addEventListener('click', exitMultistream);
     document.getElementById('fullscreen-multistream-btn').addEventListener('click', requestFullscreenMultistream);
     document.getElementById('channel-selector-close').addEventListener('click', closeSlotSelector);
     document.getElementById('channel-selector-search').addEventListener('input', (e) => populateChannelSelector(e.target.value));
-    document.querySelectorAll('.ms-slot').forEach(slot => {
-        slot.addEventListener('click', () => openSlotSelector(parseInt(slot.dataset.slot)));
+    // Uso delega per gli slot (più robusto)
+    document.getElementById('ms-grid').addEventListener('click', (e) => {
+        const slot = e.target.closest('.ms-slot');
+        if (slot) {
+            const slotIndex = parseInt(slot.dataset.slot);
+            openSlotSelector(slotIndex);
+        }
     });
 }
 // -------------------- Fine Multistream --------------------
@@ -1411,12 +1416,13 @@ async function init(m3uContent) {
         });
     });
 
-    // Inizializza eventi multistream dopo che la UI principale è pronta
-    initMultistreamEvents();
+    // Non chiamiamo più initMultistreamEvents qui
 }
 
 document.addEventListener('shaka-ui-loaded', () => {
     document.getElementById('reload-btn').addEventListener('click', reloadPlaylist);
+    // Inizializziamo gli eventi multistream una volta sola, subito dopo che il DOM è pronto
+    initMultistreamEvents();
     checkAccess();
 });
 </script>
