@@ -926,7 +926,6 @@ function exitMultistream() {
     document.querySelector('.player-container').style.display = '';
     document.getElementById('multistream-container').classList.remove('active');
     document.getElementById('multistream-btn').textContent = '🔲 Multi-stream';
-    // Reset slot
     document.querySelectorAll('.ms-slot').forEach(slot => {
         slot.innerHTML = `<div class="ms-placeholder">Slot ${slot.dataset.slot} <br> Seleziona canale</div>`;
     });
@@ -1016,7 +1015,6 @@ function requestFullscreenMultistream() {
     }
 }
 
-// Inizializzazione eventi multistream (chiamata subito, non dentro init)
 function initMultistreamEvents() {
     console.log('Inizializzazione eventi multistream');
     document.getElementById('multistream-btn').addEventListener('click', toggleMultistream);
@@ -1024,7 +1022,6 @@ function initMultistreamEvents() {
     document.getElementById('fullscreen-multistream-btn').addEventListener('click', requestFullscreenMultistream);
     document.getElementById('channel-selector-close').addEventListener('click', closeSlotSelector);
     document.getElementById('channel-selector-search').addEventListener('input', (e) => populateChannelSelector(e.target.value));
-    // Uso delega per gli slot (più robusto)
     document.getElementById('ms-grid').addEventListener('click', (e) => {
         const slot = e.target.closest('.ms-slot');
         if (slot) {
@@ -1114,7 +1111,6 @@ async function checkAccess() {
         fetch('https://dazn-ua-proxy.stefanoaccuont.workers.dev/', { mode: 'no-cors' })
             .catch(() => {});
 
-        // Avvia subito il caricamento EPG (in parallelo con la creazione card)
         loadEPG();
         init(m3uData);
 
@@ -1415,13 +1411,9 @@ async function init(m3uContent) {
             }
         });
     });
-
-    // Non chiamiamo più initMultistreamEvents qui
 }
 
-document.addEventListener('shaka-ui-loaded', () => {
-    document.getElementById('reload-btn').addEventListener('click', reloadPlaylist);
-    // Inizializziamo gli eventi multistream una volta sola, subito dopo che il DOM è pronto
+document.addEventListener('DOMContentLoaded', () => {
     initMultistreamEvents();
     checkAccess();
 });
