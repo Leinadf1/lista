@@ -7,6 +7,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
     
+    <!-- Font Formula1 Display Bold -->
     <style>
         @font-face {
             font-family: 'Formula1 Display Bold';
@@ -488,19 +489,22 @@ function getAliasesForChannel(ch) {
     const aliases = [];
     const normName = normalizeName(ch.name);
     
-    // Eurosport 1 -> eurosportitaliait
-    if (normName.includes('eurosport1')) {
-        aliases.push('eurosportitaliait');
-    }
-    // Eurosport 2 -> eurosport2italiait
-    if (normName.includes('eurosport2')) {
-        aliases.push('eurosport2italiait');
+    // Eurosport: se il nome normalizzato contiene 'eurosport'
+    if (normName.includes('eurosport')) {
+        if (normName.includes('2')) {
+            aliases.push('eurosport2italiait');
+        } else {
+            aliases.push('eurosportitaliait');
+        }
     }
     
     // Sky Sport numerati: es. "sky sport 251" -> skysport251it
     const skyMatch = normName.match(/skysport(\d{1,3})/);
     if (skyMatch) {
-        aliases.push(`skysport${skyMatch[1]}it`);
+        const num = skyMatch[1];
+        aliases.push(`skysport${num}it`);
+        // Alcuni EPG potrebbero non avere "it" finale: aggiungi anche senza
+        aliases.push(`skysport${num}`);
     }
     
     // DAZN 1 Warp -> dazn1
@@ -592,11 +596,15 @@ function renderEPG() {
     const prevDisabled = epgState.currentIndex === 0;
     const nextDisabled = epgState.currentIndex === epgState.programs.length - 1;
     
-    // Solo una riga di navigazione sopra
+    // Pulsanti di navigazione migliorati
     const navHtml = `
         <div class="epg-nav">
-            <button id="epg-prev" ${prevDisabled ? 'disabled' : ''}>◀</button>
-            <button id="epg-next" ${nextDisabled ? 'disabled' : ''}>▶</button>
+            <button id="epg-prev" ${prevDisabled ? 'disabled' : ''}>
+                <span style="font-size:18px;">‹</span> Precedente
+            </button>
+            <button id="epg-next" ${nextDisabled ? 'disabled' : ''}>
+                Successivo <span style="font-size:18px;">›</span>
+            </button>
         </div>
     `;
     
@@ -1010,4 +1018,4 @@ document.addEventListener('shaka-ui-loaded', () => {
 });
 </script>
 </body>
-</html>
+    </html>
