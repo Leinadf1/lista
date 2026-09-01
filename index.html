@@ -24,15 +24,40 @@
         #header { 
             width: 100%; 
             display: flex; 
-            justify-content: space-between; 
             align-items: center; 
             margin-bottom: 25px; 
             border-bottom: 1px solid #30363d; 
             padding-bottom: 15px; 
             box-sizing: border-box; 
+            flex-wrap: wrap;
+            gap: 10px;
         }
         
         h1 { font-size: 22px; font-weight: 700; color: #58a6ff; margin: 0; letter-spacing: -0.5px; }
+        
+        #search-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            padding: 0 20px;
+            min-width: 200px;
+        }
+        #search-input {
+            width: 100%;
+            max-width: 400px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid #30363d;
+            background-color: #161b22;
+            color: #c9d1d9;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        #search-input:focus {
+            border-color: #58a6ff;
+        }
+        
         #chan-count { font-size: 13px; color: #8b949e; font-weight: 600; background: #21262d; padding: 4px 12px; border-radius: 20px; }
         
         .player-container { 
@@ -167,6 +192,8 @@
             .logo-box { height: 80px; padding: 10px; }
             .name { font-size: 11.5px; }
             body { padding: 10px; }
+            #header { flex-direction: column; align-items: stretch; }
+            #search-container { padding: 0; }
         }
     </style>
 </head>
@@ -174,6 +201,9 @@
 
     <div id="header">
         <h1>DASHBOARD TV</h1>
+        <div id="search-container">
+            <input type="text" id="search-input" placeholder="Cerca canali o categorie...">
+        </div>
         <div id="chan-count">Caricamento...</div>
     </div>
 
@@ -414,7 +444,7 @@ async function init(m3uContent) {
             // Determina se il canale appartiene a DAZN NeroZone (case-insensitive)
             const isNeroZone = currentChannel.group && currentChannel.group.toLowerCase().includes('nerozone');
             
-            // 🔥 NUOVA ECCEZIONE: esclude "DAZN 1" del gruppo "DAZN Lineari" dall'uso del proxy
+            // Eccezione: esclude "DAZN 1" del gruppo "DAZN Lineari" dall'uso del proxy
             const isDazn1Lineare = 
                 currentChannel.name && currentChannel.name.toLowerCase() === 'dazn 1' &&
                 currentChannel.group && currentChannel.group.toLowerCase() === 'dazn lineari';
@@ -431,11 +461,9 @@ async function init(m3uContent) {
             currentChannel.url = url;
             currentChannel.expiry = getExpiryFromUrl(line);
             
-            // Nessuna esclusione: crea sempre la card
             createCard(currentChannel);
             loadedCount++;
             
-            // Reset per il prossimo canale
             currentChannel = { 
                 name: "", 
                 logo: "", 
@@ -449,6 +477,47 @@ async function init(m3uContent) {
     }
 
     countHeader.innerText = loadedCount + " CANALI";
+
+    // 🔍 Aggiungi la funzionalità di ricerca
+    const searchInput = document.getElementById('search-input');
+    searchInput.addEventListener('input', () => {
+        const query = searchInput.value.toLowerCase().trim();
+        const categories = document.querySelectorAll('.category-container');
+        
+        categories.forEach(cat => {
+            const categoryTitle = cat.querySelector('.category-title').textContent.toLowerCase();
+            const cards = cat.querySelectorAll('.channel-card');
+            let categoryMatches = categoryTitle.includes(query);
+            
+            if (query === '') {
+                // Mostra tutto
+                cat.style.display = '';
+                cards.forEach(card => card.style.display = '');
+                return;
+            }
+            
+            if (categoryMatches) {
+                // Se la categoria corrisponde, mostra l'intera categoria
+                cat.style.display = '';
+                cards.forEach(card => card.style.display = '');
+            } else {
+                // Altrimenti controlla i canali singolarmente
+                let anyCardMatch = false;
+                cards.forEach(card => {
+                    const cardName = card.querySelector('.name').textContent.toLowerCase();
+                    if (cardName.includes(query)) {
+                        card.style.display = '';
+                        anyCardMatch = true;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+                
+                // Mostra la categoria solo se contiene almeno un canale corrispondente
+                cat.style.display = anyCardMatch ? '' : 'none';
+            }
+        });
+    });
 }
 
 document.addEventListener('shaka-ui-loaded', checkAccess);
