@@ -157,6 +157,7 @@
         /* EPG */
         #epg-info {
             display: none;
+            position: relative; /* per il badge assoluto */
             text-align: left;
             margin: -10px auto 15px;
             color: #f0f6fc;
@@ -181,7 +182,9 @@
             margin-bottom: 4px;
         }
         .live-badge {
-            display: inline-block;
+            position: absolute;
+            top: 8px;
+            right: 8px;
             background: #d73a49;
             color: white;
             font-size: 12px;
@@ -190,7 +193,6 @@
             text-transform: uppercase;
             font-weight: bold;
             letter-spacing: 0.5px;
-            margin-top: 8px;
         }
         #epg-info .program-time {
             font-size: 13px;
@@ -233,11 +235,6 @@
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
-        }
-        .debug-info {
-            font-size: 12px;
-            color: #ff9999;
-            margin-top: 5px;
         }
 
         .category-container { 
@@ -297,8 +294,8 @@
             position: absolute;
             top: 2px;
             right: 2px;
-            width: 20px;
-            height: 20px;
+            width: 24px;   /* aumentato da 20 a 24 */
+            height: 24px;
             cursor: pointer;
             z-index: 5;
             user-select: none;
@@ -380,8 +377,8 @@
                 padding: 0;
             }
             .fav-heart {
-                width: 18px;
-                height: 18px;
+                width: 22px;   /* aumentato da 18 a 22 */
+                height: 22px;
                 top: 2px;
                 right: 2px;
             }
@@ -593,7 +590,7 @@ function getCurrentProgram(ch) {
         }
     }
     
-    return { status: 'notfound', candidates, bestKey, bestDist };
+    return { status: 'notfound' };
 }
 
 let epgState = {
@@ -604,29 +601,26 @@ let epgState = {
 };
 
 function displayEPG(ch) {
+    // Se il canale appartiene alla categoria DAZN Svizzeri, non mostrare EPG
+    if (ch.group && ch.group.toLowerCase().includes('svizzeri')) {
+        document.getElementById('epg-info').style.display = 'none';
+        return;
+    }
+    
     const epgDiv = document.getElementById('epg-info');
     const result = getCurrentProgram(ch);
     
-    if (result.status === 'ok') {
-        epgState.channel = ch;
-        epgState.programs = result.programs;
-        epgState.currentIndex = result.currentIndex;
-        epgState.liveIndex = result.currentIndex;
-        renderEPG();
-    } else {
-        // Mostra debug se non trovato
-        let debugHtml = '';
-        if (result.status === 'loading') {
-            debugHtml = 'EPG in caricamento...';
-        } else if (result.status === 'error') {
-            debugHtml = `Errore EPG: ${result.message}`;
-        } else if (result.status === 'notfound') {
-            debugHtml = `Nessun EPG per "${ch.name}" (tvgId: ${ch.tvgId || 'nessuno'})<br>Chiavi cercate: ${result.candidates?.join(', ') || 'nessuna'}<br>Miglior match fuzzy: ${result.bestKey || 'nessuno'} (distanza ${result.bestDist ?? '-'})`;
-        }
-        epgDiv.style.display = 'block';
-        epgDiv.innerHTML = `<div class="debug-info">${debugHtml}</div>`;
-        epgDiv.classList.remove('live');
+    if (result.status !== 'ok') {
+        epgDiv.style.display = 'none';
+        return;
     }
+    
+    epgState.channel = ch;
+    epgState.programs = result.programs;
+    epgState.currentIndex = result.currentIndex;
+    epgState.liveIndex = result.currentIndex;
+    
+    renderEPG();
 }
 
 function renderEPG() {
