@@ -157,7 +157,7 @@
         /* EPG */
         #epg-info {
             display: none;
-            position: relative; /* per il badge assoluto */
+            position: relative;
             text-align: left;
             margin: -10px auto 15px;
             color: #f0f6fc;
@@ -165,16 +165,16 @@
             font-weight: 500;
             width: 100%;
             background: #1a2028;
-            border-left: 4px solid #2ea44f; /* verde di default */
+            border-left: 4px solid #00e676; /* verde vivace */
             border-radius: 6px;
             padding: 12px 16px;
             box-sizing: border-box;
             transition: border-left-color 0.3s ease;
-            --epg-accent: #2ea44f;
+            --epg-accent: #00e676;
         }
         #epg-info.live {
-            border-left-color: #d73a49;
-            --epg-accent: #d73a49;
+            border-left-color: #ff1744; /* rosso acceso */
+            --epg-accent: #ff1744;
         }
         #epg-info .program-title {
             font-size: 17px;
@@ -185,7 +185,7 @@
             position: absolute;
             top: 8px;
             right: 8px;
-            background: #d73a49;
+            background: #ff1744;
             color: white;
             font-size: 12px;
             padding: 2px 8px;
@@ -235,6 +235,12 @@
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
+        }
+        .debug-info {
+            font-size: 12px;
+            color: #ff9999;
+            margin-top: 5px;
+            white-space: pre-wrap;
         }
 
         .category-container { 
@@ -294,7 +300,7 @@
             position: absolute;
             top: 2px;
             right: 2px;
-            width: 24px;   /* aumentato da 20 a 24 */
+            width: 24px;
             height: 24px;
             cursor: pointer;
             z-index: 5;
@@ -307,15 +313,15 @@
         }
         .fav-heart .heart-outline {
             fill: none;
-            stroke: #ff0000;
+            stroke: #ff1744;
             stroke-width: 2;
             transition: fill 0.2s ease;
         }
         .fav-heart.active .heart-outline {
-            fill: #ff0000;
+            fill: #ff1744;
         }
         .fav-heart:hover .heart-outline {
-            fill: #ff0000;
+            fill: #ff1744;
         }
         
         .logo-box { 
@@ -377,7 +383,7 @@
                 padding: 0;
             }
             .fav-heart {
-                width: 22px;   /* aumentato da 18 a 22 */
+                width: 22px;
                 height: 22px;
                 top: 2px;
                 right: 2px;
@@ -590,7 +596,7 @@ function getCurrentProgram(ch) {
         }
     }
     
-    return { status: 'notfound' };
+    return { status: 'notfound', candidates, bestKey, bestDist };
 }
 
 let epgState = {
@@ -610,17 +616,26 @@ function displayEPG(ch) {
     const epgDiv = document.getElementById('epg-info');
     const result = getCurrentProgram(ch);
     
-    if (result.status !== 'ok') {
-        epgDiv.style.display = 'none';
-        return;
+    if (result.status === 'ok') {
+        epgState.channel = ch;
+        epgState.programs = result.programs;
+        epgState.currentIndex = result.currentIndex;
+        epgState.liveIndex = result.currentIndex;
+        renderEPG();
+    } else {
+        // Mostra debug se non trovato
+        let debugHtml = '';
+        if (result.status === 'loading') {
+            debugHtml = 'EPG in caricamento...';
+        } else if (result.status === 'error') {
+            debugHtml = `Errore EPG: ${result.message}`;
+        } else if (result.status === 'notfound') {
+            debugHtml = `Nessun EPG per "${ch.name}" (tvgId: ${ch.tvgId || 'nessuno'})\nChiavi cercate: ${result.candidates?.join(', ') || 'nessuna'}\nMiglior match fuzzy: ${result.bestKey || 'nessuno'} (distanza ${result.bestDist ?? '-'})`;
+        }
+        epgDiv.style.display = 'block';
+        epgDiv.innerHTML = `<div class="debug-info">${debugHtml}</div>`;
+        epgDiv.classList.remove('live');
     }
-    
-    epgState.channel = ch;
-    epgState.programs = result.programs;
-    epgState.currentIndex = result.currentIndex;
-    epgState.liveIndex = result.currentIndex;
-    
-    renderEPG();
 }
 
 function renderEPG() {
