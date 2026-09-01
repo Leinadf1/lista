@@ -7,6 +7,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
     
+    <!-- Font Formula1 Display Bold -->
     <style>
         @font-face {
             font-family: 'Formula1 Display Bold';
@@ -16,6 +17,7 @@
         }
     </style>
     
+    <!-- Font di backup Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
@@ -363,6 +365,7 @@ const EPG_URL = 'https://epgshare01.online/epgshare01/epg_ripper_IT1.xml.gz';
 let epgChannels = new Map(); // chiave: id o nome normalizzato -> array di programmi
 let epgNames = new Set();    // insieme di nomi normalizzati per fuzzy matching
 let epgReady = false;
+let epgError = null; // per memorizzare l'errore
 
 function normalizeName(name) {
     return name.toLowerCase().replace(/[^a-z0-9]/gi, '');
@@ -396,25 +399,38 @@ function parseXmltvTime(str) {
 }
 
 async function loadEPG() {
+    epgError = null;
+    epgReady = false;
     try {
         console.log('Caricamento EPG...');
-        const response = await fetch(EPG_URL);
-        if (!response.ok) throw new Error('Errore download EPG: ' + response.status);
+        
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
+        
+        const response = await fetch(EPG_URL, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+            throw new Error('HTTP ' + response.status);
+        }
         
         let text;
-        if (typeof DecompressionStream !== 'undefined') {
-            const decompressedStream = response.body.pipeThrough(new DecompressionStream('gzip'));
-            text = await new Response(decompressedStream).text();
-        } else {
-            console.warn('DecompressionStream non supportato, tento lettura diretta');
-            text = await response.text();
+        if (typeof DecompressionStream === 'undefined') {
+            throw new Error('DecompressionStream non supportato dal browser. Serve un browser moderno (Chrome, Edge, Firefox).');
         }
+        
+        const decompressedStream = response.body.pipeThrough(new DecompressionStream('gzip'));
+        text = await new Response(decompressedStream).text();
         
         console.log('EPG scaricato, parsing...');
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(text, 'text/xml');
         
-        const channelMap = new Map(); // id -> nome normalizzato
+        if (xmlDoc.querySelectorAll('parsererror').length > 0) {
+            throw new Error('XML non valido');
+        }
+        
+        const channelMap = new Map();
         
         xmlDoc.querySelectorAll('channel').forEach(ch => {
             const id = ch.getAttribute('id');
@@ -425,7 +441,7 @@ async function loadEPG() {
             }
             const normName = normalizeName(displayName);
             channelMap.set(id, normName);
-            epgNames.add(normName); // aggiungi ai nomi conosciuti
+            epgNames.add(normName);
             epgChannels.set(id, []);
             if (!epgChannels.has(normName)) epgChannels.set(normName, []);
         });
@@ -454,14 +470,15 @@ async function loadEPG() {
         
         epgReady = true;
         console.log('EPG caricato con', epgChannels.size, 'voci');
-        console.log('Nomi EPG (primi 10):', Array.from(epgNames).slice(0, 10));
     } catch (error) {
         console.error('Errore EPG:', error);
         epgReady = false;
+        epgError = error.message || 'Errore sconosciuto';
     }
 }
 
 function getCurrentProgram(ch) {
+    if (epgError) return { status: 'error', message: epgError };
     if (!epgReady) return { status: 'loading' };
     const now = Date.now();
     const candidates = [];
@@ -469,7 +486,7 @@ function getCurrentProgram(ch) {
     const normName = normalizeName(ch.name);
     candidates.push(normName);
     
-    // 1. Corrispondenza esatta
+    // Corrispondenza esatta
     for (const key of candidates) {
         if (epgChannels.has(key)) {
             const programs = epgChannels.get(key);
@@ -478,7 +495,7 @@ function getCurrentProgram(ch) {
         }
     }
     
-    // 2. Fuzzy matching tra i nomi EPG conosciuti
+    // Fuzzy matching
     let bestKey = null;
     let bestDist = Infinity;
     for (const epgName of epgNames) {
@@ -488,7 +505,6 @@ function getCurrentProgram(ch) {
             bestKey = epgName;
         }
     }
-    // Soglia di tolleranza: distanza <= 2 (regolabile)
     if (bestKey && bestDist <= 2 && epgChannels.has(bestKey)) {
         const programs = epgChannels.get(bestKey);
         const current = programs.find(p => p.start <= now && now < p.stop);
@@ -504,6 +520,11 @@ function displayEPG(ch) {
     if (result.status === 'loading') {
         epgDiv.style.display = 'block';
         epgDiv.innerHTML = `<div class="debug">EPG in caricamento...</div>`;
+        return;
+    }
+    if (result.status === 'error') {
+        epgDiv.style.display = 'block';
+        epgDiv.innerHTML = `<div class="debug">Errore EPG: ${result.message}</div>`;
         return;
     }
     if (result.status === 'notfound') {
@@ -680,7 +701,7 @@ async function init(m3uContent) {
                 }
             }
 
-            displayEPG(ch); // Mostra EPG (o debug)
+            displayEPG(ch); // Mostra EPG o debug
 
             const oldIframeContainer = playerContainer.querySelector('.iframe-container');
             if (oldIframeContainer) oldIframeContainer.remove();
