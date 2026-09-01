@@ -112,6 +112,23 @@
             font-family: 'Formula1 Display Bold', 'Inter', sans-serif;
         }
         
+        /* Indicatore EPG */
+        #epg-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            color: #8b949e;
+            font-family: 'Formula1 Display Bold', 'Inter', sans-serif;
+        }
+        #epg-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #8b949e;
+            display: inline-block;
+        }
+        
         .player-container { 
             position: relative;
             width: 100%; 
@@ -400,6 +417,9 @@
             <input type="text" id="search-input" placeholder="Cerca canali o categorie...">
         </div>
         <div id="chan-count">Caricamento...</div>
+        <span id="epg-status">
+            <span id="epg-dot"></span> EPG
+        </span>
     </div>
 
     <div class="player-container" data-shaka-player-container>
@@ -460,6 +480,7 @@ function parseXmltvTime(str) {
 async function loadEPG() {
     epgError = null;
     epgReady = false;
+    document.getElementById('epg-dot').style.backgroundColor = '#8b949e'; // grigio (caricamento)
     try {
         console.log('Caricamento EPG...');
         const response = await fetch(EPG_URL);
@@ -516,11 +537,13 @@ async function loadEPG() {
         }
         
         epgReady = true;
+        document.getElementById('epg-dot').style.backgroundColor = '#00e676'; // verde (pronto)
         console.log('EPG caricato con', epgChannels.size, 'voci');
     } catch (error) {
         console.error('Errore EPG:', error);
         epgReady = false;
         epgError = error.message || 'Errore sconosciuto';
+        document.getElementById('epg-dot').style.backgroundColor = '#ff1744'; // rosso (errore)
     }
 }
 
@@ -613,6 +636,13 @@ function displayEPG(ch) {
     
     const epgDiv = document.getElementById('epg-info');
     const result = getCurrentProgram(ch);
+    
+    if (result.status === 'loading') {
+        epgDiv.style.display = 'block';
+        epgDiv.innerHTML = '<div style="color:#8b949e; font-size:13px;">Caricamento EPG...</div>';
+        epgDiv.classList.remove('live');
+        return;
+    }
     
     if (result.status !== 'ok') {
         epgDiv.style.display = 'none';
@@ -760,8 +790,9 @@ async function checkAccess() {
         fetch('https://dazn-ua-proxy.stefanoaccuont.workers.dev/', { mode: 'no-cors' })
             .catch(() => {});
 
-        init(m3uData);
+        // Avvia subito il caricamento EPG (in parallelo con la creazione card)
         loadEPG();
+        init(m3uData);
 
     } catch (error) {
         alert("Errore server.");
@@ -1068,4 +1099,4 @@ document.addEventListener('shaka-ui-loaded', () => {
 });
 </script>
 </body>
-</html>
+    </html>
