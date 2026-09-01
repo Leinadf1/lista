@@ -212,13 +212,13 @@
             background-color: #21262d; 
         }
         
-        /* Cuore preferiti: rimpicciolito ulteriormente */
+        /* Cuore preferiti: 20px desktop */
         .fav-heart {
             position: absolute;
             top: 2px;
             right: 2px;
-            width: 18px;   /* ridotto da 24px a 18px */
-            height: 18px;
+            width: 20px;
+            height: 20px;
             cursor: pointer;
             z-index: 5;
             user-select: none;
@@ -288,8 +288,9 @@
             }
             .reload-btn { 
                 justify-self: start; 
-                padding: 8px 14px;
-                font-size: 13px;
+                padding: 6px 10px;   /* Ridotto il padding orizzontale */
+                font-size: 12px;     /* Ridotta dimensione testo */
+                letter-spacing: 0.5px; /* Ridotta spaziatura */
             }
             #chan-count { justify-self: end; }
             #search-container {
@@ -300,8 +301,8 @@
                 padding: 0;
             }
             .fav-heart {
-                width: 16px;   /* ridotto per mobile */
-                height: 16px;
+                width: 18px;   /* 18px mobile */
+                height: 18px;
                 top: 2px;
                 right: 2px;
             }
