@@ -7,7 +7,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
     
-    <!-- Font Formula1 Display Bold -->
     <style>
         @font-face {
             font-family: 'Formula1 Display Bold';
@@ -177,6 +176,10 @@
             color: #b0b7c0;
             margin-top: 5px;
         }
+        #epg-info .debug {
+            color: #ff9999;
+            font-size: 13px;
+        }
 
         .category-container { 
             width: 100%; 
@@ -343,7 +346,6 @@
     </div>
 
     <div id="expiry-info"></div>
-    <!-- Nuovo div per EPG -->
     <div id="epg-info" style="display:none;"></div>
 
     <div id="main-list" style="width: 100%;"></div>
@@ -359,37 +361,60 @@ let allChannels = [];
 // -------------------- EPG --------------------
 const EPG_URL = 'https://epgshare01.online/epgshare01/epg_ripper_IT1.xml.gz';
 let epgChannels = new Map(); // chiave: id o nome normalizzato -> array di programmi
+let epgNames = new Set();    // insieme di nomi normalizzati per fuzzy matching
 let epgReady = false;
 
 function normalizeName(name) {
     return name.toLowerCase().replace(/[^a-z0-9]/gi, '');
 }
 
+function levenshtein(a, b) {
+    const m = a.length, n = b.length;
+    const dp = Array.from({ length: m+1 }, () => Array(n+1).fill(0));
+    for (let i = 0; i <= m; i++) dp[i][0] = i;
+    for (let j = 0; j <= n; j++) dp[0][j] = j;
+    for (let i = 1; i <= m; i++) {
+        for (let j = 1; j <= n; j++) {
+            dp[i][j] = Math.min(
+                dp[i-1][j] + 1,
+                dp[i][j-1] + 1,
+                dp[i-1][j-1] + (a[i-1] === b[j-1] ? 0 : 1)
+            );
+        }
+    }
+    return dp[m][n];
+}
+
 function parseXmltvTime(str) {
-    // Formato: YYYYMMDDHHMMSS +0000
     const year = parseInt(str.substring(0,4));
     const month = parseInt(str.substring(4,6)) - 1;
     const day = parseInt(str.substring(6,8));
     const hour = parseInt(str.substring(8,10));
     const min = parseInt(str.substring(10,12));
     const sec = parseInt(str.substring(12,14));
-    // Ignoriamo timezone per semplicità; usiamo UTC? XMLTV timezone spesso +0000, quindi va bene.
     return Date.UTC(year, month, day, hour, min, sec);
 }
 
 async function loadEPG() {
     try {
+        console.log('Caricamento EPG...');
         const response = await fetch(EPG_URL);
-        if (!response.ok) throw new Error('Errore download EPG');
-        const decompressedStream = response.body.pipeThrough(new DecompressionStream('gzip'));
-        const text = await new Response(decompressedStream).text();
+        if (!response.ok) throw new Error('Errore download EPG: ' + response.status);
         
+        let text;
+        if (typeof DecompressionStream !== 'undefined') {
+            const decompressedStream = response.body.pipeThrough(new DecompressionStream('gzip'));
+            text = await new Response(decompressedStream).text();
+        } else {
+            console.warn('DecompressionStream non supportato, tento lettura diretta');
+            text = await response.text();
+        }
+        
+        console.log('EPG scaricato, parsing...');
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(text, 'text/xml');
         
-        // Costruzione mappa canali
         const channelMap = new Map(); // id -> nome normalizzato
-        const nameToIds = new Map(); // nome normalizzato -> Set di ids
         
         xmlDoc.querySelectorAll('channel').forEach(ch => {
             const id = ch.getAttribute('id');
@@ -400,14 +425,11 @@ async function loadEPG() {
             }
             const normName = normalizeName(displayName);
             channelMap.set(id, normName);
-            if (!nameToIds.has(normName)) nameToIds.set(normName, new Set());
-            nameToIds.get(normName).add(id);
+            epgNames.add(normName); // aggiungi ai nomi conosciuti
             epgChannels.set(id, []);
-            // aggiungi anche per nome normalizzato (usato come fallback)
             if (!epgChannels.has(normName)) epgChannels.set(normName, []);
         });
         
-        // Parsing programmi
         xmlDoc.querySelectorAll('programme').forEach(prog => {
             const channelId = prog.getAttribute('channel');
             const startStr = prog.getAttribute('start');
@@ -416,32 +438,23 @@ async function loadEPG() {
             const descEl = prog.querySelector('desc');
             const title = titleEl ? titleEl.textContent.trim() : '';
             const desc = descEl ? descEl.textContent.trim() : '';
-            
             const start = parseXmltvTime(startStr);
             const stop = parseXmltvTime(stopStr);
-            
             const program = { start, stop, title, desc };
-            
-            // Aggiungi per l'id esatto
-            if (epgChannels.has(channelId)) {
-                epgChannels.get(channelId).push(program);
-            }
-            // Aggiungi anche ai nomi normalizzati associati
+            if (epgChannels.has(channelId)) epgChannels.get(channelId).push(program);
             if (channelMap.has(channelId)) {
                 const norm = channelMap.get(channelId);
-                if (epgChannels.has(norm)) {
-                    epgChannels.get(norm).push(program);
-                }
+                if (epgChannels.has(norm)) epgChannels.get(norm).push(program);
             }
         });
         
-        // Ordina i programmi per start
         for (const [key, programs] of epgChannels.entries()) {
             programs.sort((a, b) => a.start - b.start);
         }
         
         epgReady = true;
-        console.log('EPG caricato con', epgChannels.size, 'canali');
+        console.log('EPG caricato con', epgChannels.size, 'voci');
+        console.log('Nomi EPG (primi 10):', Array.from(epgNames).slice(0, 10));
     } catch (error) {
         console.error('Errore EPG:', error);
         epgReady = false;
@@ -449,40 +462,66 @@ async function loadEPG() {
 }
 
 function getCurrentProgram(ch) {
-    if (!epgReady) return null;
+    if (!epgReady) return { status: 'loading' };
     const now = Date.now();
-    const keysToTry = [];
-    if (ch.tvgId) keysToTry.push(ch.tvgId);
-    keysToTry.push(normalizeName(ch.name));
-    // deduplicazione
-    const uniqueKeys = [...new Set(keysToTry)];
-    for (const key of uniqueKeys) {
+    const candidates = [];
+    if (ch.tvgId) candidates.push(ch.tvgId);
+    const normName = normalizeName(ch.name);
+    candidates.push(normName);
+    
+    // 1. Corrispondenza esatta
+    for (const key of candidates) {
         if (epgChannels.has(key)) {
             const programs = epgChannels.get(key);
-            // trova programma corrente (start <= now < stop)
             const current = programs.find(p => p.start <= now && now < p.stop);
-            if (current) return current;
+            if (current) return { status: 'ok', program: current, matchedKey: key };
         }
     }
-    return null;
+    
+    // 2. Fuzzy matching tra i nomi EPG conosciuti
+    let bestKey = null;
+    let bestDist = Infinity;
+    for (const epgName of epgNames) {
+        const dist = levenshtein(normName, epgName);
+        if (dist < bestDist) {
+            bestDist = dist;
+            bestKey = epgName;
+        }
+    }
+    // Soglia di tolleranza: distanza <= 2 (regolabile)
+    if (bestKey && bestDist <= 2 && epgChannels.has(bestKey)) {
+        const programs = epgChannels.get(bestKey);
+        const current = programs.find(p => p.start <= now && now < p.stop);
+        if (current) return { status: 'ok', program: current, matchedKey: bestKey };
+    }
+    
+    return { status: 'notfound', candidates, bestKey, bestDist };
 }
 
 function displayEPG(ch) {
     const epgDiv = document.getElementById('epg-info');
-    const program = getCurrentProgram(ch);
-    if (program) {
-        const startDate = new Date(program.start);
-        const stopDate = new Date(program.stop);
-        const timeStr = `${startDate.toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'})} - ${stopDate.toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'})}`;
+    const result = getCurrentProgram(ch);
+    if (result.status === 'loading') {
         epgDiv.style.display = 'block';
-        epgDiv.innerHTML = `
-            <div class="program-title">${program.title}</div>
-            <div>${timeStr}</div>
-            ${program.desc ? `<div class="program-desc">${program.desc}</div>` : ''}
-        `;
-    } else {
-        epgDiv.style.display = 'none';
+        epgDiv.innerHTML = `<div class="debug">EPG in caricamento...</div>`;
+        return;
     }
+    if (result.status === 'notfound') {
+        epgDiv.style.display = 'block';
+        epgDiv.innerHTML = `<div class="debug">Nessun programma trovato per "${ch.name}"<br>Chiavi cercate: ${result.candidates.join(', ')}<br>Migliore match fuzzy: ${result.bestKey || 'nessuno'} (distanza ${result.bestDist ?? '-'})</div>`;
+        return;
+    }
+    // Trovato
+    const program = result.program;
+    const startDate = new Date(program.start);
+    const stopDate = new Date(program.stop);
+    const timeStr = `${startDate.toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'})} - ${stopDate.toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'})}`;
+    epgDiv.style.display = 'block';
+    epgDiv.innerHTML = `
+        <div class="program-title">${program.title}</div>
+        <div>${timeStr}</div>
+        ${program.desc ? `<div class="program-desc">${program.desc}</div>` : ''}
+    `;
 }
 // -------------------- Fine EPG --------------------
 
@@ -566,9 +605,7 @@ async function checkAccess() {
             .catch(() => {});
 
         init(m3uData);
-        
-        // Avvia caricamento EPG in background
-        loadEPG();
+        loadEPG(); // avvia caricamento EPG
 
     } catch (error) {
         alert("Errore server.");
@@ -643,8 +680,7 @@ async function init(m3uContent) {
                 }
             }
 
-            // Mostra EPG
-            displayEPG(ch);
+            displayEPG(ch); // Mostra EPG (o debug)
 
             const oldIframeContainer = playerContainer.querySelector('.iframe-container');
             if (oldIframeContainer) oldIframeContainer.remove();
