@@ -937,11 +937,8 @@ function openSlotSelector(slotIndex) {
     activeSlot = slotIndex;
     const overlay = document.getElementById('channel-selector-overlay');
     overlay.classList.add('active');
-    if (allChannels.length === 0) {
-        document.getElementById('channel-selector-list').innerHTML = '<div style="padding:20px; text-align:center;">Caricamento canali...</div>';
-    } else {
-        populateChannelSelector('');
-    }
+    // Mostra subito la lista (ora allChannels dovrebbe essere popolato)
+    populateChannelSelector('');
 }
 
 function closeSlotSelector() {
@@ -952,6 +949,7 @@ function closeSlotSelector() {
 function populateChannelSelector(query) {
     const list = document.getElementById('channel-selector-list');
     list.innerHTML = '';
+    console.log('Numero canali disponibili:', allChannels.length);
     const filtered = allChannels.filter(ch => {
         const name = ch.name || '';
         const group = ch.group || '';
@@ -1019,6 +1017,7 @@ function requestFullscreenMultistream() {
     }
 }
 
+// Inizializzazione eventi multistream (subito dopo la definizione delle funzioni)
 function initMultistreamEvents() {
     document.getElementById('multistream-btn').addEventListener('click', toggleMultistream);
     document.getElementById('exit-multistream-btn').addEventListener('click', exitMultistream);
