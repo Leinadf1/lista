@@ -7,12 +7,16 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
     
+    <!-- Preload del font F1 per caricarlo prima possibile -->
+    <link rel="preload" href="https://raw.githubusercontent.com/Leinadf1/lista/main/Formula1-Bold_web_0.ttf" as="font" type="font/ttf" crossorigin>
+    
     <style>
         @font-face {
             font-family: 'Formula1 Display Bold';
             src: url('https://raw.githubusercontent.com/Leinadf1/lista/main/Formula1-Bold_web_0.ttf') format('truetype');
             font-weight: bold;
             font-style: normal;
+            font-display: swap; /* Mostra subito il fallback e sostituisce quando pronto */
         }
     </style>
     
@@ -1070,10 +1074,15 @@ async function init(m3uContent) {
     });
 }
 
+// Forza il caricamento del font all'avvio per evitare flash
+if (document.fonts && document.fonts.load) {
+    document.fonts.load('1em "Formula1 Display Bold"');
+}
+
 document.addEventListener('shaka-ui-loaded', () => {
     document.getElementById('reload-btn').addEventListener('click', reloadPlaylist);
     checkAccess();
 });
 </script>
 </body>
-</html>
+    </html>
