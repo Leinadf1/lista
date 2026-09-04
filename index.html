@@ -1058,6 +1058,12 @@ function formatTime(seconds) {
 }
 
 function showSeekBar(currentTime, duration) {
+    if (!tvPlayer) return;
+    if (tvPlayer.isLive()) {
+        // Per live, non mostrare barra seek
+        tvSeekBar.classList.remove('active');
+        return;
+    }
     tvSeekBar.classList.add('active');
     if (isFinite(duration)) {
         tvSeekCurrent.textContent = formatTime(currentTime);
@@ -1192,7 +1198,12 @@ function handleMouseMove() {
             tvChannelListBtn.style.display = 'none';
             tvAudioBtn.style.display = 'none';
             tvExitBtn.style.display = 'none';
-            tvIframeExitBtn.style.display = 'none';
+            // Il pulsante rosso Esci deve rimanere se c'è iframe
+            if (activeIframe) {
+                tvIframeExitBtn.style.display = 'flex';
+            } else {
+                tvIframeExitBtn.style.display = 'none';
+            }
         }
     }, 3000);
 }
@@ -1348,7 +1359,7 @@ function loadChannelInTv(index) {
         tvIframeExitBtn.style.display = 'none';
     }
     tvVideo.style.display = 'block';
-    tvExitBtn.style.display = 'flex'; // assicuriamoci che il pulsante esci generico torni visibile
+    tvExitBtn.style.display = 'flex';
     
     showOsd({
         number: index + 1,
@@ -1374,8 +1385,8 @@ function loadChannelInTv(index) {
             tvModeVideoContainer.appendChild(iframe);
             activeIframe = iframe;
             tvIframeExitBtn.classList.add('active');
-            tvIframeExitBtn.style.display = 'none'; // sarà mostrato da handleMouseMove
-            tvExitBtn.style.display = 'none'; // nascondi il pulsante esci generico quando c'è l'iframe
+            tvIframeExitBtn.style.display = 'flex'; // Mostra subito il pulsante Esci
+            tvExitBtn.style.display = 'none'; // Nascondi Esci generico
             
             iframe.addEventListener('load', () => {
                 setTimeout(() => {
