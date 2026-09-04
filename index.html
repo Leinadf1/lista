@@ -7,6 +7,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
     
+    <!-- Preload del font F1 per caricarlo prima possibile -->
     <link rel="preload" href="https://raw.githubusercontent.com/Leinadf1/lista/main/Formula1-Bold_web_0.ttf" as="font" type="font/ttf" crossorigin>
     
     <style>
@@ -239,12 +240,6 @@
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
-        }
-        .debug-info {
-            font-size: 12px;
-            color: #ff9999;
-            margin-top: 5px;
-            white-space: pre-wrap;
         }
 
         .category-container { 
@@ -561,7 +556,7 @@ function getAliasesForChannel(ch) {
 }
 
 function getCurrentProgram(ch) {
-    if (!epgReady) return { status: 'loading', message: epgError || 'EPG non pronto' };
+    if (!epgReady) return { status: 'loading' };
     const now = Date.now();
     const candidates = [];
     if (ch.tvgId) {
@@ -605,7 +600,7 @@ function getCurrentProgram(ch) {
         if (nextIndex !== -1) return { status: 'ok', programs, currentIndex: nextIndex, matchedKey: bestKey, isLive: false };
     }
     
-    return { status: 'notfound', candidates, bestKey, bestDist };
+    return { status: 'notfound' };
 }
 
 let epgState = {
@@ -624,24 +619,8 @@ function displayEPG(ch) {
     const epgDiv = document.getElementById('epg-info');
     const result = getCurrentProgram(ch);
     
-    if (result.status === 'loading') {
-        epgDiv.style.display = 'block';
-        epgDiv.innerHTML = `<div class="debug-info">${result.message || 'EPG in caricamento...'}</div>`;
-        epgDiv.classList.remove('live');
-        return;
-    }
-    
-    if (result.status === 'notfound') {
-        epgDiv.style.display = 'block';
-        epgDiv.innerHTML = `<div class="debug-info">Nessun EPG per "${ch.name}" (tvgId: ${ch.tvgId || 'nessuno'}). Chiavi cercate: ${result.candidates?.join(', ') || 'nessuna'}. Miglior match fuzzy: ${result.bestKey || 'nessuno'} (distanza ${result.bestDist ?? '-'})</div>`;
-        epgDiv.classList.remove('live');
-        return;
-    }
-    
-    if (result.status === 'error') {
-        epgDiv.style.display = 'block';
-        epgDiv.innerHTML = `<div class="debug-info">Errore EPG: ${result.message}</div>`;
-        epgDiv.classList.remove('live');
+    if (result.status !== 'ok') {
+        epgDiv.style.display = 'none';
         return;
     }
     
