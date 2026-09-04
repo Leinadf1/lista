@@ -994,6 +994,7 @@ let selectedAudioIndex = -1;
 let numberBufferTimeout = null;
 let exitingTv = false;
 let mouseMoveTimeout = null;
+let channelLoadToken = 0; // per evitare aggiornamenti EPG obsoleti
 
 const tvModeOverlay = document.getElementById('tv-mode-overlay');
 const tvOsd = document.getElementById('tv-osd');
@@ -1143,7 +1144,7 @@ function toggleChannelList() {
 }
 
 function openChannelList() {
-    if (activeIframe) return; // non aprire lista se iframe attivo
+    if (activeIframe) return;
     channelListOpen = true;
     audioListOpen = false;
     tvAudioOverlay.classList.remove('active');
@@ -1261,6 +1262,7 @@ function loadChannelInTv(index) {
     const ch = allChannels[index];
     if (!ch) return;
     currentChannelIndex = index;
+    const token = ++channelLoadToken;
     
     // Rimuovi iframe precedente
     if (activeIframe) {
@@ -1290,15 +1292,25 @@ function loadChannelInTv(index) {
             iframe.setAttribute('scrolling', 'no');
             iframe.setAttribute('allowfullscreen', '');
             iframe.setAttribute('allow', 'autoplay; encrypted-media; fullscreen');
-            iframe.src = `https://hugoedgar.com/drm-player/?embed-url=${encodeURIComponent(ch.url)}&kid=${encodeURIComponent(kid)}&key=${encodeURIComponent(key)}`;
+            // Aggiungi autoplay all'URL se non presente
+            let iframeUrl = `https://hugoedgar.com/drm-player/?embed-url=${encodeURIComponent(ch.url)}&kid=${encodeURIComponent(kid)}&key=${encodeURIComponent(key)}`;
+            if (!iframeUrl.includes('autoplay')) {
+                iframeUrl += '&autoplay=true';
+            }
+            iframe.src = iframeUrl;
             iframe.style.cssText = 'position:absolute; top:0; left:0; width:100%; height:100%; border:0; z-index:10;';
             tvModeVideoContainer.appendChild(iframe);
             activeIframe = iframe;
             tvIframeExitBtn.classList.add('active');
+            
+            // Riporta focus all'overlay per catturare i tasti
+            setTimeout(() => {
+                tvModeOverlay.focus();
+            }, 500);
         }
-        // Aggiorna EPG solo se non è svizzeri (per Prime non è svizzeri)
+        // Aggiorna EPG solo se non è svizzeri
         if (!(ch.group && ch.group.toLowerCase().includes('svizzeri'))) {
-            updateOsdEPG(ch);
+            updateOsdEPG(ch, token);
         }
         return;
     }
@@ -1314,25 +1326,27 @@ function loadChannelInTv(index) {
     }
     
     tvPlayer.load(ch.url).then(() => {
+        if (token !== channelLoadToken) return; // ignorare se canale cambiato
         autoSelectItalianAudio();
         buildAudioList();
         if (!(ch.group && ch.group.toLowerCase().includes('svizzeri'))) {
-            updateOsdEPG(ch);
+            updateOsdEPG(ch, token);
         }
     }).catch(err => {
         console.error('Errore caricamento TV:', err);
-        showOsd({ number: index + 1, name: ch.name, logo: ch.logo, program: 'Errore', time: '', progress: 0 });
+        if (token === channelLoadToken) {
+            showOsd({ number: index + 1, name: ch.name, logo: ch.logo, program: 'Errore', time: '', progress: 0 });
+        }
     });
     
     // Aggiorna EPG subito se non svizzeri
     if (!(ch.group && ch.group.toLowerCase().includes('svizzeri'))) {
-        updateOsdEPG(ch);
+        updateOsdEPG(ch, token);
     }
 }
 
-function updateOsdEPG(ch) {
+function updateOsdEPG(ch, token) {
     if (ch.group && ch.group.toLowerCase().includes('svizzeri')) {
-        // Non mostrare EPG per svizzeri
         return;
     }
     const program = getCurrentProgram(ch);
@@ -1350,7 +1364,8 @@ function updateOsdEPG(ch) {
             progress = ((now - p.start) / (p.stop - p.start)) * 100;
         }
     }
-    if (allChannels[currentChannelIndex] === ch) {
+    // Aggiorna solo se il token corrisponde ancora
+    if (token === channelLoadToken && allChannels[currentChannelIndex] === ch) {
         showOsd({ number: currentChannelIndex + 1, name: ch.name, logo: ch.logo, program: progTitle, time: timeStr, progress: progress });
     }
 }
@@ -1503,8 +1518,6 @@ function handleTvKeys(e) {
         return;
     }
     
-    // Se iframe attivo, i tasti CH+/- potrebbero non arrivare a questo handler.
-    // Ma lasciamo comunque la gestione base.
     e.preventDefault();
     e.stopPropagation();
     if (e.stopImmediatePropagation) e.stopImmediatePropagation();
@@ -1548,7 +1561,7 @@ function handleTvKeys(e) {
         return;
     }
     
-    // Media keys
+    // Media keys e salto temporale
     if (keyCode === 178 || key === 'MediaStop') {
         if (tvPlayer) tvPlayer.unload();
         return;
@@ -1561,21 +1574,25 @@ function handleTvKeys(e) {
         changeChannel(-1);
         return;
     }
-    if (keyCode === 177 || key === 'MediaFastForward') {
+    if (keyCode === 417 || key === 'MediaFastForward') {
         // Salto avanti 10 secondi
         if (tvPlayer) {
-            const currentTime = tvPlayer.getMediaElement().currentTime;
-            tvPlayer.getMediaElement().currentTime = Math.min(currentTime + 10, tvPlayer.getMediaElement().duration || Infinity);
-            showOsd({ number: currentChannelIndex + 1, name: allChannels[currentChannelIndex]?.name || '', logo: '', program: '+10s', time: '', progress: 0 });
+            const mediaElement = tvPlayer.getMediaElement();
+            if (mediaElement && mediaElement.duration) {
+                mediaElement.currentTime = Math.min(mediaElement.currentTime + 10, mediaElement.duration - 1);
+                showOsd({ number: currentChannelIndex + 1, name: allChannels[currentChannelIndex]?.name || '', logo: '', program: '+10 secondi', time: '', progress: 0 });
+            }
         }
         return;
     }
-    if (keyCode === 176 || key === 'MediaRewind') {
+    if (keyCode === 412 || key === 'MediaRewind') {
         // Salto indietro 10 secondi
         if (tvPlayer) {
-            const currentTime = tvPlayer.getMediaElement().currentTime;
-            tvPlayer.getMediaElement().currentTime = Math.max(currentTime - 10, 0);
-            showOsd({ number: currentChannelIndex + 1, name: allChannels[currentChannelIndex]?.name || '', logo: '', program: '-10s', time: '', progress: 0 });
+            const mediaElement = tvPlayer.getMediaElement();
+            if (mediaElement) {
+                mediaElement.currentTime = Math.max(mediaElement.currentTime - 10, 0);
+                showOsd({ number: currentChannelIndex + 1, name: allChannels[currentChannelIndex]?.name || '', logo: '', program: '-10 secondi', time: '', progress: 0 });
+            }
         }
         return;
     }
@@ -1849,7 +1866,7 @@ async function init(m3uContent) {
                     iframe.setAttribute('scrolling', 'no');
                     iframe.setAttribute('allowfullscreen', '');
                     iframe.setAttribute('allow', 'autoplay; encrypted-media; fullscreen');
-                    iframe.src = `https://hugoedgar.com/drm-player/?embed-url=${encodeURIComponent(ch.url)}&kid=${encodeURIComponent(kid)}&key=${encodeURIComponent(key)}`;
+                    iframe.src = `https://hugoedgar.com/drm-player/?embed-url=${encodeURIComponent(ch.url)}&kid=${encodeURIComponent(kid)}&key=${encodeURIComponent(key)}&autoplay=true`;
                     iframeContainer.appendChild(iframe);
                     playerContainer.appendChild(iframeContainer);
                     await player.unload();
