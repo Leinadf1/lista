@@ -390,6 +390,18 @@
             color: #b0b7c0;
             font-size: 14px;
         }
+        #tv-key-debug {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 14px;
+            z-index: 1001;
+            display: none;
+        }
 
         .category-container { 
             width: 100%; 
@@ -554,6 +566,7 @@
         <div id="tv-mode-video-container">
             <video autoplay id="tv-mode-video"></video>
         </div>
+        <div id="tv-key-debug">-</div>
         <div id="tv-osd">
             <div class="osd-channel">
                 <span id="tv-osd-num"></span>
@@ -852,6 +865,7 @@ const tvModeOverlay = document.getElementById('tv-mode-overlay');
 const tvOsd = document.getElementById('tv-osd');
 const tvEpgPanel = document.getElementById('tv-epg-panel');
 const tvVideo = document.getElementById('tv-mode-video');
+const tvKeyDebug = document.getElementById('tv-key-debug');
 let tvPlayer = null;
 
 function enterTvMode() {
@@ -867,8 +881,8 @@ function enterTvMode() {
     const mainVideo = document.getElementById('video');
     const mainPlayer = mainVideo.player;
     if (mainPlayer) {
-        mainPlayer.unload();  // interrompe la riproduzione
-        mainVideo.pause();    // mette in pausa il video
+        mainPlayer.unload();
+        mainVideo.pause();
     }
     
     tvVideo.src = '';
@@ -888,6 +902,10 @@ function enterTvMode() {
     if (tvModeOverlay.requestFullscreen) {
         tvModeOverlay.requestFullscreen().catch(err => console.error(err));
     }
+    
+    // Mostra debug tasti
+    tvKeyDebug.style.display = 'block';
+    tvKeyDebug.textContent = 'Premi un tasto...';
 }
 
 function exitTvMode() {
@@ -904,11 +922,14 @@ function exitTvMode() {
     document.getElementById('epg-info').style.display = 'none';
     document.removeEventListener('keydown', handleTvKeys);
     
+    // Nascondi debug
+    tvKeyDebug.style.display = 'none';
+    
     if (document.fullscreenElement) {
         document.exitFullscreen().catch(err => console.error(err));
     }
     
-    // Ripristina il player principale se necessario
+    // Ripristina il player principale (se necessario)
     const mainVideo = document.getElementById('video');
     if (mainVideo && mainVideo.player) {
         mainVideo.player.unload();
@@ -1016,11 +1037,27 @@ function handleTvKeys(e) {
     if (!tvModeActive) return;
     
     const key = e.key;
+    const code = e.code;
+    
+    // Aggiorna debug
+    tvKeyDebug.textContent = `Key: ${key} | Code: ${code}`;
     
     if (epgPanelOpen) {
-        if (key === 'Escape' || key === 'Backspace' || key === 'Enter') {
+        if (key === 'Escape' || key === 'Backspace' || key === 'Enter' || key === 'GoBack') {
             e.preventDefault();
             toggleEpgPanel();
+            return;
+        }
+        if (key === 'ArrowUp' || key === 'ChannelUp') {
+            e.preventDefault();
+            // naviga EPG (esempio: scroll su)
+            tvEpgPanel.scrollBy({ top: -100, behavior: 'smooth' });
+            return;
+        }
+        if (key === 'ArrowDown' || key === 'ChannelDown') {
+            e.preventDefault();
+            // naviga EPG (esempio: scroll giù)
+            tvEpgPanel.scrollBy({ top: 100, behavior: 'smooth' });
             return;
         }
         return;
@@ -1047,6 +1084,8 @@ function handleTvKeys(e) {
             break;
         case 'Escape':
         case 'Backspace':
+        case 'GoBack':
+        case 'Return':
             e.preventDefault();
             exitTvMode();
             break;
