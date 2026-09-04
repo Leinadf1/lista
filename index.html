@@ -898,9 +898,17 @@ function enterTvMode() {
     
     document.addEventListener('keydown', handleTvKeys);
     
-    // Richiedi fullscreen
+    // Richiedi fullscreen con fallback
     if (tvModeOverlay.requestFullscreen) {
-        tvModeOverlay.requestFullscreen().catch(err => console.error(err));
+        tvModeOverlay.requestFullscreen().catch(err => {
+            if (tvVideo.requestFullscreen) {
+                tvVideo.requestFullscreen().catch(err2 => {
+                    if (document.documentElement.requestFullscreen) {
+                        document.documentElement.requestFullscreen().catch(err3 => console.error(err3));
+                    }
+                });
+            }
+        });
     }
     
     // Mostra debug tasti
@@ -929,7 +937,7 @@ function exitTvMode() {
         document.exitFullscreen().catch(err => console.error(err));
     }
     
-    // Ripristina il player principale (se necessario)
+    // Ripristina il player principale se necessario
     const mainVideo = document.getElementById('video');
     if (mainVideo && mainVideo.player) {
         mainVideo.player.unload();
@@ -1043,20 +1051,18 @@ function handleTvKeys(e) {
     tvKeyDebug.textContent = `Key: ${key} | Code: ${code}`;
     
     if (epgPanelOpen) {
-        if (key === 'Escape' || key === 'Backspace' || key === 'Enter' || key === 'GoBack') {
+        if (key === 'Escape' || key === 'Backspace' || key === 'Enter' || key === 'GoBack' || key === 'Return') {
             e.preventDefault();
             toggleEpgPanel();
             return;
         }
-        if (key === 'ArrowUp' || key === 'ChannelUp') {
+        if (key === 'PageUp' || key === 'ArrowUp' || key === 'ChannelUp') {
             e.preventDefault();
-            // naviga EPG (esempio: scroll su)
             tvEpgPanel.scrollBy({ top: -100, behavior: 'smooth' });
             return;
         }
-        if (key === 'ArrowDown' || key === 'ChannelDown') {
+        if (key === 'PageDown' || key === 'ArrowDown' || key === 'ChannelDown') {
             e.preventDefault();
-            // naviga EPG (esempio: scroll giù)
             tvEpgPanel.scrollBy({ top: 100, behavior: 'smooth' });
             return;
         }
@@ -1065,12 +1071,14 @@ function handleTvKeys(e) {
     
     switch(key) {
         case 'ArrowUp':
+        case 'PageUp':
         case 'ChannelUp':
         case 'MediaChannelUp':
             e.preventDefault();
             changeChannel(-1);
             break;
         case 'ArrowDown':
+        case 'PageDown':
         case 'ChannelDown':
         case 'MediaChannelDown':
             e.preventDefault();
