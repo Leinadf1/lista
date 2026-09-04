@@ -65,7 +65,32 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # 7. Deploy dei file sui Gist
+      # 7. Aggiorna EPG
+      - name: Download and update EPG
+        continue-on-error: true
+        run: |
+          curl -L -o epg_ripper_IT1.xml.gz "https://epgshare01.online/epgshare01/epg_ripper_IT1.xml.gz"
+          if [ -s epg_ripper_IT1.xml.gz ]; then
+            gunzip -f epg_ripper_IT1.xml.gz
+            ls -lh epg_ripper_IT1.xml
+          else
+            echo "File EPG non scaricato"
+          fi
+
+      - name: Commit and push EPG
+        if: hashFiles('epg_ripper_IT1.xml') != ''
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add epg_ripper_IT1.xml
+          if git diff --cached --quiet; then
+            echo "No changes in EPG"
+          else
+            git commit -m "Auto-update EPG"
+            git push
+          fi
+
+      # 8. Deploy dei file sui Gist
       - name: Deploy lista_privata.m3u to Gist
         continue-on-error: true
         uses: exuanbo/actions-deploy-gist@v1
