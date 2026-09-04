@@ -36,14 +36,15 @@
         
         #header { 
             width: 100%; 
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
+            display: flex;
+            justify-content: space-between;
             align-items: center;
             gap: 10px;
             margin-bottom: 25px; 
             border-bottom: 1px solid #30363d; 
             padding-bottom: 15px; 
             box-sizing: border-box; 
+            flex-wrap: wrap;
         }
         
         .reload-btn {
@@ -61,7 +62,6 @@
             letter-spacing: 1px;
             cursor: pointer;
             transition: all 0.2s ease;
-            justify-self: start;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
             font-family: 'Formula1 Display Bold', 'Inter', sans-serif;
         }
@@ -83,9 +83,8 @@
         #search-container {
             display: flex;
             justify-content: center;
-            justify-self: center;
-            width: 100%;
-            max-width: 400px;
+            flex: 1;
+            min-width: 200px;
         }
         #search-input {
             width: 100%;
@@ -104,6 +103,12 @@
             border-color: #58a6ff;
         }
         
+        #header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
         #chan-count { 
             font-size: 13px; 
             color: #8b949e; 
@@ -111,8 +116,44 @@
             background: #21262d; 
             padding: 4px 12px; 
             border-radius: 20px; 
-            justify-self: end;
             font-family: 'Formula1 Display Bold', 'Inter', sans-serif;
+        }
+        
+        #tv-mode-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: #0a2540;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-weight: 700;
+            font-size: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            font-family: 'Formula1 Display Bold', 'Inter', sans-serif;
+        }
+        #tv-mode-btn:hover {
+            background: #123b66;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(0,0,0,0.4);
+        }
+        
+        @media (max-width: 600px) {
+            #tv-mode-btn {
+                display: none;
+            }
+            #header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            #header-right {
+                justify-content: space-between;
+            }
         }
         
         .player-container { 
@@ -242,30 +283,6 @@
         }
 
         /* Modalità TV */
-        #tv-mode-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
-            background: #0a2540;
-            color: white;
-            border: none;
-            border-radius: 25px;
-            font-weight: 700;
-            font-size: 15px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            font-family: 'Formula1 Display Bold', 'Inter', sans-serif;
-        }
-        #tv-mode-btn:hover {
-            background: #123b66;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 14px rgba(0,0,0,0.4);
-        }
-
         #tv-mode-overlay {
             display: none;
             position: fixed;
@@ -494,25 +511,6 @@
             .name { font-size: 12px; }
             body { padding: 10px; }
             
-            #header {
-                grid-template-columns: 1fr auto;
-                grid-template-rows: auto auto;
-                gap: 10px;
-            }
-            .reload-btn { 
-                justify-self: start; 
-                padding: 6px 10px;
-                font-size: 12px;
-                letter-spacing: 0.5px;
-            }
-            #chan-count { justify-self: end; }
-            #search-container {
-                grid-column: 1 / -1;
-                grid-row: 2;
-                width: 100%;
-                max-width: 100%;
-                padding: 0;
-            }
             .fav-heart {
                 width: 22px;
                 height: 22px;
@@ -536,8 +534,10 @@
         <div id="search-container">
             <input type="text" id="search-input" placeholder="Cerca canali o categorie...">
         </div>
-        <div id="chan-count">Caricamento...</div>
-        <button id="tv-mode-btn" title="Modalità TV">📺 TV Mode</button>
+        <div id="header-right">
+            <button id="tv-mode-btn" title="Modalità TV">📺 TV Mode</button>
+            <div id="chan-count">Caricamento...</div>
+        </div>
     </div>
 
     <div class="player-container" data-shaka-player-container>
@@ -863,13 +863,16 @@ function enterTvMode() {
     document.getElementById('header').style.display = 'none';
     tvModeOverlay.classList.add('active');
     
-    tvVideo.src = '';
-    tvVideo.autoplay = true;
-    
+    // Ferma il player principale per evitare audio sovrapposto
     const mainVideo = document.getElementById('video');
     const mainPlayer = mainVideo.player;
-    if (mainPlayer) mainPlayer.destroy();
+    if (mainPlayer) {
+        mainPlayer.unload();  // interrompe la riproduzione
+        mainVideo.pause();    // mette in pausa il video
+    }
     
+    tvVideo.src = '';
+    tvVideo.autoplay = true;
     tvPlayer = new shaka.Player(tvVideo);
     
     if (currentChannelIndex >= 0 && currentChannelIndex < allChannels.length) {
@@ -880,6 +883,11 @@ function enterTvMode() {
     }
     
     document.addEventListener('keydown', handleTvKeys);
+    
+    // Richiedi fullscreen
+    if (tvModeOverlay.requestFullscreen) {
+        tvModeOverlay.requestFullscreen().catch(err => console.error(err));
+    }
 }
 
 function exitTvMode() {
@@ -895,6 +903,16 @@ function exitTvMode() {
     document.querySelector('.player-container').style.display = '';
     document.getElementById('epg-info').style.display = 'none';
     document.removeEventListener('keydown', handleTvKeys);
+    
+    if (document.fullscreenElement) {
+        document.exitFullscreen().catch(err => console.error(err));
+    }
+    
+    // Ripristina il player principale se necessario
+    const mainVideo = document.getElementById('video');
+    if (mainVideo && mainVideo.player) {
+        mainVideo.player.unload();
+    }
 }
 
 function loadChannelInTv(index) {
@@ -1010,14 +1028,20 @@ function handleTvKeys(e) {
     
     switch(key) {
         case 'ArrowUp':
+        case 'ChannelUp':
+        case 'MediaChannelUp':
             e.preventDefault();
             changeChannel(-1);
             break;
         case 'ArrowDown':
+        case 'ChannelDown':
+        case 'MediaChannelDown':
             e.preventDefault();
             changeChannel(1);
             break;
         case 'Enter':
+        case 'Space':
+        case 'MediaPlayPause':
             e.preventDefault();
             toggleEpgPanel();
             break;
@@ -1483,4 +1507,4 @@ async function init(m3uContent) {
 document.getElementById('reload-btn').addEventListener('click', reloadPlaylist);
 </script>
 </body>
-            </html>
+</html>
