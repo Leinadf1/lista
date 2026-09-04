@@ -363,8 +363,10 @@
             transition: none;
         }
 
+        /* Pulsanti TV */
         #tv-channel-list-btn,
-        #tv-audio-btn {
+        #tv-audio-btn,
+        #tv-exit-btn {
             position: absolute;
             background: rgba(0,0,0,0.7);
             color: white;
@@ -381,7 +383,8 @@
             transition: background 0.2s;
         }
         #tv-channel-list-btn:hover,
-        #tv-audio-btn:hover {
+        #tv-audio-btn:hover,
+        #tv-exit-btn:hover {
             background: rgba(0,0,0,0.9);
         }
         #tv-channel-list-btn {
@@ -390,6 +393,10 @@
         }
         #tv-audio-btn {
             bottom: 20px;
+            right: 20px;
+        }
+        #tv-exit-btn {
+            top: 20px;
             right: 20px;
         }
 
@@ -480,9 +487,10 @@
             font-weight: 600;
         }
 
+        /* Bottone uscita iframe */
         #tv-iframe-exit-btn {
             position: absolute;
-            top: 20px;
+            top: 80px; /* sotto il pulsante Esci */
             right: 20px;
             background: red;
             color: white;
@@ -497,6 +505,45 @@
         }
         #tv-iframe-exit-btn.active {
             display: block;
+        }
+
+        /* Barra di avanzamento seek */
+        #tv-seek-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 1000;
+            font-family: 'Formula1 Display Bold', 'Inter', sans-serif;
+            box-sizing: border-box;
+        }
+        #tv-seek-bar.active {
+            display: flex;
+        }
+        #tv-seek-current,
+        #tv-seek-duration {
+            color: white;
+            font-size: 16px;
+            min-width: 50px;
+        }
+        .tv-seek-progress {
+            flex: 1;
+            height: 6px;
+            background: #30363d;
+            border-radius: 3px;
+            margin: 0 15px;
+            overflow: hidden;
+        }
+        #tv-seek-progress-bar {
+            height: 100%;
+            background: #00e676;
+            width: 0%;
+            transition: width 0.3s;
         }
 
         .category-container { 
@@ -678,13 +725,22 @@
 
         <button id="tv-channel-list-btn" title="Lista canali">☰ Lista canali</button>
         <button id="tv-audio-btn" title="Cambia lingua">🔊 Audio</button>
-        <button id="tv-iframe-exit-btn" title="Esci da Prime Video">✕ Esci</button>
+        <button id="tv-exit-btn" title="Esci dalla TV">✕ Esci</button>
+        <button id="tv-iframe-exit-btn" title="Esci da Prime Video">✕ Esci da Prime Video</button>
 
         <div id="tv-channel-list-overlay">
             <div id="tv-channel-list"></div>
         </div>
 
         <div id="tv-audio-overlay"></div>
+
+        <div id="tv-seek-bar">
+            <span id="tv-seek-current">00:00</span>
+            <div class="tv-seek-progress">
+                <div id="tv-seek-progress-bar"></div>
+            </div>
+            <span id="tv-seek-duration">00:00</span>
+        </div>
     </div>
 
 <script type="module">
@@ -984,12 +1040,16 @@ const tvAudioBtn = document.getElementById('tv-audio-btn');
 const tvAudioOverlay = document.getElementById('tv-audio-overlay');
 const tvModeVideoContainer = document.getElementById('tv-mode-video-container');
 const tvIframeExitBtn = document.getElementById('tv-iframe-exit-btn');
+const tvExitBtn = document.getElementById('tv-exit-btn');
+const tvSeekBar = document.getElementById('tv-seek-bar');
+const tvSeekCurrent = document.getElementById('tv-seek-current');
+const tvSeekDuration = document.getElementById('tv-seek-duration');
+const tvSeekProgressBar = document.getElementById('tv-seek-progress-bar');
 let tvPlayer = null;
 let activeIframe = null;
 
 function formatTime(seconds) {
     if (!isFinite(seconds) || seconds < 0) {
-        // Gestione tempo negativo per live edge
         const absSec = Math.abs(seconds);
         const h = Math.floor(absSec / 3600);
         const m = Math.floor((absSec % 3600) / 60);
@@ -1002,31 +1062,21 @@ function formatTime(seconds) {
     return `${h > 0 ? h + ':' : ''}${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 }
 
-function showSeekOsd(currentTime, duration) {
-    const seekBox = document.createElement('div');
-    seekBox.style.cssText = `
-        position: absolute;
-        bottom: 120px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(0,0,0,0.8);
-        color: white;
-        padding: 10px 20px;
-        border-radius: 8px;
-        font-family: 'Formula1 Display Bold', 'Inter', sans-serif;
-        font-size: 18px;
-        z-index: 1000;
-        pointer-events: none;
-    `;
-    let text;
+function showSeekBar(currentTime, duration) {
+    tvSeekCurrent.textContent = formatTime(currentTime);
     if (isFinite(duration)) {
-        text = `${formatTime(currentTime)} / ${formatTime(duration)}`;
+        tvSeekDuration.textContent = formatTime(duration);
+        const percent = (currentTime / duration) * 100;
+        tvSeekProgressBar.style.width = `${percent}%`;
     } else {
-        text = formatTime(currentTime);
+        tvSeekDuration.textContent = 'LIVE';
+        tvSeekProgressBar.style.width = '100%';
     }
-    seekBox.textContent = text;
-    tvModeOverlay.appendChild(seekBox);
-    setTimeout(() => seekBox.remove(), 2000);
+    tvSeekBar.classList.add('active');
+    clearTimeout(tvSeekBar._hideTimeout);
+    tvSeekBar._hideTimeout = setTimeout(() => {
+        tvSeekBar.classList.remove('active');
+    }, 2500);
 }
 
 function enterTvMode() {
@@ -1110,8 +1160,10 @@ function exitTvMode() {
     
     tvChannelListBtn.style.display = 'none';
     tvAudioBtn.style.display = 'none';
+    tvExitBtn.style.display = 'none';
     tvChannelListOverlay.classList.remove('active');
     tvAudioOverlay.classList.remove('active');
+    tvSeekBar.classList.remove('active');
     
     if (document.fullscreenElement) {
         document.exitFullscreen().catch(() => {});
@@ -1129,11 +1181,13 @@ function handleMouseMove() {
     if (!tvModeActive) return;
     tvChannelListBtn.style.display = 'flex';
     tvAudioBtn.style.display = 'flex';
+    tvExitBtn.style.display = 'flex';
     if (mouseMoveTimeout) clearTimeout(mouseMoveTimeout);
     mouseMoveTimeout = setTimeout(() => {
         if (!channelListOpen && !audioListOpen && !activeIframe) {
             tvChannelListBtn.style.display = 'none';
             tvAudioBtn.style.display = 'none';
+            tvExitBtn.style.display = 'none';
         }
     }, 3000);
 }
@@ -1167,6 +1221,7 @@ function openChannelList() {
     tvChannelListOverlay.classList.add('active');
     tvChannelListBtn.style.display = 'none';
     tvAudioBtn.style.display = 'none';
+    tvExitBtn.style.display = 'none';
     selectedChannelItemIndex = currentChannelIndex;
     highlightChannelItem();
     tvChannelListOverlay.setAttribute('tabindex', '-1');
@@ -1230,6 +1285,7 @@ function openAudioList() {
     tvAudioOverlay.classList.add('active');
     tvChannelListBtn.style.display = 'none';
     tvAudioBtn.style.display = 'none';
+    tvExitBtn.style.display = 'none';
     selectedAudioIndex = -1;
     tvAudioOverlay.setAttribute('tabindex', '-1');
     tvAudioOverlay.focus();
@@ -1590,7 +1646,7 @@ function handleTvKeys(e) {
             const mediaElement = tvPlayer.getMediaElement();
             if (mediaElement && mediaElement.duration) {
                 mediaElement.currentTime = Math.min(mediaElement.currentTime + 10, mediaElement.duration - 1);
-                showSeekOsd(mediaElement.currentTime, mediaElement.duration);
+                showSeekBar(mediaElement.currentTime, mediaElement.duration);
             }
         }
         return;
@@ -1600,7 +1656,7 @@ function handleTvKeys(e) {
             const mediaElement = tvPlayer.getMediaElement();
             if (mediaElement) {
                 mediaElement.currentTime = Math.max(mediaElement.currentTime - 10, 0);
-                showSeekOsd(mediaElement.currentTime, mediaElement.duration);
+                showSeekBar(mediaElement.currentTime, mediaElement.duration);
             }
         }
         return;
@@ -1674,6 +1730,7 @@ document.getElementById('tv-mode-btn').addEventListener('click', () => {
 
 tvChannelListBtn.addEventListener('click', toggleChannelList);
 tvAudioBtn.addEventListener('click', toggleAudioList);
+tvExitBtn.addEventListener('click', exitTvMode);
 
 tvIframeExitBtn.addEventListener('click', () => {
     if (activeIframe) {
