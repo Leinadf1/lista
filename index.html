@@ -1050,6 +1050,13 @@ function handleTvKeys(e) {
     // Aggiorna debug
     tvKeyDebug.textContent = `Key: ${key} | Code: ${code}`;
     
+    // Gestione speciale: tasto Back/Return non identificato
+    if (key === 'Unidentified' || key === 'undefined' || code === '' || code === 'Unidentified') {
+        e.preventDefault();
+        exitTvMode();
+        return;
+    }
+    
     if (epgPanelOpen) {
         if (key === 'Escape' || key === 'Backspace' || key === 'Enter' || key === 'GoBack' || key === 'Return') {
             e.preventDefault();
@@ -1075,14 +1082,14 @@ function handleTvKeys(e) {
         case 'ChannelUp':
         case 'MediaChannelUp':
             e.preventDefault();
-            changeChannel(-1);
+            changeChannel(1);  // Su = canale successivo (verso invertito)
             break;
         case 'ArrowDown':
         case 'PageDown':
         case 'ChannelDown':
         case 'MediaChannelDown':
             e.preventDefault();
-            changeChannel(1);
+            changeChannel(-1); // Giù = canale precedente
             break;
         case 'Enter':
         case 'Space':
