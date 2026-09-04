@@ -1051,21 +1051,16 @@ let activeIframe = null;
 
 // ----- FUNZIONI DI FORMATTAZIONE E SEEK (CORRETTE) -----
 function formatTime(seconds) {
-    // Se seconds non è un numero valido o è infinito, restituisci "--:--"
-    if (typeof seconds !== 'number' || !isFinite(seconds) || seconds < 0) {
-        return '--:--';
-    }
+    if (typeof seconds !== 'number' || !isFinite(seconds) || seconds < 0) return '--:--';
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
     const s = Math.floor(seconds % 60);
-    if (h > 0) {
-        return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-    }
-    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    return h > 0 ? `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}` : `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
 }
 
 function updateSeekBar(currentTime, duration) {
-    // Aggiorna i campi senza riavviare l'interval
+    // Debug: log per vedere cosa arriva (puoi rimuovere)
+    // console.log('updateSeekBar -> currentTime:', currentTime, 'duration:', duration);
     tvSeekCurrent.textContent = formatTime(currentTime);
     if (typeof duration === 'number' && isFinite(duration) && duration > 0) {
         tvSeekDuration.textContent = formatTime(duration);
@@ -1093,13 +1088,11 @@ function showSeekBar(currentTime, duration) {
             clearInterval(seekUpdateInterval);
             return;
         }
-        const mediaElement = tvPlayer.getMediaElement();
-        if (mediaElement && mediaElement.currentTime !== undefined) {
-            const ct = mediaElement.currentTime;
-            const dur = mediaElement.duration;
-            if (typeof ct === 'number' && isFinite(ct) && ct >= 0) {
-                updateSeekBar(ct, dur);
-            }
+        // Usiamo i metodi ufficiali di Shaka Player per ottenere tempo e durata
+        const ct = tvPlayer.getCurrentTime();
+        const dur = tvPlayer.getDuration();
+        if (typeof ct === 'number' && isFinite(ct) && ct >= 0) {
+            updateSeekBar(ct, dur);
         }
     }, 300);
     
@@ -1680,7 +1673,7 @@ function handleTvKeys(e) {
         changeChannel(-1);
         return;
     }
-    // ----- GESTORI SEEK RIPRISTINATI COME NEL CODICE ORIGINALE (usano mediaElement) -----
+    // ----- GESTORI SEEK RIPRISTINATI (usano il mediaElement come nel tuo originale) -----
     if (keyCode === 417 || key === 'MediaFastForward') {
         if (tvPlayer) {
             const mediaElement = tvPlayer.getMediaElement();
