@@ -292,6 +292,7 @@
             height: 100%;
             background: #000;
             z-index: 999;
+            outline: none; /* rimuovi contorno focus */
         }
         #tv-mode-overlay.active {
             display: block;
@@ -354,7 +355,7 @@
             height: 100%;
             background: #00e676;
             width: 0%;
-            transition: width 1s linear;
+            /* transition rimossa per cambio canale istantaneo */
         }
         #tv-epg-panel {
             position: absolute;
@@ -860,6 +861,7 @@ let osdTimeout = null;
 let numberBuffer = '';
 let epgPanelOpen = false;
 let numberBufferTimeout = null;
+let exitingTv = false; // flag per evitare uscite multiple
 
 const tvModeOverlay = document.getElementById('tv-mode-overlay');
 const tvOsd = document.getElementById('tv-osd');
@@ -870,6 +872,7 @@ let tvPlayer = null;
 
 function enterTvMode() {
     tvModeActive = true;
+    exitingTv = false;
     document.getElementById('main-list').style.display = 'none';
     document.getElementById('expiry-info').style.display = 'none';
     document.getElementById('epg-info').style.display = 'none';
@@ -896,8 +899,11 @@ function enterTvMode() {
         loadChannelInTv(0);
     }
     
-    // Listener con cattura per battere il browser
     document.addEventListener('keydown', handleTvKeys, true);
+    
+    // Focus overlay per catturare i tasti
+    tvModeOverlay.setAttribute('tabindex', '-1');
+    tvModeOverlay.focus();
     
     // Richiedi fullscreen con fallback
     if (tvModeOverlay.requestFullscreen) {
@@ -918,6 +924,8 @@ function enterTvMode() {
 }
 
 function exitTvMode() {
+    if (exitingTv || !tvModeActive) return;
+    exitingTv = true;
     tvModeActive = false;
     if (tvPlayer) {
         tvPlayer.destroy();
@@ -943,6 +951,8 @@ function exitTvMode() {
     if (mainVideo && mainVideo.player) {
         mainVideo.player.unload();
     }
+    
+    exitingTv = false;
 }
 
 function loadChannelInTv(index) {
@@ -1043,19 +1053,19 @@ function updateEpgPanel() {
 }
 
 function handleTvKeys(e) {
-    if (!tvModeActive) return;
+    if (!tvModeActive || exitingTv) return;
     
-    // Previeni il default per tutti i tasti in modalità TV
     e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation?.();
     
     const key = e.key;
     const code = e.code;
     const keyCode = e.keyCode;
     
-    // Aggiorna debug
     tvKeyDebug.textContent = `Key: ${key} | Code: ${code} | keyCode: ${keyCode}`;
     
-    // Gestione tasto Back/Return (codici comuni)
+    // Gestione uscita (Back/Return/Indietro)
     if (
         key === 'Backspace' ||
         key === 'Escape' ||
@@ -1065,13 +1075,14 @@ function handleTvKeys(e) {
         code === 'Backspace' ||
         keyCode === 8 ||
         keyCode === 461 ||
-        keyCode === 10009
+        keyCode === 10009 ||
+        key === 'Unidentified' && (code === '' || code === 'Back' || code === 'Backspace')
     ) {
         exitTvMode();
         return;
     }
     
-    // Gestione tasti canale
+    // Cambio canale
     if (
         key === 'ArrowUp' ||
         key === 'PageUp' ||
@@ -1080,7 +1091,7 @@ function handleTvKeys(e) {
         code === 'ChannelUp' ||
         code === 'PageUp'
     ) {
-        changeChannel(1); // Su = canale successivo
+        changeChannel(1);
         return;
     }
     
@@ -1092,11 +1103,11 @@ function handleTvKeys(e) {
         code === 'ChannelDown' ||
         code === 'PageDown'
     ) {
-        changeChannel(-1); // Giù = canale precedente
+        changeChannel(-1);
         return;
     }
     
-    // Tasto OK/Enter per EPG
+    // Tasto OK/Enter
     if (
         key === 'Enter' ||
         key === 'Space' ||
@@ -1110,19 +1121,40 @@ function handleTvKeys(e) {
         return;
     }
     
+    // Controlli multimediali
+    if (key === 'MediaPlayPause' || keyCode === 179) {
+        toggleEpgPanel(); // riutilizziamo per play/pausa? meglio no, apri EPG
+        return;
+    }
+    if (key === 'MediaStop' || keyCode === 178) {
+        // Stop: potremmo fermare il player
+        if (tvPlayer) {
+            tvPlayer.unload();
+        }
+        return;
+    }
+    if (key === 'MediaRewind' || keyCode === 176) {
+        // Riavvolgi: per ora non implementato
+        return;
+    }
+    if (key === 'MediaFastForward' || keyCode === 177) {
+        // Avanti veloce: per ora non implementato
+        return;
+    }
+    
     // Numeri
     if (/^[0-9]$/.test(key)) {
         handleNumberKey(key);
         return;
     }
     
-    // Tasto Preferiti
+    // Preferiti
     if (key === 'p' || key === 'P' || key === 'F2' || code === 'F2') {
         toggleFavorite(currentChannelIndex);
         return;
     }
     
-    // Tasto Info
+    // Info
     if (key === 'i' || key === 'I' || key === 'F1' || code === 'F1') {
         if (currentChannelIndex >= 0) {
             const ch = allChannels[currentChannelIndex];
@@ -1131,7 +1163,7 @@ function handleTvKeys(e) {
         return;
     }
     
-    // Se EPG è aperto, frecce su/giù scrollano
+    // Se EPG è aperto, frecce scrollano
     if (epgPanelOpen) {
         if (key === 'ArrowUp' || key === 'PageUp') {
             tvEpgPanel.scrollBy({ top: -100, behavior: 'smooth' });
