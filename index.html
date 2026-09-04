@@ -1058,12 +1058,6 @@ function formatTime(seconds) {
 }
 
 function showSeekBar(currentTime, duration) {
-    if (!tvPlayer) return;
-    if (tvPlayer.isLive()) {
-        // Per live, non mostrare barra seek
-        tvSeekBar.classList.remove('active');
-        return;
-    }
     tvSeekBar.classList.add('active');
     if (isFinite(duration)) {
         tvSeekCurrent.textContent = formatTime(currentTime);
@@ -1071,6 +1065,7 @@ function showSeekBar(currentTime, duration) {
         const percent = (currentTime / duration) * 100;
         tvSeekProgressBar.style.width = `${percent}%`;
     } else {
+        // Live: mostra il tempo trascorso e "LIVE"
         tvSeekCurrent.textContent = formatTime(currentTime);
         tvSeekDuration.textContent = 'LIVE';
         tvSeekProgressBar.style.width = '100%';
