@@ -292,7 +292,7 @@
             height: 100%;
             background: #000;
             z-index: 999;
-            outline: none; /* rimuovi contorno focus */
+            outline: none;
         }
         #tv-mode-overlay.active {
             display: block;
@@ -355,7 +355,7 @@
             height: 100%;
             background: #00e676;
             width: 0%;
-            /* transition rimossa per cambio canale istantaneo */
+            transition: none;
         }
         #tv-epg-panel {
             position: absolute;
@@ -861,7 +861,7 @@ let osdTimeout = null;
 let numberBuffer = '';
 let epgPanelOpen = false;
 let numberBufferTimeout = null;
-let exitingTv = false; // flag per evitare uscite multiple
+let exitingTv = false;
 
 const tvModeOverlay = document.getElementById('tv-mode-overlay');
 const tvOsd = document.getElementById('tv-osd');
@@ -880,7 +880,6 @@ function enterTvMode() {
     document.getElementById('header').style.display = 'none';
     tvModeOverlay.classList.add('active');
     
-    // Ferma il player principale per evitare audio sovrapposto
     const mainVideo = document.getElementById('video');
     const mainPlayer = mainVideo.player;
     if (mainPlayer) {
@@ -901,24 +900,24 @@ function enterTvMode() {
     
     document.addEventListener('keydown', handleTvKeys, true);
     
-    // Focus overlay per catturare i tasti
+    // Focus overlay
     tvModeOverlay.setAttribute('tabindex', '-1');
-    tvModeOverlay.focus();
+    setTimeout(() => {
+        tvModeOverlay.focus();
+    }, 100);
     
-    // Richiedi fullscreen con fallback
     if (tvModeOverlay.requestFullscreen) {
-        tvModeOverlay.requestFullscreen().catch(err => {
+        tvModeOverlay.requestFullscreen().catch(() => {
             if (tvVideo.requestFullscreen) {
-                tvVideo.requestFullscreen().catch(err2 => {
+                tvVideo.requestFullscreen().catch(() => {
                     if (document.documentElement.requestFullscreen) {
-                        document.documentElement.requestFullscreen().catch(err3 => console.error(err3));
+                        document.documentElement.requestFullscreen().catch(() => {});
                     }
                 });
             }
         });
     }
     
-    // Mostra debug tasti
     tvKeyDebug.style.display = 'block';
     tvKeyDebug.textContent = 'Premi un tasto...';
 }
@@ -939,14 +938,12 @@ function exitTvMode() {
     document.getElementById('epg-info').style.display = 'none';
     document.removeEventListener('keydown', handleTvKeys, true);
     
-    // Nascondi debug
     tvKeyDebug.style.display = 'none';
     
     if (document.fullscreenElement) {
-        document.exitFullscreen().catch(err => console.error(err));
+        document.exitFullscreen().catch(() => {});
     }
     
-    // Ripristina il player principale se necessario
     const mainVideo = document.getElementById('video');
     if (mainVideo && mainVideo.player) {
         mainVideo.player.unload();
@@ -1057,105 +1054,85 @@ function handleTvKeys(e) {
     
     e.preventDefault();
     e.stopPropagation();
-    e.stopImmediatePropagation?.();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
     
     const key = e.key;
     const code = e.code;
-    const keyCode = e.keyCode;
+    const keyCode = e.keyCode || e.which;
     
     tvKeyDebug.textContent = `Key: ${key} | Code: ${code} | keyCode: ${keyCode}`;
     
-    // Gestione uscita (Back/Return/Indietro)
-    if (
-        key === 'Backspace' ||
-        key === 'Escape' ||
-        key === 'GoBack' ||
-        key === 'Return' ||
-        code === 'Back' ||
-        code === 'Backspace' ||
-        keyCode === 8 ||
-        keyCode === 461 ||
-        keyCode === 10009 ||
-        key === 'Unidentified' && (code === '' || code === 'Back' || code === 'Backspace')
-    ) {
+    // --- Gestione prioritaria tramite keyCode ---
+    // Back / Indietro / Return
+    if (keyCode === 8 || keyCode === 461 || keyCode === 10009 || 
+        key === 'Backspace' || key === 'Escape' || key === 'GoBack' || key === 'Return') {
         exitTvMode();
         return;
     }
     
-    // Cambio canale
-    if (
-        key === 'ArrowUp' ||
-        key === 'PageUp' ||
-        key === 'ChannelUp' ||
-        key === 'MediaChannelUp' ||
-        code === 'ChannelUp' ||
-        code === 'PageUp'
-    ) {
-        changeChannel(1);
+    // Frecce
+    if (keyCode === 38 || key === 'ArrowUp' || key === 'PageUp' || key === 'ChannelUp' || key === 'MediaChannelUp') {
+        changeChannel(1); // Su = successivo
+        return;
+    }
+    if (keyCode === 40 || key === 'ArrowDown' || key === 'PageDown' || key === 'ChannelDown' || key === 'MediaChannelDown') {
+        changeChannel(-1); // Giù = precedente
+        return;
+    }
+    // Sinistra/Destra per navigazione EPG o altro (ignoriamo per ora, ma non usciamo)
+    if (keyCode === 37 || key === 'ArrowLeft' || keyCode === 39 || key === 'ArrowRight') {
+        // Non facciamo nulla, ma non usciamo
         return;
     }
     
-    if (
-        key === 'ArrowDown' ||
-        key === 'PageDown' ||
-        key === 'ChannelDown' ||
-        key === 'MediaChannelDown' ||
-        code === 'ChannelDown' ||
-        code === 'PageDown'
-    ) {
-        changeChannel(-1);
-        return;
-    }
-    
-    // Tasto OK/Enter
-    if (
-        key === 'Enter' ||
-        key === 'Space' ||
-        key === 'MediaPlayPause' ||
-        code === 'Enter' ||
-        code === 'Space' ||
-        keyCode === 13 ||
-        keyCode === 32
-    ) {
+    // OK / Enter
+    if (keyCode === 13 || keyCode === 32 || key === 'Enter' || key === 'Space' || key === 'MediaPlayPause') {
         toggleEpgPanel();
         return;
     }
     
-    // Controlli multimediali
-    if (key === 'MediaPlayPause' || keyCode === 179) {
-        toggleEpgPanel(); // riutilizziamo per play/pausa? meglio no, apri EPG
+    // Numeri (48-57)
+    if (keyCode >= 48 && keyCode <= 57) {
+        handleNumberKey(key);
         return;
     }
-    if (key === 'MediaStop' || keyCode === 178) {
-        // Stop: potremmo fermare il player
-        if (tvPlayer) {
-            tvPlayer.unload();
-        }
-        return;
-    }
-    if (key === 'MediaRewind' || keyCode === 176) {
-        // Riavvolgi: per ora non implementato
-        return;
-    }
-    if (key === 'MediaFastForward' || keyCode === 177) {
-        // Avanti veloce: per ora non implementato
-        return;
-    }
-    
-    // Numeri
     if (/^[0-9]$/.test(key)) {
         handleNumberKey(key);
         return;
     }
     
-    // Preferiti
-    if (key === 'p' || key === 'P' || key === 'F2' || code === 'F2') {
-        toggleFavorite(currentChannelIndex);
+    // Media keys
+    if (keyCode === 179 || key === 'MediaPlayPause') {
+        // Play/Pausa: se EPG aperto lo chiude, altrimenti pausa/riprendi (non implementato)
+        return;
+    }
+    if (keyCode === 178 || key === 'MediaStop') {
+        if (tvPlayer) tvPlayer.unload();
+        return;
+    }
+    if (keyCode === 176 || key === 'MediaRewind') {
+        // Riavvolgi (non implementato)
+        return;
+    }
+    if (keyCode === 177 || key === 'MediaFastForward') {
+        // Avanti veloce (non implementato)
+        return;
+    }
+    if (keyCode === 180 || key === 'MediaNextTrack') {
+        changeChannel(1);
+        return;
+    }
+    if (keyCode === 181 || key === 'MediaPrevTrack') {
+        changeChannel(-1);
         return;
     }
     
-    // Info
-    if (key === 'i' || key === 'I' || key === 'F1' || code === 'F1') {
+    // Preferiti / Info
+    if (key === 'p' || key === 'P' || keyCode === 112 || key === 'F2') {
+        toggleFavorite(currentChannelIndex);
+        return;
+    }
+    if (key === 'i' || key === 'I' || keyCode === 113 || key === 'F1') {
         if (currentChannelIndex >= 0) {
             const ch = allChannels[currentChannelIndex];
             if (ch) showOsdForChannel(ch);
@@ -1163,13 +1140,13 @@ function handleTvKeys(e) {
         return;
     }
     
-    // Se EPG è aperto, frecce scrollano
+    // Se EPG aperto, frecce su/giù scrollano
     if (epgPanelOpen) {
-        if (key === 'ArrowUp' || key === 'PageUp') {
+        if (keyCode === 38 || key === 'ArrowUp' || key === 'PageUp') {
             tvEpgPanel.scrollBy({ top: -100, behavior: 'smooth' });
             return;
         }
-        if (key === 'ArrowDown' || key === 'PageDown') {
+        if (keyCode === 40 || key === 'ArrowDown' || key === 'PageDown') {
             tvEpgPanel.scrollBy({ top: 100, behavior: 'smooth' });
             return;
         }
