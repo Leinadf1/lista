@@ -317,7 +317,7 @@
             border-radius: 12px;
             display: none;
             z-index: 1000;
-            width: 400px; /* Larghezza fissa per barra progresso uniforme */
+            width: 400px;
             max-width: 90vw;
             font-family: 'Formula1 Display Bold', 'Inter', sans-serif;
         }
@@ -354,7 +354,7 @@
             background: #30363d;
             border-radius: 2px;
             overflow: hidden;
-            width: 100%; /* Larghezza fissa */
+            width: 100%;
         }
         #tv-osd .osd-progress-bar {
             height: 100%;
@@ -363,7 +363,42 @@
             transition: none;
         }
 
-        /* Selettore canali TV */
+        /* Pulsanti TV */
+        #tv-channel-list-btn,
+        #tv-audio-btn {
+            position: absolute;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 15px;
+            font-size: 16px;
+            cursor: pointer;
+            display: none;
+            z-index: 1500;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Formula1 Display Bold', 'Inter', sans-serif;
+            transition: background 0.2s;
+        }
+        #tv-channel-list-btn:hover,
+        #tv-audio-btn:hover {
+            background: rgba(0,0,0,0.9);
+        }
+
+        /* Lista canali */
+        #tv-channel-list-btn {
+            top: 20px;
+            left: 20px;
+        }
+
+        /* Audio */
+        #tv-audio-btn {
+            bottom: 20px;
+            right: 20px;
+        }
+
+        /* Overlay lista canali */
         #tv-channel-list-overlay {
             position: absolute;
             top: 0;
@@ -421,27 +456,35 @@
             text-overflow: ellipsis;
         }
 
-        /* Pulsante per aprire lista canali (appare al movimento mouse) */
-        #tv-channel-list-btn {
+        /* Overlay audio */
+        #tv-audio-overlay {
             position: absolute;
-            top: 20px;
+            bottom: 70px;
             right: 20px;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0,0,0,0.9);
             color: white;
-            border: none;
-            border-radius: 50%;
-            width: 48px;
-            height: 48px;
-            font-size: 24px;
-            cursor: pointer;
+            border-radius: 12px;
+            padding: 10px;
+            z-index: 2000;
             display: none;
-            z-index: 1500;
-            align-items: center;
-            justify-content: center;
+            min-width: 200px;
+            font-family: 'Formula1 Display Bold', 'Inter', sans-serif;
+        }
+        #tv-audio-overlay.active {
+            display: block;
+        }
+        .tv-audio-item {
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 6px;
             transition: background 0.2s;
         }
-        #tv-channel-list-btn:hover {
-            background: rgba(0,0,0,0.9);
+        .tv-audio-item:hover,
+        .tv-audio-item.selected {
+            background: #1c2128;
+        }
+        .tv-audio-item .audio-label {
+            font-weight: 600;
         }
 
         #tv-key-debug {
@@ -636,12 +679,18 @@
         <div id="tv-epg-panel"></div>
 
         <!-- Pulsante lista canali -->
-        <button id="tv-channel-list-btn" title="Lista canali">☰</button>
+        <button id="tv-channel-list-btn" title="Lista canali">☰ Lista canali</button>
+
+        <!-- Pulsante audio -->
+        <button id="tv-audio-btn" title="Cambia lingua">🔊 Audio</button>
 
         <!-- Overlay lista canali -->
         <div id="tv-channel-list-overlay">
             <div id="tv-channel-list"></div>
         </div>
+
+        <!-- Overlay tracce audio -->
+        <div id="tv-audio-overlay"></div>
     </div>
 
 <script type="module">
@@ -922,7 +971,9 @@ let osdTimeout = null;
 let numberBuffer = '';
 let epgPanelOpen = false;
 let channelListOpen = false;
+let audioListOpen = false;
 let selectedChannelItemIndex = -1;
+let selectedAudioIndex = -1;
 let numberBufferTimeout = null;
 let exitingTv = false;
 let mouseMoveTimeout = null;
@@ -935,6 +986,8 @@ const tvKeyDebug = document.getElementById('tv-key-debug');
 const tvChannelListBtn = document.getElementById('tv-channel-list-btn');
 const tvChannelListOverlay = document.getElementById('tv-channel-list-overlay');
 const tvChannelList = document.getElementById('tv-channel-list');
+const tvAudioBtn = document.getElementById('tv-audio-btn');
+const tvAudioOverlay = document.getElementById('tv-audio-overlay');
 let tvPlayer = null;
 
 function enterTvMode() {
@@ -988,8 +1041,8 @@ function enterTvMode() {
     tvKeyDebug.style.display = 'block';
     tvKeyDebug.textContent = 'Premi un tasto...';
     
-    // Inizializza lista canali
     buildChannelList();
+    buildAudioList();
 }
 
 function exitTvMode() {
@@ -1011,7 +1064,9 @@ function exitTvMode() {
     
     tvKeyDebug.style.display = 'none';
     tvChannelListBtn.style.display = 'none';
+    tvAudioBtn.style.display = 'none';
     tvChannelListOverlay.classList.remove('active');
+    tvAudioOverlay.classList.remove('active');
     
     if (document.fullscreenElement) {
         document.exitFullscreen().catch(() => {});
@@ -1028,10 +1083,12 @@ function exitTvMode() {
 function handleMouseMove() {
     if (!tvModeActive) return;
     tvChannelListBtn.style.display = 'flex';
+    tvAudioBtn.style.display = 'flex';
     if (mouseMoveTimeout) clearTimeout(mouseMoveTimeout);
     mouseMoveTimeout = setTimeout(() => {
-        if (!channelListOpen) {
+        if (!channelListOpen && !audioListOpen) {
             tvChannelListBtn.style.display = 'none';
+            tvAudioBtn.style.display = 'none';
         }
     }, 3000);
 }
@@ -1064,11 +1121,13 @@ function toggleChannelList() {
 
 function openChannelList() {
     channelListOpen = true;
+    audioListOpen = false;
+    tvAudioOverlay.classList.remove('active');
     tvChannelListOverlay.classList.add('active');
     tvChannelListBtn.style.display = 'none';
+    tvAudioBtn.style.display = 'none';
     selectedChannelItemIndex = currentChannelIndex;
     highlightChannelItem();
-    // Focus sulla lista per catturare frecce
     tvChannelList.setAttribute('tabindex', '-1');
     tvChannelList.focus();
 }
@@ -1099,6 +1158,70 @@ function selectChannelFromList(index) {
     closeChannelList();
 }
 
+function buildAudioList() {
+    if (!tvPlayer) return;
+    const tracks = tvPlayer.getAudioLanguagesAndRoles();
+    // tracks è un array di oggetti {language, role, label}
+    tvAudioOverlay.innerHTML = '';
+    if (tracks.length === 0) {
+        tvAudioOverlay.innerHTML = '<div style="padding:10px;">Nessuna traccia audio alternativa</div>';
+        return;
+    }
+    tracks.forEach((track, idx) => {
+        const item = document.createElement('div');
+        item.className = 'tv-audio-item';
+        item.dataset.index = idx;
+        item.innerHTML = `<span class="audio-label">${track.label || track.language || 'Track ' + (idx+1)}</span>`;
+        item.addEventListener('click', () => {
+            selectAudioTrack(idx);
+        });
+        tvAudioOverlay.appendChild(item);
+    });
+}
+
+function toggleAudioList() {
+    if (audioListOpen) {
+        closeAudioList();
+    } else {
+        openAudioList();
+    }
+}
+
+function openAudioList() {
+    audioListOpen = true;
+    channelListOpen = false;
+    tvChannelListOverlay.classList.remove('active');
+    tvAudioOverlay.classList.add('active');
+    tvChannelListBtn.style.display = 'none';
+    tvAudioBtn.style.display = 'none';
+    selectedAudioIndex = -1;
+    tvAudioOverlay.setAttribute('tabindex', '-1');
+    tvAudioOverlay.focus();
+}
+
+function closeAudioList() {
+    audioListOpen = false;
+    tvAudioOverlay.classList.remove('active');
+    selectedAudioIndex = -1;
+}
+
+function selectAudioTrack(index) {
+    if (!tvPlayer) return;
+    const tracks = tvPlayer.getAudioLanguagesAndRoles();
+    if (index >= 0 && index < tracks.length) {
+        tvPlayer.selectAudioLanguage(tracks[index].language);
+        showOsd({
+            number: currentChannelIndex + 1,
+            name: allChannels[currentChannelIndex]?.name || '',
+            logo: allChannels[currentChannelIndex]?.logo || '',
+            program: `Audio: ${tracks[index].label || tracks[index].language}`,
+            time: '',
+            progress: 0
+        });
+    }
+    closeAudioList();
+}
+
 function loadChannelInTv(index) {
     const ch = allChannels[index];
     if (!ch) return;
@@ -1114,7 +1237,9 @@ function loadChannelInTv(index) {
         tvPlayer.configure({ streaming: { customHttpHeaders: {} } });
     }
     
-    tvPlayer.load(ch.url).catch(err => {
+    tvPlayer.load(ch.url).then(() => {
+        buildAudioList();
+    }).catch(err => {
         console.error('Errore caricamento TV:', err);
         showOsd({ number: index + 1, name: ch.name, logo: ch.logo, program: 'Errore', time: '', progress: 0 });
     });
@@ -1199,7 +1324,7 @@ function updateEpgPanel() {
 function handleTvKeys(e) {
     if (!tvModeActive || exitingTv) return;
     
-    // Se la lista canali è aperta, gestisci prima quella
+    // Se lista canali aperta
     if (channelListOpen) {
         e.preventDefault();
         e.stopPropagation();
@@ -1236,7 +1361,45 @@ function handleTvKeys(e) {
         return;
     }
     
-    // Se EPG è aperto, gestisci scroll
+    // Se lista audio aperta
+    if (audioListOpen) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const key = e.key;
+        const keyCode = e.keyCode || e.which;
+        const items = tvAudioOverlay.querySelectorAll('.tv-audio-item');
+        
+        if (keyCode === 38 || key === 'ArrowUp') {
+            e.preventDefault();
+            if (selectedAudioIndex < 0) selectedAudioIndex = 0;
+            else if (selectedAudioIndex > 0) selectedAudioIndex--;
+            highlightAudioItem();
+            return;
+        }
+        if (keyCode === 40 || key === 'ArrowDown') {
+            e.preventDefault();
+            if (selectedAudioIndex < 0) selectedAudioIndex = 0;
+            else if (selectedAudioIndex < items.length - 1) selectedAudioIndex++;
+            highlightAudioItem();
+            return;
+        }
+        if (keyCode === 13 || key === 'Enter' || key === 'Space') {
+            e.preventDefault();
+            if (selectedAudioIndex >= 0 && selectedAudioIndex < items.length) {
+                selectAudioTrack(selectedAudioIndex);
+            }
+            return;
+        }
+        if (keyCode === 8 || key === 'Escape' || key === 'Backspace' || key === 'GoBack' || key === 'Return') {
+            e.preventDefault();
+            closeAudioList();
+            return;
+        }
+        return;
+    }
+    
+    // Se EPG aperto
     if (epgPanelOpen) {
         const key = e.key;
         const keyCode = e.keyCode || e.which;
@@ -1293,9 +1456,15 @@ function handleTvKeys(e) {
         return;
     }
     
-    // Tasto lista canali (es. F3)
+    // Tasto lista canali
     if (key === 'l' || key === 'L' || key === 'F3' || code === 'F3' || keyCode === 114) {
         toggleChannelList();
+        return;
+    }
+    
+    // Tasto audio
+    if (key === 'a' || key === 'A' || key === 'F4' || code === 'F4' || keyCode === 115) {
+        toggleAudioList();
         return;
     }
     
@@ -1335,6 +1504,18 @@ function handleTvKeys(e) {
         }
         return;
     }
+}
+
+function highlightAudioItem() {
+    const items = tvAudioOverlay.querySelectorAll('.tv-audio-item');
+    items.forEach((item, idx) => {
+        if (idx === selectedAudioIndex) {
+            item.classList.add('selected');
+            item.scrollIntoView({ block: 'nearest' });
+        } else {
+            item.classList.remove('selected');
+        }
+    });
 }
 
 function changeChannel(delta) {
@@ -1381,8 +1562,9 @@ document.getElementById('tv-mode-btn').addEventListener('click', () => {
     }
 });
 
-// Apri lista canali dal pulsante
+// Pulsanti
 tvChannelListBtn.addEventListener('click', toggleChannelList);
+tvAudioBtn.addEventListener('click', toggleAudioList);
 
 if (document.fonts && document.fonts.load) {
     document.fonts.load('1em "Formula1 Display Bold"');
