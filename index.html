@@ -483,24 +483,6 @@
             font-weight: 600;
         }
 
-        /* Debug tasti */
-        #tv-key-debug {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(0,0,0,0.8);
-            color: #fff;
-            padding: 5px 10px;
-            border-radius: 6px;
-            font-size: 14px;
-            z-index: 1001;
-            display: none;
-            pointer-events: none;
-        }
-        #tv-key-debug.active {
-            display: block;
-        }
-
         /* Bottone uscita iframe */
         #tv-iframe-exit-btn {
             position: absolute;
@@ -684,7 +666,6 @@
         <div id="tv-mode-video-container">
             <video autoplay id="tv-mode-video"></video>
         </div>
-        <div id="tv-key-debug">-</div>
         <div id="tv-osd">
             <div class="osd-channel">
                 <span id="tv-osd-num"></span>
@@ -994,7 +975,7 @@ let selectedAudioIndex = -1;
 let numberBufferTimeout = null;
 let exitingTv = false;
 let mouseMoveTimeout = null;
-let channelLoadToken = 0; // per evitare aggiornamenti EPG obsoleti
+let channelLoadToken = 0;
 
 const tvModeOverlay = document.getElementById('tv-mode-overlay');
 const tvOsd = document.getElementById('tv-osd');
@@ -1006,7 +987,6 @@ const tvChannelList = document.getElementById('tv-channel-list');
 const tvAudioBtn = document.getElementById('tv-audio-btn');
 const tvAudioOverlay = document.getElementById('tv-audio-overlay');
 const tvModeVideoContainer = document.getElementById('tv-mode-video-container');
-const tvKeyDebug = document.getElementById('tv-key-debug');
 const tvIframeExitBtn = document.getElementById('tv-iframe-exit-btn');
 let tvPlayer = null;
 let activeIframe = null;
@@ -1064,7 +1044,6 @@ function enterTvMode() {
         });
     }
     
-    tvKeyDebug.classList.add('active');
     buildChannelList();
     buildAudioList();
 }
@@ -1095,7 +1074,6 @@ function exitTvMode() {
     tvAudioBtn.style.display = 'none';
     tvChannelListOverlay.classList.remove('active');
     tvAudioOverlay.classList.remove('active');
-    tvKeyDebug.classList.remove('active');
     
     if (document.fullscreenElement) {
         document.exitFullscreen().catch(() => {});
@@ -1292,20 +1270,19 @@ function loadChannelInTv(index) {
             iframe.setAttribute('scrolling', 'no');
             iframe.setAttribute('allowfullscreen', '');
             iframe.setAttribute('allow', 'autoplay; encrypted-media; fullscreen');
-            // Aggiungi autoplay all'URL se non presente
-            let iframeUrl = `https://hugoedgar.com/drm-player/?embed-url=${encodeURIComponent(ch.url)}&kid=${encodeURIComponent(kid)}&key=${encodeURIComponent(key)}`;
-            if (!iframeUrl.includes('autoplay')) {
-                iframeUrl += '&autoplay=true';
-            }
-            iframe.src = iframeUrl;
+            iframe.src = `https://hugoedgar.com/drm-player/?embed-url=${encodeURIComponent(ch.url)}&kid=${encodeURIComponent(kid)}&key=${encodeURIComponent(key)}&autoplay=true`;
             iframe.style.cssText = 'position:absolute; top:0; left:0; width:100%; height:100%; border:0; z-index:10;';
             tvModeVideoContainer.appendChild(iframe);
             activeIframe = iframe;
             tvIframeExitBtn.classList.add('active');
             
-            // Riporta focus all'overlay per catturare i tasti
+            // Forza il focus sull'overlay per catturare i tasti
             setTimeout(() => {
                 tvModeOverlay.focus();
+                // Anche quando l'iframe riceve focus, lo rimettiamo sull'overlay
+                iframe.addEventListener('focus', () => {
+                    setTimeout(() => tvModeOverlay.focus(), 50);
+                });
             }, 500);
         }
         // Aggiorna EPG solo se non è svizzeri
@@ -1326,7 +1303,7 @@ function loadChannelInTv(index) {
     }
     
     tvPlayer.load(ch.url).then(() => {
-        if (token !== channelLoadToken) return; // ignorare se canale cambiato
+        if (token !== channelLoadToken) return;
         autoSelectItalianAudio();
         buildAudioList();
         if (!(ch.group && ch.group.toLowerCase().includes('svizzeri'))) {
@@ -1364,7 +1341,6 @@ function updateOsdEPG(ch, token) {
             progress = ((now - p.start) / (p.stop - p.start)) * 100;
         }
     }
-    // Aggiorna solo se il token corrisponde ancora
     if (token === channelLoadToken && allChannels[currentChannelIndex] === ch) {
         showOsd({ number: currentChannelIndex + 1, name: ch.name, logo: ch.logo, program: progTitle, time: timeStr, progress: progress });
     }
@@ -1388,6 +1364,34 @@ function showOsd(data) {
     osdTimeout = setTimeout(() => {
         tvOsd.classList.remove('active');
     }, 5000);
+}
+
+function showSeekOsd(currentTime, duration) {
+    // Mostra un piccolo OSD per il timestamp
+    const seekBox = document.createElement('div');
+    seekBox.style.cssText = `
+        position: absolute;
+        bottom: 120px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,0.8);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-family: 'Formula1 Display Bold', 'Inter', sans-serif;
+        font-size: 18px;
+        z-index: 1000;
+        pointer-events: none;
+    `;
+    const formatTime = (sec) => {
+        const h = Math.floor(sec / 3600);
+        const m = Math.floor((sec % 3600) / 60);
+        const s = Math.floor(sec % 60);
+        return `${h > 0 ? h + ':' : ''}${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    };
+    seekBox.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
+    tvModeOverlay.appendChild(seekBox);
+    setTimeout(() => seekBox.remove(), 2000);
 }
 
 function toggleEpgPanel() {
@@ -1432,15 +1436,13 @@ function updateEpgPanel() {
 function handleTvKeys(e) {
     if (!tvModeActive || exitingTv) return;
     
-    // Aggiorna debug
-    const key = e.key;
-    const code = e.code;
-    const keyCode = e.keyCode || e.which;
-    tvKeyDebug.textContent = `Key: ${key} | Code: ${code} | keyCode: ${keyCode}`;
-    
+    // Se lista canali aperta
     if (channelListOpen) {
         e.preventDefault();
         e.stopPropagation();
+        
+        const key = e.key;
+        const keyCode = e.keyCode || e.which;
         
         if (keyCode === 38 || key === 'ArrowUp' || key === 'PageUp') {
             if (selectedChannelItemIndex > 0) {
@@ -1467,10 +1469,13 @@ function handleTvKeys(e) {
         return;
     }
     
+    // Se lista audio aperta
     if (audioListOpen) {
         e.preventDefault();
         e.stopPropagation();
         
+        const key = e.key;
+        const keyCode = e.keyCode || e.which;
         const items = tvAudioOverlay.querySelectorAll('.tv-audio-item');
         
         if (keyCode === 38 || key === 'ArrowUp') {
@@ -1498,7 +1503,10 @@ function handleTvKeys(e) {
         return;
     }
     
+    // Se EPG aperto
     if (epgPanelOpen) {
+        const key = e.key;
+        const keyCode = e.keyCode || e.which;
         if (keyCode === 38 || key === 'ArrowUp' || key === 'PageUp') {
             e.preventDefault();
             tvEpgPanel.scrollBy({ top: -100, behavior: 'smooth' });
@@ -1518,16 +1526,23 @@ function handleTvKeys(e) {
         return;
     }
     
+    // Gestione normale
     e.preventDefault();
     e.stopPropagation();
     if (e.stopImmediatePropagation) e.stopImmediatePropagation();
     
+    const key = e.key;
+    const code = e.code;
+    const keyCode = e.keyCode || e.which;
+    
+    // Back / Indietro
     if (keyCode === 8 || keyCode === 461 || keyCode === 10009 || 
         key === 'Backspace' || key === 'Escape' || key === 'GoBack' || key === 'Return') {
         exitTvMode();
         return;
     }
     
+    // Frecce cambio canale
     if (keyCode === 38 || key === 'ArrowUp' || key === 'PageUp' || key === 'ChannelUp' || key === 'MediaChannelUp') {
         changeChannel(1);
         return;
@@ -1537,21 +1552,25 @@ function handleTvKeys(e) {
         return;
     }
     
+    // OK / Enter
     if (keyCode === 13 || keyCode === 32 || key === 'Enter' || key === 'Space' || keyCode === 179 || key === 'MediaPlayPause') {
         toggleEpgPanel();
         return;
     }
     
+    // Tasto lista canali
     if (key === 'l' || key === 'L' || key === 'F3' || code === 'F3' || keyCode === 114) {
         toggleChannelList();
         return;
     }
     
+    // Tasto audio
     if (key === 'a' || key === 'A' || key === 'F4' || code === 'F4' || keyCode === 115) {
         toggleAudioList();
         return;
     }
     
+    // Numeri
     if (keyCode >= 48 && keyCode <= 57) {
         handleNumberKey(key);
         return;
@@ -1575,28 +1594,27 @@ function handleTvKeys(e) {
         return;
     }
     if (keyCode === 417 || key === 'MediaFastForward') {
-        // Salto avanti 10 secondi
         if (tvPlayer) {
             const mediaElement = tvPlayer.getMediaElement();
             if (mediaElement && mediaElement.duration) {
                 mediaElement.currentTime = Math.min(mediaElement.currentTime + 10, mediaElement.duration - 1);
-                showOsd({ number: currentChannelIndex + 1, name: allChannels[currentChannelIndex]?.name || '', logo: '', program: '+10 secondi', time: '', progress: 0 });
+                showSeekOsd(mediaElement.currentTime, mediaElement.duration);
             }
         }
         return;
     }
     if (keyCode === 412 || key === 'MediaRewind') {
-        // Salto indietro 10 secondi
         if (tvPlayer) {
             const mediaElement = tvPlayer.getMediaElement();
             if (mediaElement) {
                 mediaElement.currentTime = Math.max(mediaElement.currentTime - 10, 0);
-                showOsd({ number: currentChannelIndex + 1, name: allChannels[currentChannelIndex]?.name || '', logo: '', program: '-10 secondi', time: '', progress: 0 });
+                showSeekOsd(mediaElement.currentTime, mediaElement.duration);
             }
         }
         return;
     }
     
+    // Preferiti / Info
     if (key === 'p' || key === 'P' || keyCode === 112 || key === 'F2') {
         toggleFavorite(currentChannelIndex);
         return;
@@ -1672,7 +1690,6 @@ tvIframeExitBtn.addEventListener('click', () => {
         activeIframe = null;
         tvIframeExitBtn.classList.remove('active');
         tvVideo.style.display = 'block';
-        // Carica il canale precedente o il primo non-Prime
         if (lastChannelIndex >= 0 && lastChannelIndex < allChannels.length && (allChannels[lastChannelIndex].group || '').toUpperCase() !== 'PRIME VIDEO') {
             loadChannelInTv(lastChannelIndex);
         } else {
@@ -1886,7 +1903,6 @@ async function init(m3uContent) {
             }
 
             player.load(ch.url).then(() => {
-                // Selezione automatica audio italiano
                 const tracks = player.getAudioLanguagesAndRoles();
                 const italianTrack = tracks.find(t => 
                     t.language && (t.language.toLowerCase().startsWith('it') || t.language.toLowerCase() === 'ita') ||
