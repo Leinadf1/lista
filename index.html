@@ -1093,10 +1093,13 @@ function showSeekBar(currentTime, duration) {
             clearInterval(seekUpdateInterval);
             return;
         }
-        const ct = tvPlayer.getCurrentTime();
-        const dur = tvPlayer.getDuration();
-        if (typeof ct === 'number' && isFinite(ct) && ct >= 0) {
-            updateSeekBar(ct, dur);
+        const mediaElement = tvPlayer.getMediaElement();
+        if (mediaElement && mediaElement.currentTime !== undefined) {
+            const ct = mediaElement.currentTime;
+            const dur = mediaElement.duration;
+            if (typeof ct === 'number' && isFinite(ct) && ct >= 0) {
+                updateSeekBar(ct, dur);
+            }
         }
     }, 300);
     
@@ -1677,25 +1680,13 @@ function handleTvKeys(e) {
         changeChannel(-1);
         return;
     }
-    // ----- GESTORI SEEK CORRETTI -----
+    // ----- GESTORI SEEK RIPRISTINATI COME NEL CODICE ORIGINALE (usano mediaElement) -----
     if (keyCode === 417 || key === 'MediaFastForward') {
         if (tvPlayer) {
-            const dur = tvPlayer.getDuration();
-            if (typeof dur === 'number' && isFinite(dur) && dur > 0) {
-                const ct = tvPlayer.getCurrentTime();
-                const newTime = Math.min(ct + 10, dur - 1);
-                tvPlayer.seek(newTime);
-                showSeekBar(newTime, dur);
-            } else {
-                // Se è live, mostra un messaggio
-                showOsd({
-                    number: currentChannelIndex + 1,
-                    name: allChannels[currentChannelIndex]?.name || '',
-                    logo: allChannels[currentChannelIndex]?.logo || '',
-                    program: 'Live: impossibile avanzare',
-                    time: '',
-                    progress: 0
-                });
+            const mediaElement = tvPlayer.getMediaElement();
+            if (mediaElement && mediaElement.duration) {
+                mediaElement.currentTime = Math.min(mediaElement.currentTime + 10, mediaElement.duration - 1);
+                showSeekBar(mediaElement.currentTime, mediaElement.duration);
             }
         }
         return;
@@ -1703,22 +1694,10 @@ function handleTvKeys(e) {
 
     if (keyCode === 412 || key === 'MediaRewind') {
         if (tvPlayer) {
-            const dur = tvPlayer.getDuration();
-            if (typeof dur === 'number' && isFinite(dur) && dur > 0) {
-                const ct = tvPlayer.getCurrentTime();
-                const newTime = Math.max(ct - 10, 0);
-                tvPlayer.seek(newTime);
-                showSeekBar(newTime, dur);
-            } else {
-                // Se è live, mostra un messaggio
-                showOsd({
-                    number: currentChannelIndex + 1,
-                    name: allChannels[currentChannelIndex]?.name || '',
-                    logo: allChannels[currentChannelIndex]?.logo || '',
-                    program: 'Live: impossibile tornare indietro',
-                    time: '',
-                    progress: 0
-                });
+            const mediaElement = tvPlayer.getMediaElement();
+            if (mediaElement) {
+                mediaElement.currentTime = Math.max(mediaElement.currentTime - 10, 0);
+                showSeekBar(mediaElement.currentTime, mediaElement.duration);
             }
         }
         return;
