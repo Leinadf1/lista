@@ -1,5 +1,7 @@
 name: Auto Update
 on:
+  schedule:
+    - cron: '*/15 * * * *'   # ogni 15 minuti
   workflow_dispatch:
 
 jobs:
@@ -65,32 +67,54 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # 7. Aggiorna EPG
+      # 7. Controllo ultimo aggiornamento EPG
+      - name: Check if EPG was updated today
+        id: check_epg
+        run: |
+          today=$(date -u +%F)
+          if [ -f epg_last_update.txt ]; then
+            last_update=$(cat epg_last_update.txt)
+          else
+            last_update=""
+          fi
+          echo "Today: $today, Last: $last_update"
+          if [ "$last_update" = "$today" ]; then
+            echo "EPG already updated today, skipping."
+            echo "should_update=false" >> $GITHUB_OUTPUT
+          else
+            echo "EPG needs update."
+            echo "should_update=true" >> $GITHUB_OUTPUT
+          fi
+
+      # 8. Download e aggiornamento EPG (solo se necessario)
       - name: Download and update EPG
-        continue-on-error: true
+        if: steps.check_epg.outputs.should_update == 'true'
         run: |
           curl -L -o epg_ripper_IT1.xml.gz "https://epgshare01.online/epgshare01/epg_ripper_IT1.xml.gz"
           if [ -s epg_ripper_IT1.xml.gz ]; then
             gunzip -f epg_ripper_IT1.xml.gz
-            ls -lh epg_ripper_IT1.xml
+            # Aggiorna il file di stato con la data di oggi
+            date -u +%F > epg_last_update.txt
+            echo "EPG updated successfully."
           else
-            echo "File EPG non scaricato"
+            echo "Failed to download EPG, leaving status unchanged."
           fi
 
-      - name: Commit and push EPG
-        if: hashFiles('epg_ripper_IT1.xml') != ''
+      # 9. Commit e push di EPG e file di stato (solo se c'è modifica)
+      - name: Commit and push EPG if needed
+        if: steps.check_epg.outputs.should_update == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add epg_ripper_IT1.xml
+          git add epg_ripper_IT1.xml epg_last_update.txt
           if git diff --cached --quiet; then
-            echo "No changes in EPG"
+            echo "No changes in EPG or status file, skipping commit."
           else
             git commit -m "Auto-update EPG"
             git push
           fi
 
-      # 8. Deploy dei file sui Gist
+      # 10. Deploy dei file sui Gist (invariati)
       - name: Deploy lista_privata.m3u to Gist
         continue-on-error: true
         uses: exuanbo/actions-deploy-gist@v1
