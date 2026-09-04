@@ -363,7 +363,6 @@
             transition: none;
         }
 
-        /* Pulsanti TV */
         #tv-channel-list-btn,
         #tv-audio-btn {
             position: absolute;
@@ -385,12 +384,10 @@
         #tv-audio-btn:hover {
             background: rgba(0,0,0,0.9);
         }
-
         #tv-channel-list-btn {
             top: 20px;
             left: 20px;
         }
-
         #tv-audio-btn {
             bottom: 20px;
             right: 20px;
@@ -483,7 +480,6 @@
             font-weight: 600;
         }
 
-        /* Bottone uscita iframe */
         #tv-iframe-exit-btn {
             position: absolute;
             top: 20px;
@@ -991,6 +987,48 @@ const tvIframeExitBtn = document.getElementById('tv-iframe-exit-btn');
 let tvPlayer = null;
 let activeIframe = null;
 
+function formatTime(seconds) {
+    if (!isFinite(seconds) || seconds < 0) {
+        // Gestione tempo negativo per live edge
+        const absSec = Math.abs(seconds);
+        const h = Math.floor(absSec / 3600);
+        const m = Math.floor((absSec % 3600) / 60);
+        const s = Math.floor(absSec % 60);
+        return `-${h > 0 ? h + ':' : ''}${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+    return `${h > 0 ? h + ':' : ''}${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+}
+
+function showSeekOsd(currentTime, duration) {
+    const seekBox = document.createElement('div');
+    seekBox.style.cssText = `
+        position: absolute;
+        bottom: 120px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,0.8);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-family: 'Formula1 Display Bold', 'Inter', sans-serif;
+        font-size: 18px;
+        z-index: 1000;
+        pointer-events: none;
+    `;
+    let text;
+    if (isFinite(duration)) {
+        text = `${formatTime(currentTime)} / ${formatTime(duration)}`;
+    } else {
+        text = formatTime(currentTime);
+    }
+    seekBox.textContent = text;
+    tvModeOverlay.appendChild(seekBox);
+    setTimeout(() => seekBox.remove(), 2000);
+}
+
 function enterTvMode() {
     tvModeActive = true;
     exitingTv = false;
@@ -1242,7 +1280,6 @@ function loadChannelInTv(index) {
     currentChannelIndex = index;
     const token = ++channelLoadToken;
     
-    // Rimuovi iframe precedente
     if (activeIframe) {
         activeIframe.remove();
         activeIframe = null;
@@ -1250,7 +1287,6 @@ function loadChannelInTv(index) {
     }
     tvVideo.style.display = 'block';
     
-    // Mostra OSD immediato
     showOsd({
         number: index + 1,
         name: ch.name,
@@ -1276,16 +1312,12 @@ function loadChannelInTv(index) {
             activeIframe = iframe;
             tvIframeExitBtn.classList.add('active');
             
-            // Forza il focus sull'overlay per catturare i tasti
-            setTimeout(() => {
-                tvModeOverlay.focus();
-                // Anche quando l'iframe riceve focus, lo rimettiamo sull'overlay
-                iframe.addEventListener('focus', () => {
-                    setTimeout(() => tvModeOverlay.focus(), 50);
-                });
-            }, 500);
+            iframe.addEventListener('load', () => {
+                setTimeout(() => {
+                    tvModeOverlay.focus();
+                }, 2000);
+            });
         }
-        // Aggiorna EPG solo se non è svizzeri
         if (!(ch.group && ch.group.toLowerCase().includes('svizzeri'))) {
             updateOsdEPG(ch, token);
         }
@@ -1316,7 +1348,6 @@ function loadChannelInTv(index) {
         }
     });
     
-    // Aggiorna EPG subito se non svizzeri
     if (!(ch.group && ch.group.toLowerCase().includes('svizzeri'))) {
         updateOsdEPG(ch, token);
     }
@@ -1366,34 +1397,6 @@ function showOsd(data) {
     }, 5000);
 }
 
-function showSeekOsd(currentTime, duration) {
-    // Mostra un piccolo OSD per il timestamp
-    const seekBox = document.createElement('div');
-    seekBox.style.cssText = `
-        position: absolute;
-        bottom: 120px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(0,0,0,0.8);
-        color: white;
-        padding: 10px 20px;
-        border-radius: 8px;
-        font-family: 'Formula1 Display Bold', 'Inter', sans-serif;
-        font-size: 18px;
-        z-index: 1000;
-        pointer-events: none;
-    `;
-    const formatTime = (sec) => {
-        const h = Math.floor(sec / 3600);
-        const m = Math.floor((sec % 3600) / 60);
-        const s = Math.floor(sec % 60);
-        return `${h > 0 ? h + ':' : ''}${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-    };
-    seekBox.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
-    tvModeOverlay.appendChild(seekBox);
-    setTimeout(() => seekBox.remove(), 2000);
-}
-
 function toggleEpgPanel() {
     if (!epgPanelOpen) {
         epgPanelOpen = true;
@@ -1436,7 +1439,6 @@ function updateEpgPanel() {
 function handleTvKeys(e) {
     if (!tvModeActive || exitingTv) return;
     
-    // Se lista canali aperta
     if (channelListOpen) {
         e.preventDefault();
         e.stopPropagation();
@@ -1469,7 +1471,6 @@ function handleTvKeys(e) {
         return;
     }
     
-    // Se lista audio aperta
     if (audioListOpen) {
         e.preventDefault();
         e.stopPropagation();
@@ -1503,7 +1504,6 @@ function handleTvKeys(e) {
         return;
     }
     
-    // Se EPG aperto
     if (epgPanelOpen) {
         const key = e.key;
         const keyCode = e.keyCode || e.which;
@@ -1526,7 +1526,6 @@ function handleTvKeys(e) {
         return;
     }
     
-    // Gestione normale
     e.preventDefault();
     e.stopPropagation();
     if (e.stopImmediatePropagation) e.stopImmediatePropagation();
@@ -1535,14 +1534,12 @@ function handleTvKeys(e) {
     const code = e.code;
     const keyCode = e.keyCode || e.which;
     
-    // Back / Indietro
     if (keyCode === 8 || keyCode === 461 || keyCode === 10009 || 
         key === 'Backspace' || key === 'Escape' || key === 'GoBack' || key === 'Return') {
         exitTvMode();
         return;
     }
     
-    // Frecce cambio canale
     if (keyCode === 38 || key === 'ArrowUp' || key === 'PageUp' || key === 'ChannelUp' || key === 'MediaChannelUp') {
         changeChannel(1);
         return;
@@ -1552,25 +1549,21 @@ function handleTvKeys(e) {
         return;
     }
     
-    // OK / Enter
     if (keyCode === 13 || keyCode === 32 || key === 'Enter' || key === 'Space' || keyCode === 179 || key === 'MediaPlayPause') {
         toggleEpgPanel();
         return;
     }
     
-    // Tasto lista canali
     if (key === 'l' || key === 'L' || key === 'F3' || code === 'F3' || keyCode === 114) {
         toggleChannelList();
         return;
     }
     
-    // Tasto audio
     if (key === 'a' || key === 'A' || key === 'F4' || code === 'F4' || keyCode === 115) {
         toggleAudioList();
         return;
     }
     
-    // Numeri
     if (keyCode >= 48 && keyCode <= 57) {
         handleNumberKey(key);
         return;
@@ -1580,7 +1573,6 @@ function handleTvKeys(e) {
         return;
     }
     
-    // Media keys e salto temporale
     if (keyCode === 178 || key === 'MediaStop') {
         if (tvPlayer) tvPlayer.unload();
         return;
@@ -1614,7 +1606,6 @@ function handleTvKeys(e) {
         return;
     }
     
-    // Preferiti / Info
     if (key === 'p' || key === 'P' || keyCode === 112 || key === 'F2') {
         toggleFavorite(currentChannelIndex);
         return;
