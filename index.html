@@ -1059,8 +1059,6 @@ function formatTime(seconds) {
 }
 
 function updateSeekBar(currentTime, duration) {
-    // Debug: log per vedere cosa arriva (puoi rimuovere)
-    // console.log('updateSeekBar -> currentTime:', currentTime, 'duration:', duration);
     tvSeekCurrent.textContent = formatTime(currentTime);
     if (typeof duration === 'number' && isFinite(duration) && duration > 0) {
         tvSeekDuration.textContent = formatTime(duration);
@@ -1082,13 +1080,12 @@ function showSeekBar(currentTime, duration) {
     // Ferma eventuale aggiornamento precedente
     clearInterval(seekUpdateInterval);
     
-    // Avvia aggiornamento continuo ogni 300ms
+    // Avvia aggiornamento continuo ogni 300ms usando i metodi di Shaka
     seekUpdateInterval = setInterval(() => {
         if (!tvPlayer) {
             clearInterval(seekUpdateInterval);
             return;
         }
-        // Usiamo i metodi ufficiali di Shaka Player per ottenere tempo e durata
         const ct = tvPlayer.getCurrentTime();
         const dur = tvPlayer.getDuration();
         if (typeof ct === 'number' && isFinite(ct) && ct >= 0) {
@@ -1673,13 +1670,15 @@ function handleTvKeys(e) {
         changeChannel(-1);
         return;
     }
-    // ----- GESTORI SEEK RIPRISTINATI (usano il mediaElement come nel tuo originale) -----
+    // ----- GESTORI SEEK CORRETTI CON TVPLAYER.SEEK() -----
     if (keyCode === 417 || key === 'MediaFastForward') {
         if (tvPlayer) {
-            const mediaElement = tvPlayer.getMediaElement();
-            if (mediaElement && mediaElement.duration) {
-                mediaElement.currentTime = Math.min(mediaElement.currentTime + 10, mediaElement.duration - 1);
-                showSeekBar(mediaElement.currentTime, mediaElement.duration);
+            const dur = tvPlayer.getDuration();
+            if (typeof dur === 'number' && isFinite(dur) && dur > 0) {
+                const ct = tvPlayer.getCurrentTime();
+                const newTime = Math.min(ct + 10, dur - 1);
+                tvPlayer.seek(newTime);
+                showSeekBar(newTime, dur);
             }
         }
         return;
@@ -1687,10 +1686,12 @@ function handleTvKeys(e) {
 
     if (keyCode === 412 || key === 'MediaRewind') {
         if (tvPlayer) {
-            const mediaElement = tvPlayer.getMediaElement();
-            if (mediaElement) {
-                mediaElement.currentTime = Math.max(mediaElement.currentTime - 10, 0);
-                showSeekBar(mediaElement.currentTime, mediaElement.duration);
+            const dur = tvPlayer.getDuration();
+            if (typeof dur === 'number' && isFinite(dur) && dur > 0) {
+                const ct = tvPlayer.getCurrentTime();
+                const newTime = Math.max(ct - 10, 0);
+                tvPlayer.seek(newTime);
+                showSeekBar(newTime, dur);
             }
         }
         return;
