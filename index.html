@@ -363,6 +363,7 @@
             transition: none;
         }
 
+        /* Pulsanti TV */
         #tv-channel-list-btn,
         #tv-audio-btn,
         #tv-exit-btn {
@@ -505,6 +506,7 @@
             display: block;
         }
 
+        /* Barra di avanzamento seek */
         #tv-seek-bar {
             position: absolute;
             bottom: 0;
@@ -1056,18 +1058,28 @@ function formatTime(seconds) {
 }
 
 function showSeekBar(currentTime, duration) {
+    if (!tvPlayer) return;
+    
     tvSeekBar.classList.add('active');
-    if (tvPlayer && tvPlayer.isLive()) {
-        // Per i live: mostra conto alla rovescia negativo e barra quasi piena
-        const liveLatency = tvPlayer.getLiveLatency(); // secondi di ritardo
-        const formatted = formatTime(liveLatency);
-        tvSeekCurrent.textContent = `-${formatted}`;
-        tvSeekDuration.textContent = 'LIVE';
-        // La barra è quasi piena se si è vicini al live edge, quindi percent alto
-        // Assumiamo una finestra DVR di 1 ora (3600 secondi)
-        const percent = Math.max(0, Math.min(100, 100 - (liveLatency / 3600 * 100)));
-        tvSeekProgressBar.style.width = `${percent}%`;
+    
+    if (tvPlayer.isLive()) {
+        // Calcola latenza dal live edge
+        const latency = tvPlayer.getLiveLatency(); // secondi
+        if (latency <= 1) {
+            // Al live edge: mostra "LIVE" e barra piena
+            tvSeekCurrent.textContent = 'LIVE';
+            tvSeekDuration.textContent = '';
+            tvSeekProgressBar.style.width = '100%';
+        } else {
+            // Siamo indietro nel DVR: mostra tempo negativo
+            tvSeekCurrent.textContent = `-${formatTime(latency)}`;
+            tvSeekDuration.textContent = 'LIVE';
+            // Percentuale: più indietro, più vuota
+            const percent = Math.max(0, 100 - (latency / 3600 * 100)); // assumiamo finestra DVR di 1 ora
+            tvSeekProgressBar.style.width = `${percent}%`;
+        }
     } else {
+        // VOD
         if (isFinite(duration)) {
             tvSeekCurrent.textContent = formatTime(currentTime);
             tvSeekDuration.textContent = formatTime(duration);
@@ -1079,6 +1091,7 @@ function showSeekBar(currentTime, duration) {
             tvSeekProgressBar.style.width = '100%';
         }
     }
+    
     clearTimeout(tvSeekBar._hideTimeout);
     tvSeekBar._hideTimeout = setTimeout(() => {
         tvSeekBar.classList.remove('active');
@@ -1106,7 +1119,7 @@ function enterTvMode() {
     activeIframe = null;
     tvIframeExitBtn.classList.remove('active');
     tvIframeExitBtn.style.display = 'none';
-    tvExitBtn.style.display = 'none'; // nascosto, apparirà al movimento mouse
+    tvExitBtn.style.display = 'none';
     
     tvVideo.style.display = 'block';
     tvVideo.src = '';
@@ -1359,7 +1372,7 @@ function loadChannelInTv(index) {
         tvIframeExitBtn.style.display = 'none';
     }
     tvVideo.style.display = 'block';
-    tvExitBtn.style.display = 'none'; // nascosto, apparirà al movimento mouse
+    tvExitBtn.style.display = 'none';
     
     showOsd({
         number: index + 1,
@@ -1385,7 +1398,7 @@ function loadChannelInTv(index) {
             tvModeVideoContainer.appendChild(iframe);
             activeIframe = iframe;
             tvIframeExitBtn.classList.add('active');
-            tvIframeExitBtn.style.display = 'flex';
+            tvIframeExitBtn.style.display = 'none'; // sarà mostrato da handleMouseMove
             tvExitBtn.style.display = 'none';
             
             iframe.addEventListener('load', () => {
@@ -1765,7 +1778,7 @@ tvIframeExitBtn.addEventListener('click', () => {
         activeIframe = null;
         tvIframeExitBtn.classList.remove('active');
         tvIframeExitBtn.style.display = 'none';
-        tvExitBtn.style.display = 'none'; // rimane nascosto finché non muovi il mouse
+        tvExitBtn.style.display = 'none';
         tvVideo.style.display = 'block';
         if (lastChannelIndex >= 0 && lastChannelIndex < allChannels.length && (allChannels[lastChannelIndex].group || '').toUpperCase() !== 'PRIME VIDEO') {
             loadChannelInTv(lastChannelIndex);
