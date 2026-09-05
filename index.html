@@ -730,7 +730,7 @@
         <div id="tv-mode-video-container">
             <video autoplay id="tv-mode-video"></video>
         </div>
-        <!-- Hotspot per l'iframe: copre 5/6 superiori -->
+        <!-- Hotspot per l'iframe: copre i 5/6 superiori -->
         <div id="tv-iframe-hotspot"></div>
         <div id="tv-osd">
             <div class="osd-channel">
@@ -1241,15 +1241,21 @@ function exitTvMode() {
 
 function handleMouseMove() {
     if (!tvModeActive) return;
-    tvChannelListBtn.style.display = 'flex';
-    tvAudioBtn.style.display = 'flex';
+    
     if (activeIframe) {
+        // Per l'iframe: mostra solo il pulsante rosso di uscita
         tvIframeExitBtn.style.display = 'flex';
         tvExitBtn.style.display = 'none';
+        tvChannelListBtn.style.display = 'none';
+        tvAudioBtn.style.display = 'none';
     } else {
+        // Canali normali: mostra tutti e tre i pulsanti standard
+        tvChannelListBtn.style.display = 'flex';
+        tvAudioBtn.style.display = 'flex';
         tvExitBtn.style.display = 'flex';
         tvIframeExitBtn.style.display = 'none';
     }
+    
     if (mouseMoveTimeout) clearTimeout(mouseMoveTimeout);
     mouseMoveTimeout = setTimeout(() => {
         if (!channelListOpen && !audioListOpen) {
