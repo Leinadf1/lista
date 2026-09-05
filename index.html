@@ -425,13 +425,13 @@
             background: darkred;
         }
 
-        /* Hotspot per l'iframe: copre solo i 2/3 superiori */
+        /* Hotspot per l'iframe: copre i 5/6 superiori */
         #tv-iframe-hotspot {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
-            height: 66.66%; /* 2/3 dello schermo */
+            height: 83.33%; /* 5/6 dello schermo */
             z-index: 1400;
             display: none;
             background: transparent;
@@ -730,7 +730,7 @@
         <div id="tv-mode-video-container">
             <video autoplay id="tv-mode-video"></video>
         </div>
-        <!-- Hotspot per l'iframe: copre solo 2/3 superiori -->
+        <!-- Hotspot per l'iframe: copre 5/6 superiori -->
         <div id="tv-iframe-hotspot"></div>
         <div id="tv-osd">
             <div class="osd-channel">
@@ -1206,12 +1206,26 @@ function exitTvMode() {
     document.removeEventListener('keydown', handleTvKeys, true);
     document.removeEventListener('mousemove', handleMouseMove);
     
+    // Reset state variables
+    channelListOpen = false;
+    audioListOpen = false;
+    epgPanelOpen = false;
+    selectedChannelItemIndex = -1;
+    selectedAudioIndex = -1;
+    numberBuffer = '';
+    clearTimeout(numberBufferTimeout);
+    clearTimeout(osdTimeout);
+    clearTimeout(mouseMoveTimeout);
+    clearTimeout(tvSeekBar._hideTimeout);
+    tvChannelListOverlay.classList.remove('active');
+    tvAudioOverlay.classList.remove('active');
+    tvEpgPanel.classList.remove('active');
+    tvSeekBar.classList.remove('active');
+    tvOsd.classList.remove('active');
     tvChannelListBtn.style.display = 'none';
     tvAudioBtn.style.display = 'none';
     tvExitBtn.style.display = 'none';
-    tvChannelListOverlay.classList.remove('active');
-    tvAudioOverlay.classList.remove('active');
-    tvSeekBar.classList.remove('active');
+    tvIframeExitBtn.style.display = 'none';
     
     if (document.fullscreenElement) {
         document.exitFullscreen().catch(() => {});
