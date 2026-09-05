@@ -363,7 +363,6 @@
             transition: none;
         }
 
-        /* Pulsanti TV */
         #tv-channel-list-btn,
         #tv-audio-btn,
         #tv-exit-btn {
@@ -506,7 +505,6 @@
             display: block;
         }
 
-        /* Barra di avanzamento seek */
         #tv-seek-bar {
             position: absolute;
             bottom: 0;
@@ -1059,16 +1057,27 @@ function formatTime(seconds) {
 
 function showSeekBar(currentTime, duration) {
     tvSeekBar.classList.add('active');
-    if (isFinite(duration)) {
-        tvSeekCurrent.textContent = formatTime(currentTime);
-        tvSeekDuration.textContent = formatTime(duration);
-        const percent = (currentTime / duration) * 100;
+    if (tvPlayer && tvPlayer.isLive()) {
+        // Per i live: mostra conto alla rovescia negativo e barra quasi piena
+        const liveLatency = tvPlayer.getLiveLatency(); // secondi di ritardo
+        const formatted = formatTime(liveLatency);
+        tvSeekCurrent.textContent = `-${formatted}`;
+        tvSeekDuration.textContent = 'LIVE';
+        // La barra è quasi piena se si è vicini al live edge, quindi percent alto
+        // Assumiamo una finestra DVR di 1 ora (3600 secondi)
+        const percent = Math.max(0, Math.min(100, 100 - (liveLatency / 3600 * 100)));
         tvSeekProgressBar.style.width = `${percent}%`;
     } else {
-        // Live: mostra il tempo trascorso e "LIVE"
-        tvSeekCurrent.textContent = formatTime(currentTime);
-        tvSeekDuration.textContent = 'LIVE';
-        tvSeekProgressBar.style.width = '100%';
+        if (isFinite(duration)) {
+            tvSeekCurrent.textContent = formatTime(currentTime);
+            tvSeekDuration.textContent = formatTime(duration);
+            const percent = (currentTime / duration) * 100;
+            tvSeekProgressBar.style.width = `${percent}%`;
+        } else {
+            tvSeekCurrent.textContent = formatTime(currentTime);
+            tvSeekDuration.textContent = 'LIVE';
+            tvSeekProgressBar.style.width = '100%';
+        }
     }
     clearTimeout(tvSeekBar._hideTimeout);
     tvSeekBar._hideTimeout = setTimeout(() => {
@@ -1097,7 +1106,7 @@ function enterTvMode() {
     activeIframe = null;
     tvIframeExitBtn.classList.remove('active');
     tvIframeExitBtn.style.display = 'none';
-    tvExitBtn.style.display = 'flex';
+    tvExitBtn.style.display = 'none'; // nascosto, apparirà al movimento mouse
     
     tvVideo.style.display = 'block';
     tvVideo.src = '';
@@ -1181,10 +1190,11 @@ function handleMouseMove() {
     if (!tvModeActive) return;
     tvChannelListBtn.style.display = 'flex';
     tvAudioBtn.style.display = 'flex';
-    tvExitBtn.style.display = 'flex';
     if (activeIframe) {
         tvIframeExitBtn.style.display = 'flex';
+        tvExitBtn.style.display = 'none';
     } else {
+        tvExitBtn.style.display = 'flex';
         tvIframeExitBtn.style.display = 'none';
     }
     if (mouseMoveTimeout) clearTimeout(mouseMoveTimeout);
@@ -1193,12 +1203,7 @@ function handleMouseMove() {
             tvChannelListBtn.style.display = 'none';
             tvAudioBtn.style.display = 'none';
             tvExitBtn.style.display = 'none';
-            // Il pulsante rosso Esci deve rimanere se c'è iframe
-            if (activeIframe) {
-                tvIframeExitBtn.style.display = 'flex';
-            } else {
-                tvIframeExitBtn.style.display = 'none';
-            }
+            tvIframeExitBtn.style.display = 'none';
         }
     }, 3000);
 }
@@ -1354,7 +1359,7 @@ function loadChannelInTv(index) {
         tvIframeExitBtn.style.display = 'none';
     }
     tvVideo.style.display = 'block';
-    tvExitBtn.style.display = 'flex';
+    tvExitBtn.style.display = 'none'; // nascosto, apparirà al movimento mouse
     
     showOsd({
         number: index + 1,
@@ -1380,8 +1385,8 @@ function loadChannelInTv(index) {
             tvModeVideoContainer.appendChild(iframe);
             activeIframe = iframe;
             tvIframeExitBtn.classList.add('active');
-            tvIframeExitBtn.style.display = 'flex'; // Mostra subito il pulsante Esci
-            tvExitBtn.style.display = 'none'; // Nascondi Esci generico
+            tvIframeExitBtn.style.display = 'flex';
+            tvExitBtn.style.display = 'none';
             
             iframe.addEventListener('load', () => {
                 setTimeout(() => {
@@ -1760,7 +1765,7 @@ tvIframeExitBtn.addEventListener('click', () => {
         activeIframe = null;
         tvIframeExitBtn.classList.remove('active');
         tvIframeExitBtn.style.display = 'none';
-        tvExitBtn.style.display = 'flex';
+        tvExitBtn.style.display = 'none'; // rimane nascosto finché non muovi il mouse
         tvVideo.style.display = 'block';
         if (lastChannelIndex >= 0 && lastChannelIndex < allChannels.length && (allChannels[lastChannelIndex].group || '').toUpperCase() !== 'PRIME VIDEO') {
             loadChannelInTv(lastChannelIndex);
