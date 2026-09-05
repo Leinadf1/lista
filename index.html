@@ -8,11 +8,20 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
     
-    <!-- Polyfills per browser datati (caricati solo se mancano API) -->
+    <!-- Polyfills (caricati solo se mancano API) -->
     <script>
-        var needsPolyfill = !(window.Promise && window.fetch && window.DOMParser && window.Map && window.Set && window.TextEncoder && window.Uint8Array && window.Array.from && window.Array.prototype.includes && window.Object.assign && window.Element.prototype.closest);
-        if (needsPolyfill) {
-            document.write('<script src="https://polyfill.io/v3/polyfill.min.js?features=Promise,fetch,DOMParser,Map,Set,TextEncoder,Uint8Array,Array.from,Array.prototype.includes,Object.assign,Element.prototype.closest"><\/script>');
+        var missingAPIs = [];
+        if (!window.Promise) missingAPIs.push('Promise');
+        if (!window.fetch) missingAPIs.push('fetch');
+        if (!window.DOMParser) missingAPIs.push('DOMParser');
+        if (!window.Map) missingAPIs.push('Map');
+        if (!window.Set) missingAPIs.push('Set');
+        if (!window.TextEncoder) missingAPIs.push('TextEncoder');
+        if (!window.Uint8Array) missingAPIs.push('Uint8Array');
+        
+        if (missingAPIs.length > 0) {
+            var features = missingAPIs.join(',');
+            document.write('<script src="https://polyfill.io/v3/polyfill.min.js?features=' + encodeURIComponent(features) + '"><\/script>');
         }
     </script>
     
@@ -712,12 +721,38 @@
 </head>
 <body id="mainBody" style="display:none;">
 
-    <!-- Controllo compatibilità browser (solo API essenziali, non moduli ES6) -->
+    <!-- Controllo compatibilità dettagliato (API + sintassi ES6) -->
     <script>
         (function() {
-            var isCompatible = window.Promise && window.fetch && window.DOMParser && window.Map && window.Set && window.TextEncoder && window.Uint8Array;
-            if (!isCompatible) {
-                document.body.innerHTML = '<div style="color:white; text-align:center; padding:40px; font-size:20px; font-family:sans-serif;">Il browser di questa TV non è compatibile con le funzioni richieste.<br>Aggiorna il firmware o utilizza un browser più moderno.</div>';
+            var missing = [];
+            if (!window.Promise) missing.push('Promise');
+            if (!window.fetch) missing.push('fetch');
+            if (!window.DOMParser) missing.push('DOMParser');
+            if (!window.Map) missing.push('Map');
+            if (!window.Set) missing.push('Set');
+            if (!window.TextEncoder) missing.push('TextEncoder');
+            if (!window.Uint8Array) missing.push('Uint8Array');
+            
+            var supportsES6 = true;
+            try {
+                eval('(() => {})');
+                eval('`test`');
+                eval('let x = 1;');
+                eval('const y = 2;');
+            } catch(e) {
+                supportsES6 = false;
+            }
+            
+            if (!supportsES6 || missing.length > 0) {
+                var msg = '';
+                if (!supportsES6) {
+                    msg += 'Il browser non supporta la sintassi JavaScript moderna (ES6).<br>';
+                }
+                if (missing.length > 0) {
+                    msg += 'API mancanti: ' + missing.join(', ') + '.<br>';
+                }
+                msg += 'Aggiorna il firmware o utilizza un browser più moderno.';
+                document.body.innerHTML = '<div style="color:white; text-align:center; padding:40px; font-size:20px; font-family:sans-serif;">' + msg + '</div>';
                 document.body.style.display = 'block';
             }
         })();
@@ -2286,4 +2321,4 @@ async function init(m3uContent) {
 document.getElementById('reload-btn').addEventListener('click', reloadPlaylist);
 </script>
 </body>
-    </html>
+</html>
