@@ -8,22 +8,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
     
-    <!-- Polyfills (caricati solo se mancano API) -->
-    <script>
-        var missingAPIs = [];
-        if (!window.Promise) missingAPIs.push('Promise');
-        if (!window.fetch) missingAPIs.push('fetch');
-        if (!window.DOMParser) missingAPIs.push('DOMParser');
-        if (!window.Map) missingAPIs.push('Map');
-        if (!window.Set) missingAPIs.push('Set');
-        if (!window.TextEncoder) missingAPIs.push('TextEncoder');
-        if (!window.Uint8Array) missingAPIs.push('Uint8Array');
-        
-        if (missingAPIs.length > 0) {
-            var features = missingAPIs.join(',');
-            document.write('<script src="https://polyfill.io/v3/polyfill.min.js?features=' + encodeURIComponent(features) + '"><\/script>');
-        }
-    </script>
+    <!-- Polyfills per fetch e TextEncoder -->
+    <script src="https://cdn.jsdelivr.net/npm/whatwg-fetch@3.6.2/dist/fetch.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/text-encoding@0.7.0/lib/encoding.min.js"></script>
+    
+    <!-- Babel standalone per transpilare ES6 in ES5 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
     
     <link rel="preload" href="https://raw.githubusercontent.com/Leinadf1/lista/main/Formula1-Bold_web_0.ttf" as="font" type="font/ttf" crossorigin>
     
@@ -721,38 +711,18 @@
 </head>
 <body id="mainBody" style="display:none;">
 
-    <!-- Controllo compatibilità dettagliato (API + sintassi ES6) -->
+    <!-- Controllo compatibilità ES5 di base -->
     <script>
         (function() {
-            var missing = [];
-            if (!window.Promise) missing.push('Promise');
-            if (!window.fetch) missing.push('fetch');
-            if (!window.DOMParser) missing.push('DOMParser');
-            if (!window.Map) missing.push('Map');
-            if (!window.Set) missing.push('Set');
-            if (!window.TextEncoder) missing.push('TextEncoder');
-            if (!window.Uint8Array) missing.push('Uint8Array');
-            
-            var supportsES6 = true;
+            var supportsES5 = true;
             try {
-                eval('(() => {})');
-                eval('`test`');
-                eval('let x = 1;');
-                eval('const y = 2;');
+                eval('var x = function() {};');
+                eval('var y = "test";');
             } catch(e) {
-                supportsES6 = false;
+                supportsES5 = false;
             }
-            
-            if (!supportsES6 || missing.length > 0) {
-                var msg = '';
-                if (!supportsES6) {
-                    msg += 'Il browser non supporta la sintassi JavaScript moderna (ES6).<br>';
-                }
-                if (missing.length > 0) {
-                    msg += 'API mancanti: ' + missing.join(', ') + '.<br>';
-                }
-                msg += 'Aggiorna il firmware o utilizza un browser più moderno.';
-                document.body.innerHTML = '<div style="color:white; text-align:center; padding:40px; font-size:20px; font-family:sans-serif;">' + msg + '</div>';
+            if (!supportsES5) {
+                document.body.innerHTML = '<div style="color:white; text-align:center; padding:40px; font-size:20px; font-family:sans-serif;">Il browser non supporta nemmeno JavaScript ES5 di base.<br>Impossibile eseguire l\'applicazione.</div>';
                 document.body.style.display = 'block';
             }
         })();
@@ -821,8 +791,8 @@
         </div>
     </div>
 
-<script>
-// Script principale senza type="module" e con optional chaining rimossi
+<!-- Script principale: Babel lo transpilerà in ES5 prima di eseguirlo -->
+<script type="text/babel" data-presets="es2015,es2016,es2017">
 let passwordGlobale = "";
 let heartbeatInterval;
 let lastM3UData = null;
@@ -2321,4 +2291,4 @@ async function init(m3uContent) {
 document.getElementById('reload-btn').addEventListener('click', reloadPlaylist);
 </script>
 </body>
-</html>
+    </html>
