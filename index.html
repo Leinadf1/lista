@@ -409,17 +409,17 @@
             background: darkred;
         }
 
-        /* Nuovo stile per l'hotspot */
+        /* Hotspot a schermo intero per l'iframe */
         #tv-iframe-hotspot {
             position: absolute;
             top: 0;
-            right: 0;
-            width: 120px;
-            height: 80px;
-            z-index: 1700;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1400; /* sopra l'iframe (z-index 10) ma sotto i pulsanti (z-index 1500/1600) */
             display: none;
-            cursor: default;
             background: transparent;
+            pointer-events: auto; /* cattura gli eventi del mouse */
         }
         #tv-iframe-hotspot.active {
             display: block;
@@ -713,7 +713,7 @@
         <div id="tv-mode-video-container">
             <video autoplay id="tv-mode-video"></video>
         </div>
-        <!-- Hotspot per l'iframe -->
+        <!-- Hotspot a schermo intero per l'iframe -->
         <div id="tv-iframe-hotspot"></div>
         <div id="tv-osd">
             <div class="osd-channel">
@@ -1213,7 +1213,7 @@ function handleMouseMove() {
     tvChannelListBtn.style.display = 'flex';
     tvAudioBtn.style.display = 'flex';
     if (activeIframe) {
-        tvIframeExitBtn.style.display = 'none'; // il pulsante rosso verrà mostrato dall'hotspot
+        tvIframeExitBtn.style.display = 'flex';
         tvExitBtn.style.display = 'none';
     } else {
         tvExitBtn.style.display = 'flex';
@@ -1410,23 +1410,17 @@ function loadChannelInTv(index) {
             tvModeVideoContainer.appendChild(iframe);
             activeIframe = iframe;
             
-            // Mostra hotspot sopra l'iframe
+            // Attiva l'hotspot a schermo intero
             tvIframeHotspot.classList.add('active');
             tvIframeHotspot.style.display = 'block';
             
-            // Pulsante rosso inizialmente nascosto
+            // Pulsante rosso inizialmente nascosto, verrà mostrato dal movimento del mouse sull'hotspot
             tvIframeExitBtn.style.display = 'none';
             tvExitBtn.style.display = 'none';
             
-            // Listener per hotspot
-            tvIframeHotspot.onmouseenter = () => {
-                tvIframeExitBtn.style.display = 'flex';
-                if (mouseMoveTimeout) clearTimeout(mouseMoveTimeout);
-            };
-            tvIframeHotspot.onmouseleave = () => {
-                mouseMoveTimeout = setTimeout(() => {
-                    tvIframeExitBtn.style.display = 'none';
-                }, 3000);
+            // Listener per l'hotspot: al movimento del mouse mostra i pulsanti
+            tvIframeHotspot.onmousemove = () => {
+                handleMouseMove();
             };
             
             iframe.addEventListener('load', () => {
