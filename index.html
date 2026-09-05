@@ -148,11 +148,27 @@
                 display: none;
             }
             #header {
-                flex-direction: column;
-                align-items: stretch;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: space-between;
+                align-items: center;
+                gap: 8px;
+            }
+            .reload-btn {
+                padding: 8px 12px;
+                font-size: 13px;
+                flex: 0 0 auto;
+            }
+            #search-container {
+                order: 3;
+                flex: 1 1 100%;
+                min-width: auto;
             }
             #header-right {
-                justify-content: space-between;
+                margin-left: auto;
+                display: flex;
+                align-items: center;
+                gap: 8px;
             }
         }
         
@@ -409,20 +425,21 @@
             background: darkred;
         }
 
-        /* Hotspot a schermo intero per l'iframe */
+        /* Hotspot per l'iframe: copre solo i 2/3 superiori */
         #tv-iframe-hotspot {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%;
-            z-index: 1400; /* sopra l'iframe (z-index 10) ma sotto i pulsanti (z-index 1500/1600) */
+            height: 66.66%; /* 2/3 dello schermo */
+            z-index: 1400;
             display: none;
             background: transparent;
-            pointer-events: auto; /* cattura gli eventi del mouse */
+            pointer-events: auto;
         }
         #tv-iframe-hotspot.active {
             display: block;
+            pointer-events: auto;
         }
 
         #tv-channel-list-overlay {
@@ -713,7 +730,7 @@
         <div id="tv-mode-video-container">
             <video autoplay id="tv-mode-video"></video>
         </div>
-        <!-- Hotspot a schermo intero per l'iframe -->
+        <!-- Hotspot per l'iframe: copre solo 2/3 superiori -->
         <div id="tv-iframe-hotspot"></div>
         <div id="tv-osd">
             <div class="osd-channel">
@@ -1219,7 +1236,6 @@ function handleMouseMove() {
         tvExitBtn.style.display = 'flex';
         tvIframeExitBtn.style.display = 'none';
     }
-    // Mostra i pulsanti e reimposta il timeout di nascondimento
     if (mouseMoveTimeout) clearTimeout(mouseMoveTimeout);
     mouseMoveTimeout = setTimeout(() => {
         if (!channelListOpen && !audioListOpen) {
@@ -1375,7 +1391,6 @@ function loadChannelInTv(index) {
     currentChannelIndex = index;
     const token = ++channelLoadToken;
     
-    // Rimuovi iframe precedente e nascondi hotspot
     if (activeIframe) {
         activeIframe.remove();
         activeIframe = null;
@@ -1410,18 +1425,22 @@ function loadChannelInTv(index) {
             tvModeVideoContainer.appendChild(iframe);
             activeIframe = iframe;
             
-            // Attiva l'hotspot a schermo intero
-            tvIframeHotspot.classList.add('active');
-            tvIframeHotspot.style.display = 'block';
+            // Non attivare subito l'hotspot, attendere 5 secondi
+            tvIframeHotspot.classList.remove('active');
+            tvIframeHotspot.style.display = 'none';
             
-            // Pulsante rosso inizialmente nascosto, verrà mostrato dal movimento del mouse sull'hotspot
             tvIframeExitBtn.style.display = 'none';
             tvExitBtn.style.display = 'none';
             
-            // Listener per l'hotspot: al movimento del mouse mostra i pulsanti
-            tvIframeHotspot.onmousemove = () => {
-                handleMouseMove();
-            };
+            setTimeout(() => {
+                if (activeIframe === iframe) {
+                    tvIframeHotspot.classList.add('active');
+                    tvIframeHotspot.style.display = 'block';
+                    tvIframeHotspot.onmousemove = () => {
+                        handleMouseMove();
+                    };
+                }
+            }, 5000);
             
             iframe.addEventListener('load', () => {
                 setTimeout(() => {
