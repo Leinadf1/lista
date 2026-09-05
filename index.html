@@ -10,7 +10,6 @@
     
     <!-- Polyfills per browser datati (caricati solo se mancano API) -->
     <script>
-        // Rilevamento mancanza API essenziali
         var needsPolyfill = !(window.Promise && window.fetch && window.DOMParser && window.Map && window.Set && window.TextEncoder && window.Uint8Array && window.Array.from && window.Array.prototype.includes && window.Object.assign && window.Element.prototype.closest);
         if (needsPolyfill) {
             document.write('<script src="https://polyfill.io/v3/polyfill.min.js?features=Promise,fetch,DOMParser,Map,Set,TextEncoder,Uint8Array,Array.from,Array.prototype.includes,Object.assign,Element.prototype.closest"><\/script>');
@@ -713,19 +712,12 @@
 </head>
 <body id="mainBody" style="display:none;">
 
-    <!-- Controllo compatibilità browser (dopo polyfill) -->
+    <!-- Controllo compatibilità browser (solo API essenziali, non moduli ES6) -->
     <script>
         (function() {
-            var supportsModules = 'noModule' in document.createElement('script');
-            var isCompatible = window.Promise && window.fetch && window.DOMParser && window.Map && window.Set && window.TextEncoder && window.Uint8Array && supportsModules;
+            var isCompatible = window.Promise && window.fetch && window.DOMParser && window.Map && window.Set && window.TextEncoder && window.Uint8Array;
             if (!isCompatible) {
-                var msg = '';
-                if (!supportsModules) {
-                    msg = 'Il browser non supporta i moduli ES6.';
-                } else {
-                    msg = 'Il browser non supporta alcune API moderne (Promise, fetch, DOMParser, Map, Set, TextEncoder, Uint8Array).';
-                }
-                document.body.innerHTML = '<div style="color:white; text-align:center; padding:40px; font-size:20px; font-family:sans-serif;">' + msg + '<br>Aggiorna il firmware o utilizza un browser più moderno.</div>';
+                document.body.innerHTML = '<div style="color:white; text-align:center; padding:40px; font-size:20px; font-family:sans-serif;">Il browser di questa TV non è compatibile con le funzioni richieste.<br>Aggiorna il firmware o utilizza un browser più moderno.</div>';
                 document.body.style.display = 'block';
             }
         })();
@@ -794,8 +786,8 @@
         </div>
     </div>
 
-<script type="module">
-// Tutto il codice JavaScript principale invariato
+<script>
+// Script principale senza type="module" e con optional chaining rimossi
 let passwordGlobale = "";
 let heartbeatInterval;
 let lastM3UData = null;
@@ -1168,7 +1160,8 @@ function enterTvMode() {
         mainVideo.pause();
     }
     
-    tvModeVideoContainer.querySelector('iframe')?.remove();
+    var iframe = tvModeVideoContainer.querySelector('iframe');
+    if (iframe) iframe.remove();
     activeIframe = null;
     tvIframeExitBtn.style.display = 'none';
     tvExitBtn.style.display = 'none';
@@ -1219,7 +1212,8 @@ function exitTvMode() {
         tvPlayer.destroy();
         tvPlayer = null;
     }
-    tvModeVideoContainer.querySelector('iframe')?.remove();
+    var iframe = tvModeVideoContainer.querySelector('iframe');
+    if (iframe) iframe.remove();
     activeIframe = null;
     tvIframeExitBtn.style.display = 'none';
     tvIframeHotspot.classList.remove('active');
@@ -1408,8 +1402,8 @@ function selectAudioTrack(index) {
         tvPlayer.selectAudioLanguage(tracks[index].language);
         showOsd({
             number: currentChannelIndex + 1,
-            name: allChannels[currentChannelIndex]?.name || '',
-            logo: allChannels[currentChannelIndex]?.logo || '',
+            name: allChannels[currentChannelIndex] ? allChannels[currentChannelIndex].name : '',
+            logo: allChannels[currentChannelIndex] ? allChannels[currentChannelIndex].logo : '',
             program: `Audio: ${tracks[index].label || tracks[index].language}`,
             time: '',
             progress: 0
@@ -1474,6 +1468,7 @@ function loadChannelInTv(index) {
             tvModeVideoContainer.appendChild(iframe);
             activeIframe = iframe;
             
+            // Non attivare subito l'hotspot, attendere 5 secondi
             tvIframeHotspot.classList.remove('active');
             tvIframeHotspot.style.display = 'none';
             
@@ -1509,6 +1504,7 @@ function loadChannelInTv(index) {
         return;
     }
     
+    // Canale normale (non iframe)
     tvIframeHotspot.classList.remove('active');
     tvIframeHotspot.style.display = 'none';
     
