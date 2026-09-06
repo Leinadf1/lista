@@ -76,7 +76,6 @@
     function playChannel(channel) {
       const targetIframe = document.getElementById(`iframe-${activeSlot}`);
       if (targetIframe && targetIframe.contentWindow) {
-        // Invia il canale all'iframe selezionato
         targetIframe.contentWindow.postMessage({
           type: 'PLAY_CHANNEL',
           channel: channel
