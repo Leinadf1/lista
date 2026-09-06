@@ -107,16 +107,35 @@
         const player = new shaka.Player(video);
         const ui = new shaka.ui.Overlay(player, container, video);
 
-        // Impostazioni per prevenire l'accumulo di memoria e l'intasamento dei decoder
+        // Bypass Rate-Limit / Anti-Bot Akamai
+        player.getNetworkingEngine().registerRequestFilter((type, request) => {
+          // Rimuove gli header che rivelano la richiesta proveniente da Vercel/Multiscreen
+          delete request.headers['Origin'];
+          delete request.headers['Referer'];
+
+          // Aggiunge Keep-Alive per riutilizzare la stessa connessione TCP senza blocchi
+          request.headers['Connection'] = 'keep-alive';
+        });
+
         player.configure({
           manifest: {
-            dash: { ignoreMinBufferTime: true }
+            dash: { 
+              ignoreMinBufferTime: true,
+              autoCorrectDrift: true
+            },
+            // Dilata le richieste del manifest MPD per evitare il blocco per troppe richieste
+            updatePeriod: 15
           },
           streaming: {
-            bufferBehind: 10,        // Svuota aggressivamente la RAM dopo 10 secondi di riproduzione
-            bufferingGoal: 5,        // Riduce il carico dei dati pre-caricati
-            rebufferingGoal: 2,
-            stallEnabled: true
+            bufferBehind: 15,
+            bufferingGoal: 10,
+            rebufferingGoal: 3,
+            stallEnabled: true,
+            retryParameters: {
+              maxAttempts: 10,
+              baseDelay: 1000,
+              backOffFactor: 2
+            }
           }
         });
 
@@ -141,12 +160,10 @@
       if (!player) return;
 
       try {
-        // 1. Ferma il playback e rilascia la sorgente video nativa
         video.pause();
         video.removeAttribute('src');
         video.load();
 
-        // 2. Scarica la sessione DRM e svuota le chiavi in memoria
         await player.unload();
         
         player.configure({
@@ -155,7 +172,6 @@
           }
         });
 
-        // 3. Carica il nuovo canale
         await player.load(channel.url);
       } catch (e) {
         console.error(`Errore caricamento Slot ${activeSlot}:`, e);
@@ -238,7 +254,6 @@
       reader.readAsText(file);
     }
 
-    // Rilascio distruttivo immediato delle risorse prima del refresh della pagina
     window.addEventListener('pagehide', cleanup);
     window.addEventListener('beforeunload', cleanup);
 
