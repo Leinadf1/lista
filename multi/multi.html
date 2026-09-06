@@ -106,14 +106,24 @@
         const video = document.getElementById(`video-${i}`);
         const container = document.getElementById(`container-${i}`);
         
-        // Inizializzazione manuale per prevenire i conflitti DRM
         const player = new shaka.Player(video);
         const ui = new shaka.ui.Overlay(player, container, video);
 
         player.configure({
           manifest: {
             dash: {
-              ignoreMinBufferTime: true
+              ignoreMinBufferTime: true,
+              autoCorrectDrift: true
+            }
+          },
+          streaming: {
+            rebufferingGoal: 2,
+            bufferingGoal: 8,
+            bufferBehind: 15, // Pulisce la RAM dai segmenti passati
+            retryParameters: {
+              maxAttempts: 5,
+              baseDelay: 1000,
+              backOffFactor: 2
             }
           }
         });
@@ -137,20 +147,16 @@
       const player = shakaPlayers[activeSlot];
       if (!player) return;
 
-      // Resetta le chiavi precedenti prima del nuovo caricamento
-      player.configure({ drm: { clearKeys: {} } });
+      try {
+        // Scarica la traccia ed elimina la sessione DRM precedente per liberare il CDM
+        await player.unload();
 
-      if (channel.keyId && channel.key) {
         player.configure({
           drm: {
-            clearKeys: {
-              [channel.keyId]: channel.key
-            }
+            clearKeys: channel.keyId && channel.key ? { [channel.keyId]: channel.key } : {}
           }
         });
-      }
 
-      try {
         await player.load(channel.url);
       } catch (e) {
         console.error("Errore durante il caricamento dello stream:", e);
@@ -232,6 +238,13 @@
       };
       reader.readAsText(file);
     }
+
+    // Chiusura automatica di tutte le sessioni alla chiusura/ricarica della pagina
+    window.addEventListener('beforeunload', () => {
+      shakaPlayers.forEach(player => {
+        if (player) player.destroy();
+      });
+    });
 
     const dropZone = document.getElementById('drop-zone');
     const fileInput = document.getElementById('file-input');
