@@ -68,33 +68,32 @@
 
   <div id="grid">
     <div class="player-box selected" onclick="selectSlot(0)">
-      <div id="container-0" data-shaka-player-container>
-        <video id="video-0" data-shaka-player autoplay muted></video>
+      <div id="container-0">
+        <video id="video-0" autoplay muted></video>
       </div>
       <div class="slot-label">SCHERMO 1</div>
     </div>
     <div class="player-box" onclick="selectSlot(1)">
-      <div id="container-1" data-shaka-player-container>
-        <video id="video-1" data-shaka-player autoplay muted></video>
+      <div id="container-1">
+        <video id="video-1" autoplay muted></video>
       </div>
       <div class="slot-label">SCHERMO 2</div>
     </div>
     <div class="player-box" onclick="selectSlot(2)">
-      <div id="container-2" data-shaka-player-container>
-        <video id="video-2" data-shaka-player autoplay muted></video>
+      <div id="container-2">
+        <video id="video-2" autoplay muted></video>
       </div>
       <div class="slot-label">SCHERMO 3</div>
     </div>
     <div class="player-box" onclick="selectSlot(3)">
-      <div id="container-3" data-shaka-player-container>
-        <video id="video-3" data-shaka-player autoplay muted></video>
+      <div id="container-3">
+        <video id="video-3" autoplay muted></video>
       </div>
       <div class="slot-label">SCHERMO 4</div>
     </div>
   </div>
 
   <script>
-    // LINK GIST DI DEFAULT
     const DEFAULT_GIST_URL = "https://gist.github.com/Leinadf1/4246b01b8870f49e2cfa50fda49a767e";
 
     shaka.polyfill.installAll();
@@ -107,23 +106,28 @@
         const video = document.getElementById(`video-${i}`);
         const container = document.getElementById(`container-${i}`);
         
-        // Inizializza Shaka Player con l'overlay grafico UI ufficiale
         const player = new shaka.Player(video);
         const ui = new shaka.ui.Overlay(player, container, video);
 
+        // Configurazione ottimizzata per stream MPD/DASH instabili
         player.configure({
           manifest: {
             dash: {
-              ignoreMinBufferTime: true
+              ignoreMinBufferTime: true,
+              autoCorrectDrift: true
             }
+          },
+          streaming: {
+            rebufferingGoal: 2,
+            bufferingGoal: 10,
+            failureCallback: () => player.retryStreaming()
           }
         });
 
-        player.addEventListener('error', (e) => console.error('Errore Shaka:', e));
+        player.addEventListener('error', (e) => console.error(`Errore Shaka Slot ${i}:`, e));
         shakaPlayers[i] = player;
       }
 
-      // Imposta il link di default nell'input e carica la playlist all'avvio
       document.getElementById('m3u-url').value = DEFAULT_GIST_URL;
       fetchPlaylistFromUrl(DEFAULT_GIST_URL);
     }
@@ -139,6 +143,13 @@
       const player = shakaPlayers[activeSlot];
       if (!player) return;
 
+      // Resetta le configurazioni DRM prima di impostare le nuove chiavi
+      player.configure({
+        drm: {
+          clearKeys: {}
+        }
+      });
+
       if (channel.keyId && channel.key) {
         player.configure({
           drm: {
@@ -152,7 +163,7 @@
       try {
         await player.load(channel.url);
       } catch (e) {
-        console.error("Errore di riproduzione:", e);
+        console.error("Errore di caricamento del canale:", e);
       }
     }
 
@@ -160,7 +171,6 @@
       let url = customUrl || document.getElementById('m3u-url').value.trim();
       if (!url) return;
 
-      // Conversione automatica link Gist in formato RAW per fetch diretto
       if (url.includes('gist.github.com') && !url.includes('/raw')) {
         url = url.replace('gist.github.com', 'gist.githubusercontent.com') + '/raw';
       }
