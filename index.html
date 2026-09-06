@@ -34,60 +34,6 @@
             -webkit-font-smoothing: antialiased;
         }
         
-        #login-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.9);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
-        }
-        #login-box {
-            background: #161b22;
-            padding: 30px;
-            border-radius: 12px;
-            border: 1px solid #30363d;
-            text-align: center;
-            max-width: 400px;
-            width: 90%;
-        }
-        #login-box h2 {
-            color: #f0f6fc;
-            margin-bottom: 20px;
-        }
-        #password-input {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border-radius: 6px;
-            border: 1px solid #30363d;
-            background: #0d1117;
-            color: #c9d1d9;
-            font-size: 16px;
-        }
-        #login-btn {
-            background: #0a2540;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            font-weight: 700;
-            cursor: pointer;
-            width: 100%;
-        }
-        #login-btn:disabled {
-            opacity: 0.7;
-            cursor: wait;
-        }
-        #login-error {
-            color: #ff1744;
-            margin-top: 10px;
-        }
-        
         #header { 
             width: 100%; 
             display: flex;
@@ -756,16 +702,6 @@
     </style>
 </head>
 <body id="mainBody" style="display:none;">
-
-    <!-- Login Overlay -->
-    <div id="login-overlay">
-        <div id="login-box">
-            <h2>Inserisci password</h2>
-            <input type="password" id="password-input" placeholder="Password" autocomplete="off">
-            <button id="login-btn">Accedi</button>
-            <p id="login-error"></p>
-        </div>
-    </div>
 
     <div id="header">
         <button id="reload-btn" class="reload-btn" title="Ricarica playlist">
@@ -1982,64 +1918,41 @@ function getKidKey(drm) {
 }
 
 async function checkAccess() {
-    const overlay = document.getElementById('login-overlay');
-    const passwordInput = document.getElementById('password-input');
-    const loginBtn = document.getElementById('login-btn');
-    const loginError = document.getElementById('login-error');
+    const psw = prompt("Password:");
+    if (!psw) return;
 
-    overlay.style.display = 'flex';
+    try {
+        const response = await fetch("/api/get-list", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: psw })
+        });
 
-    async function attemptLogin() {
-        const psw = passwordInput.value.trim();
-        if (!psw) return;
-
-        loginError.textContent = '';
-        loginBtn.disabled = true;
-        loginBtn.textContent = 'Verifica...';
-
-        try {
-            const response = await fetch("/api/get-list", {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ password: psw })
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                loginError.textContent = errorData.error || "Password errata o sessione già attiva!";
-                loginBtn.disabled = false;
-                loginBtn.textContent = 'Accedi';
-                return;
-            }
-
-            const m3uEncoded = await response.text();
-            const m3uData = atob(m3uEncoded);
-            
-            passwordGlobale = psw;
-            lastM3UData = m3uData;
-            document.getElementById('mainBody').style.display = "flex";
-            document.getElementById('expiry-info').textContent = '';
-            startHeartbeat(psw);
-            
-            fetch('https://dazn-ua-proxy.stefanoaccuont.workers.dev/', { mode: 'no-cors' })
-                .catch(() => {});
-
-            loadEPG();
-            init(m3uData);
-
-            overlay.style.display = 'none';
-
-        } catch (error) {
-            loginError.textContent = "Errore di connessione al server.";
-            loginBtn.disabled = false;
-            loginBtn.textContent = 'Accedi';
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            alert(errorData.error || "Sessione già attiva o password errata!");
+            window.location.reload();
+            return;
         }
-    }
 
-    loginBtn.addEventListener('click', attemptLogin);
-    passwordInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') attemptLogin();
-    });
+        const m3uEncoded = await response.text();
+        const m3uData = atob(m3uEncoded);
+        
+        passwordGlobale = psw;
+        lastM3UData = m3uData;
+        document.getElementById('mainBody').style.display = "flex";
+        document.getElementById('expiry-info').textContent = '';
+        startHeartbeat(psw);
+        
+        fetch('https://dazn-ua-proxy.stefanoaccuont.workers.dev/', { mode: 'no-cors' })
+            .catch(() => {});
+
+        loadEPG();
+        init(m3uData);
+
+    } catch (error) {
+        alert("Errore server.");
+    }
 }
 
 function reloadPlaylist() {
@@ -2350,4 +2263,4 @@ async function init(m3uContent) {
 document.getElementById('reload-btn').addEventListener('click', reloadPlaylist);
 </script>
 </body>
-</html>
+    </html>
