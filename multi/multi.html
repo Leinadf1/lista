@@ -2,24 +2,27 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <title>Multi-Player IPTV Fluid</title>
-  
-  <!-- Shaka Player CDN (dipendenza per MPD) e Fluid Player -->
+  <title>Multi-Player IPTV MPD ClearKey</title>
+  <!-- Shaka Player CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.5/shaka-player.compiled.js"></script>
-  <script src="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.js"></script>
-  
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { display: flex; height: 100vh; background: #0f0f0f; color: white; font-family: sans-serif; overflow: hidden; }
     
     /* Sidebar canali */
-    #sidebar { width: 280px; background: #181818; overflow-y: auto; padding: 12px; border-right: 1px solid #282828; display: flex; flex-direction: column; }
-    #sidebar h3 { font-size: 13px; margin-bottom: 10px; text-transform: uppercase; color: #aaa; letter-spacing: 0.5px; }
+    #sidebar { width: 300px; background: #181818; overflow-y: auto; padding: 12px; border-right: 1px solid #282828; display: flex; flex-direction: column; gap: 10px; }
+    #sidebar h3 { font-size: 13px; text-transform: uppercase; color: #aaa; letter-spacing: 0.5px; }
     
+    /* Input URL Gist / M3U */
+    .url-box { display: flex; gap: 6px; }
+    .url-input { flex: 1; background: #222; border: 1px solid #333; color: white; padding: 8px; border-radius: 4px; font-size: 12px; }
+    .url-input:focus { outline: none; border-color: #007acc; }
+    .btn-load { background: #007acc; border: none; color: white; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
+    .btn-load:hover { background: #0099ff; }
+
     #drop-zone {
-      border: 2px dashed #007acc; border-radius: 6px; padding: 12px; text-align: center;
-      background: #222; cursor: pointer; margin-bottom: 12px; font-size: 12px; color: #ccc;
-      transition: background 0.2s, border-color 0.2s;
+      border: 2px dashed #444; border-radius: 6px; padding: 10px; text-align: center;
+      background: #222; cursor: pointer; font-size: 11px; color: #aaa;
     }
     #drop-zone.dragover { background: #007acc22; border-color: #00a2ff; color: #fff; }
 
@@ -35,80 +38,66 @@
     #grid { flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 6px; padding: 6px; background: #000; }
     .player-box { background: #121212; position: relative; border: 2px solid #222; border-radius: 6px; overflow: hidden; }
     .player-box.selected { border-color: #007acc; }
-    
-    /* Override CSS per adattare Fluid Player alle griglie */
-    .fluid_video_wrapper { width: 100% !important; height: 100% !important; }
-    video { width: 100% !important; height: 100% !important; object-fit: contain; }
+    video { width: 100%; height: 100%; object-fit: contain; }
 
-    .slot-label { position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.7); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; pointer-events: none; z-index: 100; }
+    .slot-label { position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.7); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; pointer-events: none; z-index: 10; }
   </style>
 </head>
 <body>
 
   <div id="sidebar">
     <h3>Playlist MPD (F1)</h3>
+
+    <!-- Carica da URL / Gist -->
+    <div class="url-box">
+      <input type="text" id="m3u-url" class="url-input" placeholder="Incolla URL Gist o file .m3u">
+      <button class="btn-load" onclick="fetchPlaylistFromUrl()">Carica</button>
+    </div>
+
     <div id="drop-zone" onclick="document.getElementById('file-input').click()">
-      📂 Trascina qui la playlist .m3u
+      📂 Oppure trascina qui il file .m3u
     </div>
     <input type="file" id="file-input" accept=".m3u,.m3u8" style="display: none;">
+
     <div id="channels-list"></div>
   </div>
 
   <div id="grid">
-    <div class="player-box selected" onclick="selectSlot(0)">
-      <video id="video-0" autoplay muted><source src="" type="application/dash+xml"/></video>
-      <div class="slot-label">SCHERMO 1</div>
-    </div>
-    <div class="player-box" onclick="selectSlot(1)">
-      <video id="video-1" autoplay muted><source src="" type="application/dash+xml"/></video>
-      <div class="slot-label">SCHERMO 2</div>
-    </div>
-    <div class="player-box" onclick="selectSlot(2)">
-      <video id="video-2" autoplay muted><source src="" type="application/dash+xml"/></video>
-      <div class="slot-label">SCHERMO 3</div>
-    </div>
-    <div class="player-box" onclick="selectSlot(3)">
-      <video id="video-3" autoplay muted><source src="" type="application/dash+xml"/></video>
-      <div class="slot-label">SCHERMO 4</div>
-    </div>
+    <div class="player-box selected" onclick="selectSlot(0)"><video id="video-0" autoplay muted controls></video><div class="slot-label">SCHERMO 1</div></div>
+    <div class="player-box" onclick="selectSlot(1)"><video id="video-1" autoplay muted controls></video><div class="slot-label">SCHERMO 2</div></div>
+    <div class="player-box" onclick="selectSlot(2)"><video id="video-2" autoplay muted controls></video><div class="slot-label">SCHERMO 3</div></div>
+    <div class="player-box" onclick="selectSlot(3)"><video id="video-3" autoplay muted controls></video><div class="slot-label">SCHERMO 4</div></div>
   </div>
 
   <script>
     shaka.polyfill.installAll();
 
     let activeSlot = 0;
-    const fluidInstances = [null, null, null, null];
     const shakaPlayers = [null, null, null, null];
+
+    async function initPlayers() {
+      for (let i = 0; i < 4; i++) {
+        const video = document.getElementById(`video-${i}`);
+        const player = new shaka.Player(video);
+
+        player.configure({
+          manifest: {
+            dash: {
+              ignoreMinBufferTime: true
+            }
+          }
+        });
+
+        player.addEventListener('error', (e) => console.error('Errore Shaka:', e));
+        shakaPlayers[i] = player;
+      }
+    }
 
     function selectSlot(index) {
       activeSlot = index;
       document.querySelectorAll('.player-box').forEach((box, i) => {
         box.classList.toggle('selected', i === index);
       });
-    }
-
-    async function initPlayers() {
-      for (let i = 0; i < 4; i++) {
-        const video = document.getElementById(`video-${i}`);
-        
-        // Inizializza Shaka Engine
-        const player = new shaka.Player(video);
-        player.configure({
-          manifest: { dash: { ignoreMinBufferTime: true } }
-        });
-        shakaPlayers[i] = player;
-
-        // Inizializza l'interfaccia Fluid Player (come nell'estensione)
-        fluidInstances[i] = fluidPlayer(`video-${i}`, {
-          layoutControls: {
-            fillToContainer: true,
-            autoPlay: true,
-            mute: true,
-            playButtonShowing: true,
-            htmlOnPauseBlock: { html: null }
-          }
-        });
-      }
     }
 
     async function playChannel(channel) {
@@ -127,10 +116,30 @@
 
       try {
         await player.load(channel.url);
-        const video = document.getElementById(`video-${activeSlot}`);
-        video.play();
       } catch (e) {
-        console.error("Errore di caricamento:", e);
+        console.error("Errore di riproduzione:", e);
+      }
+    }
+
+    // Download dinamico da Gist / URL
+    async function fetchPlaylistFromUrl() {
+      let url = document.getElementById('m3u-url').value.trim();
+      if (!url) return;
+
+      // Se è un link Gist classico, lo converte nel link RAW per scaricare il testo puro
+      if (url.includes('gist.github.com') && !url.includes('/raw')) {
+        url = url.replace('gist.github.com', 'gist.githubusercontent.com') + '/raw';
+      }
+
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Impossibile scaricare la lista');
+        const text = await response.text();
+        const channels = parseM3U(text);
+        renderChannels(channels);
+      } catch (err) {
+        alert("Errore nel caricamento dell'URL: assicurati che sia accessibile e privo di blocchi CORS.");
+        console.error(err);
       }
     }
 
