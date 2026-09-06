@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.5/shaka-player.ui.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.5/controls.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body, html, .shaka-video-container { width: 100%; height: 100%; background: #000; overflow: hidden; }
+    video { width: 100% !important; height: 100% !important; object-fit: contain; }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <video id="video" autoplay muted></video>
+  </div>
+
+  <script>
+    shaka.polyfill.installAll();
+    let player, ui;
+
+    async function init() {
+      const video = document.getElementById('video');
+      const container = document.getElementById('container');
+
+      player = new shaka.Player(video);
+      ui = new shaka.ui.Overlay(player, container, video);
+
+      player.configure({
+        manifest: { dash: { ignoreMinBufferTime: true } },
+        streaming: { bufferBehind: 10, bufferingGoal: 5 }
+      });
+
+      // Ascolta i messaggi inviati dalla pagina principale (Multi-Player)
+      window.addEventListener('message', async (e) => {
+        if (!e.data || e.data.type !== 'PLAY_CHANNEL') return;
+        
+        const { url, keyId, key } = e.data.channel;
+        try {
+          await player.unload();
+          player.configure({
+            drm: { clearKeys: (keyId && key) ? { [keyId]: key } : {} }
+          });
+          await player.load(url);
+        } catch (err) {
+          console.error("Errore iframe player:", err);
+        }
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
