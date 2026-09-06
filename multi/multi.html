@@ -33,6 +33,13 @@
     .player-box { background: #121212; position: relative; border: 2px solid #222; border-radius: 6px; overflow: hidden; }
     .player-box.selected { border-color: #007acc; }
     video { width: 100%; height: 100%; object-fit: contain; }
+    
+    /* FIX TIMESTAMP: Nasconde il timer sballato dei player nativi HTML5 per i flussi DASH Live */
+    video::-webkit-media-controls-time-remaining-display,
+    video::-webkit-media-controls-current-time-display {
+      display: none !important;
+    }
+
     .slot-label { position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.7); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; pointer-events: none; z-index: 10; }
   </style>
 </head>
@@ -60,24 +67,16 @@
     let activeSlot = 0;
     const shakaPlayers = [null, null, null, null];
 
-    // Inizializzazione Shaka Player con configurazione Low-Latency / Fast Start
+    // Ripristino configurazione originale stabile per riprodurre più stream insieme
     async function initPlayers() {
       for (let i = 0; i < 4; i++) {
         const video = document.getElementById(`video-${i}`);
         const player = new shaka.Player(video);
 
         player.configure({
-          streaming: {
-            lowLatencyMode: true,           // Forza la bassa latenza
-            inaccurateManifestTolerance: 0, // Avvio immediato sui segmenti
-            rebufferingGoal: 1.5,           // Avvia la riproduzione con appena 1.5 secondi di buffer
-            bufferingGoal: 4,               // Buffer compatto per non rimanere indietro
-            jumpLargeGaps: true,            // Salta eventuali buchi nei segmenti del manifest
-          },
           manifest: {
             dash: {
-              ignoreMinBufferTime: true,    // Ignora le attese minime imposte dalla CDN
-              autoCorrectDrift: true        // Sincronizza il clock temporale
+              ignoreMinBufferTime: true
             }
           }
         });
@@ -96,10 +95,8 @@
 
     async function playChannel(channel) {
       const player = shakaPlayers[activeSlot];
-      const video = document.getElementById(`video-${activeSlot}`);
       if (!player) return;
 
-      // Reset della configurazione DRM per lo slot corrente
       if (channel.keyId && channel.key) {
         player.configure({
           drm: {
@@ -112,19 +109,11 @@
 
       try {
         await player.load(channel.url);
-
-        // Forza il salto istantaneo al live edge reale (cancella il ritardo dei 30s)
-        if (video.seekable.length > 0) {
-          video.currentTime = video.seekable.end(video.seekable.length - 1);
-        }
-
-        video.play();
       } catch (e) {
         console.error("Errore di riproduzione:", e);
       }
     }
 
-    // Parser dedicato per la tua playlist con direttive #KODIPROP e MPD
     function parseM3U(m3uText) {
       const lines = m3uText.split('\n');
       const channels = [];
@@ -182,7 +171,6 @@
       reader.readAsText(file);
     }
 
-    // Event listener per il drag and drop del file .m3u
     const dropZone = document.getElementById('drop-zone');
     const fileInput = document.getElementById('file-input');
 
