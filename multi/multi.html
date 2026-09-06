@@ -12,7 +12,6 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { display: flex; height: 100vh; background: #0f0f0f; color: white; font-family: sans-serif; overflow: hidden; }
     
-    /* Sidebar canali */
     #sidebar { width: 300px; background: #181818; overflow-y: auto; padding: 12px; border-right: 1px solid #282828; display: flex; flex-direction: column; gap: 10px; }
     #sidebar h3 { font-size: 13px; text-transform: uppercase; color: #aaa; letter-spacing: 0.5px; }
     
@@ -36,12 +35,10 @@
     }
     .channel-btn:hover { background: #007acc; border-color: #007acc; }
 
-    /* Griglia Player (2x2) */
     #grid { flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 6px; padding: 6px; background: #000; }
     .player-box { background: #121212; position: relative; border: 2px solid #222; border-radius: 6px; overflow: hidden; }
     .player-box.selected { border-color: #007acc; }
     
-    /* Adattamento Grafica Shaka UI */
     .shaka-video-container { width: 100% !important; height: 100% !important; }
     video { width: 100% !important; height: 100% !important; object-fit: contain; }
 
@@ -100,6 +97,7 @@
 
     let activeSlot = 0;
     const shakaPlayers = [null, null, null, null];
+    const shakaUIs = [null, null, null, null];
 
     async function initPlayers() {
       for (let i = 0; i < 4; i++) {
@@ -109,27 +107,21 @@
         const player = new shaka.Player(video);
         const ui = new shaka.ui.Overlay(player, container, video);
 
+        // Impostazioni per prevenire l'accumulo di memoria e l'intasamento dei decoder
         player.configure({
           manifest: {
-            dash: {
-              ignoreMinBufferTime: true,
-              autoCorrectDrift: true
-            }
+            dash: { ignoreMinBufferTime: true }
           },
           streaming: {
+            bufferBehind: 10,        // Svuota aggressivamente la RAM dopo 10 secondi di riproduzione
+            bufferingGoal: 5,        // Riduce il carico dei dati pre-caricati
             rebufferingGoal: 2,
-            bufferingGoal: 8,
-            bufferBehind: 15, // Pulisce la RAM dai segmenti passati
-            retryParameters: {
-              maxAttempts: 5,
-              baseDelay: 1000,
-              backOffFactor: 2
-            }
+            stallEnabled: true
           }
         });
 
-        player.addEventListener('error', (e) => console.error(`Errore Slot ${i}:`, e));
         shakaPlayers[i] = player;
+        shakaUIs[i] = ui;
       }
 
       document.getElementById('m3u-url').value = DEFAULT_GIST_URL;
@@ -145,21 +137,28 @@
 
     async function playChannel(channel) {
       const player = shakaPlayers[activeSlot];
+      const video = document.getElementById(`video-${activeSlot}`);
       if (!player) return;
 
       try {
-        // Scarica la traccia ed elimina la sessione DRM precedente per liberare il CDM
-        await player.unload();
+        // 1. Ferma il playback e rilascia la sorgente video nativa
+        video.pause();
+        video.removeAttribute('src');
+        video.load();
 
+        // 2. Scarica la sessione DRM e svuota le chiavi in memoria
+        await player.unload();
+        
         player.configure({
           drm: {
             clearKeys: channel.keyId && channel.key ? { [channel.keyId]: channel.key } : {}
           }
         });
 
+        // 3. Carica il nuovo canale
         await player.load(channel.url);
       } catch (e) {
-        console.error("Errore durante il caricamento dello stream:", e);
+        console.error(`Errore caricamento Slot ${activeSlot}:`, e);
       }
     }
 
@@ -239,12 +238,22 @@
       reader.readAsText(file);
     }
 
-    // Chiusura automatica di tutte le sessioni alla chiusura/ricarica della pagina
-    window.addEventListener('beforeunload', () => {
-      shakaPlayers.forEach(player => {
-        if (player) player.destroy();
-      });
-    });
+    // Rilascio distruttivo immediato delle risorse prima del refresh della pagina
+    window.addEventListener('pagehide', cleanup);
+    window.addEventListener('beforeunload', cleanup);
+
+    function cleanup() {
+      for (let i = 0; i < 4; i++) {
+        if (shakaUIs[i]) shakaUIs[i].destroy();
+        if (shakaPlayers[i]) shakaPlayers[i].destroy();
+        const video = document.getElementById(`video-${i}`);
+        if (video) {
+          video.pause();
+          video.removeAttribute('src');
+          video.load();
+        }
+      }
+    }
 
     const dropZone = document.getElementById('drop-zone');
     const fileInput = document.getElementById('file-input');
