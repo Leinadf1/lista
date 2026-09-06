@@ -16,6 +16,8 @@
   </div>
 
   <script>
+    const PROXY_URL = "https://dazn-ua-proxy.stefanoaccuont.workers.dev/?url=";
+
     shaka.polyfill.installAll();
     let player, ui;
 
@@ -26,12 +28,19 @@
       player = new shaka.Player(video);
       ui = new shaka.ui.Overlay(player, container, video);
 
+      // Reindirizza tutte le richieste al Proxy Cloudflare Worker
+      player.getNetworkingEngine().registerRequestFilter((type, request) => {
+        const originalUrl = request.uris[0];
+        if (!originalUrl.startsWith(PROXY_URL)) {
+          request.uris[0] = PROXY_URL + encodeURIComponent(originalUrl);
+        }
+      });
+
       player.configure({
         manifest: { dash: { ignoreMinBufferTime: true } },
         streaming: { bufferBehind: 10, bufferingGoal: 5 }
       });
 
-      // Ascolta i messaggi inviati dalla pagina principale (Multi-Player)
       window.addEventListener('message', async (e) => {
         if (!e.data || e.data.type !== 'PLAY_CHANNEL') return;
         
@@ -43,7 +52,7 @@
           });
           await player.load(url);
         } catch (err) {
-          console.error("Errore iframe player:", err);
+          console.error("Errore caricamento tramite proxy:", err);
         }
       });
     }
