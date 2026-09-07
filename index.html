@@ -22,7 +22,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
-        /* Stili invariati... */
         body { 
             background-color: #0d1117; 
             color: #c9d1d9; 
@@ -50,7 +49,6 @@
             pointer-events: none;
         }
         
-        /* Tutti gli altri stili identici */
         #header { 
             width: 100%; 
             display: flex;
@@ -1191,6 +1189,7 @@ let numberBufferTimeout = null;
 let exitingTv = false;
 let mouseMoveTimeout = null;
 let channelLoadToken = 0;
+let isAutoEnter = false; // flag per auto-avvio
 
 const tvModeOverlay = document.getElementById('tv-mode-overlay');
 const tvOsd = document.getElementById('tv-osd');
@@ -1392,17 +1391,28 @@ function enterTvMode() {
         tvModeOverlay.focus();
     }, 100);
     
-    if (tvModeOverlay.requestFullscreen) {
-        tvModeOverlay.requestFullscreen().catch(() => {
-            if (tvVideo.requestFullscreen) {
-                tvVideo.requestFullscreen().catch(() => {
-                    if (document.documentElement.requestFullscreen) {
-                        document.documentElement.requestFullscreen().catch(() => {});
-                    }
-                });
-            }
-        });
-    }
+    // Richiesta fullscreen su più elementi per sicurezza
+    setTimeout(() => {
+        if (tvModeOverlay.requestFullscreen) {
+            tvModeOverlay.requestFullscreen().catch(() => {
+                if (tvVideo.requestFullscreen) {
+                    tvVideo.requestFullscreen().catch(() => {
+                        if (document.documentElement.requestFullscreen) {
+                            document.documentElement.requestFullscreen().catch(() => {});
+                        }
+                    });
+                }
+            });
+        } else if (tvVideo.requestFullscreen) {
+            tvVideo.requestFullscreen().catch(() => {
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen().catch(() => {});
+                }
+            });
+        } else if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen().catch(() => {});
+        }
+    }, 300);
     
     buildChannelList();
     buildAudioList();
@@ -1839,15 +1849,15 @@ function updateEpgPanel() {
 function handleTvKeys(e) {
     if (!tvModeActive || exitingTv) return;
     
-    // Debug tasti colorati
+    // Tasti colorati mappati
     if (e.keyCode === 403 || e.key === 'F7' || e.code === 'F7') {
-        console.log('Tasto ROSSO premuto (F7/403)');
-        showDebug('Tasto ROSSO premuto');
+        console.log('Tasto ROSSO premuto (F7/403) → EPG precedente');
+        navigateOsdEpg(-1);
         return;
     }
     if (e.keyCode === 404 || e.key === 'F8' || e.code === 'F8') {
-        console.log('Tasto VERDE premuto (F8/404)');
-        showDebug('Tasto VERDE premuto');
+        console.log('Tasto VERDE premuto (F8/404) → EPG successivo');
+        navigateOsdEpg(1);
         return;
     }
     
@@ -2266,6 +2276,7 @@ async function checkAccess() {
         // Rilevamento TV e auto-avvio TV mode
         const isTV = /Android TV|SmartTV|WebTV|Tizen|LGTV|Viera|BRAVIA|Fire TV|Roku|AppleTV/i.test(navigator.userAgent) || window.innerWidth > 1024;
         if (isTV) {
+            isAutoEnter = true;
             setTimeout(() => {
                 if (!tvModeActive) enterTvMode();
             }, 1000);
@@ -2617,4 +2628,4 @@ function sortCategories() {
 document.getElementById('reload-btn').addEventListener('click', reloadPlaylist);
 </script>
 </body>
-    </html>
+</html>
