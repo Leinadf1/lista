@@ -333,7 +333,7 @@
             border-radius: 12px;
             display: none;
             z-index: 1000;
-            width: 400px;
+            width: 550px; /* allargato */
             max-width: 90vw;
             font-family: 'Formula1 Display Bold', 'Inter', sans-serif;
         }
@@ -364,6 +364,7 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            flex: 1;
         }
         #tv-osd .osd-live-badge {
             background: #ff1744;
@@ -375,6 +376,7 @@
             font-weight: bold;
             letter-spacing: 0.5px;
             display: none;
+            flex-shrink: 0;
         }
         #tv-osd .osd-live-badge.visible {
             display: inline-block;
@@ -388,6 +390,7 @@
             display: flex;
             gap: 10px;
             margin-bottom: 8px;
+            justify-content: flex-end; /* sposta PREC/SUCC a destra */
         }
         .osd-nav-btn {
             padding: 5px 12px;
@@ -1217,7 +1220,7 @@ function showSeekBar(currentTime, duration) {
     clearTimeout(tvSeekBar._hideTimeout);
     tvSeekBar._hideTimeout = setTimeout(() => {
         tvSeekBar.classList.remove('active');
-    }, 3000);
+    }, 5000); // cambiato a 5 secondi
 }
 
 function hideSeekBar() {
@@ -1245,7 +1248,7 @@ function showOsdWithCurrentState() {
     if (osdTimeout) clearTimeout(osdTimeout);
     osdTimeout = setTimeout(() => {
         tvOsd.classList.remove('active');
-    }, 3000);
+    }, 5000); // 5 secondi
 }
 
 function renderOsdEPG() {
@@ -1297,7 +1300,7 @@ function navigateOsdEpg(direction) {
         if (osdTimeout) clearTimeout(osdTimeout);
         osdTimeout = setTimeout(() => {
             tvOsd.classList.remove('active');
-        }, 3000);
+        }, 5000);
     }
 }
 
@@ -1456,7 +1459,7 @@ function handleMouseMove() {
             hideSeekBar();
             tvOsd.classList.remove('active');
         }
-    }, 3000);
+    }, 5000); // 5 secondi
 }
 
 function buildChannelList() {
@@ -1623,17 +1626,24 @@ function loadChannelInTv(index) {
     tvVideo.style.display = 'block';
     tvExitBtn.style.display = 'none';
     
-    const epgResult = getCurrentProgram(ch);
-    if (epgResult.status === 'ok') {
-        osdEpgState.channel = ch;
-        osdEpgState.programs = epgResult.programs;
-        osdEpgState.currentIndex = epgResult.currentIndex;
-        osdEpgState.liveIndex = epgResult.isLive ? epgResult.currentIndex : -1;
-    } else {
-        osdEpgState.channel = ch;
+    // Escludi EPG per canali Svizzeri
+    if (ch.group && ch.group.toLowerCase().includes('svizzeri')) {
         osdEpgState.programs = [];
         osdEpgState.currentIndex = -1;
         osdEpgState.liveIndex = -1;
+    } else {
+        const epgResult = getCurrentProgram(ch);
+        if (epgResult.status === 'ok') {
+            osdEpgState.channel = ch;
+            osdEpgState.programs = epgResult.programs;
+            osdEpgState.currentIndex = epgResult.currentIndex;
+            osdEpgState.liveIndex = epgResult.isLive ? epgResult.currentIndex : -1;
+        } else {
+            osdEpgState.channel = ch;
+            osdEpgState.programs = [];
+            osdEpgState.currentIndex = -1;
+            osdEpgState.liveIndex = -1;
+        }
     }
     
     showOsd({
@@ -1708,6 +1718,13 @@ function loadChannelInTv(index) {
     
     tvPlayer.load(ch.url).then(() => {
         if (token !== channelLoadToken) return;
+        // Porta il player al live edge
+        if (tvPlayer.isLive()) {
+            const seekRange = tvPlayer.seekRange();
+            if (seekRange && isFinite(seekRange.end)) {
+                tvPlayer.getMediaElement().currentTime = seekRange.end;
+            }
+        }
         autoSelectItalianAudio();
         buildAudioList();
     }).catch(err => {
@@ -1735,7 +1752,7 @@ function showOsd(data) {
     if (osdTimeout) clearTimeout(osdTimeout);
     osdTimeout = setTimeout(() => {
         tvOsd.classList.remove('active');
-    }, 3000);
+    }, 5000);
 }
 
 function toggleEpgPanel() {
@@ -1779,6 +1796,19 @@ function updateEpgPanel() {
 
 function handleTvKeys(e) {
     if (!tvModeActive || exitingTv) return;
+    
+    // Debug tasti rossi/verdi
+    if (e.keyCode === 403 || e.key === 'F7' || e.code === 'F7') {
+        console.log('Tasto ROSSO premuto (F7/403)');
+        // Aggiungi qui l'azione per il tasto rosso (es. ultimo canale)
+        return;
+    }
+    if (e.keyCode === 404 || e.key === 'F8' || e.code === 'F8') {
+        console.log('Tasto VERDE premuto (F8/404)');
+        // Aggiungi qui l'azione per il tasto verde (es. audio)
+        return;
+    }
+    // Fine debug
     
     if (channelListOpen) {
         e.preventDefault();
@@ -2192,6 +2222,14 @@ async function checkAccess() {
         loadEPG();
         init(m3uData);
 
+        // Rilevamento TV e auto-avvio TV mode
+        const isTV = /Android TV|SmartTV|WebTV|Tizen|LGTV|Viera|BRAVIA|Fire TV|Roku|AppleTV/i.test(navigator.userAgent) || window.innerWidth > 1024;
+        if (isTV) {
+            setTimeout(() => {
+                if (!tvModeActive) enterTvMode();
+            }, 1000);
+        }
+
     } catch (error) {
         alert("Errore server.");
     }
@@ -2301,6 +2339,12 @@ async function init(m3uContent) {
             }
 
             player.load(ch.url).then(() => {
+                if (player.isLive()) {
+                    const seekRange = player.seekRange();
+                    if (seekRange && isFinite(seekRange.end)) {
+                        video.currentTime = seekRange.end;
+                    }
+                }
                 const tracks = player.getAudioLanguagesAndRoles();
                 const italianTrack = tracks.find(t => 
                     t.language && (t.language.toLowerCase().startsWith('it') || t.language.toLowerCase() === 'ita') ||
