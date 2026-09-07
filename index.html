@@ -499,6 +499,18 @@
             text-overflow: ellipsis;
         }
 
+        /* Nuovo stile per le intestazioni di categoria */
+        .tv-category-header {
+            padding: 8px 10px;
+            margin: 15px 0 5px;
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #f1e05a;
+            border-bottom: 1px solid #30363d;
+        }
+
         #tv-audio-overlay {
             position: absolute;
             bottom: 70px;
@@ -559,6 +571,7 @@
             border-radius: 3px;
             margin: 0 15px;
             overflow: hidden;
+            cursor: pointer; /* Aggiunto per indicare cliccabilità */
         }
         #tv-seek-progress-bar {
             height: 100%;
@@ -773,7 +786,7 @@ let lastM3UData = null;
 const FAVORITES_KEY = 'favoriteChannels';
 let favoriteIds = new Set(JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]'));
 let allChannels = [];
-let tvChannelListAll = []; // Nuovo array per canali TV escludendo NeroZone
+let tvChannelListAll = []; // Array per canali TV senza NeroZone
 
 // -------------------- EPG --------------------
 const EPG_URL = 'https://raw.githubusercontent.com/Leinadf1/lista/main/epg_ripper_IT1.xml';
@@ -1069,6 +1082,7 @@ const tvSeekBar = document.getElementById('tv-seek-bar');
 const tvSeekCurrent = document.getElementById('tv-seek-current');
 const tvSeekDuration = document.getElementById('tv-seek-duration');
 const tvSeekProgressBar = document.getElementById('tv-seek-progress-bar');
+const tvSeekProgress = document.querySelector('.tv-seek-progress');
 const tvIframeHotspot = document.getElementById('tv-iframe-hotspot');
 let tvPlayer = null;
 let activeIframe = null;
@@ -1287,10 +1301,19 @@ function handleMouseMove() {
 
 function buildChannelList() {
     tvChannelList.innerHTML = '';
+    let currentGroup = '';
     tvChannelListAll.forEach((ch, idx) => {
+        const groupName = (ch.group || 'Senza categoria').toUpperCase();
+        if (groupName !== currentGroup) {
+            currentGroup = groupName;
+            const header = document.createElement('div');
+            header.className = 'tv-category-header';
+            header.textContent = currentGroup;
+            tvChannelList.appendChild(header);
+        }
         const item = document.createElement('div');
         item.className = 'tv-channel-item';
-        item.dataset.index = idx;
+        item.dataset.channelIndex = idx; // indice nel vettore tvChannelListAll
         item.innerHTML = `
             <span class="tv-channel-num">${idx + 1}</span>
             <img src="${ch.logo || 'https://via.placeholder.com/30x30?text=TV'}" onerror="this.src='https://via.placeholder.com/30x30?text=TV'">
@@ -1329,7 +1352,8 @@ function closeChannelList() {
 
 function highlightChannelItem() {
     const items = tvChannelList.querySelectorAll('.tv-channel-item');
-    items.forEach((item, idx) => {
+    items.forEach((item) => {
+        const idx = parseInt(item.dataset.channelIndex);
         if (idx === selectedChannelItemIndex) {
             item.classList.add('selected');
             item.scrollIntoView({ block: 'nearest' });
@@ -1844,6 +1868,19 @@ function toggleFavorite(index) {
     showOsd({ number: index + 1, name: ch.name, logo: ch.logo, program: favoriteIds.has(id) ? 'Aggiunto ai preferiti' : 'Rimosso dai preferiti', time: '', progress: 0 });
 }
 
+// Evento per il click sulla barra di avanzamento (seek)
+tvSeekProgress.addEventListener('click', (e) => {
+    if (!tvPlayer || !tvSeekBar.classList.contains('active')) return;
+    const rect = tvSeekProgress.getBoundingClientRect();
+    const percent = (e.clientX - rect.left) / rect.width;
+    const mediaElement = tvPlayer.getMediaElement();
+    if (mediaElement && isFinite(mediaElement.duration)) {
+        const newTime = percent * mediaElement.duration;
+        mediaElement.currentTime = newTime;
+        showSeekBar(newTime, mediaElement.duration);
+    }
+});
+
 // Fine Modalità TV
 
 document.getElementById('tv-mode-btn').addEventListener('click', () => {
@@ -1935,6 +1972,16 @@ function getKidKey(drm) {
     return { kid, key };
 }
 
+// Funzione per decodificare Base64 in UTF-8 correttamente
+function decodeBase64UTF8(base64) {
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+    }
+    return new TextDecoder('utf-8').decode(bytes);
+}
+
 async function checkAccess() {
     const psw = prompt("Password:");
     if (!psw) return;
@@ -1954,7 +2001,8 @@ async function checkAccess() {
         }
 
         const m3uEncoded = await response.text();
-        const m3uData = atob(m3uEncoded);
+        // Usa la decodifica UTF-8 corretta
+        const m3uData = decodeBase64UTF8(m3uEncoded);
         
         passwordGlobale = psw;
         lastM3UData = m3uData;
@@ -2281,4 +2329,4 @@ async function init(m3uContent) {
 document.getElementById('reload-btn').addEventListener('click', reloadPlaylist);
 </script>
 </body>
-</html>
+    </html>
