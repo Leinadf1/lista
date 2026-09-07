@@ -1868,17 +1868,31 @@ function toggleFavorite(index) {
     showOsd({ number: index + 1, name: ch.name, logo: ch.logo, program: favoriteIds.has(id) ? 'Aggiunto ai preferiti' : 'Rimosso dai preferiti', time: '', progress: 0 });
 }
 
-// Evento per il click sulla barra di avanzamento (seek)
+// Evento per il click sulla barra di avanzamento (seek) - corretto per live e on-demand
 tvSeekProgress.addEventListener('click', (e) => {
     if (!tvPlayer || !tvSeekBar.classList.contains('active')) return;
     const rect = tvSeekProgress.getBoundingClientRect();
-    const percent = (e.clientX - rect.left) / rect.width;
+    const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
     const mediaElement = tvPlayer.getMediaElement();
-    if (mediaElement && isFinite(mediaElement.duration)) {
-        const newTime = percent * mediaElement.duration;
-        mediaElement.currentTime = newTime;
-        showSeekBar(newTime, mediaElement.duration);
+    if (!mediaElement) return;
+    
+    let newTime;
+    if (tvPlayer.isLive()) {
+        const seekRange = tvPlayer.seekRange();
+        if (seekRange && isFinite(seekRange.end - seekRange.start)) {
+            // La barra va da seekRange.start (0%) a seekRange.end (100%)
+            newTime = seekRange.start + percent * (seekRange.end - seekRange.start);
+        } else {
+            return;
+        }
+    } else if (isFinite(mediaElement.duration)) {
+        newTime = percent * mediaElement.duration;
+    } else {
+        return;
     }
+    
+    mediaElement.currentTime = newTime;
+    showSeekBar(newTime, mediaElement.duration);
 });
 
 // Fine Modalità TV
@@ -2290,6 +2304,9 @@ async function init(m3uContent) {
     countHeader.innerText = loadedCount + " CANALI";
     renderFavorites();
     
+    // Riordina le categorie: mette DAZN NeroZone prima di DAZN Svizzeri
+    sortCategories();
+    
     const searchInput = document.getElementById('search-input');
     searchInput.addEventListener('input', () => {
         const query = searchInput.value.toLowerCase().trim();
@@ -2326,7 +2343,35 @@ async function init(m3uContent) {
     });
 }
 
+function sortCategories() {
+    const mainList = document.getElementById('main-list');
+    const containers = Array.from(mainList.querySelectorAll('.category-container'));
+    
+    // Trova indice di NeroZone e Svizzeri
+    const neroZoneIndex = containers.findIndex(c => {
+        const title = c.querySelector('.category-title').textContent.trim().toUpperCase();
+        return title.includes('NEROZONE');
+    });
+    const svizzeriIndex = containers.findIndex(c => {
+        const title = c.querySelector('.category-title').textContent.trim().toUpperCase();
+        return title.includes('SVIZZERI');
+    });
+    
+    if (neroZoneIndex !== -1 && svizzeriIndex !== -1 && neroZoneIndex > svizzeriIndex) {
+        // Rimuovi NeroZone e inseriscilo prima di Svizzeri
+        const neroZoneEl = containers[neroZoneIndex];
+        containers.splice(neroZoneIndex, 1);
+        const newSvizzeriIndex = containers.findIndex(c => {
+            const title = c.querySelector('.category-title').textContent.trim().toUpperCase();
+            return title.includes('SVIZZERI');
+        });
+        containers.splice(newSvizzeriIndex, 0, neroZoneEl);
+        // Riattacca in ordine
+        containers.forEach(el => mainList.appendChild(el));
+    }
+}
+
 document.getElementById('reload-btn').addEventListener('click', reloadPlaylist);
 </script>
 </body>
-    </html>
+</html>
