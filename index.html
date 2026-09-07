@@ -1126,6 +1126,8 @@ function renderEPG() {
     const timeStr = `${startDate.toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'})} - ${stopDate.toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'})}`;
     
     const isLive = epgState.currentIndex === epgState.liveIndex;
+    const isFuture = program.start > Date.now();
+    const timeColor = (isLive || !isFuture) ? '#ff1744' : '#00e676';
     
     const prevDisabled = epgState.currentIndex === 0;
     const nextDisabled = epgState.currentIndex === epgState.programs.length - 1;
@@ -1142,7 +1144,7 @@ function renderEPG() {
         ${navHtml}
         <div class="program-title">${program.title}</div>
         ${isLive ? '<span class="live-badge">In onda</span>' : ''}
-        <div class="program-time">${timeStr}</div>
+        <div class="program-time" style="color: ${timeColor}">${timeStr}</div>
         ${program.desc ? `<div class="program-desc">${program.desc}</div>` : ''}
     `;
     
@@ -1255,7 +1257,7 @@ function showSeekBar(currentTime, duration) {
     clearTimeout(tvSeekBar._hideTimeout);
     tvSeekBar._hideTimeout = setTimeout(() => {
         tvSeekBar.classList.remove('active');
-    }, 3000); // ridotto a 3 secondi
+    }, 2000); // ridotto a 2 secondi
 }
 
 function hideSeekBar() {
@@ -1283,7 +1285,7 @@ function showOsdWithCurrentState() {
     if (osdTimeout) clearTimeout(osdTimeout);
     osdTimeout = setTimeout(() => {
         tvOsd.classList.remove('active');
-    }, 3000); // ridotto a 3 secondi
+    }, 2000); // ridotto a 2 secondi
 }
 
 function renderOsdEPG() {
@@ -1303,9 +1305,11 @@ function renderOsdEPG() {
         const timeStr = `${start.toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'})} - ${stop.toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'})}`;
         timeEl.textContent = timeStr;
         
-        // Colore orario: rosso se live, verde altrimenti
+        // Colore orario: rosso se live o passato, verde se futuro
         const isLive = osdEpgState.currentIndex === osdEpgState.liveIndex;
-        timeEl.style.color = isLive ? '#ff1744' : '#00e676';
+        const isFuture = p.start > Date.now();
+        const timeColor = (isLive || !isFuture) ? '#ff1744' : '#00e676';
+        timeEl.style.color = timeColor;
         
         // Descrizione (se presente)
         descEl.textContent = p.desc || '';
@@ -1348,7 +1352,7 @@ function navigateOsdEpg(direction) {
         if (osdTimeout) clearTimeout(osdTimeout);
         osdTimeout = setTimeout(() => {
             tvOsd.classList.remove('active');
-        }, 3000); // ridotto a 3 secondi
+        }, 2000); // ridotto a 2 secondi
     }
 }
 
@@ -1534,7 +1538,7 @@ function handleMouseMove() {
             hideSeekBar();
             tvOsd.classList.remove('active');
         }
-    }, 3000); // ridotto a 3 secondi
+    }, 2000); // ridotto a 2 secondi
 }
 
 function buildChannelList() {
@@ -1828,7 +1832,7 @@ function showOsd(data) {
     if (osdTimeout) clearTimeout(osdTimeout);
     osdTimeout = setTimeout(() => {
         tvOsd.classList.remove('active');
-    }, 3000); // ridotto a 3 secondi
+    }, 2000); // ridotto a 2 secondi
 }
 
 function toggleEpgPanel() {
@@ -2304,13 +2308,13 @@ async function checkAccess() {
         loadEPG();
         init(m3uData);
 
-        // Rilevamento TV e auto-avvio TV mode (ritardo aumentato a 3 secondi)
+        // Rilevamento TV e auto-avvio TV mode (ritardo aumentato a 5 secondi)
         const isTV = /Android TV|SmartTV|WebTV|Tizen|LGTV|Viera|BRAVIA|Fire TV|Roku|AppleTV/i.test(navigator.userAgent) || window.innerWidth > 1024;
         if (isTV) {
             isAutoEnter = true;
             setTimeout(() => {
                 if (!tvModeActive) enterTvMode();
-            }, 3000); // ritardo aumentato
+            }, 5000); // ritardo aumentato
         }
 
     } catch (error) {
@@ -2659,4 +2663,4 @@ function sortCategories() {
 document.getElementById('reload-btn').addEventListener('click', reloadPlaylist);
 </script>
 </body>
-</html>
+    </html>
