@@ -1126,8 +1126,8 @@ function renderEPG() {
     const timeStr = `${startDate.toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'})} - ${stopDate.toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'})}`;
     
     const isLive = epgState.currentIndex === epgState.liveIndex;
-    const isFuture = program.start > Date.now();
-    const timeColor = (isLive || !isFuture) ? '#ff1744' : '#00e676';
+    // Nuova logica: solo in onda rosso, tutti gli altri verdi
+    const timeColor = isLive ? '#ff1744' : '#00e676';
     
     const prevDisabled = epgState.currentIndex === 0;
     const nextDisabled = epgState.currentIndex === epgState.programs.length - 1;
@@ -1305,10 +1305,17 @@ function renderOsdEPG() {
         const timeStr = `${start.toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'})} - ${stop.toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'})}`;
         timeEl.textContent = timeStr;
         
-        // Colore orario: rosso se live o passato, verde se futuro
+        // Colore orario: blu se in onda, rosso se passato, verde se futuro
         const isLive = osdEpgState.currentIndex === osdEpgState.liveIndex;
         const isFuture = p.start > Date.now();
-        const timeColor = (isLive || !isFuture) ? '#ff1744' : '#00e676';
+        let timeColor;
+        if (isLive) {
+            timeColor = '#2196F3'; // blu
+        } else if (!isFuture) {
+            timeColor = '#ff1744'; // passato rosso
+        } else {
+            timeColor = '#00e676'; // futuro verde
+        }
         timeEl.style.color = timeColor;
         
         // Descrizione (se presente)
@@ -2663,4 +2670,4 @@ function sortCategories() {
 document.getElementById('reload-btn').addEventListener('click', reloadPlaylist);
 </script>
 </body>
-</html>
+    </html>
