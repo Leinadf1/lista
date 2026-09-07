@@ -349,8 +349,8 @@
             margin-bottom: 5px;
         }
         #tv-osd .osd-channel img {
-            width: 40px;
-            height: 40px;
+            width: 60px; /* ingrandito da 40px a 60px */
+            height: 60px;
             object-fit: contain;
         }
         #tv-osd .osd-program {
@@ -484,8 +484,8 @@
             background: #1c2128;
         }
         .tv-channel-item img {
-            width: 30px;
-            height: 30px;
+            width: 45px; /* ingrandito da 30px a 45px */
+            height: 45px;
             object-fit: contain;
         }
         .tv-channel-item .tv-channel-num {
@@ -773,6 +773,7 @@ let lastM3UData = null;
 const FAVORITES_KEY = 'favoriteChannels';
 let favoriteIds = new Set(JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]'));
 let allChannels = [];
+let tvChannelListAll = []; // Nuovo array per canali TV escludendo NeroZone
 
 // -------------------- EPG --------------------
 const EPG_URL = 'https://raw.githubusercontent.com/Leinadf1/lista/main/epg_ripper_IT1.xml';
@@ -1122,9 +1123,17 @@ function showSeekBar(currentTime, duration) {
     }, 2500);
 }
 
+function hideSeekBar() {
+    clearTimeout(tvSeekBar._hideTimeout);
+    tvSeekBar.classList.remove('active');
+}
+
 function enterTvMode() {
     tvModeActive = true;
     exitingTv = false;
+    // Filtra i canali escludendo quelli del gruppo "DAZN NeroZone"
+    tvChannelListAll = allChannels.filter(ch => !(ch.group && ch.group.toLowerCase().includes('nerozone')));
+    
     document.getElementById('main-list').style.display = 'none';
     document.getElementById('expiry-info').style.display = 'none';
     document.getElementById('epg-info').style.display = 'none';
@@ -1151,9 +1160,9 @@ function enterTvMode() {
     tvVideo.autoplay = true;
     tvPlayer = new shaka.Player(tvVideo);
     
-    if (currentChannelIndex >= 0 && currentChannelIndex < allChannels.length) {
+    if (currentChannelIndex >= 0 && currentChannelIndex < tvChannelListAll.length) {
         loadChannelInTv(currentChannelIndex);
-    } else if (allChannels.length > 0) {
+    } else if (tvChannelListAll.length > 0) {
         currentChannelIndex = 0;
         loadChannelInTv(0);
     }
@@ -1216,7 +1225,7 @@ function exitTvMode() {
     clearTimeout(numberBufferTimeout);
     clearTimeout(osdTimeout);
     clearTimeout(mouseMoveTimeout);
-    clearTimeout(tvSeekBar._hideTimeout);
+    hideSeekBar();
     tvChannelListOverlay.classList.remove('active');
     tvAudioOverlay.classList.remove('active');
     tvEpgPanel.classList.remove('active');
@@ -1254,6 +1263,14 @@ function handleMouseMove() {
         tvAudioBtn.style.display = 'flex';
         tvExitBtn.style.display = 'flex';
         tvIframeExitBtn.style.display = 'none';
+        
+        // Mostra anche la barra di ricerca temporale (timestamp) se disponibile
+        if (tvPlayer) {
+            const mediaElement = tvPlayer.getMediaElement();
+            if (mediaElement) {
+                showSeekBar(mediaElement.currentTime, mediaElement.duration);
+            }
+        }
     }
     
     if (mouseMoveTimeout) clearTimeout(mouseMoveTimeout);
@@ -1263,13 +1280,14 @@ function handleMouseMove() {
             tvAudioBtn.style.display = 'none';
             tvExitBtn.style.display = 'none';
             tvIframeExitBtn.style.display = 'none';
+            hideSeekBar(); // Nascondi anche la barra di ricerca
         }
     }, 3000);
 }
 
 function buildChannelList() {
     tvChannelList.innerHTML = '';
-    allChannels.forEach((ch, idx) => {
+    tvChannelListAll.forEach((ch, idx) => {
         const item = document.createElement('div');
         item.className = 'tv-channel-item';
         item.dataset.index = idx;
@@ -1322,7 +1340,7 @@ function highlightChannelItem() {
 }
 
 function selectChannelFromList(index) {
-    if (index >= 0 && index < allChannels.length) {
+    if (index >= 0 && index < tvChannelListAll.length) {
         lastChannelIndex = currentChannelIndex;
         loadChannelInTv(index);
     }
@@ -1379,8 +1397,8 @@ function selectAudioTrack(index) {
         tvPlayer.selectAudioLanguage(tracks[index].language);
         showOsd({
             number: currentChannelIndex + 1,
-            name: allChannels[currentChannelIndex]?.name || '',
-            logo: allChannels[currentChannelIndex]?.logo || '',
+            name: tvChannelListAll[currentChannelIndex]?.name || '',
+            logo: tvChannelListAll[currentChannelIndex]?.logo || '',
             program: `Audio: ${tracks[index].label || tracks[index].language}`,
             time: '',
             progress: 0
@@ -1406,7 +1424,7 @@ function autoSelectItalianAudio() {
 }
 
 function loadChannelInTv(index) {
-    const ch = allChannels[index];
+    const ch = tvChannelListAll[index];
     if (!ch) return;
     currentChannelIndex = index;
     const token = ++channelLoadToken;
@@ -1533,7 +1551,7 @@ function updateOsdEPG(ch, token) {
             progress = ((now - p.start) / (p.stop - p.start)) * 100;
         }
     }
-    if (token === channelLoadToken && allChannels[currentChannelIndex] === ch) {
+    if (token === channelLoadToken && tvChannelListAll[currentChannelIndex] === ch) {
         showOsd({ number: currentChannelIndex + 1, name: ch.name, logo: ch.logo, program: progTitle, time: timeStr, progress: progress });
     }
 }
@@ -1571,7 +1589,7 @@ function toggleEpgPanel() {
 
 function updateEpgPanel() {
     if (!epgPanelOpen) return;
-    const ch = allChannels[currentChannelIndex];
+    const ch = tvChannelListAll[currentChannelIndex];
     if (!ch) return;
     if (ch.group && ch.group.toLowerCase().includes('svizzeri')) {
         tvEpgPanel.innerHTML = '<div style="padding:20px;">Nessuna guida TV</div>';
@@ -1615,7 +1633,7 @@ function handleTvKeys(e) {
             return;
         }
         if (keyCode === 40 || key === 'ArrowDown' || key === 'PageDown') {
-            if (selectedChannelItemIndex < allChannels.length - 1) {
+            if (selectedChannelItemIndex < tvChannelListAll.length - 1) {
                 selectedChannelItemIndex++;
                 highlightChannelItem();
             }
@@ -1773,7 +1791,7 @@ function handleTvKeys(e) {
     }
     if (key === 'i' || key === 'I' || keyCode === 113 || key === 'F1') {
         if (currentChannelIndex >= 0) {
-            const ch = allChannels[currentChannelIndex];
+            const ch = tvChannelListAll[currentChannelIndex];
             if (ch) showOsdForChannel(ch);
         }
         return;
@@ -1794,7 +1812,7 @@ function highlightAudioItem() {
 
 function changeChannel(delta) {
     const newIndex = currentChannelIndex + delta;
-    if (newIndex >= 0 && newIndex < allChannels.length) {
+    if (newIndex >= 0 && newIndex < tvChannelListAll.length) {
         lastChannelIndex = currentChannelIndex;
         loadChannelInTv(newIndex);
     }
@@ -1805,7 +1823,7 @@ function handleNumberKey(num) {
     clearTimeout(numberBufferTimeout);
     numberBufferTimeout = setTimeout(() => {
         const targetIndex = parseInt(numberBuffer) - 1;
-        if (targetIndex >= 0 && targetIndex < allChannels.length) {
+        if (targetIndex >= 0 && targetIndex < tvChannelListAll.length) {
             lastChannelIndex = currentChannelIndex;
             loadChannelInTv(targetIndex);
         }
@@ -1814,7 +1832,7 @@ function handleNumberKey(num) {
 }
 
 function toggleFavorite(index) {
-    const ch = allChannels[index];
+    const ch = tvChannelListAll[index];
     if (!ch) return;
     const id = ch.id;
     if (favoriteIds.has(id)) {
@@ -1846,10 +1864,10 @@ tvIframeExitBtn.addEventListener('click', () => {
         tvIframeHotspot.classList.remove('active');
         tvIframeHotspot.style.display = 'none';
         tvVideo.style.display = 'block';
-        if (lastChannelIndex >= 0 && lastChannelIndex < allChannels.length && (allChannels[lastChannelIndex].group || '').toUpperCase() !== 'PRIME VIDEO') {
+        if (lastChannelIndex >= 0 && lastChannelIndex < tvChannelListAll.length && (tvChannelListAll[lastChannelIndex].group || '').toUpperCase() !== 'PRIME VIDEO') {
             loadChannelInTv(lastChannelIndex);
         } else {
-            const nextIndex = allChannels.findIndex((c, i) => i !== currentChannelIndex && (c.group || '').toUpperCase() !== 'PRIME VIDEO');
+            const nextIndex = tvChannelListAll.findIndex((c, i) => i !== currentChannelIndex && (c.group || '').toUpperCase() !== 'PRIME VIDEO');
             if (nextIndex >= 0) loadChannelInTv(nextIndex);
             else loadChannelInTv(0);
         }
@@ -2263,4 +2281,4 @@ async function init(m3uContent) {
 document.getElementById('reload-btn').addEventListener('click', reloadPlaylist);
 </script>
 </body>
-    </html>
+</html>
