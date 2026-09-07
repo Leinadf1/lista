@@ -22,6 +22,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
+        /* Stili invariati... */
         body { 
             background-color: #0d1117; 
             color: #c9d1d9; 
@@ -34,6 +35,22 @@
             -webkit-font-smoothing: antialiased;
         }
         
+        #debug-overlay {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            color: #00ff00;
+            font-size: 14px;
+            padding: 8px;
+            border-radius: 6px;
+            z-index: 99999;
+            display: none;
+            font-family: monospace;
+            pointer-events: none;
+        }
+        
+        /* Tutti gli altri stili identici */
         #header { 
             width: 100%; 
             display: flex;
@@ -333,7 +350,7 @@
             border-radius: 12px;
             display: none;
             z-index: 1000;
-            width: 550px; /* allargato */
+            width: 550px;
             max-width: 90vw;
             font-family: 'Formula1 Display Bold', 'Inter', sans-serif;
         }
@@ -390,7 +407,7 @@
             display: flex;
             gap: 10px;
             margin-bottom: 8px;
-            justify-content: flex-end; /* sposta PREC/SUCC a destra */
+            justify-content: flex-end;
         }
         .osd-nav-btn {
             padding: 5px 12px;
@@ -783,6 +800,8 @@
 </head>
 <body id="mainBody" style="display:none;">
 
+    <div id="debug-overlay">Debug tasti</div>
+
     <div id="header">
         <button id="reload-btn" class="reload-btn" title="Ricarica playlist">
             <span id="reload-icon" class="reload-icon">🔄</span> Ricarica playlist
@@ -864,6 +883,29 @@ const FAVORITES_KEY = 'favoriteChannels';
 let favoriteIds = new Set(JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]'));
 let allChannels = [];
 let tvChannelListAll = [];
+
+// Debug overlay
+const debugOverlay = document.getElementById('debug-overlay');
+function showDebug(msg) {
+    debugOverlay.style.display = 'block';
+    debugOverlay.textContent = msg;
+    setTimeout(() => {
+        if (debugOverlay.textContent === msg) {
+            debugOverlay.style.display = 'none';
+        }
+    }, 2000);
+}
+
+// Listener globale per debug tasti
+document.addEventListener('keydown', (e) => {
+    const keyInfo = `key=${e.key} code=${e.code} keyCode=${e.keyCode}`;
+    console.log('KEYDOWN:', keyInfo);
+    showDebug(keyInfo);
+});
+document.addEventListener('keyup', (e) => {
+    const keyInfo = `key=${e.key} code=${e.code} keyCode=${e.keyCode}`;
+    console.log('KEYUP:', keyInfo);
+});
 
 // -------------------- EPG --------------------
 const EPG_URL = 'https://raw.githubusercontent.com/Leinadf1/lista/main/epg_ripper_IT1.xml';
@@ -1220,7 +1262,7 @@ function showSeekBar(currentTime, duration) {
     clearTimeout(tvSeekBar._hideTimeout);
     tvSeekBar._hideTimeout = setTimeout(() => {
         tvSeekBar.classList.remove('active');
-    }, 5000); // cambiato a 5 secondi
+    }, 5000);
 }
 
 function hideSeekBar() {
@@ -1248,7 +1290,7 @@ function showOsdWithCurrentState() {
     if (osdTimeout) clearTimeout(osdTimeout);
     osdTimeout = setTimeout(() => {
         tvOsd.classList.remove('active');
-    }, 5000); // 5 secondi
+    }, 5000);
 }
 
 function renderOsdEPG() {
@@ -1459,7 +1501,7 @@ function handleMouseMove() {
             hideSeekBar();
             tvOsd.classList.remove('active');
         }
-    }, 5000); // 5 secondi
+    }, 5000);
 }
 
 function buildChannelList() {
@@ -1797,18 +1839,17 @@ function updateEpgPanel() {
 function handleTvKeys(e) {
     if (!tvModeActive || exitingTv) return;
     
-    // Debug tasti rossi/verdi
+    // Debug tasti colorati
     if (e.keyCode === 403 || e.key === 'F7' || e.code === 'F7') {
         console.log('Tasto ROSSO premuto (F7/403)');
-        // Aggiungi qui l'azione per il tasto rosso (es. ultimo canale)
+        showDebug('Tasto ROSSO premuto');
         return;
     }
     if (e.keyCode === 404 || e.key === 'F8' || e.code === 'F8') {
         console.log('Tasto VERDE premuto (F8/404)');
-        // Aggiungi qui l'azione per il tasto verde (es. audio)
+        showDebug('Tasto VERDE premuto');
         return;
     }
-    // Fine debug
     
     if (channelListOpen) {
         e.preventDefault();
