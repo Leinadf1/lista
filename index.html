@@ -49,6 +49,21 @@
             pointer-events: none;
         }
         
+        #fullscreen-prompt {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            font-size: 20px;
+            z-index: 100000;
+            display: none;
+            font-family: 'Formula1 Display Bold', 'Inter', sans-serif;
+        }
+        
         #header { 
             width: 100%; 
             display: flex;
@@ -340,7 +355,7 @@
         }
         #tv-osd {
             position: absolute;
-            bottom: 40px;
+            bottom: 70px; /* spostato più in alto */
             left: 20px;
             background: rgba(0,0,0,0.85);
             color: white;
@@ -370,15 +385,15 @@
         }
         #tv-osd .osd-program-wrap {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 8px;
             margin-bottom: 5px;
         }
         #tv-osd .osd-program {
             font-size: 18px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            white-space: normal; /* permette più righe */
+            overflow: visible;
+            text-overflow: clip;
             flex: 1;
         }
         #tv-osd .osd-live-badge {
@@ -397,7 +412,7 @@
             display: inline-block;
         }
         #tv-osd .osd-time {
-            font-size: 14px;
+            font-size: 18px; /* ingrandito */
             color: #b0b7c0;
             margin-bottom: 8px;
         }
@@ -799,6 +814,7 @@
 <body id="mainBody" style="display:none;">
 
     <div id="debug-overlay">Debug tasti</div>
+    <div id="fullscreen-prompt">Premi un tasto qualsiasi per il fullscreen</div>
 
     <div id="header">
         <button id="reload-btn" class="reload-btn" title="Ricarica playlist">
@@ -894,7 +910,6 @@ function showDebug(msg) {
     }, 2000);
 }
 
-// Listener globale per debug tasti
 document.addEventListener('keydown', (e) => {
     const keyInfo = `key=${e.key} code=${e.code} keyCode=${e.keyCode}`;
     console.log('KEYDOWN:', keyInfo);
@@ -1189,7 +1204,7 @@ let numberBufferTimeout = null;
 let exitingTv = false;
 let mouseMoveTimeout = null;
 let channelLoadToken = 0;
-let isAutoEnter = false; // flag per auto-avvio
+let isAutoEnter = false;
 
 const tvModeOverlay = document.getElementById('tv-mode-overlay');
 const tvOsd = document.getElementById('tv-osd');
@@ -1211,6 +1226,7 @@ const tvSeekProgress = document.querySelector('.tv-seek-progress');
 const tvIframeHotspot = document.getElementById('tv-iframe-hotspot');
 const tvOsdPrevBtn = document.getElementById('tv-osd-prev-btn');
 const tvOsdNextBtn = document.getElementById('tv-osd-next-btn');
+const fullscreenPrompt = document.getElementById('fullscreen-prompt');
 let tvPlayer = null;
 let activeIframe = null;
 
@@ -1345,6 +1361,21 @@ function navigateOsdEpg(direction) {
     }
 }
 
+function requestFullscreen() {
+    const el = tvModeOverlay || tvVideo || document.documentElement;
+    if (el.requestFullscreen) {
+        el.requestFullscreen().catch(() => {
+            if (tvVideo.requestFullscreen) {
+                tvVideo.requestFullscreen().catch(() => {
+                    if (document.documentElement.requestFullscreen) {
+                        document.documentElement.requestFullscreen().catch(() => {});
+                    }
+                });
+            }
+        });
+    }
+}
+
 function enterTvMode() {
     tvModeActive = true;
     exitingTv = false;
@@ -1376,6 +1407,17 @@ function enterTvMode() {
     tvVideo.autoplay = true;
     tvPlayer = new shaka.Player(tvVideo);
     
+    // Aggiungi listener per andare al live edge appena disponibile
+    tvPlayer.addEventListener('streaming', () => {
+        if (tvPlayer.isLive()) {
+            const seekRange = tvPlayer.seekRange();
+            if (seekRange && isFinite(seekRange.end)) {
+                const mediaElement = tvPlayer.getMediaElement();
+                mediaElement.currentTime = seekRange.end;
+            }
+        }
+    });
+    
     if (currentChannelIndex >= 0 && currentChannelIndex < tvChannelListAll.length) {
         loadChannelInTv(currentChannelIndex);
     } else if (tvChannelListAll.length > 0) {
@@ -1391,28 +1433,20 @@ function enterTvMode() {
         tvModeOverlay.focus();
     }, 100);
     
-    // Richiesta fullscreen su più elementi per sicurezza
-    setTimeout(() => {
-        if (tvModeOverlay.requestFullscreen) {
-            tvModeOverlay.requestFullscreen().catch(() => {
-                if (tvVideo.requestFullscreen) {
-                    tvVideo.requestFullscreen().catch(() => {
-                        if (document.documentElement.requestFullscreen) {
-                            document.documentElement.requestFullscreen().catch(() => {});
-                        }
-                    });
-                }
-            });
-        } else if (tvVideo.requestFullscreen) {
-            tvVideo.requestFullscreen().catch(() => {
-                if (document.documentElement.requestFullscreen) {
-                    document.documentElement.requestFullscreen().catch(() => {});
-                }
-            });
-        } else if (document.documentElement.requestFullscreen) {
-            document.documentElement.requestFullscreen().catch(() => {});
-        }
-    }, 300);
+    // Richiesta fullscreen differita: se auto-avvio, mostra prompt
+    if (isAutoEnter) {
+        fullscreenPrompt.style.display = 'block';
+        fullscreenPromptVisible = true;
+        const onFirstKey = () => {
+            requestFullscreen();
+            fullscreenPrompt.style.display = 'none';
+            fullscreenPromptVisible = false;
+            document.removeEventListener('keydown', onFirstKey);
+        };
+        document.addEventListener('keydown', onFirstKey);
+    } else {
+        requestFullscreen();
+    }
     
     buildChannelList();
     buildAudioList();
@@ -1770,7 +1804,7 @@ function loadChannelInTv(index) {
     
     tvPlayer.load(ch.url).then(() => {
         if (token !== channelLoadToken) return;
-        // Porta il player al live edge
+        // Porta il player al live edge (in aggiunta all'evento streaming)
         if (tvPlayer.isLive()) {
             const seekRange = tvPlayer.seekRange();
             if (seekRange && isFinite(seekRange.end)) {
@@ -1851,11 +1885,15 @@ function handleTvKeys(e) {
     
     // Tasti colorati mappati
     if (e.keyCode === 403 || e.key === 'F7' || e.code === 'F7') {
+        e.preventDefault();
+        e.stopPropagation();
         console.log('Tasto ROSSO premuto (F7/403) → EPG precedente');
         navigateOsdEpg(-1);
         return;
     }
     if (e.keyCode === 404 || e.key === 'F8' || e.code === 'F8') {
+        e.preventDefault();
+        e.stopPropagation();
         console.log('Tasto VERDE premuto (F8/404) → EPG successivo');
         navigateOsdEpg(1);
         return;
