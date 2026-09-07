@@ -49,19 +49,27 @@
             pointer-events: none;
         }
         
-        #fullscreen-prompt {
+        #fullscreen-btn {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.9);
+            background: #0a2540;
             color: white;
-            padding: 20px 30px;
-            border-radius: 10px;
-            font-size: 20px;
+            border: 2px solid #58a6ff;
+            border-radius: 12px;
+            padding: 15px 30px;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
             z-index: 100000;
             display: none;
             font-family: 'Formula1 Display Bold', 'Inter', sans-serif;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            transition: background 0.2s;
+        }
+        #fullscreen-btn:hover {
+            background: #123b66;
         }
         
         #header { 
@@ -359,13 +367,14 @@
             left: 20px;
             background: rgba(0,0,0,0.85);
             color: white;
-            padding: 15px 20px;
-            border-radius: 12px;
+            padding: 12px 16px; /* ridotto padding */
+            border-radius: 10px;
             display: none;
             z-index: 1000;
-            width: 550px;
+            width: 500px; /* ridotto larghezza per compattezza */
             max-width: 90vw;
             font-family: 'Formula1 Display Bold', 'Inter', sans-serif;
+            box-sizing: border-box;
         }
         #tv-osd.active {
             display: block;
@@ -373,28 +382,29 @@
         #tv-osd .osd-channel {
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-size: 24px;
+            gap: 8px;
+            font-size: 22px;
             font-weight: 700;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
         #tv-osd .osd-channel img {
-            width: 60px;
-            height: 60px;
+            width: 50px;
+            height: 50px;
             object-fit: contain;
         }
         #tv-osd .osd-program-wrap {
             display: flex;
             align-items: flex-start;
             gap: 8px;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
         #tv-osd .osd-program {
             font-size: 18px;
-            white-space: normal; /* permette più righe */
+            white-space: normal; /* va su più righe */
             overflow: visible;
             text-overflow: clip;
             flex: 1;
+            line-height: 1.2; /* riduce altezza righe */
         }
         #tv-osd .osd-live-badge {
             background: #ff1744;
@@ -414,16 +424,16 @@
         #tv-osd .osd-time {
             font-size: 18px; /* ingrandito */
             color: #b0b7c0;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
         #tv-osd .osd-controls {
             display: flex;
             gap: 10px;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             justify-content: flex-end;
         }
         .osd-nav-btn {
-            padding: 5px 12px;
+            padding: 4px 10px;
             border: none;
             border-radius: 6px;
             cursor: pointer;
@@ -814,7 +824,7 @@
 <body id="mainBody" style="display:none;">
 
     <div id="debug-overlay">Debug tasti</div>
-    <div id="fullscreen-prompt">Premi un tasto qualsiasi per il fullscreen</div>
+    <button id="fullscreen-btn">FULLSCREEN</button>
 
     <div id="header">
         <button id="reload-btn" class="reload-btn" title="Ricarica playlist">
@@ -1226,7 +1236,7 @@ const tvSeekProgress = document.querySelector('.tv-seek-progress');
 const tvIframeHotspot = document.getElementById('tv-iframe-hotspot');
 const tvOsdPrevBtn = document.getElementById('tv-osd-prev-btn');
 const tvOsdNextBtn = document.getElementById('tv-osd-next-btn');
-const fullscreenPrompt = document.getElementById('fullscreen-prompt');
+const fullscreenBtn = document.getElementById('fullscreen-btn');
 let tvPlayer = null;
 let activeIframe = null;
 
@@ -1433,18 +1443,15 @@ function enterTvMode() {
         tvModeOverlay.focus();
     }, 100);
     
-    // Richiesta fullscreen differita: se auto-avvio, mostra prompt
+    // Mostra pulsante fullscreen solo se auto-avvio (TV)
     if (isAutoEnter) {
-        fullscreenPrompt.style.display = 'block';
-        fullscreenPromptVisible = true;
-        const onFirstKey = () => {
+        fullscreenBtn.style.display = 'block';
+        fullscreenBtn.addEventListener('click', () => {
             requestFullscreen();
-            fullscreenPrompt.style.display = 'none';
-            fullscreenPromptVisible = false;
-            document.removeEventListener('keydown', onFirstKey);
-        };
-        document.addEventListener('keydown', onFirstKey);
+            fullscreenBtn.style.display = 'none';
+        });
     } else {
+        // Se entrato manualmente, richiedi subito il fullscreen
         requestFullscreen();
     }
     
@@ -1498,6 +1505,7 @@ function exitTvMode() {
     tvAudioBtn.style.display = 'none';
     tvExitBtn.style.display = 'none';
     tvIframeExitBtn.style.display = 'none';
+    fullscreenBtn.style.display = 'none';
     
     if (document.fullscreenElement) {
         document.exitFullscreen().catch(() => {});
@@ -2666,4 +2674,4 @@ function sortCategories() {
 document.getElementById('reload-btn').addEventListener('click', reloadPlaylist);
 </script>
 </body>
-</html>
+    </html>
