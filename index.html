@@ -373,8 +373,8 @@
             margin-bottom: 4px;
         }
         #tv-osd .osd-channel img {
-            width: 50px;
-            height: 50px;
+            width: 80px; /* ingrandito da 50px */
+            height: 80px; /* ingrandito da 50px */
             object-fit: contain;
         }
         #tv-osd .osd-program-wrap {
@@ -392,7 +392,7 @@
             line-height: 1.2; /* riduce altezza righe */
         }
         #tv-osd .osd-live-badge {
-            background: #ff1744;
+            background: #ff1744; /* stesso rosso del tempo */
             color: white;
             font-size: 12px;
             padding: 2px 8px;
@@ -1257,7 +1257,7 @@ function showSeekBar(currentTime, duration) {
     clearTimeout(tvSeekBar._hideTimeout);
     tvSeekBar._hideTimeout = setTimeout(() => {
         tvSeekBar.classList.remove('active');
-    }, 4000); // aumentato a 4 secondi
+    }, 4000);
 }
 
 function hideSeekBar() {
@@ -1285,7 +1285,7 @@ function showOsdWithCurrentState() {
     if (osdTimeout) clearTimeout(osdTimeout);
     osdTimeout = setTimeout(() => {
         tvOsd.classList.remove('active');
-    }, 4000); // aumentato a 4 secondi
+    }, 4000);
 }
 
 function renderOsdEPG() {
@@ -1310,11 +1310,11 @@ function renderOsdEPG() {
         const isFuture = p.start > Date.now();
         let timeColor;
         if (isLive) {
-            timeColor = '#ff1744'; // rosso per in onda
+            timeColor = '#ff1744';
         } else if (!isFuture) {
-            timeColor = '#ff1744'; // passato rosso
+            timeColor = '#ff1744';
         } else {
-            timeColor = '#00e676'; // futuro verde
+            timeColor = '#00e676';
         }
         timeEl.style.color = timeColor;
         
@@ -1354,12 +1354,11 @@ function navigateOsdEpg(direction) {
     if (newIndex >= 0 && newIndex < osdEpgState.programs.length) {
         osdEpgState.currentIndex = newIndex;
         renderOsdEPG();
-        // Mostra OSD se non già visibile
         tvOsd.classList.add('active');
         if (osdTimeout) clearTimeout(osdTimeout);
         osdTimeout = setTimeout(() => {
             tvOsd.classList.remove('active');
-        }, 4000); // aumentato a 4 secondi
+        }, 4000);
     }
 }
 
@@ -1409,7 +1408,6 @@ function enterTvMode() {
     tvVideo.autoplay = true;
     tvPlayer = new shaka.Player(tvVideo);
     
-    // Aggiungi listener per andare al live edge appena disponibile
     tvPlayer.addEventListener('streaming', () => {
         if (tvPlayer.isLive()) {
             const seekRange = tvPlayer.seekRange();
@@ -1435,7 +1433,6 @@ function enterTvMode() {
         tvModeOverlay.focus();
     }, 100);
     
-    // Mostra pulsante fullscreen solo se auto-avvio (TV)
     if (isAutoEnter) {
         fullscreenBtn.style.display = 'block';
         fullscreenBtn.addEventListener('click', () => {
@@ -1443,7 +1440,6 @@ function enterTvMode() {
             fullscreenBtn.style.display = 'none';
         });
     } else {
-        // Se entrato manualmente, richiedi subito il fullscreen
         requestFullscreen();
     }
     
@@ -1545,7 +1541,7 @@ function handleMouseMove() {
             hideSeekBar();
             tvOsd.classList.remove('active');
         }
-    }, 4000); // aumentato a 4 secondi
+    }, 4000);
 }
 
 function buildChannelList() {
@@ -1712,7 +1708,6 @@ function loadChannelInTv(index) {
     tvVideo.style.display = 'block';
     tvExitBtn.style.display = 'none';
     
-    // Escludi EPG per canali Svizzeri
     if (ch.group && ch.group.toLowerCase().includes('svizzeri')) {
         osdEpgState.programs = [];
         osdEpgState.currentIndex = -1;
@@ -1804,7 +1799,6 @@ function loadChannelInTv(index) {
     
     tvPlayer.load(ch.url).then(() => {
         if (token !== channelLoadToken) return;
-        // Porta il player al live edge (in aggiunta all'evento streaming)
         if (tvPlayer.isLive()) {
             const seekRange = tvPlayer.seekRange();
             if (seekRange && isFinite(seekRange.end)) {
@@ -1839,7 +1833,7 @@ function showOsd(data) {
     if (osdTimeout) clearTimeout(osdTimeout);
     osdTimeout = setTimeout(() => {
         tvOsd.classList.remove('active');
-    }, 4000); // aumentato a 4 secondi
+    }, 4000);
 }
 
 function toggleEpgPanel() {
@@ -1884,12 +1878,10 @@ function updateEpgPanel() {
 function handleTvKeys(e) {
     if (!tvModeActive || exitingTv) return;
     
-    // Tasti colorati mappati
     if (e.keyCode === 403 || e.key === 'F7' || e.code === 'F7') {
         e.preventDefault();
         e.stopPropagation();
         console.log('Tasto ROSSO premuto (F7/403) → EPG precedente');
-        // Mostra OSD e poi naviga
         showOsdWithCurrentState();
         navigateOsdEpg(-1);
         return;
@@ -2315,13 +2307,12 @@ async function checkAccess() {
         loadEPG();
         init(m3uData);
 
-        // Rilevamento TV e auto-avvio TV mode (ritardo aumentato a 5 secondi)
         const isTV = /Android TV|SmartTV|WebTV|Tizen|LGTV|Viera|BRAVIA|Fire TV|Roku|AppleTV/i.test(navigator.userAgent) || window.innerWidth > 1024;
         if (isTV) {
             isAutoEnter = true;
             setTimeout(() => {
                 if (!tvModeActive) enterTvMode();
-            }, 5000); // ritardo aumentato
+            }, 5000);
         }
 
     } catch (error) {
