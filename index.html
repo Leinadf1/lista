@@ -408,7 +408,7 @@
             left: 20px;
         }
         #tv-audio-btn {
-            bottom: 20px;
+            bottom: 90px; /* spostato più in alto per non sovrapporsi alla barra del timestamp */
             right: 20px;
         }
         #tv-exit-btn {
@@ -563,6 +563,11 @@
             color: white;
             font-size: 16px;
             min-width: 50px;
+            cursor: pointer; /* per rendere cliccabile il testo LIVE */
+        }
+        #tv-seek-current:hover,
+        #tv-seek-duration:hover {
+            color: #00e676;
         }
         .tv-seek-progress {
             flex: 1;
@@ -571,7 +576,7 @@
             border-radius: 3px;
             margin: 0 15px;
             overflow: hidden;
-            cursor: pointer; /* Aggiunto per indicare cliccabilità */
+            cursor: pointer;
         }
         #tv-seek-progress-bar {
             height: 100%;
@@ -1895,6 +1900,27 @@ tvSeekProgress.addEventListener('click', (e) => {
     showSeekBar(newTime, mediaElement.duration);
 });
 
+// Aggiungi listener per il click sul testo LIVE (sia current che duration)
+tvSeekCurrent.addEventListener('click', () => {
+    if (!tvPlayer || !tvSeekBar.classList.contains('active')) return;
+    if (tvSeekCurrent.textContent !== 'LIVE') return;
+    const seekRange = tvPlayer.seekRange();
+    if (seekRange && isFinite(seekRange.end)) {
+        tvPlayer.getMediaElement().currentTime = seekRange.end;
+        showSeekBar(seekRange.end, tvPlayer.getMediaElement().duration);
+    }
+});
+
+tvSeekDuration.addEventListener('click', () => {
+    if (!tvPlayer || !tvSeekBar.classList.contains('active')) return;
+    if (tvSeekDuration.textContent !== 'LIVE') return;
+    const seekRange = tvPlayer.seekRange();
+    if (seekRange && isFinite(seekRange.end)) {
+        tvPlayer.getMediaElement().currentTime = seekRange.end;
+        showSeekBar(seekRange.end, tvPlayer.getMediaElement().duration);
+    }
+});
+
 // Fine Modalità TV
 
 document.getElementById('tv-mode-btn').addEventListener('click', () => {
@@ -2304,7 +2330,7 @@ async function init(m3uContent) {
     countHeader.innerText = loadedCount + " CANALI";
     renderFavorites();
     
-    // Riordina le categorie: mette DAZN NeroZone prima di DAZN Svizzeri
+    // Riordina le categorie: mette DAZN NeroZone prima di DAZN Svizzeri (sempre)
     sortCategories();
     
     const searchInput = document.getElementById('search-input');
@@ -2347,7 +2373,7 @@ function sortCategories() {
     const mainList = document.getElementById('main-list');
     const containers = Array.from(mainList.querySelectorAll('.category-container'));
     
-    // Trova indice di NeroZone e Svizzeri
+    // Trova NeroZone e Svizzeri
     const neroZoneIndex = containers.findIndex(c => {
         const title = c.querySelector('.category-title').textContent.trim().toUpperCase();
         return title.includes('NEROZONE');
@@ -2357,15 +2383,20 @@ function sortCategories() {
         return title.includes('SVIZZERI');
     });
     
-    if (neroZoneIndex !== -1 && svizzeriIndex !== -1 && neroZoneIndex > svizzeriIndex) {
-        // Rimuovi NeroZone e inseriscilo prima di Svizzeri
+    if (neroZoneIndex !== -1 && svizzeriIndex !== -1) {
+        // Rimuovi NeroZone dalla posizione attuale
         const neroZoneEl = containers[neroZoneIndex];
         containers.splice(neroZoneIndex, 1);
+        
+        // Trova nuova posizione di Svizzeri (dopo la rimozione)
         const newSvizzeriIndex = containers.findIndex(c => {
             const title = c.querySelector('.category-title').textContent.trim().toUpperCase();
             return title.includes('SVIZZERI');
         });
+        
+        // Inserisci NeroZone prima di Svizzeri
         containers.splice(newSvizzeriIndex, 0, neroZoneEl);
+        
         // Riattacca in ordine
         containers.forEach(el => mainList.appendChild(el));
     }
@@ -2374,4 +2405,4 @@ function sortCategories() {
 document.getElementById('reload-btn').addEventListener('click', reloadPlaylist);
 </script>
 </body>
-</html>
+    </html>
