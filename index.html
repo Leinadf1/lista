@@ -34,21 +34,6 @@
             -webkit-font-smoothing: antialiased;
         }
         
-        #debug-overlay {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            background: rgba(0,0,0,0.8);
-            color: #00ff00;
-            font-size: 14px;
-            padding: 8px;
-            border-radius: 6px;
-            z-index: 99999;
-            display: none;
-            font-family: monospace;
-            pointer-events: none;
-        }
-        
         #fullscreen-btn {
             position: fixed;
             top: 50%;
@@ -424,6 +409,11 @@
         #tv-osd .osd-time {
             font-size: 18px; /* ingrandito */
             color: #b0b7c0;
+            margin-bottom: 6px;
+        }
+        #tv-osd .osd-desc {
+            font-size: 14px;
+            color: #8b949e;
             margin-bottom: 6px;
         }
         #tv-osd .osd-controls {
@@ -823,7 +813,6 @@
 </head>
 <body id="mainBody" style="display:none;">
 
-    <div id="debug-overlay">Debug tasti</div>
     <button id="fullscreen-btn">FULLSCREEN</button>
 
     <div id="header">
@@ -865,6 +854,7 @@
                 <span class="osd-live-badge" id="tv-osd-live-badge">IN ONDA</span>
             </div>
             <div class="osd-time" id="tv-osd-time"></div>
+            <div class="osd-desc" id="tv-osd-desc"></div>
             <div class="osd-controls">
                 <button id="tv-osd-prev-btn" class="osd-nav-btn prev" title="Programma precedente">
                     <span class="dot"></span> PREC.
@@ -907,28 +897,6 @@ const FAVORITES_KEY = 'favoriteChannels';
 let favoriteIds = new Set(JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]'));
 let allChannels = [];
 let tvChannelListAll = [];
-
-// Debug overlay
-const debugOverlay = document.getElementById('debug-overlay');
-function showDebug(msg) {
-    debugOverlay.style.display = 'block';
-    debugOverlay.textContent = msg;
-    setTimeout(() => {
-        if (debugOverlay.textContent === msg) {
-            debugOverlay.style.display = 'none';
-        }
-    }, 2000);
-}
-
-document.addEventListener('keydown', (e) => {
-    const keyInfo = `key=${e.key} code=${e.code} keyCode=${e.keyCode}`;
-    console.log('KEYDOWN:', keyInfo);
-    showDebug(keyInfo);
-});
-document.addEventListener('keyup', (e) => {
-    const keyInfo = `key=${e.key} code=${e.code} keyCode=${e.keyCode}`;
-    console.log('KEYUP:', keyInfo);
-});
 
 // -------------------- EPG --------------------
 const EPG_URL = 'https://raw.githubusercontent.com/Leinadf1/lista/main/epg_ripper_IT1.xml';
@@ -1287,7 +1255,7 @@ function showSeekBar(currentTime, duration) {
     clearTimeout(tvSeekBar._hideTimeout);
     tvSeekBar._hideTimeout = setTimeout(() => {
         tvSeekBar.classList.remove('active');
-    }, 5000);
+    }, 3000); // ridotto a 3 secondi
 }
 
 function hideSeekBar() {
@@ -1315,12 +1283,13 @@ function showOsdWithCurrentState() {
     if (osdTimeout) clearTimeout(osdTimeout);
     osdTimeout = setTimeout(() => {
         tvOsd.classList.remove('active');
-    }, 5000);
+    }, 3000); // ridotto a 3 secondi
 }
 
 function renderOsdEPG() {
     const programEl = document.getElementById('tv-osd-program');
     const timeEl = document.getElementById('tv-osd-time');
+    const descEl = document.getElementById('tv-osd-desc');
     const progressBar = document.getElementById('tv-osd-progress-bar');
     const liveBadge = document.getElementById('tv-osd-live-badge');
     const prevBtn = document.getElementById('tv-osd-prev-btn');
@@ -1331,7 +1300,15 @@ function renderOsdEPG() {
         programEl.textContent = p.title;
         const start = new Date(p.start);
         const stop = new Date(p.stop);
-        timeEl.textContent = `${start.toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'})} - ${stop.toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'})}`;
+        const timeStr = `${start.toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'})} - ${stop.toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'})}`;
+        timeEl.textContent = timeStr;
+        
+        // Colore orario: rosso se live, verde altrimenti
+        const isLive = osdEpgState.currentIndex === osdEpgState.liveIndex;
+        timeEl.style.color = isLive ? '#ff1744' : '#00e676';
+        
+        // Descrizione (se presente)
+        descEl.textContent = p.desc || '';
         
         const now = Date.now();
         let progress = 0;
@@ -1340,7 +1317,7 @@ function renderOsdEPG() {
         }
         progressBar.style.width = `${progress}%`;
         
-        if (osdEpgState.currentIndex === osdEpgState.liveIndex) {
+        if (isLive) {
             liveBadge.classList.add('visible');
         } else {
             liveBadge.classList.remove('visible');
@@ -1351,6 +1328,8 @@ function renderOsdEPG() {
     } else {
         programEl.textContent = 'Nessun EPG disponibile';
         timeEl.textContent = '';
+        timeEl.style.color = '#b0b7c0';
+        descEl.textContent = '';
         progressBar.style.width = '0%';
         liveBadge.classList.remove('visible');
         prevBtn.disabled = true;
@@ -1364,10 +1343,12 @@ function navigateOsdEpg(direction) {
     if (newIndex >= 0 && newIndex < osdEpgState.programs.length) {
         osdEpgState.currentIndex = newIndex;
         renderOsdEPG();
+        // Mostra OSD se non già visibile
+        tvOsd.classList.add('active');
         if (osdTimeout) clearTimeout(osdTimeout);
         osdTimeout = setTimeout(() => {
             tvOsd.classList.remove('active');
-        }, 5000);
+        }, 3000); // ridotto a 3 secondi
     }
 }
 
@@ -1553,7 +1534,7 @@ function handleMouseMove() {
             hideSeekBar();
             tvOsd.classList.remove('active');
         }
-    }, 5000);
+    }, 3000); // ridotto a 3 secondi
 }
 
 function buildChannelList() {
@@ -1841,12 +1822,13 @@ function showOsd(data) {
     }
     document.getElementById('tv-osd-program').textContent = data.program || '';
     document.getElementById('tv-osd-time').textContent = data.time || '';
+    document.getElementById('tv-osd-desc').textContent = data.desc || '';
     document.getElementById('tv-osd-progress-bar').style.width = `${data.progress || 0}%`;
     tvOsd.classList.add('active');
     if (osdTimeout) clearTimeout(osdTimeout);
     osdTimeout = setTimeout(() => {
         tvOsd.classList.remove('active');
-    }, 5000);
+    }, 3000); // ridotto a 3 secondi
 }
 
 function toggleEpgPanel() {
@@ -1896,6 +1878,8 @@ function handleTvKeys(e) {
         e.preventDefault();
         e.stopPropagation();
         console.log('Tasto ROSSO premuto (F7/403) → EPG precedente');
+        // Mostra OSD e poi naviga
+        showOsdWithCurrentState();
         navigateOsdEpg(-1);
         return;
     }
@@ -1903,6 +1887,7 @@ function handleTvKeys(e) {
         e.preventDefault();
         e.stopPropagation();
         console.log('Tasto VERDE premuto (F8/404) → EPG successivo');
+        showOsdWithCurrentState();
         navigateOsdEpg(1);
         return;
     }
@@ -2319,13 +2304,13 @@ async function checkAccess() {
         loadEPG();
         init(m3uData);
 
-        // Rilevamento TV e auto-avvio TV mode
+        // Rilevamento TV e auto-avvio TV mode (ritardo aumentato a 3 secondi)
         const isTV = /Android TV|SmartTV|WebTV|Tizen|LGTV|Viera|BRAVIA|Fire TV|Roku|AppleTV/i.test(navigator.userAgent) || window.innerWidth > 1024;
         if (isTV) {
             isAutoEnter = true;
             setTimeout(() => {
                 if (!tvModeActive) enterTvMode();
-            }, 1000);
+            }, 3000); // ritardo aumentato
         }
 
     } catch (error) {
@@ -2674,4 +2659,4 @@ function sortCategories() {
 document.getElementById('reload-btn').addEventListener('click', reloadPlaylist);
 </script>
 </body>
-    </html>
+</html>
