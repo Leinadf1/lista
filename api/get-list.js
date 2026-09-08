@@ -185,7 +185,21 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("[DAZN Swiss] Errore:", e); }
 
-        // 7. Primevideo (z_primevideo.m3u) dallo stesso Gist
+        // 7. Bluesport (z_bluesport.m3u) dallo stesso Gist - NUOVA SEZIONE
+        let bluesportContent = "";
+        try {
+            const gistBase = process.env.GIST_RAW_URL.replace(/\/[^\/]+$/, '');
+            const bluesportUrl = `${gistBase}/z_bluesport.m3u?t=${Date.now()}`;
+            const bluesportResponse = await fetch(bluesportUrl);
+            if (bluesportResponse.ok) {
+                let rawBluesport = await bluesportResponse.text();
+                bluesportContent = rawBluesport.replace(/^#EXTM3U\s*\n?/i, '').trim();
+            } else {
+                console.error("[Bluesport] Fetch failed:", bluesportResponse.status);
+            }
+        } catch (e) { console.error("[Bluesport] Errore:", e); }
+
+        // 8. Primevideo (z_primevideo.m3u) dallo stesso Gist
         let primevideoContent = "";
         try {
             const gistBase = process.env.GIST_RAW_URL.replace(/\/[^\/]+$/, '');
@@ -199,7 +213,7 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("[Primevideo] Errore:", e); }
 
-        // 8. NeroZone (z_dazn_nerozone.m3u) dallo stesso Gist principale
+        // 9. NeroZone (z_dazn_nerozone.m3u) dallo stesso Gist principale
         let nerozoneContent = "";
         try {
             const gistBase = process.env.GIST_RAW_URL.replace(/\/[^\/]+$/, '');
@@ -213,7 +227,7 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("[NeroZone] Errore:", e); }
 
-        // 9. Eurosport e RSI (z_eurosport-rsi.m3u) dallo stesso Gist principale
+        // 10. Eurosport e RSI (z_eurosport-rsi.m3u) dallo stesso Gist principale
         let eurosportRsiContent = "";
         try {
             const gistBase = process.env.GIST_RAW_URL.replace(/\/[^\/]+$/, '');
@@ -319,10 +333,17 @@ export default async function handler(req, res) {
             finalContent = finalContent.trimEnd() + "\n" + daznEventsContent;
         }
 
-        // Aggiunge DAZN Swiss e Primevideo
+        // Aggiunge DAZN Swiss
         if (daznSwissContent) {
             finalContent = finalContent.trimEnd() + "\n" + daznSwissContent;
         }
+
+        // Aggiunge Bluesport PRIMA di PrimeVideo (come richiesto)
+        if (bluesportContent) {
+            finalContent = finalContent.trimEnd() + "\n" + bluesportContent;
+        }
+
+        // Aggiunge Primevideo
         if (primevideoContent) {
             finalContent = finalContent.trimEnd() + "\n" + primevideoContent;
         }
@@ -339,4 +360,4 @@ export default async function handler(req, res) {
         console.error(error);
         res.status(500).json({ error: "Errore caricamento liste" });
     }
-}
+                    }
