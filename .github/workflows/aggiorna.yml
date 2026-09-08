@@ -41,7 +41,7 @@ jobs:
           curl -sL "https://gist.githubusercontent.com/Leinadf1/${{ secrets.GIST_ID }}/raw/sky.m3u" -o sky.m3u
           head -5 sky.m3u
 
-      # 4. Genera sky.m3u, z_dazn_swiss.m3u e z_primevideo.m3u
+      # 4. Genera sky.m3u, z_dazn_swiss.m3u, z_primevideo.m3u e z_bluesport.m3u
       - name: Update lists from Supabase
         continue-on-error: true
         run: |
@@ -93,7 +93,6 @@ jobs:
           curl -L -o epg_ripper_IT1.xml.gz "https://epgshare01.online/epgshare01/epg_ripper_IT1.xml.gz"
           if [ -s epg_ripper_IT1.xml.gz ]; then
             gunzip -f epg_ripper_IT1.xml.gz
-            # Aggiorna il file di stato con la data di oggi
             date -u +%F > epg_last_update.txt
             echo "EPG updated successfully."
           else
@@ -114,7 +113,7 @@ jobs:
             git push
           fi
 
-      # 10. Deploy dei file sui Gist (invariati)
+      # 10. Deploy dei file sui Gist
       - name: Deploy lista_privata.m3u to Gist
         continue-on-error: true
         uses: exuanbo/actions-deploy-gist@v1
@@ -167,4 +166,14 @@ jobs:
           token: ${{ secrets.GIST_TOKEN }}
           gist_id: ${{ secrets.GIST_ID }}
           file_path: z_dazn_nerozone.m3u
+          file_type: text
+
+      # NUOVO: deploy di z_bluesport.m3u
+      - name: Deploy z_bluesport.m3u to Gist
+        continue-on-error: true
+        uses: exuanbo/actions-deploy-gist@v1
+        with:
+          token: ${{ secrets.GIST_TOKEN }}
+          gist_id: ${{ secrets.GIST_ID }}
+          file_path: z_bluesport.m3u
           file_type: text
