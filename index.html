@@ -2307,7 +2307,8 @@ async function checkAccess() {
         loadEPG();
         init(m3uData);
 
-        const isTV = /Android TV|SmartTV|WebTV|Tizen|LGTV|Viera|BRAVIA|Fire TV|Roku|AppleTV/i.test(navigator.userAgent) || window.innerWidth > 1024;
+        // Rilevamento TV e auto-avvio TV mode SOLO su dispositivi TV (non PC)
+        const isTV = /Android TV|SmartTV|WebTV|Tizen|LGTV|Viera|BRAVIA|Fire TV|Roku|AppleTV/i.test(navigator.userAgent);
         if (isTV) {
             isAutoEnter = true;
             setTimeout(() => {
