@@ -168,7 +168,6 @@ jobs:
           file_path: z_dazn_nerozone.m3u
           file_type: text
 
-      # NUOVO: deploy di z_bluesport.m3u
       - name: Deploy z_bluesport.m3u to Gist
         continue-on-error: true
         uses: exuanbo/actions-deploy-gist@v1
