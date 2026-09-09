@@ -65,38 +65,7 @@ function findBackupChannel(name, backupList) {
     const searchName = name.trim().toUpperCase();
     return backupList.find(ch => ch.name.trim().toUpperCase() === searchName);
 }
-
-// Rimuove da un contenuto M3U tutti i canali il cui nome è presente in namesSet
-function removeChannelsByName(m3uContent, namesSet) {
-    const lines = m3uContent.split('\n');
-    const result = [];
-    let skip = false;
-
-    for (let line of lines) {
-        const trimmed = line.trim();
-        if (trimmed.startsWith('#EXTINF:')) {
-            const nameMatch = trimmed.match(/,(.*)/);
-            const name = nameMatch ? nameMatch[1].trim().toUpperCase() : '';
-            if (namesSet.has(name)) {
-                skip = true;
-                continue; // salta la riga #EXTINF
-            }
-        }
-
-        if (skip) {
-            if (trimmed.startsWith('http')) {
-                skip = false;
-                continue; // salta anche l'URL
-            } else {
-                continue; // salta righe di metadati
-            }
-        }
-
-        result.push(line);
-    }
-
-    return result.join('\n');
-}
+// ---------------------------------------
 
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -140,10 +109,9 @@ export default async function handler(req, res) {
     await kv.set(sessionKey, "active", { ex: 25 });
 
     try {
-        // 1. Scarica la lista base dal Gist Segreto (listaprivata.m3u) - usata come backup
+        // 1. Scarica la lista base dal Gist Segreto
         const githubResponse = await fetch(`${process.env.GIST_RAW_URL}?t=${Date.now()}`);
         const fileContent = await githubResponse.text();
-        const baseChannels = parseM3U(fileContent); // per lookup rapido
 
         // 2. Carica canali Sky primari (sky.m3u) dallo stesso Gist
         let skyChannels = [];
@@ -273,82 +241,116 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("[Eurosport/RSI] Errore:", e); }
 
-        // === LOGICA PRINCIPALE: sky.m3u come lista primaria ===
-
-        // Per ogni canale sky, se scaduto, cerca prima in sky2, poi nella base (listaprivata)
-        let finalSkyChannels = skyChannels.map(ch => {
-            if (isChannelExpired(ch)) {
-                const backupFromSky2 = findBackupChannel(ch.name, backupChannels);
-                if (backupFromSky2) {
-                    return { ...ch, url: backupFromSky2.url, drm: backupFromSky2.drm };
+        const existingNames = new Set();
+        const baseLines = fileContent.split('\n');
+        for (let i = 0; i < baseLines.length; i++) {
+            if (baseLines[i].startsWith('#EXTINF:')) {
+                const nameMatch = baseLines[i].match(/,(.*)/);
+                if (nameMatch) {
+                    existingNames.add(nameMatch[1].trim().toUpperCase());
                 }
-                const backupFromBase = findBackupChannel(ch.name, baseChannels);
-                if (backupFromBase) {
-                    return { ...ch, url: backupFromBase.url, drm: backupFromBase.drm };
+            }
+        }
+
+        let newSkyChannels = skyChannels.filter(ch => !existingNames.has(ch.name.toUpperCase()));
+
+        newSkyChannels = newSkyChannels.map(ch => {
+            if (isChannelExpired(ch)) {
+                const backup = findBackupChannel(ch.name, backupChannels);
+                if (backup) {
+                    return { ...ch, url: backup.url, drm: backup.drm };
                 }
             }
             return ch;
         });
 
-        // Rimuovi dalla base tutti i canali che hanno lo stesso nome di quelli presenti in sky.m3u
-        const skyNamesSet = new Set(finalSkyChannels.map(ch => ch.name.toUpperCase()));
-        const baseContentFiltered = removeChannelsByName(fileContent, skyNamesSet);
-
-        // Costruzione contenuto finale: prima i canali Sky, poi la base senza duplicati, poi le altre liste
-        let finalContent = "#EXTM3U\n";
-
-        // Aggiungi blocco Sky
-        if (finalSkyChannels.length > 0) {
-            const skyBlock = finalSkyChannels.map(c => buildM3U(c)).join('\n');
-            finalContent += skyBlock + "\n";
-        }
-
-        // Aggiungi base filtrata
-        if (baseContentFiltered.trim().length > 0) {
-            finalContent += baseContentFiltered + "\n";
-        }
-
-        // Aggiungi le altre liste come prima
-        if (nerozoneContent) finalContent = finalContent.trimEnd() + "\n" + nerozoneContent;
-        if (daznContent) finalContent = finalContent.trimEnd() + "\n" + daznContent;
-        if (daznEventsContent) finalContent = finalContent.trimEnd() + "\n" + daznEventsContent;
-        if (daznSwissContent) finalContent = finalContent.trimEnd() + "\n" + daznSwissContent;
-        if (bluesportContent) finalContent = finalContent.trimEnd() + "\n" + bluesportContent;
-        if (primevideoContent) finalContent = finalContent.trimEnd() + "\n" + primevideoContent;
-        if (eurosportRsiContent) finalContent = finalContent.trimEnd() + "\n" + eurosportRsiContent;
-
-        // Gestione F1-only
         const f1OnlyPasswords = (process.env.F1_ONLY_PASSWORD || "").split(',').map(p => p.trim().toLowerCase());
         const isF1Only = f1OnlyPasswords.includes(psw.toLowerCase());
 
         if (isF1Only) {
-            // Cerca F1 tra i canali Sky finali
-            const f1FromSky = finalSkyChannels.find(c => c.name.toUpperCase().includes("SKY SPORT F1"));
+            const lines = fileContent.split('\n').map(l => l.trim());
+            let filtered = "#EXTM3U\n";
+            let targetIdx = -1;
+
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].startsWith('#EXTINF') && lines[i].toUpperCase().includes("SKY SPORT F1")) {
+                    targetIdx = i;
+                    break;
+                }
+            }
+
+            if (targetIdx !== -1) {
+                let j = targetIdx - 1;
+                let buffer = [];
+                while (j >= 0 && lines[j].startsWith('#') && !lines[j].startsWith('#EXTM3U') && !lines[j].startsWith('#EXTINF')) {
+                    if (lines[j] !== "") buffer.unshift(lines[j]);
+                    j--;
+                }
+                buffer.forEach(l => filtered += l + "\n");
+                filtered += lines[targetIdx] + "\n";
+                if (lines[targetIdx + 1]) filtered += lines[targetIdx + 1] + "\n";
+
+                filtered = filtered.split('\n').filter(line => !line.toUpperCase().includes("EUROSPORT")).join('\n');
+                const encoded = Buffer.from(filtered, 'utf-8').toString('base64');
+                return res.status(200).send(encoded);
+            }
+
+            const f1FromSky = skyChannels.find(c => c.name.toUpperCase().includes("SKY SPORT F1"));
             if (f1FromSky) {
-                let filtered = "#EXTM3U\n";
                 filtered += buildM3U(f1FromSky);
                 const encoded = Buffer.from(filtered, 'utf-8').toString('base64');
                 return res.status(200).send(encoded);
             }
-            // Altrimenti cerca nella base filtrata
-            const lines = baseContentFiltered.split('\n');
-            let found = false;
-            let filtered = "#EXTM3U\n";
-            for (let i = 0; i < lines.length; i++) {
-                if (lines[i].startsWith('#EXTINF') && lines[i].toUpperCase().includes("SKY SPORT F1")) {
-                    filtered += lines[i] + "\n";
-                    if (lines[i+1]) filtered += lines[i+1] + "\n";
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                // Cerca in backupChannels
-                const f1FromBackup = backupChannels.find(c => c.name.toUpperCase().includes("SKY SPORT F1"));
-                if (f1FromBackup) filtered += buildM3U(f1FromBackup);
-            }
+
             const encoded = Buffer.from(filtered, 'utf-8').toString('base64');
             return res.status(200).send(encoded);
+        }
+
+        let finalContent = fileContent;
+
+        if (newSkyChannels.length > 0) {
+            const headerIdx = finalContent.split('\n').findIndex(l => l.trim() === '#EXTM3U');
+            const skyBlock = newSkyChannels.map(c => buildM3U(c)).join('\n');
+            if (headerIdx !== -1) {
+                const contentLines = finalContent.split('\n');
+                contentLines.splice(headerIdx + 1, 0, skyBlock);
+                finalContent = contentLines.join('\n');
+            } else {
+                finalContent = "#EXTM3U\n" + skyBlock + '\n' + finalContent;
+            }
+        }
+
+        // Aggiunge NeroZone appena prima dei DAZN lineari (dazn.m3u)
+        if (nerozoneContent) {
+            finalContent = finalContent.trimEnd() + "\n" + nerozoneContent;
+        }
+
+        // Aggiunge entrambi i DAZN (prima dazn.m3u, poi dazn_events.m3u)
+        if (daznContent) {
+            finalContent = finalContent.trimEnd() + "\n" + daznContent;
+        }
+        if (daznEventsContent) {
+            finalContent = finalContent.trimEnd() + "\n" + daznEventsContent;
+        }
+
+        // Aggiunge DAZN Swiss
+        if (daznSwissContent) {
+            finalContent = finalContent.trimEnd() + "\n" + daznSwissContent;
+        }
+
+        // Aggiunge Bluesport PRIMA di PrimeVideo (come richiesto)
+        if (bluesportContent) {
+            finalContent = finalContent.trimEnd() + "\n" + bluesportContent;
+        }
+
+        // Aggiunge Primevideo
+        if (primevideoContent) {
+            finalContent = finalContent.trimEnd() + "\n" + primevideoContent;
+        }
+
+        // Aggiunge Eurosport e RSI dal file esterno
+        if (eurosportRsiContent) {
+            finalContent = finalContent.trimEnd() + "\n" + eurosportRsiContent;
         }
 
         const encoded = Buffer.from(finalContent, 'utf-8').toString('base64');
@@ -358,4 +360,4 @@ export default async function handler(req, res) {
         console.error(error);
         res.status(500).json({ error: "Errore caricamento liste" });
     }
-}
+                    }
