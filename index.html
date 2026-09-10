@@ -808,26 +808,6 @@
                 font-size: 22px;
             }
         }
-
-        /* Overlay debug */
-        #epg-debug-overlay {
-            position: fixed;
-            bottom: 10px;
-            left: 10px;
-            background: rgba(0,0,0,0.8);
-            color: #00ff00;
-            font-size: 12px;
-            padding: 8px;
-            border-radius: 6px;
-            z-index: 100000;
-            max-width: 90vw;
-            max-height: 30vh;
-            overflow-y: auto;
-            white-space: pre-wrap;
-            display: none;
-            pointer-events: none;
-            font-family: monospace;
-        }
     </style>
 </head>
 <body id="mainBody" style="display:none;">
@@ -908,9 +888,6 @@
         </div>
     </div>
 
-    <!-- Overlay debug EPG -->
-    <div id="epg-debug-overlay"></div>
-
 <script type="module">
 let passwordGlobale = "";
 let heartbeatInterval;
@@ -919,21 +896,6 @@ const FAVORITES_KEY = 'favoriteChannels';
 let favoriteIds = new Set(JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]'));
 let allChannels = [];
 let tvChannelListAll = [];
-
-// Debug EPG
-const epgDebugOverlay = document.getElementById('epg-debug-overlay');
-
-function epgDebug(message) {
-    console.log('[EPG DEBUG]', message);
-    if (epgDebugOverlay) {
-        epgDebugOverlay.style.display = 'block';
-        epgDebugOverlay.textContent += message + '\n';
-        const lines = epgDebugOverlay.textContent.split('\n');
-        if (lines.length > 50) {
-            epgDebugOverlay.textContent = lines.slice(lines.length - 50).join('\n');
-        }
-    }
-}
 
 // -------------------- EPG --------------------
 const EPG_URL = 'https://raw.githubusercontent.com/Leinadf1/lista/main/epg_ripper_IT1.xml';
@@ -977,12 +939,12 @@ async function loadEPG() {
     epgError = null;
     epgReady = false;
     try {
-        epgDebug('Caricamento EPG da ' + EPG_URL);
+        console.log('Caricamento EPG...');
         const response = await fetch(EPG_URL);
         if (!response.ok) throw new Error('HTTP ' + response.status);
         
         const text = await response.text();
-        epgDebug('EPG scaricato, dimensione: ' + text.length);
+        console.log('EPG scaricato, parsing...');
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(text, 'text/xml');
         
@@ -1032,9 +994,7 @@ async function loadEPG() {
         }
         
         epgReady = true;
-        epgDebug('EPG caricato con ' + epgChannels.size + ' voci');
-        const unoNames = Array.from(epgNames).filter(n => n.includes('uno'));
-        epgDebug('Nomi EPG contenenti "uno": ' + JSON.stringify(unoNames));
+        console.log('EPG caricato con', epgChannels.size, 'voci');
     } catch (error) {
         console.error('Errore EPG:', error);
         epgReady = false;
@@ -1082,20 +1042,15 @@ function getCurrentProgram(ch) {
     const aliases = getAliasesForChannel(ch);
     candidates.push(...aliases.map(normalizeName));
     
-    epgDebug(`Ricerca EPG per: "${ch.name}" (normalizzato: ${normName})`);
-    epgDebug('Candidati: ' + JSON.stringify(candidates));
-    
     for (const key of candidates) {
         if (epgChannels.has(key)) {
             const programs = epgChannels.get(key);
             const currentIndex = programs.findIndex(p => p.start <= now && now < p.stop);
             if (currentIndex !== -1) {
-                epgDebug(`Trovato esatto (live) con chiave: ${key}`);
                 return { status: 'ok', programs, currentIndex, matchedKey: key, isLive: true };
             }
             const nextIndex = programs.findIndex(p => p.start > now);
             if (nextIndex !== -1) {
-                epgDebug(`Trovato esatto (prossimo) con chiave: ${key}`);
                 return { status: 'ok', programs, currentIndex: nextIndex, matchedKey: key, isLive: false };
             }
         }
@@ -1110,22 +1065,14 @@ function getCurrentProgram(ch) {
             bestKey = epgName;
         }
     }
-    epgDebug(`Miglior candidato fuzzy: ${bestKey} (distanza ${bestDist})`);
     if (bestKey && bestDist <= 3 && epgChannels.has(bestKey)) {
         const programs = epgChannels.get(bestKey);
         const currentIndex = programs.findIndex(p => p.start <= now && now < p.stop);
-        if (currentIndex !== -1) {
-            epgDebug(`Trovato fuzzy (live) con chiave: ${bestKey}`);
-            return { status: 'ok', programs, currentIndex, matchedKey: bestKey, isLive: true };
-        }
+        if (currentIndex !== -1) return { status: 'ok', programs, currentIndex, matchedKey: bestKey, isLive: true };
         const nextIndex = programs.findIndex(p => p.start > now);
-        if (nextIndex !== -1) {
-            epgDebug(`Trovato fuzzy (prossimo) con chiave: ${bestKey}`);
-            return { status: 'ok', programs, currentIndex: nextIndex, matchedKey: bestKey, isLive: false };
-        }
+        if (nextIndex !== -1) return { status: 'ok', programs, currentIndex: nextIndex, matchedKey: bestKey, isLive: false };
     }
     
-    epgDebug('Nessun match trovato per: ' + ch.name);
     return { status: 'notfound' };
 }
 
@@ -2715,4 +2662,4 @@ function sortCategories() {
 document.getElementById('reload-btn').addEventListener('click', reloadPlaylist);
 </script>
 </body>
-</html>
+    </html>
