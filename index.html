@@ -73,20 +73,22 @@
         .reload-btn {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
+            gap: 6px;
+            padding: 8px 12px;
             background: #0a2540;
             color: white;
             border: none;
             border-radius: 25px;
             font-weight: 700;
-            font-size: 14px;
+            font-size: 13px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.8px;
             cursor: pointer;
             transition: all 0.2s ease;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
             font-family: 'Formula1 Display Bold', 'Inter', sans-serif;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
         .reload-btn:hover {
             background: #123b66;
@@ -100,7 +102,7 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         .reload-icon {
-            font-size: 18px;
+            font-size: 16px;
         }
         
         #search-container {
@@ -130,6 +132,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            flex-shrink: 0;
         }
         
         #chan-count { 
@@ -140,6 +143,7 @@
             padding: 4px 12px; 
             border-radius: 20px; 
             font-family: 'Formula1 Display Bold', 'Inter', sans-serif;
+            white-space: nowrap;
         }
         
         #tv-mode-btn {
@@ -175,12 +179,18 @@
                 flex-wrap: wrap;
                 justify-content: space-between;
                 align-items: center;
-                gap: 8px;
+                gap: 6px;
             }
             .reload-btn {
-                padding: 8px 12px;
+                padding: 6px 10px;
+                font-size: 11px;
+                gap: 4px;
+                letter-spacing: 0.5px;
+                flex: 0 1 auto;
+                min-width: 0;
+            }
+            .reload-btn .reload-icon {
                 font-size: 13px;
-                flex: 0 0 auto;
             }
             #search-container {
                 order: 3;
@@ -192,6 +202,11 @@
                 display: flex;
                 align-items: center;
                 gap: 8px;
+                flex-shrink: 0;
+            }
+            #chan-count {
+                font-size: 11px;
+                padding: 4px 10px;
             }
         }
         
@@ -2662,4 +2677,4 @@ function sortCategories() {
 document.getElementById('reload-btn').addEventListener('click', reloadPlaylist);
 </script>
 </body>
-    </html>
+</html>
