@@ -808,6 +808,26 @@
                 font-size: 22px;
             }
         }
+
+        /* Overlay debug */
+        #epg-debug-overlay {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.8);
+            color: #00ff00;
+            font-size: 12px;
+            padding: 8px;
+            border-radius: 6px;
+            z-index: 100000;
+            max-width: 90vw;
+            max-height: 30vh;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            display: none;
+            pointer-events: none;
+            font-family: monospace;
+        }
     </style>
 </head>
 <body id="mainBody" style="display:none;">
@@ -888,6 +908,9 @@
         </div>
     </div>
 
+    <!-- Overlay debug EPG -->
+    <div id="epg-debug-overlay"></div>
+
 <script type="module">
 let passwordGlobale = "";
 let heartbeatInterval;
@@ -897,17 +920,28 @@ let favoriteIds = new Set(JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]'
 let allChannels = [];
 let tvChannelListAll = [];
 
+// Debug EPG
+const epgDebugOverlay = document.getElementById('epg-debug-overlay');
+
+function epgDebug(message) {
+    console.log('[EPG DEBUG]', message);
+    if (epgDebugOverlay) {
+        epgDebugOverlay.style.display = 'block';
+        epgDebugOverlay.textContent += message + '\n';
+        // Limita il numero di righe
+        const lines = epgDebugOverlay.textContent.split('\n');
+        if (lines.length > 50) {
+            epgDebugOverlay.textContent = lines.slice(lines.length - 50).join('\n');
+        }
+    }
+}
+
 // -------------------- EPG --------------------
 const EPG_URL = 'https://raw.githubusercontent.com/Leinadf1/lista/main/epg_ripper_IT1.xml';
 let epgChannels = new Map();
 let epgNames = new Set();
 let epgReady = false;
 let epgError = null;
-
-// Debug EPG
-function epgDebug(message) {
-    console.log('[EPG DEBUG]', message);
-}
 
 function normalizeName(name) {
     return name.toLowerCase().replace(/[^a-z0-9]/gi, '');
@@ -1000,6 +1034,9 @@ async function loadEPG() {
         
         epgReady = true;
         epgDebug('EPG caricato con ' + epgChannels.size + ' voci');
+        // Log dei nomi che contengono "uno" per debug
+        const unoNames = Array.from(epgNames).filter(n => n.includes('uno'));
+        epgDebug('Nomi EPG contenenti "uno": ' + JSON.stringify(unoNames));
     } catch (error) {
         console.error('Errore EPG:', error);
         epgReady = false;
@@ -1030,15 +1067,13 @@ function getAliasesForChannel(ch) {
         aliases.push('dazn1');
     }
 
-    // Alias per Sky Uno e Sky Uno Plus
+    // Alias per Sky Uno e Sky Uno Plus (potenziati)
     if (normName === 'skuno') {
         aliases.push('skunohd', 'skuno1', 'skunoplus', 'skunoplus1', 'skunoplushd', 'skyunoit', 'skyuno1it');
     }
     if (normName === 'skunoplus') {
         aliases.push('skyunoplusit', 'skyuno1it', 'skyunoit', 'skuno', 'skuno1', 'skunohd', 'skunoplus1', 'skyunoplus');
     }
-
-    // Aggiungi varianti con suffissi
     if (normName.startsWith('sky')) {
         aliases.push(normName + 'it', normName + '1', normName + '1it', normName + 'hd', normName + 'hdit', normName + 'plus', normName + 'plusit');
     }
@@ -1061,7 +1096,7 @@ function getCurrentProgram(ch) {
     candidates.push(...aliases.map(normalizeName));
     
     epgDebug(`Ricerca EPG per: "${ch.name}" (normalizzato: ${normName})`);
-    epgDebug('Candidati:', candidates);
+    epgDebug('Candidati: ' + JSON.stringify(candidates));
     
     for (const key of candidates) {
         if (epgChannels.has(key)) {
@@ -1089,7 +1124,7 @@ function getCurrentProgram(ch) {
         }
     }
     epgDebug(`Miglior candidato fuzzy: ${bestKey} (distanza ${bestDist})`);
-    if (bestKey && bestDist <= 3 && epgChannels.has(bestKey)) {
+    if (bestKey && bestDist <= 4 && epgChannels.has(bestKey)) {
         const programs = epgChannels.get(bestKey);
         const currentIndex = programs.findIndex(p => p.start <= now && now < p.stop);
         if (currentIndex !== -1) {
