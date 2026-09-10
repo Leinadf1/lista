@@ -74,13 +74,13 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 8px 16px; /* ridotto da 10px 20px */
+            padding: 8px 16px;
             background: #0a2540;
             color: white;
             border: none;
             border-radius: 25px;
             font-weight: 700;
-            font-size: 14px; /* ridotto da 15px */
+            font-size: 14px;
             text-transform: uppercase;
             letter-spacing: 1px;
             cursor: pointer;
@@ -348,15 +348,15 @@
         }
         #tv-osd {
             position: absolute;
-            bottom: 70px; /* spostato più in alto */
+            bottom: 70px;
             left: 20px;
             background: rgba(0,0,0,0.85);
             color: white;
-            padding: 12px 16px; /* ridotto padding */
+            padding: 12px 16px;
             border-radius: 10px;
             display: none;
             z-index: 1000;
-            width: 500px; /* ridotto larghezza per compattezza */
+            width: 500px;
             max-width: 90vw;
             font-family: 'Formula1 Display Bold', 'Inter', sans-serif;
             box-sizing: border-box;
@@ -373,8 +373,8 @@
             margin-bottom: 4px;
         }
         #tv-osd .osd-channel img {
-            width: 80px; /* ingrandito da 50px */
-            height: 80px; /* ingrandito da 50px */
+            width: 80px;
+            height: 80px;
             object-fit: contain;
         }
         #tv-osd .osd-program-wrap {
@@ -385,14 +385,14 @@
         }
         #tv-osd .osd-program {
             font-size: 18px;
-            white-space: normal; /* va su più righe */
+            white-space: normal;
             overflow: visible;
             text-overflow: clip;
             flex: 1;
-            line-height: 1.2; /* riduce altezza righe */
+            line-height: 1.2;
         }
         #tv-osd .osd-live-badge {
-            background: #ff1744; /* stesso rosso del tempo */
+            background: #ff1744;
             color: white;
             font-size: 12px;
             padding: 2px 8px;
@@ -407,7 +407,7 @@
             display: inline-block;
         }
         #tv-osd .osd-time {
-            font-size: 18px; /* ingrandito */
+            font-size: 18px;
             color: #b0b7c0;
             margin-bottom: 6px;
         }
@@ -518,7 +518,6 @@
             background: darkred;
         }
 
-        /* Hotspot per l'iframe: copre i 5/6 superiori */
         #tv-iframe-hotspot {
             position: absolute;
             top: 0;
@@ -809,9 +808,74 @@
                 font-size: 22px;
             }
         }
+
+        /* Overlay password */
+        #password-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 100001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            color: white;
+            font-family: 'Formula1 Display Bold', 'Inter', sans-serif;
+        }
+        #password-overlay h2 {
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        #password-input {
+            padding: 12px 16px;
+            font-size: 18px;
+            border-radius: 8px;
+            border: 1px solid #30363d;
+            background: #161b22;
+            color: white;
+            margin-bottom: 15px;
+            width: 280px;
+            text-align: center;
+            outline: none;
+        }
+        #password-input:focus {
+            border-color: #58a6ff;
+        }
+        #password-submit {
+            padding: 12px 30px;
+            font-size: 18px;
+            border: none;
+            border-radius: 8px;
+            background: #0a2540;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+            font-family: inherit;
+        }
+        #password-submit:hover {
+            background: #123b66;
+        }
+        #password-error {
+            color: #ff1744;
+            margin-top: 10px;
+            font-size: 14px;
+            min-height: 20px;
+        }
     </style>
 </head>
 <body id="mainBody" style="display:none;">
+
+    <!-- Overlay password -->
+    <div id="password-overlay">
+        <h2>🔐 Inserisci password</h2>
+        <input type="password" id="password-input" placeholder="Password" autocomplete="off">
+        <button id="password-submit">ACCEDI</button>
+        <div id="password-error"></div>
+    </div>
 
     <button id="fullscreen-btn">FULLSCREEN</button>
 
@@ -905,6 +969,11 @@ let epgNames = new Set();
 let epgReady = false;
 let epgError = null;
 
+// Debug EPG
+function epgDebug(message) {
+    console.log('[EPG DEBUG]', message);
+}
+
 function normalizeName(name) {
     return name.toLowerCase().replace(/[^a-z0-9]/gi, '');
 }
@@ -940,12 +1009,12 @@ async function loadEPG() {
     epgError = null;
     epgReady = false;
     try {
-        console.log('Caricamento EPG...');
+        epgDebug('Caricamento EPG da ' + EPG_URL);
         const response = await fetch(EPG_URL);
         if (!response.ok) throw new Error('HTTP ' + response.status);
         
         const text = await response.text();
-        console.log('EPG scaricato, parsing...');
+        epgDebug('EPG scaricato, dimensione: ' + text.length);
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(text, 'text/xml');
         
@@ -995,7 +1064,7 @@ async function loadEPG() {
         }
         
         epgReady = true;
-        console.log('EPG caricato con', epgChannels.size, 'voci');
+        epgDebug('EPG caricato con ' + epgChannels.size + ' voci');
     } catch (error) {
         console.error('Errore EPG:', error);
         epgReady = false;
@@ -1025,7 +1094,20 @@ function getAliasesForChannel(ch) {
     if (normName.includes('dazn1warp')) {
         aliases.push('dazn1');
     }
-    
+
+    // Alias per Sky Uno e Sky Uno Plus
+    if (normName === 'skuno') {
+        aliases.push('skunohd', 'skuno1', 'skunoplus', 'skunoplus1', 'skunoplushd', 'skyunoit', 'skyuno1it');
+    }
+    if (normName === 'skunoplus') {
+        aliases.push('skyunoplusit', 'skyuno1it', 'skyunoit', 'skuno', 'skuno1', 'skunohd', 'skunoplus1', 'skyunoplus');
+    }
+
+    // Aggiungi varianti con suffissi
+    if (normName.startsWith('sky')) {
+        aliases.push(normName + 'it', normName + '1', normName + '1it', normName + 'hd', normName + 'hdit', normName + 'plus', normName + 'plusit');
+    }
+
     return aliases;
 }
 
@@ -1043,15 +1125,20 @@ function getCurrentProgram(ch) {
     const aliases = getAliasesForChannel(ch);
     candidates.push(...aliases.map(normalizeName));
     
+    epgDebug(`Ricerca EPG per: "${ch.name}" (normalizzato: ${normName})`);
+    epgDebug('Candidati:', candidates);
+    
     for (const key of candidates) {
         if (epgChannels.has(key)) {
             const programs = epgChannels.get(key);
             const currentIndex = programs.findIndex(p => p.start <= now && now < p.stop);
             if (currentIndex !== -1) {
+                epgDebug(`Trovato esatto (live) con chiave: ${key}`);
                 return { status: 'ok', programs, currentIndex, matchedKey: key, isLive: true };
             }
             const nextIndex = programs.findIndex(p => p.start > now);
             if (nextIndex !== -1) {
+                epgDebug(`Trovato esatto (prossimo) con chiave: ${key}`);
                 return { status: 'ok', programs, currentIndex: nextIndex, matchedKey: key, isLive: false };
             }
         }
@@ -1066,14 +1153,22 @@ function getCurrentProgram(ch) {
             bestKey = epgName;
         }
     }
-    if (bestKey && bestDist <= 2 && epgChannels.has(bestKey)) {
+    epgDebug(`Miglior candidato fuzzy: ${bestKey} (distanza ${bestDist})`);
+    if (bestKey && bestDist <= 3 && epgChannels.has(bestKey)) {
         const programs = epgChannels.get(bestKey);
         const currentIndex = programs.findIndex(p => p.start <= now && now < p.stop);
-        if (currentIndex !== -1) return { status: 'ok', programs, currentIndex, matchedKey: bestKey, isLive: true };
+        if (currentIndex !== -1) {
+            epgDebug(`Trovato fuzzy (live) con chiave: ${bestKey}`);
+            return { status: 'ok', programs, currentIndex, matchedKey: bestKey, isLive: true };
+        }
         const nextIndex = programs.findIndex(p => p.start > now);
-        if (nextIndex !== -1) return { status: 'ok', programs, currentIndex: nextIndex, matchedKey: bestKey, isLive: false };
+        if (nextIndex !== -1) {
+            epgDebug(`Trovato fuzzy (prossimo) con chiave: ${bestKey}`);
+            return { status: 'ok', programs, currentIndex: nextIndex, matchedKey: bestKey, isLive: false };
+        }
     }
     
+    epgDebug('Nessun match trovato per: ' + ch.name);
     return { status: 'notfound' };
 }
 
@@ -1126,7 +1221,6 @@ function renderEPG() {
     const timeStr = `${startDate.toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'})} - ${stopDate.toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'})}`;
     
     const isLive = epgState.currentIndex === epgState.liveIndex;
-    // Solo in onda rosso, tutti gli altri verdi
     const timeColor = isLive ? '#ff1744' : '#00e676';
     
     const prevDisabled = epgState.currentIndex === 0;
@@ -1305,7 +1399,6 @@ function renderOsdEPG() {
         const timeStr = `${start.toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'})} - ${stop.toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'})}`;
         timeEl.textContent = timeStr;
         
-        // Colore orario: rosso se in onda, rosso se passato, verde se futuro
         const isLive = osdEpgState.currentIndex === osdEpgState.liveIndex;
         const isFuture = p.start > Date.now();
         let timeColor;
@@ -1318,7 +1411,6 @@ function renderOsdEPG() {
         }
         timeEl.style.color = timeColor;
         
-        // Descrizione (se presente)
         descEl.textContent = p.desc || '';
         
         const now = Date.now();
@@ -2208,14 +2300,12 @@ if (document.fonts && document.fonts.load) {
     document.fonts.load('1em "Formula1 Display Bold"');
 }
 
-// -------------------- Avvio --------------------
-if (document.readyState === 'complete') {
-    checkAccess();
-} else {
-    window.addEventListener('load', checkAccess);
-}
+// -------------------- Autenticazione --------------------
+const passwordOverlay = document.getElementById('password-overlay');
+const passwordInput = document.getElementById('password-input');
+const passwordSubmit = document.getElementById('password-submit');
+const passwordError = document.getElementById('password-error');
 
-// -------------------- Funzioni di supporto per il player principale --------------------
 function startHeartbeat(password) {
     if (heartbeatInterval) clearInterval(heartbeatInterval);
     heartbeatInterval = setInterval(async () => {
@@ -2274,52 +2364,70 @@ function decodeBase64UTF8(base64) {
     return new TextDecoder('utf-8').decode(bytes);
 }
 
-async function checkAccess() {
-    const psw = prompt("Password:");
-    if (!psw) return;
+async function authenticate(psw) {
+    const response = await fetch("/api/get-list", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: psw })
+    });
 
-    try {
-        const response = await fetch("/api/get-list", {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ password: psw })
-        });
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Sessione già attiva o password errata!");
+    }
 
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            alert(errorData.error || "Sessione già attiva o password errata!");
-            window.location.reload();
-            return;
-        }
+    const m3uEncoded = await response.text();
+    const m3uData = decodeBase64UTF8(m3uEncoded);
+    
+    passwordGlobale = psw;
+    lastM3UData = m3uData;
+    document.getElementById('mainBody').style.display = "flex";
+    document.getElementById('expiry-info').textContent = '';
+    startHeartbeat(psw);
+    
+    fetch('https://dazn-ua-proxy.stefanoaccuont.workers.dev/', { mode: 'no-cors' })
+        .catch(() => {});
 
-        const m3uEncoded = await response.text();
-        const m3uData = decodeBase64UTF8(m3uEncoded);
-        
-        passwordGlobale = psw;
-        lastM3UData = m3uData;
-        document.getElementById('mainBody').style.display = "flex";
-        document.getElementById('expiry-info').textContent = '';
-        startHeartbeat(psw);
-        
-        fetch('https://dazn-ua-proxy.stefanoaccuont.workers.dev/', { mode: 'no-cors' })
-            .catch(() => {});
+    loadEPG();
+    init(m3uData);
 
-        loadEPG();
-        init(m3uData);
-
-        // Rilevamento TV e auto-avvio TV mode SOLO su dispositivi TV (non PC)
-        const isTV = /Android TV|SmartTV|WebTV|Tizen|LGTV|Viera|BRAVIA|Fire TV|Roku|AppleTV/i.test(navigator.userAgent);
-        if (isTV) {
-            isAutoEnter = true;
-            setTimeout(() => {
-                if (!tvModeActive) enterTvMode();
-            }, 5000);
-        }
-
-    } catch (error) {
-        alert("Errore server.");
+    // Rilevamento TV e auto-avvio TV mode SOLO su dispositivi TV (non PC)
+    const isTV = /Android TV|SmartTV|WebTV|Tizen|LGTV|Viera|BRAVIA|Fire TV|Roku|AppleTV/i.test(navigator.userAgent);
+    if (isTV) {
+        isAutoEnter = true;
+        setTimeout(() => {
+            if (!tvModeActive) enterTvMode();
+        }, 5000);
     }
 }
+
+passwordSubmit.addEventListener('click', async () => {
+    const psw = passwordInput.value.trim();
+    if (!psw) {
+        passwordError.textContent = 'Inserisci una password';
+        return;
+    }
+    passwordError.textContent = '';
+    try {
+        await authenticate(psw);
+        passwordOverlay.style.display = 'none';
+    } catch (err) {
+        passwordError.textContent = err.message || 'Errore di autenticazione';
+    }
+});
+
+passwordInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        passwordSubmit.click();
+    }
+});
+
+// Inizializzazione: mostriamo l'overlay password e nascondiamo il body
+document.getElementById('mainBody').style.display = 'none';
+passwordOverlay.style.display = 'flex';
+
+// Rimosso il vecchio checkAccess(); ora l'autenticazione parte dall'overlay
 
 function reloadPlaylist() {
     if (!lastM3UData) {
