@@ -808,74 +808,9 @@
                 font-size: 22px;
             }
         }
-
-        /* Overlay password */
-        #password-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.95);
-            z-index: 100001;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            color: white;
-            font-family: 'Formula1 Display Bold', 'Inter', sans-serif;
-        }
-        #password-overlay h2 {
-            margin-bottom: 20px;
-            font-size: 24px;
-        }
-        #password-input {
-            padding: 12px 16px;
-            font-size: 18px;
-            border-radius: 8px;
-            border: 1px solid #30363d;
-            background: #161b22;
-            color: white;
-            margin-bottom: 15px;
-            width: 280px;
-            text-align: center;
-            outline: none;
-        }
-        #password-input:focus {
-            border-color: #58a6ff;
-        }
-        #password-submit {
-            padding: 12px 30px;
-            font-size: 18px;
-            border: none;
-            border-radius: 8px;
-            background: #0a2540;
-            color: white;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background 0.2s;
-            font-family: inherit;
-        }
-        #password-submit:hover {
-            background: #123b66;
-        }
-        #password-error {
-            color: #ff1744;
-            margin-top: 10px;
-            font-size: 14px;
-            min-height: 20px;
-        }
     </style>
 </head>
 <body id="mainBody" style="display:none;">
-
-    <!-- Overlay password -->
-    <div id="password-overlay">
-        <h2>🔐 Inserisci password</h2>
-        <input type="password" id="password-input" placeholder="Password" autocomplete="off">
-        <button id="password-submit">ACCEDI</button>
-        <div id="password-error"></div>
-    </div>
 
     <button id="fullscreen-btn">FULLSCREEN</button>
 
@@ -2300,12 +2235,14 @@ if (document.fonts && document.fonts.load) {
     document.fonts.load('1em "Formula1 Display Bold"');
 }
 
-// -------------------- Autenticazione --------------------
-const passwordOverlay = document.getElementById('password-overlay');
-const passwordInput = document.getElementById('password-input');
-const passwordSubmit = document.getElementById('password-submit');
-const passwordError = document.getElementById('password-error');
+// -------------------- Avvio --------------------
+if (document.readyState === 'complete') {
+    checkAccess();
+} else {
+    window.addEventListener('load', checkAccess);
+}
 
+// -------------------- Funzioni di supporto per il player principale --------------------
 function startHeartbeat(password) {
     if (heartbeatInterval) clearInterval(heartbeatInterval);
     heartbeatInterval = setInterval(async () => {
@@ -2364,70 +2301,52 @@ function decodeBase64UTF8(base64) {
     return new TextDecoder('utf-8').decode(bytes);
 }
 
-async function authenticate(psw) {
-    const response = await fetch("/api/get-list", {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: psw })
-    });
+async function checkAccess() {
+    const psw = prompt("Password:");
+    if (!psw) return;
 
-    if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || "Sessione già attiva o password errata!");
-    }
+    try {
+        const response = await fetch("/api/get-list", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: psw })
+        });
 
-    const m3uEncoded = await response.text();
-    const m3uData = decodeBase64UTF8(m3uEncoded);
-    
-    passwordGlobale = psw;
-    lastM3UData = m3uData;
-    document.getElementById('mainBody').style.display = "flex";
-    document.getElementById('expiry-info').textContent = '';
-    startHeartbeat(psw);
-    
-    fetch('https://dazn-ua-proxy.stefanoaccuont.workers.dev/', { mode: 'no-cors' })
-        .catch(() => {});
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            alert(errorData.error || "Sessione già attiva o password errata!");
+            window.location.reload();
+            return;
+        }
 
-    loadEPG();
-    init(m3uData);
+        const m3uEncoded = await response.text();
+        const m3uData = decodeBase64UTF8(m3uEncoded);
+        
+        passwordGlobale = psw;
+        lastM3UData = m3uData;
+        document.getElementById('mainBody').style.display = "flex";
+        document.getElementById('expiry-info').textContent = '';
+        startHeartbeat(psw);
+        
+        fetch('https://dazn-ua-proxy.stefanoaccuont.workers.dev/', { mode: 'no-cors' })
+            .catch(() => {});
 
-    // Rilevamento TV e auto-avvio TV mode SOLO su dispositivi TV (non PC)
-    const isTV = /Android TV|SmartTV|WebTV|Tizen|LGTV|Viera|BRAVIA|Fire TV|Roku|AppleTV/i.test(navigator.userAgent);
-    if (isTV) {
-        isAutoEnter = true;
-        setTimeout(() => {
-            if (!tvModeActive) enterTvMode();
-        }, 5000);
+        loadEPG();
+        init(m3uData);
+
+        // Rilevamento TV e auto-avvio TV mode SOLO su dispositivi TV (non PC)
+        const isTV = /Android TV|SmartTV|WebTV|Tizen|LGTV|Viera|BRAVIA|Fire TV|Roku|AppleTV/i.test(navigator.userAgent);
+        if (isTV) {
+            isAutoEnter = true;
+            setTimeout(() => {
+                if (!tvModeActive) enterTvMode();
+            }, 5000);
+        }
+
+    } catch (error) {
+        alert("Errore server.");
     }
 }
-
-passwordSubmit.addEventListener('click', async () => {
-    const psw = passwordInput.value.trim();
-    if (!psw) {
-        passwordError.textContent = 'Inserisci una password';
-        return;
-    }
-    passwordError.textContent = '';
-    try {
-        await authenticate(psw);
-        passwordOverlay.style.display = 'none';
-    } catch (err) {
-        passwordError.textContent = err.message || 'Errore di autenticazione';
-    }
-});
-
-passwordInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-        e.preventDefault();
-        passwordSubmit.click();
-    }
-});
-
-// Inizializzazione: mostriamo l'overlay password e nascondiamo il body
-document.getElementById('mainBody').style.display = 'none';
-passwordOverlay.style.display = 'flex';
-
-// Rimosso il vecchio checkAccess(); ora l'autenticazione parte dall'overlay
 
 function reloadPlaylist() {
     if (!lastM3UData) {
