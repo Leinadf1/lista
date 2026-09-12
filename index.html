@@ -920,7 +920,7 @@ function shouldUseIframe(ch) {
     return IFRAME_GROUPS.includes(groupName);
 }
 
-// Costruisce l'URL dell'iframe con parametri multipli per forzare live + audio italiano
+// Costruisce l'URL dell'iframe con parametri per forzare il live
 function buildIframeSrc(ch) {
     const { kid, key } = getKidKey(ch.drm);
     if (!kid || !key || !ch.url) return null;
@@ -937,52 +937,17 @@ function buildIframeSrc(ch) {
         'start-at': 'live',
         'starttime': 'live',
         'seekable': 'false',
-        'dvr': 'false',
-        // Audio italiano - nomi alternativi
-        'audio': 'it',
-        'audioLang': 'it',
-        'audio_lang': 'it',
-        'audioLanguage': 'it',
-        'audio-language': 'it',
-        'audiolang': 'it',
-        'lang': 'it',
-        'language': 'it',
-        'lng': 'it',
-        'locale': 'it',
-        'preferredAudio': 'it',
-        'preferred-audio': 'it',
-        'preferred_audio': 'it',
-        'defaultAudio': 'it',
-        'default-audio': 'it',
-        'default_audio': 'it',
-        'audioTrack': 'it',
-        'audio-track': 'it',
-        'audio_track': 'it',
-        'audioTrackLang': 'it',
-        'track': 'it',
-        'audioCode': 'it',
-        'audio-code': 'it',
-        'audio_code': 'it',
-        'audioPref': 'it',
-        'audio-pref': 'it',
-        'audio_pref': 'it',
-        'setAudio': 'it',
-        'set-audio': 'it',
-        'set_audio': 'it'
+        'dvr': 'false'
     });
 
     return `https://hugoedgar.com/drm-player/?${params.toString()}`;
 }
 
-// Invia un singolo pacchetto di postMessage all'iframe con tutte le varianti note
-function sendIframePreferences(iframe) {
+// Invia postMessage per forzare il live sull'iframe
+function sendIframeLive(iframe) {
     if (!iframe || !iframe.contentWindow) return;
 
-    const audioLangs = ['it', 'ita', 'italian', 'italiano', 'it-IT', 'ita-IT'];
-    const messages = [];
-
-    // Live / seek to live
-    messages.push(
+    const messages = [
         { type: 'seek', value: 'live' },
         { type: 'seekToLive' },
         { type: 'goToLive' },
@@ -997,47 +962,7 @@ function sendIframePreferences(iframe) {
         { cmd: 'live' },
         { method: 'live' },
         { event: 'live' }
-    );
-
-    // Audio italiano - tutte le combinazioni
-    audioLangs.forEach(lang => {
-        messages.push(
-            { type: 'setAudioLanguage', language: lang },
-            { type: 'setAudioLanguage', value: lang },
-            { type: 'setAudioLanguage', lang: lang },
-            { type: 'selectAudioLanguage', language: lang },
-            { type: 'selectAudioLanguage', lang: lang },
-            { type: 'selectAudio', language: lang },
-            { type: 'selectAudio', lang: lang },
-            { type: 'setAudio', language: lang },
-            { type: 'setAudio', lang: lang },
-            { type: 'setAudioTrack', language: lang },
-            { type: 'setAudioTrack', lang: lang },
-            { action: 'setAudioLanguage', language: lang },
-            { action: 'selectAudioLanguage', language: lang },
-            { action: 'setAudio', language: lang },
-            { action: 'audio', language: lang },
-            { action: 'audio', value: lang },
-            { action: 'set-audio', value: lang },
-            { command: 'setAudioLanguage', language: lang },
-            { command: 'selectAudioLanguage', language: lang },
-            { command: 'audio', language: lang },
-            { command: 'setAudio', language: lang },
-            { cmd: 'audio', lang: lang },
-            { method: 'setAudioLanguage', arg: lang },
-            { method: 'selectAudioLanguage', arg: lang },
-            { event: 'audio', value: lang },
-            { audioLanguage: lang },
-            { audio: lang },
-            { language: lang },
-            { lang: lang },
-            { setAudioLanguage: lang },
-            { selectAudioLanguage: lang }
-        );
-    });
-
-    // Anche stringhe semplici
-    messages.push('it', 'ita', 'italian', 'italiano');
+    ];
 
     messages.forEach(msg => {
         try {
@@ -1046,25 +971,25 @@ function sendIframePreferences(iframe) {
     });
 }
 
-// Ciclo di invio ripetuto delle preferenze per i primi 15 secondi
-function startIframePreferencesLoop(iframe) {
+// Ciclo di invio ripetuto del comando "go to live" per i primi 10 secondi
+function startIframeLiveLoop(iframe) {
     if (!iframe) return;
     let attempts = 0;
-    const maxAttempts = 30; // 30 * 500ms = 15 secondi
+    const maxAttempts = 20; // 20 * 500ms = 10 secondi
     const interval = setInterval(() => {
         if (!activeIframe || activeIframe !== iframe || attempts >= maxAttempts) {
             clearInterval(interval);
             return;
         }
-        sendIframePreferences(iframe);
+        sendIframeLive(iframe);
         attempts++;
     }, 500);
 
     // Invii immediati iniziali
-    setTimeout(() => sendIframePreferences(iframe), 100);
-    setTimeout(() => sendIframePreferences(iframe), 800);
-    setTimeout(() => sendIframePreferences(iframe), 1500);
-    setTimeout(() => sendIframePreferences(iframe), 3000);
+    setTimeout(() => sendIframeLive(iframe), 100);
+    setTimeout(() => sendIframeLive(iframe), 800);
+    setTimeout(() => sendIframeLive(iframe), 1500);
+    setTimeout(() => sendIframeLive(iframe), 3000);
 }
 
 // -------------------- EPG --------------------
@@ -1941,16 +1866,15 @@ function loadChannelInTv(index) {
                 }
             }, 5000);
             
-            // Avvia il ciclo di invio preferenze (live + audio italiano)
+            // Avvia il ciclo di invio "go to live"
             iframe.addEventListener('load', () => {
-                startIframePreferencesLoop(iframe);
+                startIframeLiveLoop(iframe);
                 setTimeout(() => {
                     tvModeOverlay.focus();
                     iframe.blur();
                 }, 2000);
             });
-            // Fallback: avvia subito anche se 'load' non scatta
-            startIframePreferencesLoop(iframe);
+            startIframeLiveLoop(iframe);
             
             iframe.addEventListener('focus', () => {
                 setTimeout(() => {
@@ -2587,11 +2511,11 @@ async function init(m3uContent) {
                     playerContainer.appendChild(iframeContainer);
                     await player.unload();
 
-                    // Avvia il ciclo di preferenze anche nella dashboard
+                    // Avvia il ciclo "go to live" anche nella dashboard
                     iframe.addEventListener('load', () => {
-                        startIframePreferencesLoop(iframe);
+                        startIframeLiveLoop(iframe);
                     });
-                    startIframePreferencesLoop(iframe);
+                    startIframeLiveLoop(iframe);
                 } else {
                     alert("Canale non valido per iframe DRM");
                 }
