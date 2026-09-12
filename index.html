@@ -919,6 +919,13 @@ let epgNames = new Set();
 let epgReady = false;
 let epgError = null;
 
+// Verifica se la guida TV deve essere disabilitata per un canale
+function isEpgDisabled(ch) {
+    const group = (ch.group || '').toLowerCase();
+    const name = (ch.name || '').toLowerCase();
+    return group.includes('svizzeri') || group.includes('rsi') || name.includes('rsi');
+}
+
 function normalizeName(name) {
     return name.toLowerCase().replace(/[^a-z0-9]/gi, '');
 }
@@ -1106,7 +1113,7 @@ let osdEpgState = {
 };
 
 function displayEPG(ch) {
-    if (ch.group && ch.group.toLowerCase().includes('svizzeri')) {
+    if (isEpgDisabled(ch)) {
         document.getElementById('epg-info').style.display = 'none';
         return;
     }
@@ -1719,7 +1726,7 @@ function loadChannelInTv(index) {
     tvVideo.style.display = 'block';
     tvExitBtn.style.display = 'none';
     
-    if (ch.group && ch.group.toLowerCase().includes('svizzeri')) {
+    if (isEpgDisabled(ch)) {
         osdEpgState.programs = [];
         osdEpgState.currentIndex = -1;
         osdEpgState.liveIndex = -1;
@@ -1862,7 +1869,7 @@ function updateEpgPanel() {
     if (!epgPanelOpen) return;
     const ch = tvChannelListAll[currentChannelIndex];
     if (!ch) return;
-    if (ch.group && ch.group.toLowerCase().includes('svizzeri')) {
+    if (isEpgDisabled(ch)) {
         tvEpgPanel.innerHTML = '<div style="padding:20px;">Nessuna guida TV</div>';
         return;
     }
