@@ -920,6 +920,64 @@ function shouldUseIframe(ch) {
     return IFRAME_GROUPS.includes(groupName);
 }
 
+// Costruisce l'URL dell'iframe con parametri per forzare live e audio italiano
+function buildIframeSrc(ch) {
+    const { kid, key } = getKidKey(ch.drm);
+    if (!kid || !key || !ch.url) return null;
+
+    // Aggiungiamo vari parametri comuni per:
+    // 1) Partire dal live (evitando che parta dall'inizio della finestra DVR)
+    // 2) Selezionare l'audio italiano quando disponibile
+    const params = new URLSearchParams({
+        'embed-url': ch.url,
+        'kid': kid,
+        'key': key,
+        'autoplay': 'true',
+        // Live
+        'live': 'true',
+        'start': 'live',
+        'startAt': 'live',
+        'seekable': 'false',
+        // Audio preferito (verranno ignorati quelli non supportati)
+        'audio': 'it',
+        'audioLang': 'it',
+        'audioLanguage': 'it',
+        'lang': 'it',
+        'language': 'it',
+        'preferredAudio': 'it',
+        'defaultAudio': 'it'
+    });
+
+    return `https://hugoedgar.com/drm-player/?${params.toString()}`;
+}
+
+// Comunica con l'iframe per forzare live + audio italiano (postMessage generico)
+function sendIframePreferences(iframe) {
+    if (!iframe || !iframe.contentWindow) return;
+    const messages = [
+        // Live
+        { type: 'seek', value: 'live' },
+        { type: 'goToLive' },
+        { action: 'live' },
+        { type: 'liveEdge' },
+        // Audio italiano
+        { type: 'setAudioLanguage', language: 'it' },
+        { type: 'setAudioLanguage', language: 'ita' },
+        { type: 'setAudioLanguage', language: 'italian' },
+        { type: 'setAudioLanguage', language: 'italiano' },
+        { type: 'audio', language: 'it' },
+        { action: 'setAudio', language: 'it' },
+        { action: 'audio', value: 'it' },
+        'it',
+        'ita'
+    ];
+    messages.forEach(msg => {
+        try {
+            iframe.contentWindow.postMessage(msg, '*');
+        } catch (e) {}
+    });
+}
+
 // -------------------- EPG --------------------
 const EPG_URL = 'https://raw.githubusercontent.com/Leinadf1/lista/main/epg_ripper_IT1.xml';
 let epgChannels = new Map();
@@ -1767,13 +1825,13 @@ function loadChannelInTv(index) {
     if (shouldUseIframe(ch)) {
         tvVideo.style.display = 'none';
         if (tvPlayer) tvPlayer.unload();
-        const { kid, key } = getKidKey(ch.drm);
-        if (kid && key && ch.url) {
+        const src = buildIframeSrc(ch);
+        if (src) {
             const iframe = document.createElement('iframe');
             iframe.setAttribute('scrolling', 'no');
             iframe.setAttribute('allowfullscreen', '');
             iframe.setAttribute('allow', 'autoplay; encrypted-media; fullscreen');
-            iframe.src = `https://hugoedgar.com/drm-player/?embed-url=${encodeURIComponent(ch.url)}&kid=${encodeURIComponent(kid)}&key=${encodeURIComponent(key)}&autoplay=true`;
+            iframe.src = src;
             iframe.style.cssText = 'position:absolute; top:0; left:0; width:100%; height:100%; border:0; z-index:10;';
             tvModeVideoContainer.appendChild(iframe);
             activeIframe = iframe;
@@ -1794,7 +1852,13 @@ function loadChannelInTv(index) {
                 }
             }, 5000);
             
+            // Invio ripetuto delle preferenze (live + audio italiano) all'iframe
+            const sendPrefs = () => sendIframePreferences(iframe);
             iframe.addEventListener('load', () => {
+                sendPrefs();
+                setTimeout(sendPrefs, 1500);
+                setTimeout(sendPrefs, 3000);
+                setTimeout(sendPrefs, 5000);
                 setTimeout(() => {
                     tvModeOverlay.focus();
                     iframe.blur();
@@ -2421,19 +2485,28 @@ async function init(m3uContent) {
             if (oldIframeContainer) oldIframeContainer.remove();
 
             if (shouldUseIframe(ch)) {
-                const { kid, key } = getKidKey(ch.drm);
-                if (kid && key && ch.url) {
+                const src = buildIframeSrc(ch);
+                if (src) {
                     const iframeContainer = document.createElement('div');
                     iframeContainer.className = 'iframe-container active';
                     const iframe = document.createElement('iframe');
-                    iframe.id = 'prime-iframe';
+                    iframe.id = 'drm-iframe';
                     iframe.setAttribute('scrolling', 'no');
                     iframe.setAttribute('allowfullscreen', '');
                     iframe.setAttribute('allow', 'autoplay; encrypted-media; fullscreen');
-                    iframe.src = `https://hugoedgar.com/drm-player/?embed-url=${encodeURIComponent(ch.url)}&kid=${encodeURIComponent(kid)}&key=${encodeURIComponent(key)}&autoplay=true`;
+                    iframe.src = src;
                     iframeContainer.appendChild(iframe);
                     playerContainer.appendChild(iframeContainer);
                     await player.unload();
+
+                    // Invio preferenze (live + audio italiano) anche nella dashboard
+                    const sendPrefs = () => sendIframePreferences(iframe);
+                    iframe.addEventListener('load', () => {
+                        sendPrefs();
+                        setTimeout(sendPrefs, 1500);
+                        setTimeout(sendPrefs, 3000);
+                        setTimeout(sendPrefs, 5000);
+                    });
                 } else {
                     alert("Canale non valido per iframe DRM");
                 }
@@ -2691,4 +2764,4 @@ function sortCategories() {
 document.getElementById('reload-btn').addEventListener('click', reloadPlaylist);
 </script>
 </body>
-</html>
+    </html>
