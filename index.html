@@ -912,6 +912,14 @@ let favoriteIds = new Set(JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]'
 let allChannels = [];
 let tvChannelListAll = [];
 
+// Categorie che utilizzano l'iframe (hugoedgar drm-player) invece di Shaka Player
+const IFRAME_GROUPS = ['PRIME VIDEO', 'DAZN PRIMEVIDEO DE'];
+
+function shouldUseIframe(ch) {
+    const groupName = (ch.group || '').toUpperCase().trim();
+    return IFRAME_GROUPS.includes(groupName);
+}
+
 // -------------------- EPG --------------------
 const EPG_URL = 'https://raw.githubusercontent.com/Leinadf1/lista/main/epg_ripper_IT1.xml';
 let epgChannels = new Map();
@@ -1756,7 +1764,7 @@ function loadChannelInTv(index) {
     renderOsdEPG();
     
     const groupName = (ch.group || '').toUpperCase();
-    if (groupName === 'PRIME VIDEO') {
+    if (shouldUseIframe(ch)) {
         tvVideo.style.display = 'none';
         if (tvPlayer) tvPlayer.unload();
         const { kid, key } = getKidKey(ch.drm);
@@ -2212,10 +2220,10 @@ tvIframeExitBtn.addEventListener('click', () => {
         tvIframeHotspot.classList.remove('active');
         tvIframeHotspot.style.display = 'none';
         tvVideo.style.display = 'block';
-        if (lastChannelIndex >= 0 && lastChannelIndex < tvChannelListAll.length && (tvChannelListAll[lastChannelIndex].group || '').toUpperCase() !== 'PRIME VIDEO') {
+        if (lastChannelIndex >= 0 && lastChannelIndex < tvChannelListAll.length && !shouldUseIframe(tvChannelListAll[lastChannelIndex])) {
             loadChannelInTv(lastChannelIndex);
         } else {
-            const nextIndex = tvChannelListAll.findIndex((c, i) => i !== currentChannelIndex && (c.group || '').toUpperCase() !== 'PRIME VIDEO');
+            const nextIndex = tvChannelListAll.findIndex((c, i) => i !== currentChannelIndex && !shouldUseIframe(c));
             if (nextIndex >= 0) loadChannelInTv(nextIndex);
             else loadChannelInTv(0);
         }
@@ -2412,8 +2420,7 @@ async function init(m3uContent) {
             const oldIframeContainer = playerContainer.querySelector('.iframe-container');
             if (oldIframeContainer) oldIframeContainer.remove();
 
-            const groupName = (ch.group || '').toUpperCase();
-            if (groupName === 'PRIME VIDEO') {
+            if (shouldUseIframe(ch)) {
                 const { kid, key } = getKidKey(ch.drm);
                 if (kid && key && ch.url) {
                     const iframeContainer = document.createElement('div');
@@ -2428,7 +2435,7 @@ async function init(m3uContent) {
                     playerContainer.appendChild(iframeContainer);
                     await player.unload();
                 } else {
-                    alert("Canale Prime Video non valido");
+                    alert("Canale non valido per iframe DRM");
                 }
                 window.scrollTo({ top: 0, behavior: 'smooth' });
                 return;
