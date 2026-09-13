@@ -12,15 +12,6 @@ jobs:
         with:
           persist-credentials: true
 
-      # 1. Lista principale
-      - name: Download base list
-        continue-on-error: true
-        run: |
-          echo "#EXTM3U" > lista_privata.m3u
-          curl -sL -k \
-            -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36" \
-            "${{ secrets.URL_LISTA }}" >> lista_privata.m3u
-
       # 2. Scarica gli script dal Gist privato
       - name: Download scripts from private Gist
         run: |
