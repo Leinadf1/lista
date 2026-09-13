@@ -1659,7 +1659,7 @@ function buildChannelList() {
         item.dataset.channelIndex = idx;
         item.innerHTML = `
             <span class="tv-channel-num">${idx + 1}</span>
-            <img src="${ch.logo || 'https://via.placeholder.com/30x30?text=TV'}" onerror="this.src='https://via.placeholder.com/30x30?text=TV'">
+            <img src="${ch.logo || ''}" onerror="this.style.display='none'">
             <span class="tv-channel-name">${ch.name}</span>
         `;
         item.addEventListener('click', () => selectChannelFromList(idx));
@@ -2468,7 +2468,7 @@ async function init(m3uContent) {
         const isFav = favoriteIds.has(ch.id);
         card.innerHTML = `
             <span class="fav-heart ${isFav ? 'active' : ''}">${heartSVG()}</span>
-            <div class="logo-box"><img src="${ch.logo}" onerror="this.src='https://via.placeholder.com/150x80?text=TV'"></div>
+            <div class="logo-box"><img src="${ch.logo}" onerror="this.style.display='none'"></div>
             <div class="info-box"><div class="name">${ch.name}</div></div>
         `;
         
@@ -2773,4 +2773,4 @@ function sortCategories() {
 document.getElementById('reload-btn').addEventListener('click', reloadPlaylist);
 </script>
 </body>
-    </html>
+</html>
