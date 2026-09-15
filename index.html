@@ -830,8 +830,8 @@
     <button id="fullscreen-btn">FULLSCREEN</button>
 
     <div id="header">
-        <button id="reload-btn" class="reload-btn" title="Ricarica playlist">
-            <span id="reload-icon" class="reload-icon">🔄</span> Ricarica playlist
+        <button id="reload-btn" class="reload-btn" title="Aggiorna playlist">
+            <span id="reload-icon" class="reload-icon">🔄</span> Aggiorna playlist
         </button>
         <div id="search-container">
             <input type="text" id="search-input" placeholder="Cerca canali o categorie...">
@@ -2423,7 +2423,7 @@ async function checkAccess() {
     }
 }
 
-// Reload playlist: richiede dati freschi al server tramite header x-reload
+// Aggiorna playlist: richiede dati freschi al server con bypass cache
 async function reloadPlaylist() {
     if (!passwordGlobale) {
         alert("Sessione scaduta, ricarica la pagina.");
@@ -2434,11 +2434,14 @@ async function reloadPlaylist() {
     btn.querySelector('.reload-icon').textContent = '⏳';
 
     try {
-        const response = await fetch("/api/get-list", {
+        const response = await fetch(`/api/get-list?t=${Date.now()}`, {
             method: 'POST',
+            cache: 'no-store',
             headers: {
                 'Content-Type': 'application/json',
-                'x-reload': 'true'
+                'x-reload': 'true',
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache'
             },
             body: JSON.stringify({ password: passwordGlobale })
         });
@@ -2452,15 +2455,28 @@ async function reloadPlaylist() {
         const m3uEncoded = await response.text();
         const m3uData = decodeBase64UTF8(m3uEncoded);
 
+        // Debug: confronta con i dati vecchi
+        if (lastM3UData) {
+            const vecchio = lastM3UData.length;
+            const nuovo = m3uData.length;
+            console.log(`[AGGIORNA] Contenuto precedente: ${vecchio} bytes, contenuto nuovo: ${nuovo} bytes`);
+            if (m3uData === lastM3UData) {
+                console.warn('[AGGIORNA] ATTENZIONE: il contenuto è IDENTICO al precedente (probabile cache Gist/Vercel)');
+            }
+        }
+
         lastM3UData = m3uData;
 
+        // Reset completo
         document.getElementById('main-list').innerHTML = '';
         allChannels = [];
+        tvChannelListAll = [];
+
         init(m3uData);
 
     } catch (err) {
-        console.error('Errore reload playlist:', err);
-        alert("Errore di rete durante il reload");
+        console.error('Errore aggiorna playlist:', err);
+        alert("Errore di rete durante l'aggiornamento");
     } finally {
         btn.disabled = false;
         btn.querySelector('.reload-icon').textContent = '🔄';
@@ -2798,4 +2814,4 @@ function sortCategories() {
 document.getElementById('reload-btn').addEventListener('click', reloadPlaylist);
 </script>
 </body>
-</html>
+    </html>
