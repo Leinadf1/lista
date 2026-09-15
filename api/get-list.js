@@ -98,8 +98,6 @@ function removeChannelsByName(m3uContent, namesSet) {
     return result.join('\n');
 }
 
-// === NUOVE FUNZIONI PER SPLITTARE PER group-title ===
-
 // Divide un contenuto M3U in blocchi (uno per canale)
 function splitM3UBlocks(content) {
     if (!content) return [];
@@ -251,15 +249,20 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("[DAZN] Errore dazn_events.m3u:", e); }
 
-        // 6. DAZN Swiss (z_dazn_swiss.m3u)
+        // 6. DAZN Swiss (z_dazn_swiss.m3u) - contiene anche Como TV
         let daznSwissContent = "";
+        let comotvContent = "";
         try {
             const gistBase = process.env.GIST_RAW_URL.replace(/\/[^\/]+$/, '');
             const swissUrl = `${gistBase}/z_dazn_swiss.m3u?t=${Date.now()}`;
             const swissResponse = await fetch(swissUrl);
             if (swissResponse.ok) {
                 let rawSwiss = await swissResponse.text();
-                daznSwissContent = rawSwiss.replace(/^#EXTM3U\s*\n?/i, '').trim();
+                rawSwiss = rawSwiss.replace(/^#EXTM3U\s*\n?/i, '').trim();
+                // Separa Como TV dal resto (DAZN Svizzeri)
+                const swissSplit = splitByGroup(rawSwiss, "Como TV");
+                comotvContent = swissSplit.matching;
+                daznSwissContent = swissSplit.others;
             } else {
                 console.error("[DAZN Swiss] Fetch failed:", swissResponse.status);
             }
@@ -356,7 +359,7 @@ export default async function handler(req, res) {
         }
 
         // ORDINE FINALE:
-        // nerozone -> dazn -> daznEvents -> DAZN PRIMEVIDEO DE -> daznSwiss -> bluesport -> primevideo (resto) -> eurosportRsi
+        // nerozone -> dazn -> daznEvents -> DAZN PRIMEVIDEO DE -> daznSwiss -> bluesport -> primevideo (resto) -> eurosportRsi -> comotv (ULTIMO)
         if (nerozoneContent) finalContent = finalContent.trimEnd() + "\n" + nerozoneContent;
         if (daznContent) finalContent = finalContent.trimEnd() + "\n" + daznContent;
         if (daznEventsContent) finalContent = finalContent.trimEnd() + "\n" + daznEventsContent;
@@ -365,6 +368,7 @@ export default async function handler(req, res) {
         if (bluesportContent) finalContent = finalContent.trimEnd() + "\n" + bluesportContent;
         if (primevideoOtherContent) finalContent = finalContent.trimEnd() + "\n" + primevideoOtherContent;
         if (eurosportRsiContent) finalContent = finalContent.trimEnd() + "\n" + eurosportRsiContent;
+        if (comotvContent) finalContent = finalContent.trimEnd() + "\n" + comotvContent;
 
         // Gestione F1-only
         const f1OnlyPasswords = (process.env.F1_ONLY_PASSWORD || "").split(',').map(p => p.trim().toLowerCase());
@@ -404,4 +408,4 @@ export default async function handler(req, res) {
         console.error(error);
         res.status(500).json({ error: "Errore caricamento liste" });
     }
-}
+                    }
