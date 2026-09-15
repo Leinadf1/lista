@@ -2423,23 +2423,48 @@ async function checkAccess() {
     }
 }
 
-function reloadPlaylist() {
-    if (!lastM3UData) {
-        alert("Nessun dato playlist disponibile. Ricarica la pagina.");
+// Reload playlist: richiede dati freschi al server tramite header x-reload
+async function reloadPlaylist() {
+    if (!passwordGlobale) {
+        alert("Sessione scaduta, ricarica la pagina.");
         return;
     }
     const btn = document.getElementById('reload-btn');
     btn.disabled = true;
     btn.querySelector('.reload-icon').textContent = '⏳';
-    
-    setTimeout(() => {
+
+    try {
+        const response = await fetch("/api/get-list", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-reload': 'true'
+            },
+            body: JSON.stringify({ password: passwordGlobale })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            alert(errorData.error || "Errore nel recupero della playlist");
+            return;
+        }
+
+        const m3uEncoded = await response.text();
+        const m3uData = decodeBase64UTF8(m3uEncoded);
+
+        lastM3UData = m3uData;
+
         document.getElementById('main-list').innerHTML = '';
         allChannels = [];
-        init(lastM3UData);
-        
+        init(m3uData);
+
+    } catch (err) {
+        console.error('Errore reload playlist:', err);
+        alert("Errore di rete durante il reload");
+    } finally {
         btn.disabled = false;
         btn.querySelector('.reload-icon').textContent = '🔄';
-    }, 300);
+    }
 }
 
 async function init(m3uContent) {
