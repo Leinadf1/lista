@@ -147,7 +147,7 @@ function splitByGroup(content, groupName) {
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-heartbeat');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-heartbeat, x-reload');
 
     if (req.method === 'OPTIONS') return res.status(200).end();
 
@@ -178,9 +178,14 @@ export default async function handler(req, res) {
         return res.status(200).json({ status: "ok" });
     }
 
-    const isOccupied = await kv.get(sessionKey);
-    if (isOccupied) {
-        return res.status(403).json({ error: "Accesso negato: sessione già attiva" });
+    // 🆕 SUPPORTO RELOAD: se il client manda x-reload, salta il blocco "sessione già attiva"
+    const isReload = req.headers['x-reload'] === 'true';
+
+    if (!isReload) {
+        const isOccupied = await kv.get(sessionKey);
+        if (isOccupied) {
+            return res.status(403).json({ error: "Accesso negato: sessione già attiva" });
+        }
     }
 
     await kv.set(sessionKey, "active", { ex: 25 });
@@ -259,7 +264,6 @@ export default async function handler(req, res) {
             if (swissResponse.ok) {
                 let rawSwiss = await swissResponse.text();
                 rawSwiss = rawSwiss.replace(/^#EXTM3U\s*\n?/i, '').trim();
-                // Separa Como TV dal resto (DAZN Svizzeri)
                 const swissSplit = splitByGroup(rawSwiss, "Como TV");
                 comotvContent = swissSplit.matching;
                 daznSwissContent = swissSplit.others;
@@ -323,7 +327,7 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("[Eurosport/RSI] Errore:", e); }
 
-        // === SPLIT PRIMEVIDEO: separa "DAZN PRIMEVIDEO DE" dal resto ===
+        // === SPLIT PRIMEVIDEO ===
         const primevideoSplit = splitByGroup(primevideoContent, "DAZN PRIMEVIDEO DE");
         const primevideoDEContent = primevideoSplit.matching;
         const primevideoOtherContent = primevideoSplit.others;
@@ -358,8 +362,6 @@ export default async function handler(req, res) {
             finalContent += baseContentFiltered + "\n";
         }
 
-        // ORDINE FINALE:
-        // nerozone -> dazn -> daznEvents -> DAZN PRIMEVIDEO DE -> daznSwiss -> bluesport -> primevideo (resto) -> eurosportRsi -> comotv (ULTIMO)
         if (nerozoneContent) finalContent = finalContent.trimEnd() + "\n" + nerozoneContent;
         if (daznContent) finalContent = finalContent.trimEnd() + "\n" + daznContent;
         if (daznEventsContent) finalContent = finalContent.trimEnd() + "\n" + daznEventsContent;
