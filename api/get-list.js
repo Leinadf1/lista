@@ -144,10 +144,20 @@ function splitByGroup(content, groupName) {
     };
 }
 
+// Aggiunge un doppio cache-buster a un URL
+function withCacheBust(url) {
+    const sep = url.includes('?') ? '&' : '?';
+    return `${url}${sep}t=${Date.now()}&r=${Math.random().toString(36).slice(2)}`;
+}
+
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-heartbeat, x-reload');
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.setHeader('Surrogate-Control', 'no-store');
 
     if (req.method === 'OPTIONS') return res.status(200).end();
 
@@ -178,7 +188,7 @@ export default async function handler(req, res) {
         return res.status(200).json({ status: "ok" });
     }
 
-    // 🆕 SUPPORTO RELOAD: se il client manda x-reload, salta il blocco "sessione già attiva"
+    // SUPPORTO RELOAD: se il client manda x-reload, salta il blocco "sessione già attiva"
     const isReload = req.headers['x-reload'] === 'true';
 
     if (!isReload) {
@@ -191,8 +201,8 @@ export default async function handler(req, res) {
     await kv.set(sessionKey, "active", { ex: 25 });
 
     try {
-        // 1. Scarica la lista base dal Gist Segreto (listaprivata.m3u)
-        const githubResponse = await fetch(`${process.env.GIST_RAW_URL}?t=${Date.now()}`);
+        // 1. Lista base (listaprivata.m3u)
+        const githubResponse = await fetch(withCacheBust(process.env.GIST_RAW_URL));
         const fileContent = await githubResponse.text();
         const baseChannels = parseM3U(fileContent);
 
@@ -200,7 +210,7 @@ export default async function handler(req, res) {
         let skyChannels = [];
         try {
             const gistBase = process.env.GIST_RAW_URL.replace(/\/[^\/]+$/, '');
-            const skyUrl = `${gistBase}/sky.m3u?t=${Date.now()}`;
+            const skyUrl = withCacheBust(`${gistBase}/sky.m3u`);
             const skyResponse = await fetch(skyUrl);
             if (skyResponse.ok) {
                 const skyContent = await skyResponse.text();
@@ -214,7 +224,7 @@ export default async function handler(req, res) {
         let backupChannels = [];
         try {
             const gistBase = process.env.GIST_RAW_URL.replace(/\/[^\/]+$/, '');
-            const backupUrl = `${gistBase}/sky2.m3u?t=${Date.now()}`;
+            const backupUrl = withCacheBust(`${gistBase}/sky2.m3u`);
             const backupResponse = await fetch(backupUrl);
             if (backupResponse.ok) {
                 const backupContent = await backupResponse.text();
@@ -222,12 +232,12 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("Errore nel caricamento sky2.m3u:", e); }
 
-        // 4. DAZN principale (dazn.m3u) da gist dedicato
+        // 4. DAZN principale (dazn.m3u)
         let daznContent = "";
         try {
             const daznGistId = process.env.DAZN_GIST_ID;
             if (daznGistId) {
-                const daznUrl = `https://gist.githubusercontent.com/Leinadf1/${daznGistId}/raw/dazn.m3u?t=${Date.now()}`;
+                const daznUrl = withCacheBust(`https://gist.githubusercontent.com/Leinadf1/${daznGistId}/raw/dazn.m3u`);
                 const daznResponse = await fetch(daznUrl);
                 if (daznResponse.ok) {
                     let rawDazn = await daznResponse.text();
@@ -243,7 +253,7 @@ export default async function handler(req, res) {
         try {
             const daznGistId = process.env.DAZN_GIST_ID;
             if (daznGistId) {
-                const eventsUrl = `https://gist.githubusercontent.com/Leinadf1/${daznGistId}/raw/dazn_events.m3u?t=${Date.now()}`;
+                const eventsUrl = withCacheBust(`https://gist.githubusercontent.com/Leinadf1/${daznGistId}/raw/dazn_events.m3u`);
                 const eventsResponse = await fetch(eventsUrl);
                 if (eventsResponse.ok) {
                     let rawEvents = await eventsResponse.text();
@@ -259,7 +269,7 @@ export default async function handler(req, res) {
         let comotvContent = "";
         try {
             const gistBase = process.env.GIST_RAW_URL.replace(/\/[^\/]+$/, '');
-            const swissUrl = `${gistBase}/z_dazn_swiss.m3u?t=${Date.now()}`;
+            const swissUrl = withCacheBust(`${gistBase}/z_dazn_swiss.m3u`);
             const swissResponse = await fetch(swissUrl);
             if (swissResponse.ok) {
                 let rawSwiss = await swissResponse.text();
@@ -276,7 +286,7 @@ export default async function handler(req, res) {
         let bluesportContent = "";
         try {
             const gistBase = process.env.GIST_RAW_URL.replace(/\/[^\/]+$/, '');
-            const bluesportUrl = `${gistBase}/z_bluesport.m3u?t=${Date.now()}`;
+            const bluesportUrl = withCacheBust(`${gistBase}/z_bluesport.m3u`);
             const bluesportResponse = await fetch(bluesportUrl);
             if (bluesportResponse.ok) {
                 let rawBluesport = await bluesportResponse.text();
@@ -289,7 +299,7 @@ export default async function handler(req, res) {
         // 8. Primevideo (z_primevideo.m3u) - URL FISSO al gist corretto
         let primevideoContent = "";
         try {
-            const primevideoUrl = `https://gist.githubusercontent.com/Leinadf1/e69ce054796b18713c284a383c693fc7/raw/z_primevideo.m3u?t=${Date.now()}`;
+            const primevideoUrl = withCacheBust(`https://gist.githubusercontent.com/Leinadf1/e69ce054796b18713c284a383c693fc7/raw/z_primevideo.m3u`);
             const primevideoResponse = await fetch(primevideoUrl);
             if (primevideoResponse.ok) {
                 let rawPrimevideo = await primevideoResponse.text();
@@ -303,7 +313,7 @@ export default async function handler(req, res) {
         let nerozoneContent = "";
         try {
             const gistBase = process.env.GIST_RAW_URL.replace(/\/[^\/]+$/, '');
-            const nerozoneUrl = `${gistBase}/z_dazn_nerozone.m3u?t=${Date.now()}`;
+            const nerozoneUrl = withCacheBust(`${gistBase}/z_dazn_nerozone.m3u`);
             const nerozoneResponse = await fetch(nerozoneUrl);
             if (nerozoneResponse.ok) {
                 let rawNerozone = await nerozoneResponse.text();
@@ -317,7 +327,7 @@ export default async function handler(req, res) {
         let eurosportRsiContent = "";
         try {
             const gistBase = process.env.GIST_RAW_URL.replace(/\/[^\/]+$/, '');
-            const eurosportRsiUrl = `${gistBase}/z_eurosport-rsi.m3u?t=${Date.now()}`;
+            const eurosportRsiUrl = withCacheBust(`${gistBase}/z_eurosport-rsi.m3u`);
             const eurosportRsiResponse = await fetch(eurosportRsiUrl);
             if (eurosportRsiResponse.ok) {
                 let rawEurosportRsi = await eurosportRsiResponse.text();
@@ -410,4 +420,4 @@ export default async function handler(req, res) {
         console.error(error);
         res.status(500).json({ error: "Errore caricamento liste" });
     }
-                    }
+}
