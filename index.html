@@ -2699,7 +2699,6 @@ async function init(m3uContent) {
         } 
         else if (line.startsWith('http')) {
             let url = line;
-            const targetUA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0';
             
             const isNeroZone = currentChannel.group && currentChannel.group.toLowerCase().includes('nerozone');
             const isDazn1Lineare = 
@@ -2713,8 +2712,7 @@ async function init(m3uContent) {
                 (currentChannel.group && currentChannel.group.toLowerCase().includes('dazn')) ||
                 (currentChannel.name && currentChannel.name.toLowerCase().includes('dazn'));
             
-            if (!isNeroZone && !isDazn1Lineare && !isDaznSvizzeri && !isDaznPrimeVideoDE &&
-                (isDaznChannel || currentChannel.userAgent === targetUA)) {
+            if (!isNeroZone && !isDazn1Lineare && !isDaznSvizzeri && !isDaznPrimeVideoDE && isDaznChannel) {
                 url = 'https://dazn-ua-proxy.stefanoaccuont.workers.dev/' + url;
             }
             
