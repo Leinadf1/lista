@@ -2705,9 +2705,13 @@ async function init(m3uContent) {
             const isDazn1Lineare = 
                 currentChannel.name && currentChannel.name.toLowerCase() === 'dazn 1' &&
                 currentChannel.group && currentChannel.group.toLowerCase() === 'dazn lineari';
+            // Riconosce un canale DAZN dal gruppo o dal nome
+            const isDaznChannel = 
+                (currentChannel.group && currentChannel.group.toLowerCase().includes('dazn')) ||
+                (currentChannel.name && currentChannel.name.toLowerCase().includes('dazn'));
             
             if (!isNeroZone && !isDazn1Lineare && 
-                (url.includes('dca-fs-live-dazn-cdn.dazn.com') || currentChannel.userAgent === targetUA)) {
+                (isDaznChannel || currentChannel.userAgent === targetUA)) {
                 url = 'https://dazn-ua-proxy.stefanoaccuont.workers.dev/' + url;
             }
             
