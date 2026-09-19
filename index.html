@@ -2705,12 +2705,15 @@ async function init(m3uContent) {
             const isDazn1Lineare = 
                 currentChannel.name && currentChannel.name.toLowerCase() === 'dazn 1' &&
                 currentChannel.group && currentChannel.group.toLowerCase() === 'dazn lineari';
+            // Esclusioni aggiuntive richieste: DAZN Svizzeri e DAZN PRIMEVIDEO DE
+            const isDaznSvizzeri = currentChannel.group && currentChannel.group.toLowerCase().includes('dazn svizzeri');
+            const isDaznPrimeVideoDE = currentChannel.group && currentChannel.group.toLowerCase().includes('dazn primevideo de');
             // Riconosce un canale DAZN dal gruppo o dal nome
             const isDaznChannel = 
                 (currentChannel.group && currentChannel.group.toLowerCase().includes('dazn')) ||
                 (currentChannel.name && currentChannel.name.toLowerCase().includes('dazn'));
             
-            if (!isNeroZone && !isDazn1Lineare && 
+            if (!isNeroZone && !isDazn1Lineare && !isDaznSvizzeri && !isDaznPrimeVideoDE &&
                 (isDaznChannel || currentChannel.userAgent === targetUA)) {
                 url = 'https://dazn-ua-proxy.stefanoaccuont.workers.dev/' + url;
             }
@@ -2818,4 +2821,4 @@ function sortCategories() {
 document.getElementById('reload-btn').addEventListener('click', reloadPlaylist);
 </script>
 </body>
-    </html>
+</html>
