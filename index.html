@@ -2657,6 +2657,16 @@ async function init(m3uContent) {
     };
     let loadedCount = 0;
 
+    // Categorie che devono usare il proxy (oltre a DAZN)
+    const proxyCategories = [
+        'serie bkt',
+        'laliga ea sports',
+        'serie a enilive',
+        'amichevoli',
+        'jupiler pro league',
+        'liga portugal betclic'
+    ];
+
     for (let line of lines) {
         line = line.trim();
         if (line.startsWith('#KODIPROP:inputstream.adaptive.license_key=')) {
@@ -2712,7 +2722,10 @@ async function init(m3uContent) {
                 (currentChannel.group && currentChannel.group.toLowerCase().includes('dazn')) ||
                 (currentChannel.name && currentChannel.name.toLowerCase().includes('dazn'));
             
-            if (!isNeroZone && !isDazn1Lineare && !isDaznSvizzeri && !isDaznPrimeVideoDE && isDaznChannel) {
+            // Controlla se la categoria corrente è una di quelle che devono usare il proxy
+            const isProxyCategory = currentChannel.group && proxyCategories.includes(currentChannel.group.toLowerCase().trim());
+            
+            if ( isProxyCategory || (!isNeroZone && !isDazn1Lineare && !isDaznSvizzeri && !isDaznPrimeVideoDE && isDaznChannel) ) {
                 url = 'https://dazn-ua-proxy.stefanoaccuont.workers.dev/' + url;
             }
             
