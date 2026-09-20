@@ -1478,7 +1478,8 @@ function requestFullscreen() {
 function enterTvMode() {
     tvModeActive = true;
     exitingTv = false;
-    tvChannelListAll = allChannels.filter(ch => !(ch.group && ch.group.toLowerCase().includes('nerozone')));
+    // MODIFICA: include TUTTI i canali in TV mode (anche NeroZone)
+    tvChannelListAll = allChannels.slice();
     
     document.getElementById('main-list').style.display = 'none';
     document.getElementById('expiry-info').style.display = 'none';
@@ -2714,7 +2715,7 @@ async function init(m3uContent) {
             const isDazn1Lineare = 
                 currentChannel.name && currentChannel.name.toLowerCase() === 'dazn 1' &&
                 currentChannel.group && currentChannel.group.toLowerCase() === 'dazn lineari';
-            // Esclusioni aggiuntive richieste: DAZN Svizzeri e DAZN PRIMEVIDEO DE
+            // Esclusioni aggiuntive: DAZN Svizzeri e DAZN PRIMEVIDEO DE
             const isDaznSvizzeri = currentChannel.group && currentChannel.group.toLowerCase().includes('dazn svizzeri');
             const isDaznPrimeVideoDE = currentChannel.group && currentChannel.group.toLowerCase().includes('dazn primevideo de');
             // Riconosce un canale DAZN dal gruppo o dal nome
@@ -2725,7 +2726,8 @@ async function init(m3uContent) {
             // Controlla se la categoria corrente è una di quelle che devono usare il proxy
             const isProxyCategory = currentChannel.group && proxyCategories.includes(currentChannel.group.toLowerCase().trim());
             
-            if ( isProxyCategory || (!isNeroZone && !isDazn1Lineare && !isDaznSvizzeri && !isDaznPrimeVideoDE && isDaznChannel) ) {
+            // MODIFICA: proxy applicato anche a NeroZone
+            if ( isProxyCategory || isNeroZone || (!isDazn1Lineare && !isDaznSvizzeri && !isDaznPrimeVideoDE && isDaznChannel) ) {
                 url = 'https://dazn-ua-proxy.stefanoaccuont.workers.dev/' + url;
             }
             
