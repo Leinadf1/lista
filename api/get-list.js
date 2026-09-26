@@ -337,6 +337,20 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("[Eurosport/RSI] Errore:", e); }
 
+        // 11. DAZN1 (dazn1.m3u) - dal Gist di stefa-menne, ripubblicato sul nostro Gist
+        let dazn1Content = "";
+        try {
+            const gistBase = process.env.GIST_RAW_URL.replace(/\/[^\/]+$/, '');
+            const dazn1Url = withCacheBust(`${gistBase}/dazn1.m3u`);
+            const dazn1Response = await fetch(dazn1Url);
+            if (dazn1Response.ok) {
+                let rawDazn1 = await dazn1Response.text();
+                dazn1Content = rawDazn1.replace(/^#EXTM3U\s*\n?/i, '').trim();
+            } else {
+                console.error("[DAZN1] Fetch failed:", dazn1Response.status);
+            }
+        } catch (e) { console.error("[DAZN1] Errore:", e); }
+
         // === SPLIT PRIMEVIDEO ===
         const primevideoSplit = splitByGroup(primevideoContent, "DAZN PRIMEVIDEO DE");
         const primevideoDEContent = primevideoSplit.matching;
@@ -380,6 +394,7 @@ export default async function handler(req, res) {
         if (bluesportContent) finalContent = finalContent.trimEnd() + "\n" + bluesportContent;
         if (primevideoOtherContent) finalContent = finalContent.trimEnd() + "\n" + primevideoOtherContent;
         if (eurosportRsiContent) finalContent = finalContent.trimEnd() + "\n" + eurosportRsiContent;
+        if (dazn1Content) finalContent = finalContent.trimEnd() + "\n" + dazn1Content;
         if (comotvContent) finalContent = finalContent.trimEnd() + "\n" + comotvContent;
 
         // Gestione F1-only
@@ -420,4 +435,4 @@ export default async function handler(req, res) {
         console.error(error);
         res.status(500).json({ error: "Errore caricamento liste" });
     }
-}
+    }
