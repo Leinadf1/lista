@@ -2665,7 +2665,9 @@ async function init(m3uContent) {
         'serie a enilive',
         'amichevoli',
         'jupiler pro league',
-        'liga portugal betclic'
+        'liga portugal betclic',
+        'nerozone',
+        'dazn nerozone'
     ];
 
     for (let line of lines) {
@@ -2711,23 +2713,34 @@ async function init(m3uContent) {
         else if (line.startsWith('http')) {
             let url = line;
             
-            const isNeroZone = currentChannel.group && currentChannel.group.toLowerCase().includes('nerozone');
+            // Normalizza gruppo e nome rimuovendo spazi, trattini e underscore
+            const groupNorm = (currentChannel.group || '').toLowerCase().replace(/[\s\-_]/g, '');
+            const nameNorm = (currentChannel.name || '').toLowerCase().replace(/[\s\-_]/g, '');
+            
+            // Rilevamento NeroZone (nel gruppo o nel nome, con qualsiasi variante)
+            const isNeroZone = 
+                groupNorm.includes('nerozone') || 
+                nameNorm.includes('nerozone') ||
+                groupNorm.includes('daznnero') ||
+                nameNorm.includes('daznnero');
+            
             const isDazn1Lineare = 
-                currentChannel.name && currentChannel.name.toLowerCase() === 'dazn 1' &&
-                currentChannel.group && currentChannel.group.toLowerCase() === 'dazn lineari';
-            // Esclusioni aggiuntive: DAZN Svizzeri e DAZN PRIMEVIDEO DE
-            const isDaznSvizzeri = currentChannel.group && currentChannel.group.toLowerCase().includes('dazn svizzeri');
-            const isDaznPrimeVideoDE = currentChannel.group && currentChannel.group.toLowerCase().includes('dazn primevideo de');
-            // Riconosce un canale DAZN dal gruppo o dal nome
-            const isDaznChannel = 
-                (currentChannel.group && currentChannel.group.toLowerCase().includes('dazn')) ||
-                (currentChannel.name && currentChannel.name.toLowerCase().includes('dazn'));
+                nameNorm === 'dazn1' && groupNorm === 'daznlineari';
+            const isDaznSvizzeri = groupNorm.includes('daznsvizzeri');
+            const isDaznPrimeVideoDE = groupNorm.includes('daznprimevideode');
+            const isDaznChannel = groupNorm.includes('dazn') || nameNorm.includes('dazn');
             
             // Controlla se la categoria corrente è una di quelle che devono usare il proxy
-            const isProxyCategory = currentChannel.group && proxyCategories.includes(currentChannel.group.toLowerCase().trim());
+            const isProxyCategory = proxyCategories.includes((currentChannel.group || '').toLowerCase().trim());
             
-            // MODIFICA: proxy applicato anche a NeroZone
-            if ( isProxyCategory || isNeroZone || (!isDazn1Lineare && !isDaznSvizzeri && !isDaznPrimeVideoDE && isDaznChannel) ) {
+            // Evita doppio proxy (se l'URL è già proxato non aggiungere di nuovo)
+            const alreadyProxied = url.startsWith('https://dazn-ua-proxy.stefanoaccuont.workers.dev/');
+            
+            if (!alreadyProxied && (
+                isProxyCategory || 
+                isNeroZone || 
+                (!isDazn1Lineare && !isDaznSvizzeri && !isDaznPrimeVideoDE && isDaznChannel)
+            )) {
                 url = 'https://dazn-ua-proxy.stefanoaccuont.workers.dev/' + url;
             }
             
