@@ -58,6 +58,14 @@ jobs:
           GIST_ID: ${{ secrets.GIST_ID }}
           GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
 
+      - name: Download dazn1.m3u from stefa-menne Gist
+        run: |
+          curl -sL "https://gist.githubusercontent.com/stefa-menne/${{ secrets.GISTSTEF_ID }}/raw/dazn1.m3u" -o dazn1.m3u
+          if [ ! -s dazn1.m3u ]; then
+            echo "Errore: dazn1.m3u scaricato è vuoto o non valido"
+            exit 1
+          fi
+
       # 7. Controllo ultimo aggiornamento EPG
       - name: Check if EPG was updated today
         id: check_epg
@@ -166,4 +174,13 @@ jobs:
           token: ${{ secrets.GIST_TOKEN }}
           gist_id: ${{ secrets.GIST_ID }}
           file_path: z_bluesport.m3u
+          file_type: text
+
+      - name: Deploy dazn1.m3u to Gist
+        continue-on-error: true
+        uses: exuanbo/actions-deploy-gist@v1
+        with:
+          token: ${{ secrets.GIST_TOKEN }}
+          gist_id: ${{ secrets.GIST_ID }}
+          file_path: dazn1.m3u
           file_type: text
