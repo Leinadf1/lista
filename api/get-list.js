@@ -232,7 +232,7 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("Errore nel caricamento sky2.m3u:", e); }
 
-        // 4. DAZN principale (dazn.m3u)
+        // 4. DAZN principale (dazn.m3u) - i "lineari"
         let daznContent = "";
         try {
             const daznGistId = process.env.DAZN_GIST_ID;
@@ -357,15 +357,15 @@ export default async function handler(req, res) {
         const primevideoOtherContent = primevideoSplit.others;
 
         // === SPLIT DAZN1 ===
-        // dazn1.m3u contiene al suo interno sia "DAZN ST" (DAZN 1) sia "DAZN Eventi".
-        // Li estraiamo per posizionarli prima dei DAZN lineari (dazn.m3u).
+        // Estraiamo "DAZN ST" e "DAZN Eventi" da dazn1.m3u per metterli sopra i DAZN lineari.
+        // Il resto di dazn1.m3u (dazn1RestContent) resta in fondo dove stava prima.
         const dazn1SplitST = splitByGroup(dazn1Content, "DAZN ST");
-        const dazn1STContent = dazn1SplitST.matching;         // → DAZN ST
+        const dazn1STContent = dazn1SplitST.matching;
         const dazn1WithoutST = dazn1SplitST.others;
 
         const dazn1SplitEventi = splitByGroup(dazn1WithoutST, "DAZN Eventi");
-        const dazn1EventiContent = dazn1SplitEventi.matching; // → DAZN Eventi
-        const dazn1RestContent = dazn1SplitEventi.others;     // resto di dazn1.m3u (resta in fondo)
+        const dazn1EventiContent = dazn1SplitEventi.matching;
+        const dazn1RestContent = dazn1SplitEventi.others;
 
         // === LOGICA PRINCIPALE SKY ===
         let finalSkyChannels = skyChannels.map(ch => {
@@ -398,10 +398,10 @@ export default async function handler(req, res) {
         }
 
         if (nerozoneContent)        finalContent = finalContent.trimEnd() + "\n" + nerozoneContent;
-        if (dazn1STContent)         finalContent = finalContent.trimEnd() + "\n" + dazn1STContent;         // DAZN ST (da dazn1.m3u)
-        if (dazn1EventiContent)     finalContent = finalContent.trimEnd() + "\n" + dazn1EventiContent;     // DAZN Eventi (da dazn1.m3u)
-        if (daznContent)            finalContent = finalContent.trimEnd() + "\n" + daznContent;            // DAZN Lineari (dazn.m3u)
-        if (daznEventsContent)      finalContent = finalContent.trimEnd() + "\n" + daznEventsContent;      // eventuali eventi da dazn_events.m3u
+        if (dazn1STContent)         finalContent = finalContent.trimEnd() + "\n" + dazn1STContent;         // DAZN ST (sopra i lineari)
+        if (dazn1EventiContent)     finalContent = finalContent.trimEnd() + "\n" + dazn1EventiContent;     // DAZN Eventi (sotto ST)
+        if (daznContent)            finalContent = finalContent.trimEnd() + "\n" + daznContent;            // DAZN lineari
+        if (daznEventsContent)      finalContent = finalContent.trimEnd() + "\n" + daznEventsContent;
         if (primevideoDEContent)    finalContent = finalContent.trimEnd() + "\n" + primevideoDEContent;
         if (daznSwissContent)       finalContent = finalContent.trimEnd() + "\n" + daznSwissContent;
         if (bluesportContent)       finalContent = finalContent.trimEnd() + "\n" + bluesportContent;
@@ -448,4 +448,4 @@ export default async function handler(req, res) {
         console.error(error);
         res.status(500).json({ error: "Errore caricamento liste" });
     }
-}
+            }
