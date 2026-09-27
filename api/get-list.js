@@ -337,11 +337,10 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("[Eurosport/RSI] Errore:", e); }
 
-        // 11. DAZN1 (dazn1.m3u) - dal Gist di stefa-menne, ripubblicato sul nostro Gist
+        // 11. DAZN1 (dazn1.m3u) - preso DIRETTAMENTE dal Gist di stefa-menne
         let dazn1Content = "";
         try {
-            const gistBase = process.env.GIST_RAW_URL.replace(/\/[^\/]+$/, '');
-            const dazn1Url = withCacheBust(`${gistBase}/dazn1.m3u`);
+            const dazn1Url = withCacheBust(`https://gist.githubusercontent.com/stefa-menne/607a5986fa5ddcf07639b79200a31aa4/raw/dazn1.m3u`);
             const dazn1Response = await fetch(dazn1Url);
             if (dazn1Response.ok) {
                 let rawDazn1 = await dazn1Response.text();
@@ -357,7 +356,7 @@ export default async function handler(req, res) {
         const primevideoOtherContent = primevideoSplit.others;
 
         // === SPLIT DAZN1 ===
-        // Estraiamo "DAZN ST" e "DAZN Eventi" da dazn1.m3u per metterli sopra i DAZN lineari.
+        // Estraiamo "DAZN ST" e "DAZN Eventi" da dazn1.m3u.
         const dazn1SplitST = splitByGroup(dazn1Content, "DAZN ST");
         const dazn1STContent = dazn1SplitST.matching;
         const dazn1WithoutST = dazn1SplitST.others;
@@ -385,6 +384,17 @@ export default async function handler(req, res) {
         const baseContentFiltered = removeChannelsByName(fileContent, skyNamesSet);
 
         // === COSTRUZIONE CONTENUTO FINALE ===
+        // Ordine richiesto:
+        //   Sky + base
+        //   DAZN lineari
+        //   DAZN ST
+        //   DAZN Eventi
+        //   DAZN NeroZone
+        //   DAZN Primevideo DE
+        //   DAZN Svizzeri
+        //   Prime Video
+        //   Bluesport
+        //   (extra in coda: resto dazn1.m3u, Como TV, eurosport/RSI)
         let finalContent = "#EXTM3U\n";
 
         if (finalSkyChannels.length > 0) {
@@ -396,18 +406,18 @@ export default async function handler(req, res) {
             finalContent += baseContentFiltered + "\n";
         }
 
-        if (dazn1STContent)         finalContent = finalContent.trimEnd() + "\n" + dazn1STContent;         // DAZN ST
-        if (dazn1EventiContent)     finalContent = finalContent.trimEnd() + "\n" + dazn1EventiContent;     // DAZN Eventi
         if (daznContent)            finalContent = finalContent.trimEnd() + "\n" + daznContent;            // DAZN lineari
-        if (daznEventsContent)      finalContent = finalContent.trimEnd() + "\n" + daznEventsContent;      // eventi dazn_events.m3u
-        if (primevideoDEContent)    finalContent = finalContent.trimEnd() + "\n" + primevideoDEContent;    // DAZN PRIMEVIDEO DE
-        if (bluesportContent)       finalContent = finalContent.trimEnd() + "\n" + bluesportContent;       // Bluesport sotto Primevideo
-        if (nerozoneContent)        finalContent = finalContent.trimEnd() + "\n" + nerozoneContent;        // NeroZone
-        if (daznSwissContent)       finalContent = finalContent.trimEnd() + "\n" + daznSwissContent;       // DAZN Swiss
-        if (primevideoOtherContent) finalContent = finalContent.trimEnd() + "\n" + primevideoOtherContent;
+        if (dazn1STContent)         finalContent = finalContent.trimEnd() + "\n" + dazn1STContent;         // DAZN ST
+        if (dazn1EventiContent)     finalContent = finalContent.trimEnd() + "\n" + dazn1EventiContent;     // DAZN Eventi (dazn1.m3u)
+        if (daznEventsContent)      finalContent = finalContent.trimEnd() + "\n" + daznEventsContent;      // DAZN Eventi (dazn_events.m3u)
+        if (nerozoneContent)        finalContent = finalContent.trimEnd() + "\n" + nerozoneContent;        // DAZN NeroZone
+        if (primevideoDEContent)    finalContent = finalContent.trimEnd() + "\n" + primevideoDEContent;    // DAZN Primevideo DE
+        if (daznSwissContent)       finalContent = finalContent.trimEnd() + "\n" + daznSwissContent;       // DAZN Svizzeri
+        if (primevideoOtherContent) finalContent = finalContent.trimEnd() + "\n" + primevideoOtherContent; // Prime Video
+        if (bluesportContent)       finalContent = finalContent.trimEnd() + "\n" + bluesportContent;       // Bluesport
         if (eurosportRsiContent)    finalContent = finalContent.trimEnd() + "\n" + eurosportRsiContent;
-        if (dazn1RestContent)       finalContent = finalContent.trimEnd() + "\n" + dazn1RestContent;       // resto dazn1.m3u
-        if (comotvContent)          finalContent = finalContent.trimEnd() + "\n" + comotvContent;          // Como TV
+        if (dazn1RestContent)       finalContent = finalContent.trimEnd() + "\n" + dazn1RestContent;
+        if (comotvContent)          finalContent = finalContent.trimEnd() + "\n" + comotvContent;
 
         // Gestione F1-only
         const f1OnlyPasswords = (process.env.F1_ONLY_PASSWORD || "").split(',').map(p => p.trim().toLowerCase());
@@ -447,4 +457,4 @@ export default async function handler(req, res) {
         console.error(error);
         res.status(500).json({ error: "Errore caricamento liste" });
     }
-                    }
+}
