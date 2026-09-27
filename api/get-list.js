@@ -145,13 +145,11 @@ function withCacheBust(url) {
     return `${url}${sep}t=${Date.now()}&r=${Math.random().toString(36).slice(2)}`;
 }
 
-// === OVERRIDE LOGO "DAZN 1" e "DAZN 1 WARP" ===
-// Sostituisce il tvg-logo di qualsiasi riga #EXTINF che ha tvg-name="DAZN 1" o "DAZN 1 WARP".
+// === OVERRIDE LOGO "DAZN 1" e "DAZN 1 WARP" (su tutte le sorgenti) ===
 const DAZN1_LOGO_FIXED = "https://nowtv-seven.vercel.app/logos/dazn1.png?v=2";
 
 function applyDazn1LogoOverride(content) {
     if (!content) return content;
-    // Matcha tvg-name="DAZN 1" o tvg-name="DAZN 1 WARP" (con eventuali spazi extra)
     return content.replace(
         /(#EXTINF:[^\n]*?tvg-name="DAZN\s+1(?:\s+WARP)?"[^\n]*?)tvg-logo="[^"]*"/gim,
         `$1tvg-logo="${DAZN1_LOGO_FIXED}"`
@@ -366,11 +364,16 @@ export default async function handler(req, res) {
         const dazn1RestContent = dazn1SplitEventi.others;
 
         // === APPLICA OVERRIDE LOGO "DAZN 1" / "DAZN 1 WARP" SU TUTTE LE SORGENTI ===
-        const daznContentFixed         = applyDazn1LogoOverride(daznContent);
-        const daznEventsContentFixed   = applyDazn1LogoOverride(daznEventsContent);
-        const dazn1STContentFixed      = applyDazn1LogoOverride(dazn1STContent);
-        const dazn1EventiContentFixed  = applyDazn1LogoOverride(dazn1EventiContent);
-        const dazn1RestContentFixed    = applyDazn1LogoOverride(dazn1RestContent);
+        const daznContentFixed          = applyDazn1LogoOverride(daznContent);
+        const dazn1STContentFixed       = applyDazn1LogoOverride(dazn1STContent);
+        const daznEventsContentFixed    = applyDazn1LogoOverride(daznEventsContent);
+        const dazn1EventiContentFixed   = applyDazn1LogoOverride(dazn1EventiContent);
+        const dazn1RestContentFixed     = applyDazn1LogoOverride(dazn1RestContent);
+        const nerozoneContentFixed      = applyDazn1LogoOverride(nerozoneContent);
+        const primevideoDEContentFixed  = applyDazn1LogoOverride(primevideoDEContent);
+        const primevideoOtherFixed      = applyDazn1LogoOverride(primevideoOtherContent);
+        const daznSwissContentFixed     = applyDazn1LogoOverride(daznSwissContent);
+        const comotvContentFixed        = applyDazn1LogoOverride(comotvContent);
 
         // === LOGICA SKY ===
         let finalSkyChannels = skyChannels.map(ch => {
@@ -391,6 +394,18 @@ export default async function handler(req, res) {
         const baseContentFiltered = removeChannelsByName(fileContent, skyNamesSet);
 
         // === COSTRUZIONE CONTENUTO FINALE ===
+        // Ordine:
+        //   Sky + base
+        //   DAZN lineari               (dazn.m3u)
+        //   DAZN ST                    (da dazn1.m3u)
+        //   DAZN Events                (dazn_events.m3u)
+        //   DAZN Eventi                (da dazn1.m3u)
+        //   DAZN Primevideo DE
+        //   DAZN NeroZone
+        //   DAZN Svizzeri
+        //   Prime Video
+        //   Bluesport
+        //   (extra: eurosport-rsi, resto dazn1, Como TV)
         let finalContent = "#EXTM3U\n";
 
         if (finalSkyChannels.length > 0) {
@@ -402,18 +417,18 @@ export default async function handler(req, res) {
             finalContent += baseContentFiltered + "\n";
         }
 
-        if (daznContentFixed)         finalContent = finalContent.trimEnd() + "\n" + daznContentFixed;         // DAZN lineari
-        if (daznEventsContentFixed)   finalContent = finalContent.trimEnd() + "\n" + daznEventsContentFixed;   // DAZN Events (in coppia)
-        if (dazn1STContentFixed)      finalContent = finalContent.trimEnd() + "\n" + dazn1STContentFixed;      // DAZN ST
-        if (dazn1EventiContentFixed)  finalContent = finalContent.trimEnd() + "\n" + dazn1EventiContentFixed;  // DAZN Eventi
-        if (primevideoDEContent)      finalContent = finalContent.trimEnd() + "\n" + primevideoDEContent;
-        if (nerozoneContent)          finalContent = finalContent.trimEnd() + "\n" + nerozoneContent;
-        if (daznSwissContent)         finalContent = finalContent.trimEnd() + "\n" + daznSwissContent;
-        if (primevideoOtherContent)   finalContent = finalContent.trimEnd() + "\n" + primevideoOtherContent;
-        if (bluesportContent)         finalContent = finalContent.trimEnd() + "\n" + bluesportContent;
-        if (eurosportRsiContent)      finalContent = finalContent.trimEnd() + "\n" + eurosportRsiContent;
-        if (dazn1RestContentFixed)    finalContent = finalContent.trimEnd() + "\n" + dazn1RestContentFixed;
-        if (comotvContent)            finalContent = finalContent.trimEnd() + "\n" + comotvContent;
+        if (daznContentFixed)           finalContent = finalContent.trimEnd() + "\n" + daznContentFixed;           // DAZN lineari
+        if (dazn1STContentFixed)        finalContent = finalContent.trimEnd() + "\n" + dazn1STContentFixed;        // DAZN ST
+        if (daznEventsContentFixed)     finalContent = finalContent.trimEnd() + "\n" + daznEventsContentFixed;     // DAZN Events (dazn_events.m3u)
+        if (dazn1EventiContentFixed)    finalContent = finalContent.trimEnd() + "\n" + dazn1EventiContentFixed;    // DAZN Eventi (dazn1.m3u)
+        if (primevideoDEContentFixed)   finalContent = finalContent.trimEnd() + "\n" + primevideoDEContentFixed;   // DAZN Primevideo DE
+        if (nerozoneContentFixed)       finalContent = finalContent.trimEnd() + "\n" + nerozoneContentFixed;       // DAZN NeroZone
+        if (daznSwissContentFixed)      finalContent = finalContent.trimEnd() + "\n" + daznSwissContentFixed;      // DAZN Svizzeri
+        if (primevideoOtherFixed)       finalContent = finalContent.trimEnd() + "\n" + primevideoOtherFixed;       // Prime Video
+        if (bluesportContent)           finalContent = finalContent.trimEnd() + "\n" + bluesportContent;           // Bluesport
+        if (eurosportRsiContent)        finalContent = finalContent.trimEnd() + "\n" + eurosportRsiContent;
+        if (dazn1RestContentFixed)      finalContent = finalContent.trimEnd() + "\n" + dazn1RestContentFixed;
+        if (comotvContentFixed)         finalContent = finalContent.trimEnd() + "\n" + comotvContentFixed;
 
         // F1-only
         const f1OnlyPasswords = (process.env.F1_ONLY_PASSWORD || "").split(',').map(p => p.trim().toLowerCase());
