@@ -145,7 +145,8 @@ function withCacheBust(url) {
     return `${url}${sep}t=${Date.now()}&r=${Math.random().toString(36).slice(2)}`;
 }
 
-// === OVERRIDE LOGO "DAZN 1" (matcha "DAZN 1", "DAZN 1 WARP", "DAZN 1 (ITA - MPD - WARP)", ecc.) ===
+// === OVERRIDE LOGO "DAZN 1" (matcha "DAZN 1", "DAZN 1 WARP", "DAZN 1 (...)", ecc.) ===
+// NB: NON applicato a NeroZone (lo gestisce il suo script dedicato).
 const DAZN1_LOGO_FIXED = "https://nowtv-seven.vercel.app/logos/dazn1.png?v=2";
 
 function applyDazn1LogoOverride(content) {
@@ -363,13 +364,13 @@ export default async function handler(req, res) {
         const dazn1EventiContent = dazn1SplitEventi.matching;
         const dazn1RestContent = dazn1SplitEventi.others;
 
-        // === APPLICA OVERRIDE LOGO "DAZN 1" / "DAZN 1 WARP" / "DAZN 1 (...)" SU TUTTE LE SORGENTI ===
+        // === APPLICA OVERRIDE LOGO "DAZN 1" SULLE SORGENTI (NON su NeroZone) ===
         const daznContentFixed          = applyDazn1LogoOverride(daznContent);
         const dazn1STContentFixed       = applyDazn1LogoOverride(dazn1STContent);
         const daznEventsContentFixed    = applyDazn1LogoOverride(daznEventsContent);
         const dazn1EventiContentFixed   = applyDazn1LogoOverride(dazn1EventiContent);
         const dazn1RestContentFixed     = applyDazn1LogoOverride(dazn1RestContent);
-        const nerozoneContentFixed      = applyDazn1LogoOverride(nerozoneContent);
+        // NOTA: nerozoneContent NON viene passato nell'override — il logo lo gestisce dazn_nerozone.py
         const primevideoDEContentFixed  = applyDazn1LogoOverride(primevideoDEContent);
         const primevideoOtherFixed      = applyDazn1LogoOverride(primevideoOtherContent);
         const daznSwissContentFixed     = applyDazn1LogoOverride(daznSwissContent);
@@ -422,7 +423,7 @@ export default async function handler(req, res) {
         if (daznEventsContentFixed)     finalContent = finalContent.trimEnd() + "\n" + daznEventsContentFixed;     // DAZN Events (dazn_events.m3u)
         if (dazn1EventiContentFixed)    finalContent = finalContent.trimEnd() + "\n" + dazn1EventiContentFixed;    // DAZN Eventi (dazn1.m3u)
         if (primevideoDEContentFixed)   finalContent = finalContent.trimEnd() + "\n" + primevideoDEContentFixed;   // DAZN Primevideo DE
-        if (nerozoneContentFixed)       finalContent = finalContent.trimEnd() + "\n" + nerozoneContentFixed;       // DAZN NeroZone
+        if (nerozoneContent)            finalContent = finalContent.trimEnd() + "\n" + nerozoneContent;            // DAZN NeroZone (logo gestito dallo script)
         if (daznSwissContentFixed)      finalContent = finalContent.trimEnd() + "\n" + daznSwissContentFixed;      // DAZN Svizzeri
         if (primevideoOtherFixed)       finalContent = finalContent.trimEnd() + "\n" + primevideoOtherFixed;       // Prime Video
         if (bluesportContent)           finalContent = finalContent.trimEnd() + "\n" + bluesportContent;           // Bluesport
