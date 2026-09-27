@@ -197,12 +197,12 @@ export default async function handler(req, res) {
     try {
         const gistBase = process.env.GIST_RAW_URL.replace(/\/[^\/]+$/, '');
 
-        // 1. Lista base (file puntato da GIST_RAW_URL)
+        // 1. Lista base
         const githubResponse = await fetch(withCacheBust(process.env.GIST_RAW_URL));
         const fileContent = await githubResponse.text();
         const baseChannels = parseM3U(fileContent);
 
-        // 2. Sky primari (sky.m3u dal tuo Gist)
+        // 2. Sky primari
         let skyChannels = [];
         try {
             const skyUrl = withCacheBust(`${gistBase}/sky.m3u`);
@@ -215,7 +215,7 @@ export default async function handler(req, res) {
             console.error("Errore nel caricamento sky.m3u:", e);
         }
 
-        // 3. Sky secondari (sky2.m3u dal tuo Gist)
+        // 3. Sky secondari
         let backupChannels = [];
         try {
             const backupUrl = withCacheBust(`${gistBase}/sky2.m3u`);
@@ -242,7 +242,7 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("[DAZN] Errore dazn.m3u:", e); }
 
-        // 5. DAZN Events (dazn_events.m3u dal DAZN_GIST_ID)
+        // 5. DAZN Events (dazn_events.m3u dallo stesso DAZN_GIST_ID → "in coppia" con dazn.m3u)
         let daznEventsContent = "";
         try {
             const daznGistId = process.env.DAZN_GIST_ID;
@@ -258,7 +258,7 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("[DAZN] Errore dazn_events.m3u:", e); }
 
-        // 6. DAZN Swiss + Como TV (z_dazn_swiss.m3u dal tuo Gist)
+        // 6. DAZN Swiss + Como TV
         let daznSwissContent = "";
         let comotvContent = "";
         try {
@@ -275,7 +275,7 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("[DAZN Swiss] Errore:", e); }
 
-        // 7. Bluesport (z_bluesport.m3u dal tuo Gist)
+        // 7. Bluesport
         let bluesportContent = "";
         try {
             const bluesportUrl = withCacheBust(`${gistBase}/z_bluesport.m3u`);
@@ -288,7 +288,7 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("[Bluesport] Errore:", e); }
 
-        // 8. Primevideo (z_primevideo.m3u dal tuo Gist) — allineato al workflow
+        // 8. Primevideo (z_primevideo.m3u dal tuo Gist)
         let primevideoContent = "";
         try {
             const primevideoUrl = withCacheBust(`${gistBase}/z_primevideo.m3u`);
@@ -301,7 +301,7 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("[Primevideo] Errore:", e); }
 
-        // 9. NeroZone (z_dazn_nerozone.m3u dal tuo Gist)
+        // 9. NeroZone
         let nerozoneContent = "";
         try {
             const nerozoneUrl = withCacheBust(`${gistBase}/z_dazn_nerozone.m3u`);
@@ -314,7 +314,7 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("[NeroZone] Errore:", e); }
 
-        // 10. Eurosport/RSI (z_eurosport-rsi.m3u dal tuo Gist, opzionale)
+        // 10. Eurosport/RSI (opzionale)
         let eurosportRsiContent = "";
         try {
             const eurosportRsiUrl = withCacheBust(`${gistBase}/z_eurosport-rsi.m3u`);
@@ -323,9 +323,9 @@ export default async function handler(req, res) {
                 let rawEurosportRsi = await eurosportRsiResponse.text();
                 eurosportRsiContent = rawEurosportRsi.replace(/^#EXTM3U\s*\n?/i, '').trim();
             }
-        } catch (e) { /* silenzioso: file opzionale */ }
+        } catch (e) { /* opzionale */ }
 
-        // 11. DAZN1 (dazn1.m3u) - preso direttamente dal Gist di stefa-menne
+        // 11. DAZN1 (da stefa-menne)
         let dazn1Content = "";
         try {
             const dazn1Url = withCacheBust(`https://gist.githubusercontent.com/stefa-menne/607a5986fa5ddcf07639b79200a31aa4/raw/dazn1.m3u`);
@@ -338,7 +338,7 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("[DAZN1] Errore:", e); }
 
-        // === SPLIT PRIMEVIDEO (dal tuo gist z_primevideo.m3u) ===
+        // === SPLIT PRIMEVIDEO ===
         const primevideoSplit = splitByGroup(primevideoContent, "DAZN PRIMEVIDEO DE");
         const primevideoDEContent = primevideoSplit.matching;
         const primevideoOtherContent = primevideoSplit.others;
@@ -351,6 +351,27 @@ export default async function handler(req, res) {
         const dazn1SplitEventi = splitByGroup(dazn1WithoutST, "DAZN Eventi");
         const dazn1EventiContent = dazn1SplitEventi.matching;
         const dazn1RestContent = dazn1SplitEventi.others;
+
+        // === OVERRIDE LOGO CANALI ===
+        const LOGO_OVERRIDES = {
+            "DAZN 1": "https://nowtv-seven.vercel.app/logos/dazn1.png?v=2",
+        };
+
+        function applyLogoOverrides(content) {
+            if (!content) return content;
+            let out = content;
+            for (const [name, logo] of Object.entries(LOGO_OVERRIDES)) {
+                const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const re = new RegExp(
+                    `(#EXTINF:[^\\n]*?)tvg-logo="[^"]*"([^\\n]*?,\\s*${escaped}\\s*)$`,
+                    'gm'
+                );
+                out = out.replace(re, `$1tvg-logo="${logo}"$2`);
+            }
+            return out;
+        }
+
+        const dazn1STContentFixed = applyLogoOverrides(dazn1STContent);
 
         // === LOGICA SKY ===
         let finalSkyChannels = skyChannels.map(ch => {
@@ -373,9 +394,10 @@ export default async function handler(req, res) {
         // === COSTRUZIONE CONTENUTO FINALE ===
         // Ordine:
         //   Sky + base
-        //   DAZN lineari
-        //   DAZN ST
-        //   DAZN Eventi
+        //   DAZN lineari (dazn.m3u)
+        //   DAZN Events (dazn_events.m3u)   ← IN COPPIA con dazn.m3u
+        //   DAZN ST (dazn1.m3u)
+        //   DAZN Eventi (dazn1.m3u)
         //   DAZN Primevideo DE
         //   DAZN NeroZone
         //   DAZN Svizzeri
@@ -394,9 +416,9 @@ export default async function handler(req, res) {
         }
 
         if (daznContent)            finalContent = finalContent.trimEnd() + "\n" + daznContent;            // DAZN lineari
-        if (dazn1STContent)         finalContent = finalContent.trimEnd() + "\n" + dazn1STContent;         // DAZN ST
+        if (daznEventsContent)      finalContent = finalContent.trimEnd() + "\n" + daznEventsContent;      // DAZN Events (in coppia)
+        if (dazn1STContentFixed)    finalContent = finalContent.trimEnd() + "\n" + dazn1STContentFixed;    // DAZN ST (logo fix)
         if (dazn1EventiContent)     finalContent = finalContent.trimEnd() + "\n" + dazn1EventiContent;     // DAZN Eventi (dazn1.m3u)
-        if (daznEventsContent)      finalContent = finalContent.trimEnd() + "\n" + daznEventsContent;      // DAZN Eventi (dazn_events.m3u)
         if (primevideoDEContent)    finalContent = finalContent.trimEnd() + "\n" + primevideoDEContent;    // DAZN Primevideo DE
         if (nerozoneContent)        finalContent = finalContent.trimEnd() + "\n" + nerozoneContent;        // DAZN NeroZone
         if (daznSwissContent)       finalContent = finalContent.trimEnd() + "\n" + daznSwissContent;       // DAZN Svizzeri
