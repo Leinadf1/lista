@@ -358,7 +358,6 @@ export default async function handler(req, res) {
 
         // === SPLIT DAZN1 ===
         // Estraiamo "DAZN ST" e "DAZN Eventi" da dazn1.m3u per metterli sopra i DAZN lineari.
-        // Il resto di dazn1.m3u (dazn1RestContent) resta in fondo dove stava prima.
         const dazn1SplitST = splitByGroup(dazn1Content, "DAZN ST");
         const dazn1STContent = dazn1SplitST.matching;
         const dazn1WithoutST = dazn1SplitST.others;
@@ -397,18 +396,18 @@ export default async function handler(req, res) {
             finalContent += baseContentFiltered + "\n";
         }
 
-        if (nerozoneContent)        finalContent = finalContent.trimEnd() + "\n" + nerozoneContent;
-        if (dazn1STContent)         finalContent = finalContent.trimEnd() + "\n" + dazn1STContent;         // DAZN ST (sopra i lineari)
-        if (dazn1EventiContent)     finalContent = finalContent.trimEnd() + "\n" + dazn1EventiContent;     // DAZN Eventi (sotto ST)
+        if (dazn1STContent)         finalContent = finalContent.trimEnd() + "\n" + dazn1STContent;         // DAZN ST
+        if (dazn1EventiContent)     finalContent = finalContent.trimEnd() + "\n" + dazn1EventiContent;     // DAZN Eventi
         if (daznContent)            finalContent = finalContent.trimEnd() + "\n" + daznContent;            // DAZN lineari
-        if (daznEventsContent)      finalContent = finalContent.trimEnd() + "\n" + daznEventsContent;
-        if (primevideoDEContent)    finalContent = finalContent.trimEnd() + "\n" + primevideoDEContent;
-        if (daznSwissContent)       finalContent = finalContent.trimEnd() + "\n" + daznSwissContent;
-        if (bluesportContent)       finalContent = finalContent.trimEnd() + "\n" + bluesportContent;
+        if (daznEventsContent)      finalContent = finalContent.trimEnd() + "\n" + daznEventsContent;      // eventi dazn_events.m3u
+        if (primevideoDEContent)    finalContent = finalContent.trimEnd() + "\n" + primevideoDEContent;    // DAZN PRIMEVIDEO DE
+        if (bluesportContent)       finalContent = finalContent.trimEnd() + "\n" + bluesportContent;       // Bluesport sotto Primevideo
+        if (nerozoneContent)        finalContent = finalContent.trimEnd() + "\n" + nerozoneContent;        // NeroZone
+        if (daznSwissContent)       finalContent = finalContent.trimEnd() + "\n" + daznSwissContent;       // DAZN Swiss
         if (primevideoOtherContent) finalContent = finalContent.trimEnd() + "\n" + primevideoOtherContent;
         if (eurosportRsiContent)    finalContent = finalContent.trimEnd() + "\n" + eurosportRsiContent;
-        if (dazn1RestContent)       finalContent = finalContent.trimEnd() + "\n" + dazn1RestContent;      // resto di dazn1.m3u
-        if (comotvContent)          finalContent = finalContent.trimEnd() + "\n" + comotvContent;
+        if (dazn1RestContent)       finalContent = finalContent.trimEnd() + "\n" + dazn1RestContent;       // resto dazn1.m3u
+        if (comotvContent)          finalContent = finalContent.trimEnd() + "\n" + comotvContent;          // Como TV
 
         // Gestione F1-only
         const f1OnlyPasswords = (process.env.F1_ONLY_PASSWORD || "").split(',').map(p => p.trim().toLowerCase());
@@ -448,4 +447,4 @@ export default async function handler(req, res) {
         console.error(error);
         res.status(500).json({ error: "Errore caricamento liste" });
     }
-            }
+                    }
