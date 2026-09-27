@@ -356,12 +356,16 @@ export default async function handler(req, res) {
         const primevideoDEContent = primevideoSplit.matching;
         const primevideoOtherContent = primevideoSplit.others;
 
-        // === SPLIT DAZN: separa "DAZN ST" dal resto (lineari) ===
-        // NB: se il group-title esatto è diverso (es. "DAZN ST." o "DAZN_ST"),
-        //     aggiorna la stringa qui sotto.
-        const daznSplit = splitByGroup(daznContent, "DAZN ST");
-        const daznSTContent = daznSplit.matching;
-        const daznLineariContent = daznSplit.others;
+        // === SPLIT DAZN1 ===
+        // dazn1.m3u contiene al suo interno sia "DAZN ST" (DAZN 1) sia "DAZN Eventi".
+        // Li estraiamo per posizionarli prima dei DAZN lineari (dazn.m3u).
+        const dazn1SplitST = splitByGroup(dazn1Content, "DAZN ST");
+        const dazn1STContent = dazn1SplitST.matching;         // → DAZN ST
+        const dazn1WithoutST = dazn1SplitST.others;
+
+        const dazn1SplitEventi = splitByGroup(dazn1WithoutST, "DAZN Eventi");
+        const dazn1EventiContent = dazn1SplitEventi.matching; // → DAZN Eventi
+        const dazn1RestContent = dazn1SplitEventi.others;     // resto di dazn1.m3u (resta in fondo)
 
         // === LOGICA PRINCIPALE SKY ===
         let finalSkyChannels = skyChannels.map(ch => {
@@ -393,17 +397,18 @@ export default async function handler(req, res) {
             finalContent += baseContentFiltered + "\n";
         }
 
-        if (nerozoneContent)      finalContent = finalContent.trimEnd() + "\n" + nerozoneContent;
-        if (daznSTContent)        finalContent = finalContent.trimEnd() + "\n" + daznSTContent;       // DAZN ST
-        if (daznEventsContent)    finalContent = finalContent.trimEnd() + "\n" + daznEventsContent;   // subito sotto
-        if (daznLineariContent)   finalContent = finalContent.trimEnd() + "\n" + daznLineariContent;  // lineari dopo
-        if (primevideoDEContent)  finalContent = finalContent.trimEnd() + "\n" + primevideoDEContent;
-        if (daznSwissContent)     finalContent = finalContent.trimEnd() + "\n" + daznSwissContent;
-        if (bluesportContent)     finalContent = finalContent.trimEnd() + "\n" + bluesportContent;
+        if (nerozoneContent)        finalContent = finalContent.trimEnd() + "\n" + nerozoneContent;
+        if (dazn1STContent)         finalContent = finalContent.trimEnd() + "\n" + dazn1STContent;         // DAZN ST (da dazn1.m3u)
+        if (dazn1EventiContent)     finalContent = finalContent.trimEnd() + "\n" + dazn1EventiContent;     // DAZN Eventi (da dazn1.m3u)
+        if (daznContent)            finalContent = finalContent.trimEnd() + "\n" + daznContent;            // DAZN Lineari (dazn.m3u)
+        if (daznEventsContent)      finalContent = finalContent.trimEnd() + "\n" + daznEventsContent;      // eventuali eventi da dazn_events.m3u
+        if (primevideoDEContent)    finalContent = finalContent.trimEnd() + "\n" + primevideoDEContent;
+        if (daznSwissContent)       finalContent = finalContent.trimEnd() + "\n" + daznSwissContent;
+        if (bluesportContent)       finalContent = finalContent.trimEnd() + "\n" + bluesportContent;
         if (primevideoOtherContent) finalContent = finalContent.trimEnd() + "\n" + primevideoOtherContent;
-        if (eurosportRsiContent)  finalContent = finalContent.trimEnd() + "\n" + eurosportRsiContent;
-        if (dazn1Content)         finalContent = finalContent.trimEnd() + "\n" + dazn1Content;
-        if (comotvContent)        finalContent = finalContent.trimEnd() + "\n" + comotvContent;
+        if (eurosportRsiContent)    finalContent = finalContent.trimEnd() + "\n" + eurosportRsiContent;
+        if (dazn1RestContent)       finalContent = finalContent.trimEnd() + "\n" + dazn1RestContent;      // resto di dazn1.m3u
+        if (comotvContent)          finalContent = finalContent.trimEnd() + "\n" + comotvContent;
 
         // Gestione F1-only
         const f1OnlyPasswords = (process.env.F1_ONLY_PASSWORD || "").split(',').map(p => p.trim().toLowerCase());
