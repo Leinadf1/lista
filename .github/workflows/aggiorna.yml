@@ -105,15 +105,6 @@ jobs:
           fi
 
       # 10. Deploy dei file sui Gist
-      - name: Deploy lista_privata.m3u to Gist
-        continue-on-error: true
-        uses: exuanbo/actions-deploy-gist@v1
-        with:
-          token: ${{ secrets.GIST_TOKEN }}
-          gist_id: ${{ secrets.GIST_ID }}
-          file_path: lista_privata.m3u
-          file_type: text
-
       - name: Deploy sky.m3u to Gist
         continue-on-error: true
         uses: exuanbo/actions-deploy-gist@v1
