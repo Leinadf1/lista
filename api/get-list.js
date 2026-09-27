@@ -145,13 +145,13 @@ function withCacheBust(url) {
     return `${url}${sep}t=${Date.now()}&r=${Math.random().toString(36).slice(2)}`;
 }
 
-// === OVERRIDE LOGO "DAZN 1" e "DAZN 1 WARP" (su tutte le sorgenti) ===
+// === OVERRIDE LOGO "DAZN 1" (matcha "DAZN 1", "DAZN 1 WARP", "DAZN 1 (ITA - MPD - WARP)", ecc.) ===
 const DAZN1_LOGO_FIXED = "https://nowtv-seven.vercel.app/logos/dazn1.png?v=2";
 
 function applyDazn1LogoOverride(content) {
     if (!content) return content;
     return content.replace(
-        /(#EXTINF:[^\n]*?tvg-name="DAZN\s+1(?:\s+WARP)?"[^\n]*?)tvg-logo="[^"]*"/gim,
+        /(#EXTINF:[^\n]*?tvg-name="DAZN\s+1(?:\s[^"]*)?"[^\n]*?)tvg-logo="[^"]*"/gim,
         `$1tvg-logo="${DAZN1_LOGO_FIXED}"`
     );
 }
@@ -253,7 +253,7 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("[DAZN] Errore dazn.m3u:", e); }
 
-        // 5. DAZN Events (stesso gist dei lineari)
+        // 5. DAZN Events
         let daznEventsContent = "";
         try {
             const daznGistId = process.env.DAZN_GIST_ID;
@@ -363,7 +363,7 @@ export default async function handler(req, res) {
         const dazn1EventiContent = dazn1SplitEventi.matching;
         const dazn1RestContent = dazn1SplitEventi.others;
 
-        // === APPLICA OVERRIDE LOGO "DAZN 1" / "DAZN 1 WARP" SU TUTTE LE SORGENTI ===
+        // === APPLICA OVERRIDE LOGO "DAZN 1" / "DAZN 1 WARP" / "DAZN 1 (...)" SU TUTTE LE SORGENTI ===
         const daznContentFixed          = applyDazn1LogoOverride(daznContent);
         const dazn1STContentFixed       = applyDazn1LogoOverride(dazn1STContent);
         const daznEventsContentFixed    = applyDazn1LogoOverride(daznEventsContent);
@@ -396,10 +396,10 @@ export default async function handler(req, res) {
         // === COSTRUZIONE CONTENUTO FINALE ===
         // Ordine:
         //   Sky + base
-        //   DAZN lineari               (dazn.m3u)
-        //   DAZN ST                    (da dazn1.m3u)
-        //   DAZN Events                (dazn_events.m3u)
-        //   DAZN Eventi                (da dazn1.m3u)
+        //   DAZN lineari
+        //   DAZN ST
+        //   DAZN Events (dazn_events.m3u)
+        //   DAZN Eventi (dazn1.m3u)
         //   DAZN Primevideo DE
         //   DAZN NeroZone
         //   DAZN Svizzeri
