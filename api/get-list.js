@@ -49,7 +49,6 @@ function parseM3U(content) {
     return channels;
 }
 
-// --- Helper per gestione scadenza Sky ---
 function getExpiryTimestampFromUrl(url) {
     const match = url.match(/e~(\d+)/);
     return match ? parseInt(match[1]) * 1000 : null;
@@ -66,7 +65,6 @@ function findBackupChannel(name, backupList) {
     return backupList.find(ch => ch.name.trim().toUpperCase() === searchName);
 }
 
-// Rimuove da un contenuto M3U tutti i canali il cui nome è presente in namesSet
 function removeChannelsByName(m3uContent, namesSet) {
     const lines = m3uContent.split('\n');
     const result = [];
@@ -98,7 +96,6 @@ function removeChannelsByName(m3uContent, namesSet) {
     return result.join('\n');
 }
 
-// Divide un contenuto M3U in blocchi (uno per canale)
 function splitM3UBlocks(content) {
     if (!content) return [];
     const lines = content.split('\n');
@@ -133,7 +130,6 @@ function blocksToContent(blocks) {
     return blocks.map(b => b.join('\n')).join('\n\n');
 }
 
-// Ritorna { matching, others }: matching = blocchi con group-title==groupName
 function splitByGroup(content, groupName) {
     const blocks = splitM3UBlocks(content);
     const matching = blocks.filter(b => getBlockGroup(b) === groupName);
@@ -144,7 +140,6 @@ function splitByGroup(content, groupName) {
     };
 }
 
-// Aggiunge un doppio cache-buster a un URL
 function withCacheBust(url) {
     const sep = url.includes('?') ? '&' : '?';
     return `${url}${sep}t=${Date.now()}&r=${Math.random().toString(36).slice(2)}`;
@@ -188,7 +183,6 @@ export default async function handler(req, res) {
         return res.status(200).json({ status: "ok" });
     }
 
-    // SUPPORTO RELOAD: se il client manda x-reload, salta il blocco "sessione già attiva"
     const isReload = req.headers['x-reload'] === 'true';
 
     if (!isReload) {
@@ -201,15 +195,16 @@ export default async function handler(req, res) {
     await kv.set(sessionKey, "active", { ex: 25 });
 
     try {
-        // 1. Lista base (listaprivata.m3u)
+        const gistBase = process.env.GIST_RAW_URL.replace(/\/[^\/]+$/, '');
+
+        // 1. Lista base (file puntato da GIST_RAW_URL)
         const githubResponse = await fetch(withCacheBust(process.env.GIST_RAW_URL));
         const fileContent = await githubResponse.text();
         const baseChannels = parseM3U(fileContent);
 
-        // 2. Sky primari (sky.m3u)
+        // 2. Sky primari (sky.m3u dal tuo Gist)
         let skyChannels = [];
         try {
-            const gistBase = process.env.GIST_RAW_URL.replace(/\/[^\/]+$/, '');
             const skyUrl = withCacheBust(`${gistBase}/sky.m3u`);
             const skyResponse = await fetch(skyUrl);
             if (skyResponse.ok) {
@@ -220,10 +215,9 @@ export default async function handler(req, res) {
             console.error("Errore nel caricamento sky.m3u:", e);
         }
 
-        // 3. Sky secondari (sky2.m3u)
+        // 3. Sky secondari (sky2.m3u dal tuo Gist)
         let backupChannels = [];
         try {
-            const gistBase = process.env.GIST_RAW_URL.replace(/\/[^\/]+$/, '');
             const backupUrl = withCacheBust(`${gistBase}/sky2.m3u`);
             const backupResponse = await fetch(backupUrl);
             if (backupResponse.ok) {
@@ -232,7 +226,7 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("Errore nel caricamento sky2.m3u:", e); }
 
-        // 4. DAZN principale (dazn.m3u)
+        // 4. DAZN lineari (dazn.m3u dal DAZN_GIST_ID)
         let daznContent = "";
         try {
             const daznGistId = process.env.DAZN_GIST_ID;
@@ -248,7 +242,7 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("[DAZN] Errore dazn.m3u:", e); }
 
-        // 5. DAZN Events (dazn_events.m3u)
+        // 5. DAZN Events (dazn_events.m3u dal DAZN_GIST_ID)
         let daznEventsContent = "";
         try {
             const daznGistId = process.env.DAZN_GIST_ID;
@@ -264,11 +258,10 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("[DAZN] Errore dazn_events.m3u:", e); }
 
-        // 6. DAZN Swiss (z_dazn_swiss.m3u) - contiene anche Como TV
+        // 6. DAZN Swiss + Como TV (z_dazn_swiss.m3u dal tuo Gist)
         let daznSwissContent = "";
         let comotvContent = "";
         try {
-            const gistBase = process.env.GIST_RAW_URL.replace(/\/[^\/]+$/, '');
             const swissUrl = withCacheBust(`${gistBase}/z_dazn_swiss.m3u`);
             const swissResponse = await fetch(swissUrl);
             if (swissResponse.ok) {
@@ -282,10 +275,9 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("[DAZN Swiss] Errore:", e); }
 
-        // 7. Bluesport (z_bluesport.m3u)
+        // 7. Bluesport (z_bluesport.m3u dal tuo Gist)
         let bluesportContent = "";
         try {
-            const gistBase = process.env.GIST_RAW_URL.replace(/\/[^\/]+$/, '');
             const bluesportUrl = withCacheBust(`${gistBase}/z_bluesport.m3u`);
             const bluesportResponse = await fetch(bluesportUrl);
             if (bluesportResponse.ok) {
@@ -296,10 +288,10 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("[Bluesport] Errore:", e); }
 
-        // 8. Primevideo (z_primevideo.m3u) - URL FISSO al gist corretto
+        // 8. Primevideo (z_primevideo.m3u dal tuo Gist) — allineato al workflow
         let primevideoContent = "";
         try {
-            const primevideoUrl = withCacheBust(`https://gist.githubusercontent.com/Leinadf1/e69ce054796b18713c284a383c693fc7/raw/z_primevideo.m3u`);
+            const primevideoUrl = withCacheBust(`${gistBase}/z_primevideo.m3u`);
             const primevideoResponse = await fetch(primevideoUrl);
             if (primevideoResponse.ok) {
                 let rawPrimevideo = await primevideoResponse.text();
@@ -309,10 +301,9 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("[Primevideo] Errore:", e); }
 
-        // 9. NeroZone (z_dazn_nerozone.m3u)
+        // 9. NeroZone (z_dazn_nerozone.m3u dal tuo Gist)
         let nerozoneContent = "";
         try {
-            const gistBase = process.env.GIST_RAW_URL.replace(/\/[^\/]+$/, '');
             const nerozoneUrl = withCacheBust(`${gistBase}/z_dazn_nerozone.m3u`);
             const nerozoneResponse = await fetch(nerozoneUrl);
             if (nerozoneResponse.ok) {
@@ -323,25 +314,21 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("[NeroZone] Errore:", e); }
 
-        // 10. Eurosport/RSI (z_eurosport-rsi.m3u)
+        // 10. Eurosport/RSI (z_eurosport-rsi.m3u dal tuo Gist, opzionale)
         let eurosportRsiContent = "";
         try {
-            const gistBase = process.env.GIST_RAW_URL.replace(/\/[^\/]+$/, '');
             const eurosportRsiUrl = withCacheBust(`${gistBase}/z_eurosport-rsi.m3u`);
             const eurosportRsiResponse = await fetch(eurosportRsiUrl);
             if (eurosportRsiResponse.ok) {
                 let rawEurosportRsi = await eurosportRsiResponse.text();
                 eurosportRsiContent = rawEurosportRsi.replace(/^#EXTM3U\s*\n?/i, '').trim();
-            } else {
-                console.error("[Eurosport/RSI] Fetch failed:", eurosportRsiResponse.status);
             }
-        } catch (e) { console.error("[Eurosport/RSI] Errore:", e); }
+        } catch (e) { /* silenzioso: file opzionale */ }
 
-        // 11. DAZN1 (dazn1.m3u) - dal Gist di stefa-menne, ripubblicato sul nostro Gist
+        // 11. DAZN1 (dazn1.m3u) - preso direttamente dal Gist di stefa-menne
         let dazn1Content = "";
         try {
-            const gistBase = process.env.GIST_RAW_URL.replace(/\/[^\/]+$/, '');
-            const dazn1Url = withCacheBust(`${gistBase}/dazn1.m3u`);
+            const dazn1Url = withCacheBust(`https://gist.githubusercontent.com/stefa-menne/607a5986fa5ddcf07639b79200a31aa4/raw/dazn1.m3u`);
             const dazn1Response = await fetch(dazn1Url);
             if (dazn1Response.ok) {
                 let rawDazn1 = await dazn1Response.text();
@@ -351,12 +338,21 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("[DAZN1] Errore:", e); }
 
-        // === SPLIT PRIMEVIDEO ===
+        // === SPLIT PRIMEVIDEO (dal tuo gist z_primevideo.m3u) ===
         const primevideoSplit = splitByGroup(primevideoContent, "DAZN PRIMEVIDEO DE");
         const primevideoDEContent = primevideoSplit.matching;
         const primevideoOtherContent = primevideoSplit.others;
 
-        // === LOGICA PRINCIPALE SKY ===
+        // === SPLIT DAZN1 ===
+        const dazn1SplitST = splitByGroup(dazn1Content, "DAZN ST");
+        const dazn1STContent = dazn1SplitST.matching;
+        const dazn1WithoutST = dazn1SplitST.others;
+
+        const dazn1SplitEventi = splitByGroup(dazn1WithoutST, "DAZN Eventi");
+        const dazn1EventiContent = dazn1SplitEventi.matching;
+        const dazn1RestContent = dazn1SplitEventi.others;
+
+        // === LOGICA SKY ===
         let finalSkyChannels = skyChannels.map(ch => {
             if (isChannelExpired(ch)) {
                 const backupFromSky2 = findBackupChannel(ch.name, backupChannels);
@@ -375,6 +371,17 @@ export default async function handler(req, res) {
         const baseContentFiltered = removeChannelsByName(fileContent, skyNamesSet);
 
         // === COSTRUZIONE CONTENUTO FINALE ===
+        // Ordine:
+        //   Sky + base
+        //   DAZN lineari
+        //   DAZN ST
+        //   DAZN Eventi
+        //   DAZN Primevideo DE
+        //   DAZN NeroZone
+        //   DAZN Svizzeri
+        //   Prime Video
+        //   Bluesport
+        //   (extra: eurosport-rsi, resto dazn1, Como TV)
         let finalContent = "#EXTM3U\n";
 
         if (finalSkyChannels.length > 0) {
@@ -386,18 +393,20 @@ export default async function handler(req, res) {
             finalContent += baseContentFiltered + "\n";
         }
 
-        if (nerozoneContent) finalContent = finalContent.trimEnd() + "\n" + nerozoneContent;
-        if (daznContent) finalContent = finalContent.trimEnd() + "\n" + daznContent;
-        if (daznEventsContent) finalContent = finalContent.trimEnd() + "\n" + daznEventsContent;
-        if (primevideoDEContent) finalContent = finalContent.trimEnd() + "\n" + primevideoDEContent;
-        if (daznSwissContent) finalContent = finalContent.trimEnd() + "\n" + daznSwissContent;
-        if (bluesportContent) finalContent = finalContent.trimEnd() + "\n" + bluesportContent;
-        if (primevideoOtherContent) finalContent = finalContent.trimEnd() + "\n" + primevideoOtherContent;
-        if (eurosportRsiContent) finalContent = finalContent.trimEnd() + "\n" + eurosportRsiContent;
-        if (dazn1Content) finalContent = finalContent.trimEnd() + "\n" + dazn1Content;
-        if (comotvContent) finalContent = finalContent.trimEnd() + "\n" + comotvContent;
+        if (daznContent)            finalContent = finalContent.trimEnd() + "\n" + daznContent;            // DAZN lineari
+        if (dazn1STContent)         finalContent = finalContent.trimEnd() + "\n" + dazn1STContent;         // DAZN ST
+        if (dazn1EventiContent)     finalContent = finalContent.trimEnd() + "\n" + dazn1EventiContent;     // DAZN Eventi (dazn1.m3u)
+        if (daznEventsContent)      finalContent = finalContent.trimEnd() + "\n" + daznEventsContent;      // DAZN Eventi (dazn_events.m3u)
+        if (primevideoDEContent)    finalContent = finalContent.trimEnd() + "\n" + primevideoDEContent;    // DAZN Primevideo DE
+        if (nerozoneContent)        finalContent = finalContent.trimEnd() + "\n" + nerozoneContent;        // DAZN NeroZone
+        if (daznSwissContent)       finalContent = finalContent.trimEnd() + "\n" + daznSwissContent;       // DAZN Svizzeri
+        if (primevideoOtherContent) finalContent = finalContent.trimEnd() + "\n" + primevideoOtherContent; // Prime Video
+        if (bluesportContent)       finalContent = finalContent.trimEnd() + "\n" + bluesportContent;       // Bluesport
+        if (eurosportRsiContent)    finalContent = finalContent.trimEnd() + "\n" + eurosportRsiContent;
+        if (dazn1RestContent)       finalContent = finalContent.trimEnd() + "\n" + dazn1RestContent;
+        if (comotvContent)          finalContent = finalContent.trimEnd() + "\n" + comotvContent;
 
-        // Gestione F1-only
+        // F1-only
         const f1OnlyPasswords = (process.env.F1_ONLY_PASSWORD || "").split(',').map(p => p.trim().toLowerCase());
         const isF1Only = f1OnlyPasswords.includes(psw.toLowerCase());
 
@@ -435,4 +444,4 @@ export default async function handler(req, res) {
         console.error(error);
         res.status(500).json({ error: "Errore caricamento liste" });
     }
-    }
+}
