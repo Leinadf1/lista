@@ -2333,6 +2333,7 @@ function startHeartbeat(password) {
 }
 
 function getExpiryFromUrl(url) {
+    // 1. Formato Sky: e~<timestamp_secondi>
     let match = url.match(/e~(\d+)/);
     if (match) {
         const ts = parseInt(match[1]) * 1000;
@@ -2341,12 +2342,18 @@ function getExpiryFromUrl(url) {
         return new Date(ts).toLocaleString('it-IT', { timeZone: 'Europe/Rome' });
     }
 
-    match = url.match(/@(eyJ[A-Za-z0-9\-_]+?\.[A-Za-z0-9\-_]+?\.[A-Za-z0-9\-_]+)/);
+    // 2. Formato JWT DAZN: cerca eyJ... ovunque nell'URL
+    //    (funziona sia dopo "@" che dopo "/" o "/@")
+    match = url.match(/(eyJ[A-Za-z0-9\-_]+?\.[A-Za-z0-9\-_]+?\.[A-Za-z0-9\-_]+)/);
     if (match) {
         try {
             const token = match[1];
-            const payloadBase64 = token.split('.')[1];
-            const payloadJson = atob(payloadBase64.replace(/-/g, '+').replace(/_/g, '/'));
+            let payloadBase64 = token.split('.')[1];
+            // Base64url → base64
+            payloadBase64 = payloadBase64.replace(/-/g, '+').replace(/_/g, '/');
+            // Padding
+            while (payloadBase64.length % 4 !== 0) payloadBase64 += '=';
+            const payloadJson = atob(payloadBase64);
             const payload = JSON.parse(payloadJson);
             if (payload.exp) {
                 const exp = payload.exp * 1000;
