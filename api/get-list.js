@@ -145,6 +145,19 @@ function withCacheBust(url) {
     return `${url}${sep}t=${Date.now()}&r=${Math.random().toString(36).slice(2)}`;
 }
 
+// === OVERRIDE LOGO "DAZN 1" e "DAZN 1 WARP" ===
+// Sostituisce il tvg-logo di qualsiasi riga #EXTINF che ha tvg-name="DAZN 1" o "DAZN 1 WARP".
+const DAZN1_LOGO_FIXED = "https://nowtv-seven.vercel.app/logos/dazn1.png?v=2";
+
+function applyDazn1LogoOverride(content) {
+    if (!content) return content;
+    // Matcha tvg-name="DAZN 1" o tvg-name="DAZN 1 WARP" (con eventuali spazi extra)
+    return content.replace(
+        /(#EXTINF:[^\n]*?tvg-name="DAZN\s+1(?:\s+WARP)?"[^\n]*?)tvg-logo="[^"]*"/gim,
+        `$1tvg-logo="${DAZN1_LOGO_FIXED}"`
+    );
+}
+
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -226,7 +239,7 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("Errore nel caricamento sky2.m3u:", e); }
 
-        // 4. DAZN lineari (dazn.m3u dal DAZN_GIST_ID)
+        // 4. DAZN lineari
         let daznContent = "";
         try {
             const daznGistId = process.env.DAZN_GIST_ID;
@@ -242,7 +255,7 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("[DAZN] Errore dazn.m3u:", e); }
 
-        // 5. DAZN Events (dazn_events.m3u dallo stesso DAZN_GIST_ID → "in coppia" con dazn.m3u)
+        // 5. DAZN Events (stesso gist dei lineari)
         let daznEventsContent = "";
         try {
             const daznGistId = process.env.DAZN_GIST_ID;
@@ -288,7 +301,7 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("[Bluesport] Errore:", e); }
 
-        // 8. Primevideo (z_primevideo.m3u dal tuo Gist)
+        // 8. Primevideo
         let primevideoContent = "";
         try {
             const primevideoUrl = withCacheBust(`${gistBase}/z_primevideo.m3u`);
@@ -352,26 +365,12 @@ export default async function handler(req, res) {
         const dazn1EventiContent = dazn1SplitEventi.matching;
         const dazn1RestContent = dazn1SplitEventi.others;
 
-        // === OVERRIDE LOGO CANALI ===
-        const LOGO_OVERRIDES = {
-            "DAZN 1": "https://nowtv-seven.vercel.app/logos/dazn1.png?v=2",
-        };
-
-        function applyLogoOverrides(content) {
-            if (!content) return content;
-            let out = content;
-            for (const [name, logo] of Object.entries(LOGO_OVERRIDES)) {
-                const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                const re = new RegExp(
-                    `(#EXTINF:[^\\n]*?)tvg-logo="[^"]*"([^\\n]*?,\\s*${escaped}\\s*)$`,
-                    'gm'
-                );
-                out = out.replace(re, `$1tvg-logo="${logo}"$2`);
-            }
-            return out;
-        }
-
-        const dazn1STContentFixed = applyLogoOverrides(dazn1STContent);
+        // === APPLICA OVERRIDE LOGO "DAZN 1" / "DAZN 1 WARP" SU TUTTE LE SORGENTI ===
+        const daznContentFixed         = applyDazn1LogoOverride(daznContent);
+        const daznEventsContentFixed   = applyDazn1LogoOverride(daznEventsContent);
+        const dazn1STContentFixed      = applyDazn1LogoOverride(dazn1STContent);
+        const dazn1EventiContentFixed  = applyDazn1LogoOverride(dazn1EventiContent);
+        const dazn1RestContentFixed    = applyDazn1LogoOverride(dazn1RestContent);
 
         // === LOGICA SKY ===
         let finalSkyChannels = skyChannels.map(ch => {
@@ -392,18 +391,6 @@ export default async function handler(req, res) {
         const baseContentFiltered = removeChannelsByName(fileContent, skyNamesSet);
 
         // === COSTRUZIONE CONTENUTO FINALE ===
-        // Ordine:
-        //   Sky + base
-        //   DAZN lineari (dazn.m3u)
-        //   DAZN Events (dazn_events.m3u)   ← IN COPPIA con dazn.m3u
-        //   DAZN ST (dazn1.m3u)
-        //   DAZN Eventi (dazn1.m3u)
-        //   DAZN Primevideo DE
-        //   DAZN NeroZone
-        //   DAZN Svizzeri
-        //   Prime Video
-        //   Bluesport
-        //   (extra: eurosport-rsi, resto dazn1, Como TV)
         let finalContent = "#EXTM3U\n";
 
         if (finalSkyChannels.length > 0) {
@@ -415,18 +402,18 @@ export default async function handler(req, res) {
             finalContent += baseContentFiltered + "\n";
         }
 
-        if (daznContent)            finalContent = finalContent.trimEnd() + "\n" + daznContent;            // DAZN lineari
-        if (daznEventsContent)      finalContent = finalContent.trimEnd() + "\n" + daznEventsContent;      // DAZN Events (in coppia)
-        if (dazn1STContentFixed)    finalContent = finalContent.trimEnd() + "\n" + dazn1STContentFixed;    // DAZN ST (logo fix)
-        if (dazn1EventiContent)     finalContent = finalContent.trimEnd() + "\n" + dazn1EventiContent;     // DAZN Eventi (dazn1.m3u)
-        if (primevideoDEContent)    finalContent = finalContent.trimEnd() + "\n" + primevideoDEContent;    // DAZN Primevideo DE
-        if (nerozoneContent)        finalContent = finalContent.trimEnd() + "\n" + nerozoneContent;        // DAZN NeroZone
-        if (daznSwissContent)       finalContent = finalContent.trimEnd() + "\n" + daznSwissContent;       // DAZN Svizzeri
-        if (primevideoOtherContent) finalContent = finalContent.trimEnd() + "\n" + primevideoOtherContent; // Prime Video
-        if (bluesportContent)       finalContent = finalContent.trimEnd() + "\n" + bluesportContent;       // Bluesport
-        if (eurosportRsiContent)    finalContent = finalContent.trimEnd() + "\n" + eurosportRsiContent;
-        if (dazn1RestContent)       finalContent = finalContent.trimEnd() + "\n" + dazn1RestContent;
-        if (comotvContent)          finalContent = finalContent.trimEnd() + "\n" + comotvContent;
+        if (daznContentFixed)         finalContent = finalContent.trimEnd() + "\n" + daznContentFixed;         // DAZN lineari
+        if (daznEventsContentFixed)   finalContent = finalContent.trimEnd() + "\n" + daznEventsContentFixed;   // DAZN Events (in coppia)
+        if (dazn1STContentFixed)      finalContent = finalContent.trimEnd() + "\n" + dazn1STContentFixed;      // DAZN ST
+        if (dazn1EventiContentFixed)  finalContent = finalContent.trimEnd() + "\n" + dazn1EventiContentFixed;  // DAZN Eventi
+        if (primevideoDEContent)      finalContent = finalContent.trimEnd() + "\n" + primevideoDEContent;
+        if (nerozoneContent)          finalContent = finalContent.trimEnd() + "\n" + nerozoneContent;
+        if (daznSwissContent)         finalContent = finalContent.trimEnd() + "\n" + daznSwissContent;
+        if (primevideoOtherContent)   finalContent = finalContent.trimEnd() + "\n" + primevideoOtherContent;
+        if (bluesportContent)         finalContent = finalContent.trimEnd() + "\n" + bluesportContent;
+        if (eurosportRsiContent)      finalContent = finalContent.trimEnd() + "\n" + eurosportRsiContent;
+        if (dazn1RestContentFixed)    finalContent = finalContent.trimEnd() + "\n" + dazn1RestContentFixed;
+        if (comotvContent)            finalContent = finalContent.trimEnd() + "\n" + comotvContent;
 
         // F1-only
         const f1OnlyPasswords = (process.env.F1_ONLY_PASSWORD || "").split(',').map(p => p.trim().toLowerCase());
