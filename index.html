@@ -372,7 +372,6 @@
             height: 100%;
             object-fit: contain;
         }
-        /* OSD TV mode: leggermente più grande */
         #tv-osd {
             position: absolute;
             bottom: 60px;
@@ -401,8 +400,8 @@
             line-height: 1.15;
         }
         #tv-osd .osd-channel img {
-            width: 52px;
-            height: 52px;
+            width: 72px;
+            height: 72px;
             object-fit: contain;
         }
         #tv-osd .osd-program-wrap {
@@ -419,7 +418,6 @@
             flex: 1;
             line-height: 1.2;
         }
-        /* Badge S/E leggermente più piccolo del titolo */
         #tv-osd .osd-episode {
             display: inline-block;
             background: #30363d;
@@ -452,7 +450,6 @@
             color: #b0b7c0;
             margin-bottom: 5px;
         }
-        /* Descrizione staccata dalla barra verde */
         #tv-osd .osd-desc {
             font-size: 13px;
             color: #8b949e;
@@ -1378,7 +1375,8 @@ function navigateEPG(direction) {
     }
 }
 
-setInterval(() => {
+// Funzione centralizzata per aggiornare l'EPG
+function refreshEPG() {
     const epgDiv = document.getElementById('epg-info');
     if (epgState.channel && epgDiv && epgDiv.style.display !== 'none') {
         const wasLive = epgState.currentIndex === epgState.liveIndex;
@@ -1428,9 +1426,26 @@ setInterval(() => {
                     osdEpgState.currentIndex = fresh.currentIndex;
                 }
             }
+            renderOsdEPG();
         }
     }
-}, 30000);
+}
+
+// Timer fisso ogni 30s
+setInterval(refreshEPG, 30000);
+
+// Refresh immediato quando la pagina torna in primo piano
+// (fondamentale su mobile: i browser sospendono i timer in background)
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+        console.log('[EPG] Pagina tornata visibile → refresh immediato');
+        refreshEPG();
+    }
+});
+window.addEventListener('focus', () => {
+    console.log('[EPG] Window focus → refresh immediato');
+    refreshEPG();
+});
 // -------------------- Fine EPG --------------------
 
 // -------------------- Modalità TV --------------------
