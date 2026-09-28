@@ -930,7 +930,6 @@ function buildIframeSrc(ch) {
         'kid': kid,
         'key': key,
         'autoplay': 'true',
-        // Live
         'live': 'true',
         'start': 'live',
         'startAt': 'live',
@@ -943,7 +942,6 @@ function buildIframeSrc(ch) {
     return `https://hugoedgar.com/drm-player/?${params.toString()}`;
 }
 
-// Invia postMessage per forzare il live sull'iframe
 function sendIframeLive(iframe) {
     if (!iframe || !iframe.contentWindow) return;
 
@@ -971,11 +969,10 @@ function sendIframeLive(iframe) {
     });
 }
 
-// Ciclo di invio ripetuto del comando "go to live" per i primi 10 secondi
 function startIframeLiveLoop(iframe) {
     if (!iframe) return;
     let attempts = 0;
-    const maxAttempts = 20; // 20 * 500ms = 10 secondi
+    const maxAttempts = 20;
     const interval = setInterval(() => {
         if (!activeIframe || activeIframe !== iframe || attempts >= maxAttempts) {
             clearInterval(interval);
@@ -985,7 +982,6 @@ function startIframeLiveLoop(iframe) {
         attempts++;
     }, 500);
 
-    // Invii immediati iniziali
     setTimeout(() => sendIframeLive(iframe), 100);
     setTimeout(() => sendIframeLive(iframe), 800);
     setTimeout(() => sendIframeLive(iframe), 1500);
@@ -999,7 +995,6 @@ let epgNames = new Set();
 let epgReady = false;
 let epgError = null;
 
-// Verifica se la guida TV deve essere disabilitata per un canale
 function isEpgDisabled(ch) {
     const group = (ch.group || '').toLowerCase();
     const name = (ch.name || '').toLowerCase();
@@ -1054,6 +1049,29 @@ async function loadEPG() {
             throw new Error('XML non valido');
         }
         
+        // PRIMA PASSATA: conta le collisioni sui normName
+        const normNameCounts = new Map();
+        xmlDoc.querySelectorAll('channel').forEach(ch => {
+            const id = ch.getAttribute('id');
+            const displayNames = ch.querySelectorAll('display-name');
+            let displayName = id;
+            if (displayNames.length > 0) {
+                displayName = displayNames[0].textContent.trim();
+            }
+            const normName = normalizeName(displayName);
+            normNameCounts.set(normName, (normNameCounts.get(normName) || 0) + 1);
+        });
+
+        // NormName ambigui → non verranno usati per il match
+        const ambiguousNormNames = new Set();
+        for (const [n, count] of normNameCounts.entries()) {
+            if (count > 1) ambiguousNormNames.add(n);
+        }
+        if (ambiguousNormNames.size > 0) {
+            console.warn('⚠️ EPG: nomi ambigui esclusi dal match:', [...ambiguousNormNames]);
+        }
+
+        // SECONDA PASSATA: popola channelMap e epgChannels
         const channelMap = new Map();
         xmlDoc.querySelectorAll('channel').forEach(ch => {
             const id = ch.getAttribute('id');
@@ -1067,7 +1085,10 @@ async function loadEPG() {
             channelMap.set(id, normName);
             epgNames.add(normName);
             epgChannels.set(id, []);
-            if (!epgChannels.has(normName)) epgChannels.set(normName, []);
+            // Non creare la chiave normName se ambigua
+            if (!ambiguousNormNames.has(normName) && !epgChannels.has(normName)) {
+                epgChannels.set(normName, []);
+            }
             if (!epgChannels.has(normId)) epgChannels.set(normId, []);
         });
         
@@ -1087,7 +1108,10 @@ async function loadEPG() {
             if (epgChannels.has(normChannelId)) epgChannels.get(normChannelId).push(program);
             if (channelMap.has(channelId)) {
                 const norm = channelMap.get(channelId);
-                if (epgChannels.has(norm)) epgChannels.get(norm).push(program);
+                // Pusha a norm SOLO se non ambiguo
+                if (!ambiguousNormNames.has(norm) && epgChannels.has(norm)) {
+                    epgChannels.get(norm).push(program);
+                }
             }
         });
         
@@ -1478,7 +1502,6 @@ function requestFullscreen() {
 function enterTvMode() {
     tvModeActive = true;
     exitingTv = false;
-    // MODIFICA: include TUTTI i canali in TV mode (anche NeroZone)
     tvChannelListAll = allChannels.slice();
     
     document.getElementById('main-list').style.display = 'none';
@@ -1867,7 +1890,6 @@ function loadChannelInTv(index) {
                 }
             }, 5000);
             
-            // Avvia il ciclo di invio "go to live"
             iframe.addEventListener('load', () => {
                 startIframeLiveLoop(iframe);
                 setTimeout(() => {
@@ -2333,7 +2355,6 @@ function startHeartbeat(password) {
 }
 
 function getExpiryFromUrl(url) {
-    // 1. Formato Sky: e~<timestamp_secondi>
     let match = url.match(/e~(\d+)/);
     if (match) {
         const ts = parseInt(match[1]) * 1000;
@@ -2342,16 +2363,12 @@ function getExpiryFromUrl(url) {
         return new Date(ts).toLocaleString('it-IT', { timeZone: 'Europe/Rome' });
     }
 
-    // 2. Formato JWT DAZN: cerca eyJ... ovunque nell'URL
-    //    (funziona sia dopo "@" che dopo "/" o "/@")
     match = url.match(/(eyJ[A-Za-z0-9\-_]+?\.[A-Za-z0-9\-_]+?\.[A-Za-z0-9\-_]+)/);
     if (match) {
         try {
             const token = match[1];
             let payloadBase64 = token.split('.')[1];
-            // Base64url → base64
             payloadBase64 = payloadBase64.replace(/-/g, '+').replace(/_/g, '/');
-            // Padding
             while (payloadBase64.length % 4 !== 0) payloadBase64 += '=';
             const payloadJson = atob(payloadBase64);
             const payload = JSON.parse(payloadJson);
@@ -2417,7 +2434,6 @@ async function checkAccess() {
         loadEPG();
         init(m3uData);
 
-        // Rilevamento TV e auto-avvio TV mode SOLO su dispositivi TV (non PC)
         const isTV = /Android TV|SmartTV|WebTV|Tizen|LGTV|Viera|BRAVIA|Fire TV|Roku|AppleTV/i.test(navigator.userAgent);
         if (isTV) {
             isAutoEnter = true;
@@ -2431,7 +2447,6 @@ async function checkAccess() {
     }
 }
 
-// Aggiorna playlist: richiede dati freschi al server con bypass cache
 async function reloadPlaylist() {
     if (!passwordGlobale) {
         alert("Sessione scaduta, ricarica la pagina.");
@@ -2463,7 +2478,6 @@ async function reloadPlaylist() {
         const m3uEncoded = await response.text();
         const m3uData = decodeBase64UTF8(m3uEncoded);
 
-        // Debug: confronta con i dati vecchi
         if (lastM3UData) {
             const vecchio = lastM3UData.length;
             const nuovo = m3uData.length;
@@ -2475,7 +2489,6 @@ async function reloadPlaylist() {
 
         lastM3UData = m3uData;
 
-        // Reset completo
         document.getElementById('main-list').innerHTML = '';
         allChannels = [];
         tvChannelListAll = [];
@@ -2560,7 +2573,6 @@ async function init(m3uContent) {
                     playerContainer.appendChild(iframeContainer);
                     await player.unload();
 
-                    // Avvia il ciclo "go to live" anche nella dashboard
                     iframe.addEventListener('load', () => {
                         startIframeLiveLoop(iframe);
                     });
@@ -2665,7 +2677,6 @@ async function init(m3uContent) {
     };
     let loadedCount = 0;
 
-    // Categorie che devono usare il proxy (oltre a DAZN)
     const proxyCategories = [
         'serie bkt',
         'laliga ea sports',
@@ -2712,19 +2723,22 @@ async function init(m3uContent) {
             if (group) currentChannel.group = group[1];
             if (name) currentChannel.name = name[1].trim();
             if (tvgId) currentChannel.tvgId = tvgId[1];
-            // Assegna manualmente tvg-id per Sky Uno Plus
+
+            // Assegna tvg-id per Sky Uno Plus
             if (currentChannel.name && normalizeName(currentChannel.name) === 'skyunoplus') {
                 currentChannel.tvgId = 'Sky.Uno.+.it';
+            }
+            // Assegna tvg-id per Sky Uno (senza "+") per distinguerlo da Sky Uno Plus
+            if (currentChannel.name && normalizeName(currentChannel.name) === 'skyuno') {
+                currentChannel.tvgId = 'Sky.Uno.it';
             }
         } 
         else if (line.startsWith('http')) {
             let url = line;
             
-            // Normalizza gruppo e nome rimuovendo spazi, trattini e underscore
             const groupNorm = (currentChannel.group || '').toLowerCase().replace(/[\s\-_]/g, '');
             const nameNorm = (currentChannel.name || '').toLowerCase().replace(/[\s\-_]/g, '');
             
-            // Rilevamento NeroZone (nel gruppo o nel nome, con qualsiasi variante)
             const isNeroZone = 
                 groupNorm.includes('nerozone') || 
                 nameNorm.includes('nerozone') ||
@@ -2737,10 +2751,8 @@ async function init(m3uContent) {
             const isDaznPrimeVideoDE = groupNorm.includes('daznprimevideode');
             const isDaznChannel = groupNorm.includes('dazn') || nameNorm.includes('dazn');
             
-            // Controlla se la categoria corrente è una di quelle che devono usare il proxy
             const isProxyCategory = proxyCategories.includes((currentChannel.group || '').toLowerCase().trim());
             
-            // Evita doppio proxy (se l'URL è già proxato non aggiungere di nuovo)
             const alreadyProxied = url.startsWith('https://dazn-ua-proxy.stefanoaccuont.workers.dev/');
             
             if (!alreadyProxied && (
@@ -2854,4 +2866,4 @@ function sortCategories() {
 document.getElementById('reload-btn').addEventListener('click', reloadPlaylist);
 </script>
 </body>
-</html>
+    </html>
