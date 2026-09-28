@@ -282,14 +282,15 @@
         .epg-episode-badge {
             display: inline-block;
             background: #30363d;
-            color: #f0f6fc;
-            font-size: 12px;
+            color: #f1e05a;
+            font-size: 17px;             /* ← stesso del titolo */
             font-weight: 700;
-            padding: 2px 8px;
+            padding: 1px 8px;
             border-radius: 6px;
             margin-left: 8px;
             vertical-align: middle;
             letter-spacing: 0.5px;
+            line-height: 1.2;
         }
         .live-badge {
             position: absolute;
@@ -373,16 +374,16 @@
         }
         #tv-osd {
             position: absolute;
-            bottom: 70px;
-            left: 20px;
+            bottom: 55px;
+            left: 16px;
             background: rgba(0,0,0,0.85);
             color: white;
-            padding: 12px 16px;
-            border-radius: 10px;
+            padding: 8px 12px;
+            border-radius: 8px;
             display: none;
             z-index: 1000;
-            width: 500px;
-            max-width: 90vw;
+            width: 380px;
+            max-width: 88vw;
             font-family: 'Formula1 Display Bold', 'Inter', sans-serif;
             box-sizing: border-box;
         }
@@ -392,24 +393,25 @@
         #tv-osd .osd-channel {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 22px;
+            gap: 6px;
+            font-size: 17px;
             font-weight: 700;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
+            line-height: 1.15;
         }
         #tv-osd .osd-channel img {
-            width: 80px;
-            height: 80px;
+            width: 44px;
+            height: 44px;
             object-fit: contain;
         }
         #tv-osd .osd-program-wrap {
             display: flex;
             align-items: flex-start;
-            gap: 8px;
-            margin-bottom: 4px;
+            gap: 6px;
+            margin-bottom: 2px;
         }
         #tv-osd .osd-program {
-            font-size: 18px;
+            font-size: 14px;
             white-space: normal;
             overflow: visible;
             text-overflow: clip;
@@ -419,23 +421,24 @@
         #tv-osd .osd-episode {
             display: inline-block;
             background: #30363d;
-            color: #f0f6fc;
-            font-size: 12px;
+            color: #f1e05a;
+            font-size: 14px;             /* ← stesso del titolo */
             font-weight: 700;
-            padding: 2px 6px;
-            border-radius: 5px;
+            padding: 1px 7px;
+            border-radius: 4px;
             margin-left: 6px;
             vertical-align: middle;
+            line-height: 1.2;
         }
         #tv-osd .osd-live-badge {
             background: #ff1744;
             color: white;
-            font-size: 12px;
-            padding: 2px 8px;
-            border-radius: 12px;
+            font-size: 10px;
+            padding: 1px 6px;
+            border-radius: 10px;
             text-transform: uppercase;
             font-weight: bold;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.4px;
             display: none;
             flex-shrink: 0;
         }
@@ -443,31 +446,32 @@
             display: inline-block;
         }
         #tv-osd .osd-time {
-            font-size: 18px;
+            font-size: 13px;
             color: #b0b7c0;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
         }
         #tv-osd .osd-desc {
-            font-size: 14px;
+            font-size: 12px;
             color: #8b949e;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
+            line-height: 1.25;
         }
         #tv-osd .osd-controls {
             display: flex;
-            gap: 10px;
-            margin-bottom: 6px;
+            gap: 8px;
+            margin-bottom: 4px;
             justify-content: flex-end;
         }
         .osd-nav-btn {
-            padding: 4px 10px;
+            padding: 3px 8px;
             border: none;
-            border-radius: 6px;
+            border-radius: 5px;
             cursor: pointer;
             font-weight: 600;
-            font-size: 14px;
+            font-size: 12px;
             display: inline-flex;
             align-items: center;
-            gap: 5px;
+            gap: 4px;
             font-family: 'Formula1 Display Bold', 'Inter', sans-serif;
             transition: opacity 0.2s;
         }
@@ -488,18 +492,19 @@
             background: rgba(0,230,118,0.4);
         }
         .osd-nav-btn .dot {
-            width: 10px;
-            height: 10px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
             background: currentColor;
             display: inline-block;
         }
         #tv-osd .osd-progress {
-            height: 4px;
+            height: 3px;
             background: #30363d;
             border-radius: 2px;
             overflow: hidden;
             width: 100%;
+            margin-top: 2px;
         }
         #tv-osd .osd-progress-bar {
             height: 100%;
@@ -888,6 +893,9 @@
                 <span class="osd-live-badge" id="tv-osd-live-badge">IN ONDA</span>
             </div>
             <div class="osd-time" id="tv-osd-time"></div>
+            <div class="osd-progress">
+                <div class="osd-progress-bar" id="tv-osd-progress-bar"></div>
+            </div>
             <div class="osd-desc" id="tv-osd-desc"></div>
             <div class="osd-controls">
                 <button id="tv-osd-prev-btn" class="osd-nav-btn prev" title="Programma precedente">
@@ -896,9 +904,6 @@
                 <button id="tv-osd-next-btn" class="osd-nav-btn next" title="Programma successivo">
                     <span class="dot"></span> SUCC.
                 </button>
-            </div>
-            <div class="osd-progress">
-                <div class="osd-progress-bar" id="tv-osd-progress-bar"></div>
             </div>
         </div>
         <div id="tv-epg-panel"></div>
@@ -1059,7 +1064,6 @@ function parseXmltvTime(str) {
     return Date.UTC(year, month, day, hour, min, sec);
 }
 
-// Estrae stagione/episodio da <episode-num>
 function extractEpisodeLabel(prog) {
     const nodes = prog.querySelectorAll('episode-num');
     if (!nodes || nodes.length === 0) return '';
@@ -1071,31 +1075,25 @@ function extractEpisodeLabel(prog) {
         if (!val) return;
         if (sys === 'onscreen') onscreen = val;
         else if (sys === 'xmltv_ns') xmltv_ns = val;
-        else if (!onscreen && !xmltv_ns) onscreen = val;  // fallback generico
+        else if (!onscreen && !xmltv_ns) onscreen = val;
     });
 
     if (onscreen) {
-        // Pulisce varianti tipo "S4 E4", "S4E4", "4x04", ". 4 . 4"
         let s = onscreen.replace(/\s+/g, ' ').trim();
-        // Normalizza ". 4 . 4" (xmltv_ns-like)
         const m = s.match(/^\.?\s*(\d+)\s*\.\s*(\d+)/);
         if (m && !/^[Ss]/.test(s)) {
             const season = parseInt(m[1]) + 1;
             const ep = parseInt(m[2]) + 1;
             return `S${season} E${ep}`;
         }
-        // Normalizza "4x04" → "S4 E4"
         const m2 = s.match(/^(\d+)\s*x\s*(\d+)$/i);
         if (m2) return `S${parseInt(m2[1])} E${parseInt(m2[2])}`;
-        // Normalizza "S4 E4" / "S4E4"
         const m3 = s.match(/^S\s*(\d+)\s*E\s*(\d+)$/i);
         if (m3) return `S${parseInt(m3[1])} E${parseInt(m3[2])}`;
-        // Fallback: ritorna così com'è se sembra contenere S/E
         return s;
     }
 
     if (xmltv_ns) {
-        // Format: "season.episode.part" (0-indexed)
         const parts = xmltv_ns.split('.');
         const season = parseInt(parts[0]) + 1;
         const ep = parseInt(parts[1]) + 1;
@@ -1377,7 +1375,6 @@ function navigateEPG(direction) {
     }
 }
 
-// Auto-refresh EPG ogni 30s
 setInterval(() => {
     const epgDiv = document.getElementById('epg-info');
     if (epgState.channel && epgDiv && epgDiv.style.display !== 'none') {
@@ -2133,7 +2130,7 @@ function updateEpgPanel() {
         const start = new Date(p.start);
         const stop = new Date(p.stop);
         const timeStr = `${start.toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'})} - ${stop.toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'})}`;
-        const ep = p.episode ? ` <span style="color:#8b949e;font-size:12px;font-weight:700;">${p.episode}</span>` : '';
+        const ep = p.episode ? ` <span style="color:#f1e05a;font-size:12px;font-weight:700;">${p.episode}</span>` : '';
         html += `<div class="tv-epg-item ${idx === result.currentIndex ? 'current' : ''}">
             <span class="epg-title">${p.title}${ep}</span>
             <span class="epg-time">${timeStr}</span>
@@ -3011,4 +3008,4 @@ function sortCategories() {
 document.getElementById('reload-btn').addEventListener('click', reloadPlaylist);
 </script>
 </body>
-</html>
+    </html>
