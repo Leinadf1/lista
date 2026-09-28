@@ -920,7 +920,6 @@ function shouldUseIframe(ch) {
     return IFRAME_GROUPS.includes(groupName);
 }
 
-// Costruisce l'URL dell'iframe con parametri per forzare il live
 function buildIframeSrc(ch) {
     const { kid, key } = getKidKey(ch.drm);
     if (!kid || !key || !ch.url) return null;
@@ -995,6 +994,17 @@ let epgNames = new Set();
 let epgReady = false;
 let epgError = null;
 
+// Offset orario per canali con EPG sfasato (in millisecondi).
+// Sky Uno Plus: EPG sfasato di +2h → applichiamo -2h per riportarlo all'orario reale.
+const CHANNEL_TIME_SHIFT_MS = {
+    'skyunoplus': -2 * 60 * 60 * 1000,
+};
+
+function getChannelTimeShiftMs(ch) {
+    const norm = normalizeName(ch.name || '');
+    return CHANNEL_TIME_SHIFT_MS[norm] || 0;
+}
+
 function isEpgDisabled(ch) {
     const group = (ch.group || '').toLowerCase();
     const name = (ch.name || '').toLowerCase();
@@ -1049,7 +1059,6 @@ async function loadEPG() {
             throw new Error('XML non valido');
         }
         
-        // PRIMA PASSATA: conta le collisioni sui normName
         const normNameCounts = new Map();
         xmlDoc.querySelectorAll('channel').forEach(ch => {
             const id = ch.getAttribute('id');
@@ -1153,6 +1162,18 @@ function getAliasesForChannel(ch) {
 function getCurrentProgram(ch) {
     if (!epgReady) return { status: 'loading' };
     const now = Date.now();
+    const shift = getChannelTimeShiftMs(ch);
+
+    // Applica l'offset orario solo se richiesto (es. Sky Uno Plus)
+    function applyShift(programs) {
+        if (!shift) return programs;
+        return programs.map(p => ({
+            ...p,
+            start: p.start + shift,
+            stop: p.stop + shift
+        }));
+    }
+
     const candidates = [];
     if (ch.tvgId) {
         candidates.push(ch.tvgId);
@@ -1166,7 +1187,7 @@ function getCurrentProgram(ch) {
     
     for (const key of candidates) {
         if (epgChannels.has(key)) {
-            const programs = epgChannels.get(key);
+            const programs = applyShift(epgChannels.get(key));
             const currentIndex = programs.findIndex(p => p.start <= now && now < p.stop);
             if (currentIndex !== -1) {
                 return { status: 'ok', programs, currentIndex, matchedKey: key, isLive: true };
@@ -1188,7 +1209,7 @@ function getCurrentProgram(ch) {
         }
     }
     if (bestKey && bestDist <= 3 && epgChannels.has(bestKey)) {
-        const programs = epgChannels.get(bestKey);
+        const programs = applyShift(epgChannels.get(bestKey));
         const currentIndex = programs.findIndex(p => p.start <= now && now < p.stop);
         if (currentIndex !== -1) return { status: 'ok', programs, currentIndex, matchedKey: bestKey, isLive: true };
         const nextIndex = programs.findIndex(p => p.start > now);
@@ -2720,11 +2741,9 @@ async function init(m3uContent) {
             if (name) currentChannel.name = name[1].trim();
             if (tvgId) currentChannel.tvgId = tvgId[1];
 
-            // Assegna tvg-id per Sky Uno Plus (con doppio punto, come nell'EPG)
             if (currentChannel.name && normalizeName(currentChannel.name) === 'skyunoplus') {
                 currentChannel.tvgId = 'Sky.Uno.+..it';
             }
-            // Assegna tvg-id per Sky Uno (senza "+") per distinguerlo da Sky Uno Plus
             if (currentChannel.name && normalizeName(currentChannel.name) === 'skyuno') {
                 currentChannel.tvgId = 'Sky.Uno.it';
             }
@@ -2862,4 +2881,4 @@ function sortCategories() {
 document.getElementById('reload-btn').addEventListener('click', reloadPlaylist);
 </script>
 </body>
-            </html>
+    </html>
