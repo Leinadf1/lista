@@ -372,18 +372,18 @@
             height: 100%;
             object-fit: contain;
         }
-        /* OSD TV mode: più orizzontale, meno verticale */
+        /* OSD TV mode: via di mezzo tra orizzontale e verticale, testi più leggibili */
         #tv-osd {
             position: absolute;
             bottom: 60px;
             left: 18px;
             background: rgba(0,0,0,0.85);
             color: white;
-            padding: 8px 16px;
+            padding: 10px 18px;
             border-radius: 9px;
             display: none;
             z-index: 1000;
-            width: 620px;
+            width: 520px;
             max-width: 92vw;
             font-family: 'Formula1 Display Bold', 'Inter', sans-serif;
             box-sizing: border-box;
@@ -394,36 +394,36 @@
         #tv-osd .osd-channel {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 19px;
+            gap: 10px;
+            font-size: 21px;
             font-weight: 700;
-            margin-bottom: 2px;
-            line-height: 1.1;
+            margin-bottom: 4px;
+            line-height: 1.15;
         }
         #tv-osd .osd-channel img {
-            width: 56px;
-            height: 56px;
+            width: 62px;
+            height: 62px;
             object-fit: contain;
         }
         #tv-osd .osd-program-wrap {
             display: flex;
             align-items: flex-start;
             gap: 6px;
-            margin-bottom: 2px;
+            margin-bottom: 3px;
         }
         #tv-osd .osd-program {
-            font-size: 16px;
+            font-size: 17px;
             white-space: normal;
             overflow: visible;
             text-overflow: clip;
             flex: 1;
-            line-height: 1.15;
+            line-height: 1.18;
         }
         #tv-osd .osd-episode {
             display: inline-block;
             background: #30363d;
             color: #f1e05a;
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 700;
             padding: 1px 7px;
             border-radius: 4px;
@@ -434,8 +434,8 @@
         #tv-osd .osd-live-badge {
             background: #ff1744;
             color: white;
-            font-size: 10px;
-            padding: 1px 6px;
+            font-size: 11px;
+            padding: 1px 7px;
             border-radius: 10px;
             text-transform: uppercase;
             font-weight: bold;
@@ -447,31 +447,31 @@
             display: inline-block;
         }
         #tv-osd .osd-time {
-            font-size: 13px;
+            font-size: 15px;
             color: #b0b7c0;
-            margin-bottom: 3px;
+            margin-bottom: 4px;
             line-height: 1.2;
         }
         #tv-osd .osd-desc {
-            font-size: 12px;
+            font-size: 13px;
             color: #8b949e;
-            margin-top: 5px;
-            margin-bottom: 3px;
-            line-height: 1.25;
+            margin-top: 6px;
+            margin-bottom: 4px;
+            line-height: 1.3;
         }
         #tv-osd .osd-controls {
             display: flex;
             gap: 8px;
-            margin-bottom: 2px;
+            margin-bottom: 3px;
             justify-content: flex-end;
         }
         .osd-nav-btn {
-            padding: 2px 8px;
+            padding: 3px 9px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             font-weight: 600;
-            font-size: 11px;
+            font-size: 12px;
             display: inline-flex;
             align-items: center;
             gap: 4px;
@@ -495,8 +495,8 @@
             background: rgba(0,230,118,0.4);
         }
         .osd-nav-btn .dot {
-            width: 7px;
-            height: 7px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
             background: currentColor;
             display: inline-block;
