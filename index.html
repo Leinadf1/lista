@@ -252,7 +252,6 @@
             width: 100%;
         }
         
-        /* EPG */
         #epg-info {
             display: none;
             position: relative;
@@ -279,6 +278,18 @@
             font-size: 17px;
             font-weight: 700;
             margin-bottom: 4px;
+        }
+        .epg-episode-badge {
+            display: inline-block;
+            background: #30363d;
+            color: #f0f6fc;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 6px;
+            margin-left: 8px;
+            vertical-align: middle;
+            letter-spacing: 0.5px;
         }
         .live-badge {
             position: absolute;
@@ -336,7 +347,6 @@
             box-shadow: none;
         }
 
-        /* Modalità TV */
         #tv-mode-overlay {
             display: none;
             position: fixed;
@@ -405,6 +415,17 @@
             text-overflow: clip;
             flex: 1;
             line-height: 1.2;
+        }
+        #tv-osd .osd-episode {
+            display: inline-block;
+            background: #30363d;
+            color: #f0f6fc;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 5px;
+            margin-left: 6px;
+            vertical-align: middle;
         }
         #tv-osd .osd-live-badge {
             background: #ff1744;
@@ -851,7 +872,6 @@
 
     <div id="main-list" style="width: 100%;"></div>
 
-    <!-- Overlay Modalità TV -->
     <div id="tv-mode-overlay">
         <div id="tv-mode-video-container">
             <video autoplay id="tv-mode-video"></video>
@@ -912,7 +932,6 @@ let favoriteIds = new Set(JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]'
 let allChannels = [];
 let tvChannelListAll = [];
 
-// Categorie che utilizzano l'iframe (hugoedgar drm-player) invece di Shaka Player
 const IFRAME_GROUPS = ['PRIME VIDEO', 'DAZN PRIMEVIDEO DE'];
 
 function shouldUseIframe(ch) {
@@ -994,8 +1013,6 @@ let epgNames = new Set();
 let epgReady = false;
 let epgError = null;
 
-// Offset orario per canali con EPG sfasato (in millisecondi).
-// Sky Uno Plus: EPG sfasato di +2h → applichiamo -2h per riportarlo all'orario reale.
 const CHANNEL_TIME_SHIFT_MS = {
     'skyunoplus': -2 * 60 * 60 * 1000,
 };
@@ -1040,6 +1057,53 @@ function parseXmltvTime(str) {
     const min = parseInt(str.substring(10,12));
     const sec = parseInt(str.substring(12,14));
     return Date.UTC(year, month, day, hour, min, sec);
+}
+
+// Estrae stagione/episodio da <episode-num>
+function extractEpisodeLabel(prog) {
+    const nodes = prog.querySelectorAll('episode-num');
+    if (!nodes || nodes.length === 0) return '';
+    let onscreen = null;
+    let xmltv_ns = null;
+    nodes.forEach(n => {
+        const sys = (n.getAttribute('system') || '').toLowerCase();
+        const val = (n.textContent || '').trim();
+        if (!val) return;
+        if (sys === 'onscreen') onscreen = val;
+        else if (sys === 'xmltv_ns') xmltv_ns = val;
+        else if (!onscreen && !xmltv_ns) onscreen = val;  // fallback generico
+    });
+
+    if (onscreen) {
+        // Pulisce varianti tipo "S4 E4", "S4E4", "4x04", ". 4 . 4"
+        let s = onscreen.replace(/\s+/g, ' ').trim();
+        // Normalizza ". 4 . 4" (xmltv_ns-like)
+        const m = s.match(/^\.?\s*(\d+)\s*\.\s*(\d+)/);
+        if (m && !/^[Ss]/.test(s)) {
+            const season = parseInt(m[1]) + 1;
+            const ep = parseInt(m[2]) + 1;
+            return `S${season} E${ep}`;
+        }
+        // Normalizza "4x04" → "S4 E4"
+        const m2 = s.match(/^(\d+)\s*x\s*(\d+)$/i);
+        if (m2) return `S${parseInt(m2[1])} E${parseInt(m2[2])}`;
+        // Normalizza "S4 E4" / "S4E4"
+        const m3 = s.match(/^S\s*(\d+)\s*E\s*(\d+)$/i);
+        if (m3) return `S${parseInt(m3[1])} E${parseInt(m3[2])}`;
+        // Fallback: ritorna così com'è se sembra contenere S/E
+        return s;
+    }
+
+    if (xmltv_ns) {
+        // Format: "season.episode.part" (0-indexed)
+        const parts = xmltv_ns.split('.');
+        const season = parseInt(parts[0]) + 1;
+        const ep = parseInt(parts[1]) + 1;
+        if (Number.isFinite(season) && Number.isFinite(ep)) {
+            return `S${season} E${ep}`;
+        }
+    }
+    return '';
 }
 
 async function loadEPG() {
@@ -1106,9 +1170,10 @@ async function loadEPG() {
             const descEl = prog.querySelector('desc');
             const title = titleEl ? titleEl.textContent.trim() : '';
             const desc = descEl ? descEl.textContent.trim() : '';
+            const episode = extractEpisodeLabel(prog);
             const start = parseXmltvTime(startStr);
             const stop = parseXmltvTime(stopStr);
-            const program = { start, stop, title, desc };
+            const program = { start, stop, title, desc, episode };
             if (epgChannels.has(channelId)) epgChannels.get(channelId).push(program);
             const normChannelId = normalizeName(channelId);
             if (epgChannels.has(normChannelId)) epgChannels.get(normChannelId).push(program);
@@ -1164,7 +1229,6 @@ function getCurrentProgram(ch) {
     const now = Date.now();
     const shift = getChannelTimeShiftMs(ch);
 
-    // Applica l'offset orario solo se richiesto (es. Sky Uno Plus)
     function applyShift(programs) {
         if (!shift) return programs;
         return programs.map(p => ({
@@ -1280,10 +1344,14 @@ function renderEPG() {
         </div>
     `;
     
+    const episodeBadge = program.episode
+        ? `<span class="epg-episode-badge">${program.episode}</span>`
+        : '';
+
     epgDiv.style.display = 'block';
     epgDiv.innerHTML = `
         ${navHtml}
-        <div class="program-title">${program.title}</div>
+        <div class="program-title">${program.title}${episodeBadge}</div>
         ${isLive ? '<span class="live-badge">In onda</span>' : ''}
         <div class="program-time" style="color: ${timeColor}">${timeStr}</div>
         ${program.desc ? `<div class="program-desc">${program.desc}</div>` : ''}
@@ -1308,6 +1376,61 @@ function navigateEPG(direction) {
         renderEPG();
     }
 }
+
+// Auto-refresh EPG ogni 30s
+setInterval(() => {
+    const epgDiv = document.getElementById('epg-info');
+    if (epgState.channel && epgDiv && epgDiv.style.display !== 'none') {
+        const wasLive = epgState.currentIndex === epgState.liveIndex;
+        const oldProgram = epgState.programs[epgState.currentIndex];
+        const fresh = getCurrentProgram(epgState.channel);
+        if (fresh.status === 'ok') {
+            const newLiveIndex = fresh.isLive ? fresh.currentIndex : -1;
+            if (wasLive) {
+                epgState.programs = fresh.programs;
+                epgState.currentIndex = fresh.currentIndex;
+                epgState.liveIndex = newLiveIndex;
+            } else {
+                epgState.programs = fresh.programs;
+                epgState.liveIndex = newLiveIndex;
+                if (oldProgram) {
+                    const idx = fresh.programs.findIndex(
+                        p => p.start === oldProgram.start && p.title === oldProgram.title
+                    );
+                    epgState.currentIndex = idx >= 0 ? idx : fresh.currentIndex;
+                } else {
+                    epgState.currentIndex = fresh.currentIndex;
+                }
+            }
+            renderEPG();
+        }
+    }
+
+    if (tvModeActive && osdEpgState.channel) {
+        const wasLive = osdEpgState.currentIndex === osdEpgState.liveIndex;
+        const oldProgram = osdEpgState.programs[osdEpgState.currentIndex];
+        const fresh = getCurrentProgram(osdEpgState.channel);
+        if (fresh.status === 'ok') {
+            const newLiveIndex = fresh.isLive ? fresh.currentIndex : -1;
+            if (wasLive) {
+                osdEpgState.programs = fresh.programs;
+                osdEpgState.currentIndex = fresh.currentIndex;
+                osdEpgState.liveIndex = newLiveIndex;
+            } else {
+                osdEpgState.programs = fresh.programs;
+                osdEpgState.liveIndex = newLiveIndex;
+                if (oldProgram) {
+                    const idx = fresh.programs.findIndex(
+                        p => p.start === oldProgram.start && p.title === oldProgram.title
+                    );
+                    osdEpgState.currentIndex = idx >= 0 ? idx : fresh.currentIndex;
+                } else {
+                    osdEpgState.currentIndex = fresh.currentIndex;
+                }
+            }
+        }
+    }
+}, 30000);
 // -------------------- Fine EPG --------------------
 
 // -------------------- Modalità TV --------------------
@@ -1440,7 +1563,10 @@ function renderOsdEPG() {
     
     if (osdEpgState.programs && osdEpgState.currentIndex >= 0 && osdEpgState.currentIndex < osdEpgState.programs.length) {
         const p = osdEpgState.programs[osdEpgState.currentIndex];
-        programEl.textContent = p.title;
+        const episodeHtml = p.episode
+            ? ` <span class="osd-episode">${p.episode}</span>`
+            : '';
+        programEl.innerHTML = `${p.title}${episodeHtml}`;
         const start = new Date(p.start);
         const stop = new Date(p.stop);
         const timeStr = `${start.toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'})} - ${stop.toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'})}`;
@@ -2007,8 +2133,9 @@ function updateEpgPanel() {
         const start = new Date(p.start);
         const stop = new Date(p.stop);
         const timeStr = `${start.toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'})} - ${stop.toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'})}`;
+        const ep = p.episode ? ` <span style="color:#8b949e;font-size:12px;font-weight:700;">${p.episode}</span>` : '';
         html += `<div class="tv-epg-item ${idx === result.currentIndex ? 'current' : ''}">
-            <span class="epg-title">${p.title}</span>
+            <span class="epg-title">${p.title}${ep}</span>
             <span class="epg-time">${timeStr}</span>
         </div>`;
     });
@@ -2350,7 +2477,6 @@ if (document.fonts && document.fonts.load) {
     document.fonts.load('1em "Formula1 Display Bold"');
 }
 
-// -------------------- Avvio --------------------
 if (document.readyState === 'complete') {
     checkAccess();
 } else {
@@ -2746,6 +2872,10 @@ async function init(m3uContent) {
             }
             if (currentChannel.name && normalizeName(currentChannel.name) === 'skyuno') {
                 currentChannel.tvgId = 'Sky.Uno.it';
+            }
+            // Sky Cinema Stories prende l'EPG di Sky Cinema Due
+            if (currentChannel.name && normalizeName(currentChannel.name) === 'skycinemastories') {
+                currentChannel.tvgId = 'Sky.Cinema.Due.it';
             }
         } 
         else if (line.startsWith('http')) {
