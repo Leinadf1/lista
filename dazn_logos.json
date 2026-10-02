@@ -1,7 +1,7 @@
 {
   "Serie A": {
-    "Zona Serie A Enilive": "https://image.discovery.indazn.com/eu/v3/eu/none/3u472b7akjj5kwmsnj071cgmh_image-header_pIt_1756299253000/fill/none/top/none/100/1920/1080/webp/image",
-    "Zona Serie A": "https://image.discovery.indazn.com/eu/v3/eu/none/3u472b7akjj5kwmsnj071cgmh_image-header_pIt_1756299253000/fill/none/top/none/100/1920/1080/webp/image",
+    "Zona Serie A Enilive": "https://image.discovery.indazn.com/eu/v3/eu/none/ddv5u3094cggj0nkwkoob4l1c_image-header_pIt_1756299253000/fill/none/top/none/100/1920/1080/webp/image",
+    "Zona Serie A": "https://image.discovery.indazn.com/eu/v3/eu/none/ddv5u3094cggj0nkwkoob4l1c_image-header_pIt_1756299253000/fill/none/top/none/100/1920/1080/webp/image",
     "Genoa - Fiorentina": "https://image.discovery.indazn.com/eu/v3/eu/none/23xj2l0ur9a47lq5r909dfr77_image-header_pIt_1782214893000/fill/none/top/none/100/1920/1080/webp/image",
     "Inter - Parma": "https://image.discovery.indazn.com/eu/v3/eu/none/6zncssbnbj2t58qb9v7yma1gv_image-header_pIt_1775572309000/fill/none/top/none/100/1920/1080/webp/image",
     "Napoli - Frosinone": "https://image.discovery.indazn.com/eu/v3/eu/none/8kmegdpxbn20umn9toe2ptbeu_image-header_pIt_1782213125000/fill/none/top/none/100/1920/1080/webp/image",
@@ -11,12 +11,32 @@
     "Sassuolo - Milan": "https://image.discovery.indazn.com/eu/v3/eu/none/e1jmvtetkybsdpv4lzy6otxzb_image-header_pIt_1775572322000/fill/none/top/none/100/1920/1080/webp/image",
     "Cagliari - Juventus": "https://image.discovery.indazn.com/eu/v3/eu/none/95k9t1mxjksmljld7mzwy2yoy_image-header_pIt_1782212607000/fill/none/top/none/100/1920/1080/webp/image",
     "Atalanta - Venezia": "https://image.discovery.indazn.com/eu/v3/eu/none/x3g61mar8ndk4axq26785gvc_image-header_pIt_1783698945000/fill/none/top/none/100/1920/1080/webp/image",
-    "Torino - Udinese": "https://image.discovery.indazn.com/eu/v3/eu/none/84qa476gy66ev6692tztiq5o2_image-header_pIt_1783426898000/fill/none/top/none/100/1920/1080/webp/image",
-    "DAZN 1": "https://nowtv-seven.vercel.app/logos/dazn1.png?v=2"
+    "Vamos! Inter - Parma": "https://image.discovery.indazn.com/eu/v3/eu/none/6zncssbnbj2t58qb9v7yma1gv_image-header_pIt_1775572309000/fill/none/top/none/100/1920/1080/webp/image",
+    "DAZN 1": "https://static.wikia.nocookie.net/logopedia/images/1/18/DAZN_1_2024.svg"
   },
   "Serie B": {
+    "Empoli - Palermo": "https://image.discovery.indazn.com/eu/v3/eu/none/evpbj4kx1x15cey6w02dlwr7k_image-header_pIt_1784922573000/fill/none/top/none/100/1920/1080/webp/image",
+    "Südtirol - Ascoli": "https://image.discovery.indazn.com/eu/v3/eu/none/b663wsd9yzt2ju1ijkcscb4dj_image-header_pIt_1788434223000/fill/none/top/none/100/1920/1080/webp/image",
+    "Virtus Entella - Juve Stabia": "https://image.discovery.indazn.com/eu/v3/eu/none/86csap24p2fvvlrdxb5ne56ox_image-header_pIt_1787558027000/fill/none/top/none/100/1920/1080/webp/image",
+    "Benevento - Cesena": "https://image.discovery.indazn.com/eu/v3/eu/none/d8eaj89zl7vg3vbs4kml0oe44_image-header_pIt_1788434205000/fill/none/top/none/100/1920/1080/webp/image",
+    "L.R. Vicenza - Pisa": "https://image.discovery.indazn.com/eu/v3/eu/none/e5kywdn509fylqw2kmy0yjh5x_image-header_pIt_1786358895000/fill/none/top/none/100/1920/1080/webp/image",
+    "Arezzo - Cremonese": "https://image.discovery.indazn.com/eu/v3/eu/none/ahvt6bzn35e28ofpm0mizmsk9_image-header_pIt_1788434182000/fill/none/top/none/100/1920/1080/webp/image",
+    "Catanzaro - Mantova": "https://image.discovery.indazn.com/eu/v3/eu/none/f4mfqaxsbso3kaw815hchnibu_image-header_pIt_1784921905000/fill/none/top/none/100/1920/1080/webp/image",
+    "Padova - Carrarese": "https://image.discovery.indazn.com/eu/v3/eu/none/629man0b7scrjk8kka4m1rrsf_image-header_pIt_1784922463000/fill/none/top/none/100/1920/1080/webp/image",
+    "Modena - Hellas Verona": "https://image.discovery.indazn.com/eu/v3/eu/none/475l6lcw7o8wojeqgmzm3pojy_image-header_pIt_1787748003000/fill/none/top/none/100/1920/1080/webp/image",
     "Zona Serie BKT": "https://image.discovery.indazn.com/eu/v3/eu/none/30bplgqzoo2qzabzp05p0ds8m_image-header_pIt_1756216170000/fill/none/top/none/100/1920/1080/webp/image?brand=dazn"
   },
-  "LALIGA": {},
-  "last_update": "2026-09-27 12:15:04"
+  "LALIGA": {
+    "Málaga - Espanyol": "https://image.discovery.indazn.com/eu/v3/eu/none/br93afykqg6dysxm76b7xzbqm_image-header_pIt_1783001564000/fill/none/top/none/100/1920/1080/webp/image",
+    "Rayo Vallecano - Athletic Bilbao": "https://image.discovery.indazn.com/eu/v3/eu/none/elu9vny2y1i6paor34tilvr31_image-header_pIt_1788165245000/fill/none/top/none/100/1920/1080/webp/image",
+    "Alavés - Atlético Madrid": "https://image.discovery.indazn.com/eu/v3/eu/none/5nw0b718jxs1095ab6p5bcfen_image-header_pIt_1783065158000/fill/none/top/none/100/1920/1080/webp/image",
+    "Barcellona - Getafe": "https://image.discovery.indazn.com/eu/v3/eu/none/b009vygn3zw5yk4i0s1schp7q_image-header_pIt_1783000884000/fill/none/top/none/100/1920/1080/webp/image",
+    "Real Madrid - Villarreal": "https://image.discovery.indazn.com/eu/v3/eu/none/17ywuqj4pr1ftzxc04p6yz1qg_image-header_pIt_1783001662000/fill/none/top/none/100/1920/1080/webp/image",
+    "Elche - Celta Vigo": "https://image.discovery.indazn.com/eu/v3/eu/none/64p82x8ggczshvs1qbadws9tb_image-header_pIt_1784627762000/fill/none/top/none/100/1920/1080/webp/image",
+    "Real Sociedad - Deportivo A Coruña": "https://image.discovery.indazn.com/eu/v3/eu/none/d6zhj6i2un4ycu663wzgzwd6o_image-header_pIt_1784628274000/fill/none/top/none/100/1920/1080/webp/image",
+    "Real Betis - Osasuna": "https://image.discovery.indazn.com/eu/v3/eu/none/ap4ozyptkvvttg2hytbltozgl_image-header_pIt_1783426439000/fill/none/top/none/100/1920/1080/webp/image",
+    "Racing Santander - Valencia": "https://image.discovery.indazn.com/eu/v3/eu/none/bg4z2f2anyg80msss0d3h3abg_image-header_pIt_1783001015000/fill/none/top/none/100/1920/1080/webp/image",
+    "Levante - Siviglia": "https://image.discovery.indazn.com/eu/v3/eu/none/1t90sbs9cmb12m3zpvkgtmdyc_image-header_pIt_1775648755000/fill/none/top/none/100/1920/1080/webp/image"
+  },
+  "last_update": "2026-10-02 10:25:17"
 }
