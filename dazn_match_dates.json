@@ -10,7 +10,16 @@
     "Cagliari - Juventus": "2026-10-11T18:45:00Z",
     "Atalanta - Venezia": "2026-10-12T16:30:00Z",
     "Vamos! Inter - Parma": "2026-10-10T16:00:00Z",
-    "Zona Serie A Enilive": "2026-10-11T13:00:00Z"
+    "Zona Serie A Enilive": "2026-10-11T13:00:00Z",
+    "Frosinone - Sassuolo": "2026-10-16T18:45:00Z",
+    "Venezia - Napoli": "2026-10-17T13:00:00Z",
+    "Bologna - Inter": "2026-10-17T16:00:00Z",
+    "Roma - Genoa": "2026-10-17T18:45:00Z",
+    "Udinese - Lecce": "2026-10-18T10:30:00Z",
+    "Fiorentina - Como": "2026-10-18T13:00:00Z",
+    "Milan - Atalanta": "2026-10-18T16:00:00Z",
+    "Juventus - Lazio": "2026-10-18T18:45:00Z",
+    "Parma - Torino": "2026-10-19T18:45:00Z"
   },
   "Serie B": {
     "Empoli - Palermo": "2026-10-10T13:00:00Z",
@@ -21,7 +30,10 @@
     "Arezzo - Cremonese": "2026-10-10T17:30:00Z",
     "Catanzaro - Mantova": "2026-10-11T13:00:00Z",
     "Padova - Carrarese": "2026-10-11T15:15:00Z",
-    "Modena - Hellas Verona": "2026-10-11T17:30:00Z"
+    "Modena - Hellas Verona": "2026-10-11T17:30:00Z",
+    "Avellino - Sampdoria": "2026-10-09T18:30:00Z",
+    "Hellas Verona - Catanzaro": "2026-10-16T18:30:00Z",
+    "Ascoli - Empoli": "2026-10-17T13:00:00Z"
   },
   "LALIGA": {
     "Málaga - Espanyol": "2026-10-09T19:00:00Z",
@@ -33,7 +45,8 @@
     "Real Sociedad - Deportivo A Coruña": "2026-10-11T14:15:00Z",
     "Real Betis - Osasuna": "2026-10-11T16:30:00Z",
     "Racing Santander - Valencia": "2026-10-11T19:00:00Z",
-    "Levante - Siviglia": "2026-10-12T19:00:00Z"
+    "Levante - Siviglia": "2026-10-12T19:00:00Z",
+    "Deportivo A Coruña - Levante": "2026-10-16T19:00:00Z"
   },
-  "last_update": "2026-10-04 11:15:34"
+  "last_update": "2026-10-05 16:15:36"
 }
