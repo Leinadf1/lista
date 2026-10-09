@@ -227,16 +227,19 @@ img { display: block; }
 
 <script>
 /* ============================================================
-   MULTIVIEW v17
-   - LIVE NON FORZATO: il player mantiene qualsiasi ritardo
-   - Nessun liveSync, nessun goToLive, nessun seek to live
+   MULTIVIEW v18
+   - LIVE NON FORZATO (nessun goToLive / liveSync / seek to live)
+   - Timeout 15s: evita loading infinito se licenza 403
+   - Click handler in CAPTURE: click tile = cambia audio
+   - Mute sync via controls.setMuted + video.muted
    ============================================================ */
 
 const IFRAME_GROUPS = ['PRIME VIDEO', 'DAZN PRIMEVIDEO DE'];
-const SOURCE_KEY = 'mv_source_v17';
+const SOURCE_KEY = 'mv_source_v18';
 const PROXY_BASE = 'https://dazn-ua-proxy.stefanoaccuont.workers.dev/';
 const proxyCategories = ['serie bkt','laliga ea sports','serie a enilive','amichevoli','jupiler pro league','liga portugal betclic','nerozone','dazn nerozone'];
 const UI_HIDE_MS = 3000;
+const LOAD_TIMEOUT_MS = 15000;
 
 let allChannels = [];
 let tiles = [null, null, null, null];
@@ -461,7 +464,7 @@ function activateUI(el) {
 }
 
 /* ============================================================ TILE */
-function newTileObj(ch) { return { ch, video: null, player: null, ui: null, controls: null, container: null, iframe: null, loading: false, recovering: false }; }
+function newTileObj(ch) { return { ch, video: null, player: null, ui: null, controls: null, container: null, iframe: null, loading: false, loaded: false, recovering: false }; }
 function destroyTile(t) {
   if (!t) return;
   try { if (t.player) t.player.destroy(); } catch (e) {}
@@ -500,6 +503,8 @@ async function loadTile(idx, ch) {
   const t = tiles[idx];
   if (!t || t.loading) return;
   t.loading = true;
+  t.loaded = false;
+
   const el = document.querySelector(`.mv-tile[data-slot="${idx}"]`);
   if (!el) { t.loading = false; return; }
   const loading = el.querySelector('.mv-loading');
@@ -513,6 +518,7 @@ async function loadTile(idx, ch) {
   const layer = el.querySelector('.mv-video-layer');
   if (!layer) { t.loading = false; return; }
 
+  /* ===== IFRAME ===== */
   if (shouldUseIframe(ch)) {
     const src = buildIframeSrc(ch);
     if (!src) { t.loading = false; if (loading) loading.classList.add('hidden'); showTileError(idx, 'Parametri DRM mancanti', false); return; }
@@ -529,6 +535,7 @@ async function loadTile(idx, ch) {
     return;
   }
 
+  /* ===== SHAKA ===== */
   if (!window.shaka || !shaka.Player.isBrowserSupported()) {
     t.loading = false; if (loading) loading.classList.add('hidden'); showTileError(idx, 'Shaka non supportato', false); return;
   }
@@ -562,27 +569,57 @@ async function loadTile(idx, ch) {
     t.controls = controls;
   } catch (e) { console.warn('[MV] UI Shaka init fallita:', e); }
 
+  /* ★ TIMEOUT: se non parte entro 15s, mostra errore ★ */
+  const loadTimeout = setTimeout(() => {
+    if (!t.loaded && tiles[idx] === t) {
+      console.warn('[MV] Timeout caricamento tile', idx, ch.name);
+      t.loading = false;
+      if (loading) loading.classList.add('hidden');
+      showTileError(idx, 'Timeout: lo stream non parte (probabile licenza 403 o server non raggiungibile)', true);
+      try { player.destroy(); } catch(e) {}
+      t.player = null;
+    }
+  }, LOAD_TIMEOUT_MS);
+
+  const onPlaying = () => {
+    t.loaded = true;
+    clearTimeout(loadTimeout);
+  };
+  video.addEventListener('playing', onPlaying, { once: true });
+  video.addEventListener('canplay', onPlaying, { once: true });
+
+  /* Log errori di licenza (403 tipico F1) */
+  try {
+    const net = player.getNetworkingEngine();
+    if (net) {
+      net.registerResponseFilter((type, response) => {
+        if (type === shaka.net.NetworkingEngine.RequestType.LICENSE && response.status >= 400) {
+          console.error('[MV] Errore licenza (' + response.status + ') per', ch.name, '— stream non decodificabile');
+        }
+      });
+    }
+  } catch (e) {}
+
   player.addEventListener('error', ev => {
     const d = ev && ev.detail;
     if (d && d.severity === 2 && !t.recovering) {
       t.recovering = true;
+      clearTimeout(loadTimeout);
       setTimeout(() => { t.recovering = false; reloadTile(idx); }, 2500);
     }
   });
 
-  // ★★★ CONFIGURAZIONE SHAKA — NIENTE FORZATURA LIVE ★★★
+  /* Config Shaka — NIENTE forzatura live */
   player.configure({
     drm: { clearKeys: ch.drm || {} },
     streaming: {
-      // jumpLargeGaps: RIMOSSO (forzava il salto al live)
-      // liveSync: RIMOSSO (forzava il rate adjustment per restare al live)
       bufferingGoal: 20,
       rebufferingGoal: 1.5,
       updateIntervalSeconds: 5,
-      retryParameters: { timeout: 20000, maxAttempts: 5, baseDelay: 500, backoffFactor: 2, fuzzFactor: 0.5 }
+      retryParameters: { timeout: 20000, maxAttempts: 3, baseDelay: 500, backoffFactor: 2, fuzzFactor: 0.5 }
     },
     manifest: {
-      retryParameters: { timeout: 20000, maxAttempts: 5, baseDelay: 500, backoffFactor: 2, fuzzFactor: 0.5 }
+      retryParameters: { timeout: 20000, maxAttempts: 3, baseDelay: 500, backoffFactor: 2, fuzzFactor: 0.5 }
     }
   });
 
@@ -600,18 +637,24 @@ async function loadTile(idx, ch) {
 
     if (activeAudio === -1) activeAudio = idx;
 
-    // ★ NON forzo il seek al live edge dopo il load — lascia stare dove parte ★
-
     const tracks = player.getAudioLanguagesAndRoles();
     const it = tracks.find(x => (x.language && (x.language.toLowerCase().startsWith('it') || x.language.toLowerCase() === 'ita')) || (x.label && x.label.toLowerCase().includes('ital')));
     if (it && it.language) { try { player.selectAudioLanguage(it.language); } catch (e) {} }
 
     video.play().catch(() => { video.muted = true; video.play().catch(()=>{}); });
-    if (loading) loading.classList.add('hidden');
+
+    const hideLoading = () => {
+      t.loaded = true;
+      clearTimeout(loadTimeout);
+      if (loading) loading.classList.add('hidden');
+    };
+    video.addEventListener('playing', hideLoading, { once: true });
+    video.addEventListener('canplay', hideLoading, { once: true });
 
     applyAudioState();
   } catch (err) {
     console.error('[MV] load tile', idx, err);
+    clearTimeout(loadTimeout);
     if (loading) loading.classList.add('hidden');
     showTileError(idx, 'Riproduzione non riuscita: ' + (err.message || ''), true);
   } finally {
@@ -649,14 +692,12 @@ function applyAudioState() {
   });
 }
 
-/* ============================================================
-   WATCHDOG — solo play, MAI goToLive
-   ============================================================ */
+/* ============================================================ WATCHDOG */
 const lastTimes = new Map();
 const stallCounts = new Map();
 setInterval(() => {
   tiles.forEach((t, i) => {
-    if (!t || !t.video || !t.player || t.loading) return;
+    if (!t || !t.video || !t.player || t.loading || !t.loaded) return;
     const v = t.video;
     if (v.paused || v.ended || v.seeking || v.readyState < 2) { stallCounts.delete(i); return; }
     const cur = v.currentTime;
@@ -665,9 +706,8 @@ setInterval(() => {
     if (prev !== undefined && Math.abs(cur - prev) < 0.2) {
       const s = (stallCounts.get(i) || 0) + 1;
       stallCounts.set(i, s);
-      if (s >= 6) {  // alzato da 3 a 6 (20 sec circa invece di 10)
+      if (s >= 6) {
         stallCounts.delete(i);
-        // ★ NON chiamo goToLive: semplicemente provo a far ripartire il video ★
         console.warn('[MV] tile', i, 'bloccato — provo play() senza seek');
         v.play().catch(() => { reloadTile(i); });
       }
