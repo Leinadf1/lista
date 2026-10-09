@@ -4,9 +4,22 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Multiview 2×2</title>
+
+<link rel="preload" href="https://raw.githubusercontent.com/Leinadf1/lista/main/Formula1-Bold_web_0.ttf" as="font" type="font/ttf" crossorigin>
+<style>
+@font-face {
+  font-family: 'Formula1 Display Bold';
+  src: url('https://raw.githubusercontent.com/Leinadf1/lista/main/Formula1-Bold_web_0.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+</style>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
 <style>
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html { margin: 0; height: 100%; background: #000; }
@@ -15,10 +28,11 @@ body {
   height: 100dvh;
   background: #000;
   color: #c9d1d9;
-  font-family: 'Inter', -apple-system, sans-serif;
+  font-family: 'Formula1 Display Bold', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  -webkit-font-smoothing: antialiased;
 }
 button { font-family: inherit; cursor: pointer; border: none; }
 img { display: block; }
@@ -26,29 +40,29 @@ img { display: block; }
 /* ==================== HEADER ==================== */
 #mv-header {
   flex: 0 0 auto;
-  height: 36px;
+  height: 40px;
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 0 8px;
+  padding: 0 10px;
   background: #050505;
   border-bottom: 1px solid #111;
 }
 #mv-header .mv-title {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
   color: #888;
   letter-spacing: .8px;
   text-transform: uppercase;
 }
 #mv-header .mv-src {
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 10px;
+  padding: 3px 9px;
+  border-radius: 11px;
   background: #111;
   color: #666;
-  max-width: 170px;
+  max-width: 180px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -59,13 +73,14 @@ img { display: block; }
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 9px;
+  padding: 5px 10px;
   background: #111;
   color: #aaa;
   border: 1px solid #222;
-  border-radius: 11px;
+  border-radius: 12px;
   font-size: 11px;
   font-weight: 700;
+  letter-spacing: .4px;
   transition: background .15s;
   white-space: nowrap;
 }
@@ -85,7 +100,6 @@ img { display: block; }
   grid-template-rows: 1fr 1fr;
   gap: 2px;
   background: #141414;
-  padding: 0;
   min-width: 0;
   min-height: 0;
 }
@@ -134,14 +148,6 @@ img { display: block; }
   background: #000;
   overflow: hidden;
 }
-.mv-video-layer video {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  background: #000;
-}
 .mv-video-layer iframe {
   position: absolute;
   inset: 0;
@@ -158,8 +164,8 @@ img { display: block; }
   display: flex;
   align-items: center;
   gap: 5px;
-  padding: 2px 8px 2px 2px;
-  background: rgba(0,0,0,.55);
+  padding: 2px 9px 2px 3px;
+  background: rgba(0,0,0,.6);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border-radius: 5px;
@@ -168,7 +174,7 @@ img { display: block; }
   color: #fff;
   z-index: 5;
   pointer-events: none;
-  max-width: 65%;
+  max-width: 60%;
 }
 .mv-label img {
   width: 20px; height: 20px;
@@ -190,15 +196,16 @@ img { display: block; }
   top: 6px;
   right: 6px;
   width: 22px; height: 22px;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
-  background: rgba(0,0,0,.7);
+  background: rgba(0,0,0,.65);
   border-radius: 50%;
   font-size: 11px;
   z-index: 4;
   pointer-events: none;
 }
+.mv-tile.audio .mv-audio-ind { display: flex; }
 
 /* Action buttons (hover / tap) */
 .mv-tile-actions {
@@ -213,8 +220,7 @@ img { display: block; }
 }
 .mv-tile:hover .mv-tile-actions,
 .mv-tile.show-actions .mv-tile-actions { opacity: 1; }
-.mv-tile.audio .mv-audio-ind { display: flex; }
-.mv-audio-ind { display: none; }
+.mv-tile.audio .mv-tile-actions { right: 34px; }
 .mv-tbtn {
   width: 24px; height: 24px;
   border-radius: 50%;
@@ -288,7 +294,15 @@ img { display: block; }
 }
 .mv-err-btn.retry { background: #0a3; border-color: #0a3; }
 
-/* ==================== SHAKA UI OVERRIDE (compatto per tile piccoli) ==================== */
+/* ==================== SHAKA UI — font F1 + adattamento compatto ==================== */
+.shaka-video-container *,
+.shaka-controls-container *,
+.shaka-settings-menu *,
+.shaka-overflow-menu *,
+.shaka-tooltips *,
+.shaka-text-container * {
+  font-family: 'Formula1 Display Bold', 'Inter', sans-serif !important;
+}
 .mv-tile .shaka-video-container { border-radius: 0 !important; }
 .mv-tile .shaka-scrim-container {
   background: linear-gradient(transparent, rgba(0,0,0,.8)) !important;
@@ -324,16 +338,19 @@ img { display: block; }
 .mv-tile .shaka-controls-container .shaka-back-to-overflow-button {
   font-size: 12px !important;
 }
-
-/* Nascondi pulsanti che su tile piccoli sono inutili */
+/* Nascondi solo pulsanti inutili in griglia (cast, PiP, airplay) */
 .mv-tile .shaka-cast-button,
 .mv-tile .shaka-pip-button,
 .mv-tile .shaka-airplay-button,
 .mv-tile .shaka-client-side-ad-ui,
 .mv-tile .shaka-ad-controls { display: none !important; }
 
-/* Nascondi big play button centrale (troppo invasivo in griglia) */
-.mv-tile .shaka-play-button-container { display: none !important; }
+/* Big play button: compattato ma VISIBILE su hover */
+.mv-tile .shaka-play-button-container svg { width: 44px; height: 44px; }
+.mv-tile .shaka-play-button-container .shaka-play-button {
+  background: rgba(255,255,255,.92) !important;
+  color: #000 !important;
+}
 
 /* ==================== MODALS ==================== */
 .modal-mask {
@@ -447,15 +464,15 @@ img { display: block; }
 
 /* ==================== MOBILE ==================== */
 @media (max-width: 700px), (pointer: coarse) {
-  #mv-header { height: 32px; gap: 4px; padding: 0 6px; }
+  #mv-header { height: 34px; gap: 4px; padding: 0 8px; }
   .mv-title { display: none; }
-  .mv-btn { padding: 4px 8px; font-size: 10px; }
-  .mv-src { max-width: 100px; font-size: 9.5px; }
+  .mv-btn { padding: 4px 9px; font-size: 10px; }
+  .mv-src { max-width: 110px; font-size: 9.5px; }
   .mv-label { font-size: 10px; padding: 2px 6px 2px 2px; }
   .mv-label img { width: 18px; height: 18px; }
   .mv-tbtn { width: 26px; height: 26px; font-size: 13px; }
-  .mv-tile-actions { opacity: 1 !important; } /* sempre visibili su mobile */
-  .mv-tbtn { background: rgba(0,0,0,.55); }
+  .mv-tile-actions { opacity: 1 !important; }
+  .mv-tile-actions .mv-tbtn { background: rgba(0,0,0,.55); }
 }
 </style>
 </head>
@@ -525,11 +542,11 @@ img { display: block; }
 
 <script>
 /* ============================================================
-   MULTIVIEW 2x2 con controlli Shaka nativi
+   MULTIVIEW 2x2 — Shaka UI nativa + tastiera + font F1
    ============================================================ */
 
 const IFRAME_GROUPS = ['PRIME VIDEO', 'DAZN PRIMEVIDEO DE'];
-const SOURCE_KEY = 'mv_source_v3';
+const SOURCE_KEY = 'mv_source_v4';
 const PROXY_BASE = 'https://dazn-ua-proxy.stefanoaccuont.workers.dev/';
 const proxyCategories = [
   'serie bkt','laliga ea sports','serie a enilive','amichevoli',
@@ -737,8 +754,7 @@ function buildTileEl(idx) {
     <div class="mv-err hidden"></div>
   `;
 
-  // rimonta player esistente
-  if (t && t.video) el.querySelector('.mv-video-layer').appendChild(t.video);
+  if (t && t.video) el.querySelector('.mv-video-layer').appendChild(t.video.closest('[data-shaka-player-container]') || t.video);
   if (t && t.iframe) el.querySelector('.mv-video-layer').appendChild(t.iframe);
 
   bindTileEvents(el, idx);
@@ -746,15 +762,13 @@ function buildTileEl(idx) {
 }
 
 function bindTileEvents(el, idx) {
-  // click su tile inattivo → attiva audio (mousedown per intercettare PRIMA di Shaka)
+  // click su tile NON attivo → cambia solo l'audio (non passa a Shaka)
   el.addEventListener('mousedown', e => {
     if (activeAudio !== idx && tiles[idx] && tiles[idx].ch) {
       e.stopPropagation();
       e.preventDefault();
       setAudio(idx);
-      el.classList.add('show-actions');
-      clearTimeout(el._hideActions);
-      el._hideActions = setTimeout(() => el.classList.remove('show-actions'), 2500);
+      showActions(el);
       return;
     }
   }, true);
@@ -769,17 +783,24 @@ function bindTileEvents(el, idx) {
       else if (act === 'remove') removeTile(idx);
       return;
     }
-    el.classList.add('show-actions');
-    clearTimeout(el._hideActions);
-    el._hideActions = setTimeout(() => el.classList.remove('show-actions'), 2500);
+    showActions(el);
   });
+
+  // mostra pulsanti su mousemove (per desktop)
+  el.addEventListener('mousemove', () => showActions(el));
+}
+
+function showActions(el) {
+  el.classList.add('show-actions');
+  clearTimeout(el._hideActions);
+  el._hideActions = setTimeout(() => el.classList.remove('show-actions'), 2500);
 }
 
 /* ============================================================
    TILE LIFECYCLE
    ============================================================ */
 function newTileObj(ch) {
-  return { ch, video: null, player: null, ui: null, iframe: null, loading: false, recovering: false };
+  return { ch, video: null, player: null, ui: null, container: null, iframe: null, loading: false, recovering: false };
 }
 function destroyTile(t) {
   if (!t) return;
@@ -790,6 +811,7 @@ function destroyTile(t) {
   t.iframe = null;
   if (t.video) { try { t.video.pause(); t.video.src = ''; t.video.load(); } catch(e){} }
   t.video = null;
+  t.container = null;
 }
 function removeTile(idx) {
   if (tiles[idx]) destroyTile(tiles[idx]);
@@ -857,7 +879,7 @@ async function loadTile(idx, ch) {
     return;
   }
 
-  // ==== SHAKA CON UI ====
+  // ==== SHAKA + SHAKA UI ====
   if (!window.shaka || !shaka.Player.isBrowserSupported()) {
     t.loading = false;
     if (loading) loading.classList.add('hidden');
@@ -866,7 +888,6 @@ async function loadTile(idx, ch) {
   }
   try { shaka.polyfill.installAll(); } catch (e) {}
 
-  // Crea container Shaka + video
   const container = document.createElement('div');
   container.setAttribute('data-shaka-player-container', '');
   container.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;background:#000;';
@@ -882,21 +903,19 @@ async function loadTile(idx, ch) {
   container.appendChild(video);
   layer.appendChild(container);
   t.video = video;
+  t.container = container;
 
-  // Player + UI Shaka
   const player = new shaka.Player(video);
   t.player = player;
 
-  let ui = null;
   try {
-    ui = new shaka.ui.Overlay(player, container, video);
+    const ui = new shaka.ui.Overlay(player, container, video);
     ui.getControls();
     t.ui = ui;
   } catch (e) {
     console.warn('[MV] UI Shaka init fallita:', e);
   }
 
-  // Live-edge all'avvio dello streaming
   player.addEventListener('streaming', () => {
     if (player.isLive && player.isLive()) {
       try {
@@ -941,7 +960,6 @@ async function loadTile(idx, ch) {
         if (r && isFinite(r.end)) video.currentTime = r.end;
       } catch (e) {}
     }
-    // audio italiano se presente
     const tracks = player.getAudioLanguagesAndRoles();
     const it = tracks.find(x =>
       (x.language && (x.language.toLowerCase().startsWith('it') || x.language.toLowerCase() === 'ita')) ||
@@ -1165,10 +1183,11 @@ $('srcSave').addEventListener('click', async () => {
 });
 
 /* ============================================================
-   KEYBOARD — comandi sul tile ATTIVO
+   KEYBOARD — controlli sul tile ATTIVO
+   (capture: true per non farsi rubare l'evento da Shaka UI)
    ============================================================ */
 document.addEventListener('keydown', e => {
-  // se focus in un input, lascia stare
+  // se l'utente sta scrivendo in un input, ignora
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
     if (e.key === 'Escape') { closePicker(); closeSourceModal(); }
     return;
@@ -1176,6 +1195,7 @@ document.addEventListener('keydown', e => {
 
   // 1-4: cambia tile attivo (o apri picker se vuoto)
   if (e.key >= '1' && e.key <= '4') {
+    e.preventDefault();
     const i = parseInt(e.key) - 1;
     if (tiles[i] && tiles[i].ch) setAudio(i);
     else if (!tiles[i]) openPicker(i);
@@ -1186,9 +1206,10 @@ document.addEventListener('keydown', e => {
   const v = t && t.video;
   const p = t && t.player;
 
-  // SPACE: play/pausa sul tile attivo
-  if (e.code === 'Space' || e.key === ' ') {
+  // SPACE: play/pausa
+  if (e.code === 'Space' || e.key === ' ' || e.key === 'Spacebar') {
     e.preventDefault();
+    e.stopPropagation();
     if (v) {
       if (v.paused) v.play().catch(()=>{});
       else v.pause();
@@ -1199,41 +1220,49 @@ document.addEventListener('keydown', e => {
   // FRECCIA SINISTRA: -10s
   if (e.key === 'ArrowLeft') {
     e.preventDefault();
+    e.stopPropagation();
     if (v) v.currentTime = Math.max(0, v.currentTime - 10);
     return;
   }
   // FRECCIA DESTRA: +10s
   if (e.key === 'ArrowRight') {
     e.preventDefault();
+    e.stopPropagation();
     if (v) {
-      const dur = isFinite(v.duration) ? v.duration : (p && p.isLive() ? p.seekRange().end : v.currentTime + 10);
-      v.currentTime = Math.min(dur, v.currentTime + 10);
+      let maxT = v.currentTime + 10;
+      if (p && p.isLive && p.isLive()) {
+        try { maxT = Math.min(p.seekRange().end, maxT); } catch (er) {}
+      } else if (isFinite(v.duration)) {
+        maxT = Math.min(v.duration, maxT);
+      }
+      v.currentTime = maxT;
     }
     return;
   }
   // FRECCIA SU/GIU: volume
   if (e.key === 'ArrowUp') {
     e.preventDefault();
+    e.stopPropagation();
     if (v) { v.volume = Math.min(1, v.volume + 0.1); v.muted = false; }
     return;
   }
   if (e.key === 'ArrowDown') {
     e.preventDefault();
+    e.stopPropagation();
     if (v) { v.volume = Math.max(0, v.volume - 0.1); }
     return;
   }
 
-  // M: mute/unmute tile attivo
+  // M: mute/unmute
   if (e.key === 'm' || e.key === 'M') {
     if (v) v.muted = !v.muted;
     return;
   }
-  // F: fullscreen grid
+  // F: fullscreen
   if (e.key === 'f' || e.key === 'F') { $('btnFullscreen').click(); return; }
   // R: ricarica tile attivo
   if (e.key === 'r' || e.key === 'R') { if (activeAudio >= 0) reloadTile(activeAudio); return; }
-
-  // LIVE: L → torna al live
+  // L: torna live
   if (e.key === 'l' || e.key === 'L') {
     if (p && p.isLive && p.isLive()) { try { p.goToLive(); } catch(e){} }
     return;
@@ -1244,7 +1273,7 @@ document.addEventListener('keydown', e => {
     else if (!$('sourceModal').classList.contains('hidden')) closeSourceModal();
     else if (document.fullscreenElement) document.exitFullscreen();
   }
-});
+}, true); // <-- capture phase!
 
 /* ============================================================
    BOOT
