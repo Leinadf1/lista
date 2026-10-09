@@ -110,11 +110,6 @@ img { display: block; }
   font-size: 10px; letter-spacing: .8px; text-transform: uppercase; font-weight: 700;
 }
 
-/* ★★★ STRUTTURA CORRETTA ★★★
-   .mv-video-layer (absolute, riempie il tile)
-     └── .shaka-container (relative, width/height 100% - quello che Shaka vuole)
-         └── <video>  ← Shaka ci mette attorno i suoi wrapper
-*/
 .mv-video-layer {
   position: absolute; inset: 0;
   background: #000;
@@ -130,6 +125,18 @@ img { display: block; }
   position: absolute; inset: 0;
   width: 100%; height: 100%;
   border: 0; background: #000;
+}
+
+/* Bordo verde sul tile attivo (audio) */
+.mv-tile.audio-on::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 2px solid rgba(0,230,118,.75);
+  border-radius: 0;
+  pointer-events: none;
+  z-index: 6;
+  box-shadow: inset 0 0 20px rgba(0,230,118,.25);
 }
 
 /* ==================== OVERLAY NOME CANALE ==================== */
@@ -201,14 +208,12 @@ img { display: block; }
 .shaka-back-to-overflow-button span {
   font-family: 'Formula1 Display Bold', 'Inter', sans-serif !important;
 }
-
 .mv-tile .shaka-video-container {
   border-radius: 0 !important;
   width: 100% !important;
   height: 100% !important;
   position: relative !important;
 }
-/* ★ IMPORTANTE: NON forzare position:absolute sul video! */
 .mv-tile .shaka-video-container video {
   position: static !important;
   width: 100% !important;
@@ -454,11 +459,11 @@ img { display: block; }
 
 <script>
 /* ============================================================
-   MULTIVIEW 2x2 — struttura Shaka corretta (v9)
+   MULTIVIEW 2x2 — v10 con click-audio robusto
    ============================================================ */
 
 const IFRAME_GROUPS = ['PRIME VIDEO', 'DAZN PRIMEVIDEO DE'];
-const SOURCE_KEY = 'mv_source_v9';
+const SOURCE_KEY = 'mv_source_v10';
 const PROXY_BASE = 'https://dazn-ua-proxy.stefanoaccuont.workers.dev/';
 const proxyCategories = [
   'serie bkt','laliga ea sports','serie a enilive','amichevoli',
@@ -632,7 +637,8 @@ function buildTileEl(idx) {
   const t = tiles[idx];
   const ch = t && t.ch;
   const el = document.createElement('div');
-  el.className = 'mv-tile' + (ch ? '' : ' empty');
+  const isAudio = (activeAudio === idx && ch);
+  el.className = 'mv-tile' + (ch ? (isAudio ? ' audio-on' : '') : ' empty');
   el.dataset.slot = idx;
 
   if (!ch) {
@@ -666,18 +672,9 @@ function buildTileEl(idx) {
 }
 
 function bindTileEvents(el, idx) {
-  el.addEventListener('mousedown', e => {
-    if (e.target.closest('[data-act]')) return;
-    if (e.target.closest('.shaka-controls-container')) return;
-    if (e.target.closest('.shaka-settings-menu')) return;
-    if (e.target.closest('.shaka-overflow-menu')) return;
-    if (activeAudio !== idx && tiles[idx] && tiles[idx].ch) {
-      e.stopPropagation();
-      e.preventDefault();
-      setAudio(idx);
-      activateUI(el);
-    }
-  }, true);
+  // solo per mostrare la UI e gestire i bottoncini
+  el.addEventListener('mousemove', () => activateUI(el));
+  el.addEventListener('touchstart', () => activateUI(el), { passive: true });
 
   el.addEventListener('click', e => {
     const btn = e.target.closest('[data-act]');
@@ -692,9 +689,6 @@ function bindTileEvents(el, idx) {
     }
     activateUI(el);
   });
-
-  el.addEventListener('mousemove', () => activateUI(el));
-  el.addEventListener('touchstart', () => activateUI(el), { passive: true });
 }
 
 function activateUI(el) {
@@ -720,9 +714,7 @@ function removeTile(idx) {
   if (tiles[idx]) destroyTile(tiles[idx]);
   tiles[idx] = null;
   if (activeAudio === idx) activeAudio = -1;
-  const old = document.querySelector(`.mv-tile[data-slot="${idx}"]`);
-  const nw = buildTileEl(idx);
-  if (old) old.replaceWith(nw);
+  refreshSlot(idx);
   if (activeAudio < 0) {
     const firstWithCh = tiles.findIndex(x => x && x.ch);
     if (firstWithCh >= 0) setAudio(firstWithCh);
@@ -734,10 +726,14 @@ function reloadTile(idx) {
   const ch = t.ch;
   destroyTile(t);
   tiles[idx] = newTileObj(ch);
+  refreshSlot(idx);
+  loadTile(idx, ch);
+}
+
+function refreshSlot(idx) {
   const old = document.querySelector(`.mv-tile[data-slot="${idx}"]`);
   const nw = buildTileEl(idx);
   if (old) old.replaceWith(nw);
-  loadTile(idx, ch);
 }
 
 async function loadTile(idx, ch) {
@@ -789,7 +785,6 @@ async function loadTile(idx, ch) {
   }
   try { shaka.polyfill.installAll(); } catch (e) {}
 
-  // ★ Container RELATIVE (non absolute) — quello che Shaka UI si aspetta ★
   const container = document.createElement('div');
   container.className = 'shaka-container';
   container.setAttribute('data-shaka-player-container', '');
@@ -810,7 +805,6 @@ async function loadTile(idx, ch) {
   const player = new shaka.Player(video);
   t.player = player;
 
-  // ★ Inizializza UI prima del load (Shaka gestisce il video da solo) ★
   try {
     const ui = new shaka.ui.Overlay(player, container, video);
     ui.getControls();
@@ -858,6 +852,17 @@ async function loadTile(idx, ch) {
   try {
     await player.load(ch.url);
 
+    // ✅ FORZA volume massimo e applica stato audio corretto
+    try {
+      video.volume = 1;
+      video.muted = (activeAudio !== idx);
+      // Sincronizza anche Shaka UI controls
+      if (t.ui) {
+        const c = t.ui.getControls();
+        if (c) { try { c.setVolume(1); c.setMuted(activeAudio !== idx); } catch(e){} }
+      }
+    } catch (e) {}
+
     if (player.isLive()) {
       try {
         const r = player.seekRange();
@@ -872,7 +877,6 @@ async function loadTile(idx, ch) {
     );
     if (it && it.language) { try { player.selectAudioLanguage(it.language); } catch (e) {} }
 
-    video.muted = activeAudio !== idx;
     video.play().catch(() => { video.muted = true; video.play().catch(()=>{}); });
     if (loading) loading.classList.add('hidden');
   } catch (err) {
@@ -899,7 +903,9 @@ function showTileError(idx, msg, actions) {
   err.classList.remove('hidden');
 }
 
-/* ============================================================ AUDIO */
+/* ============================================================
+   AUDIO — setMuted su TUTTI i video + aggiorna bordo verde
+   ============================================================ */
 function setAudio(idx) {
   activeAudio = idx;
   applyAudioState();
@@ -907,9 +913,51 @@ function setAudio(idx) {
 function applyAudioState() {
   tiles.forEach((t, i) => {
     if (!t) return;
-    if (t.video) t.video.muted = i !== activeAudio;
+    // bordo verde
+    const el = document.querySelector(`.mv-tile[data-slot="${i}"]`);
+    if (el) el.classList.toggle('audio-on', i === activeAudio);
+
+    // video mute/unmute
+    if (!t.video) return;
+    const muted = (i !== activeAudio);
+    t.video.muted = muted;
+    if (!muted) {
+      t.video.volume = 1;
+      // riavvia se era in pausa
+      if (t.video.paused && t.video.readyState >= 2) t.video.play().catch(()=>{});
+    }
+    // sincronizza Shaka UI controls (icona mute)
+    if (t.ui) {
+      try {
+        const c = t.ui.getControls();
+        if (c) { c.setMuted(muted); if (!muted) c.setVolume(1); }
+      } catch (e) {}
+    }
   });
 }
+
+/* ============================================================
+   ★ CLICK-AUDIO ROBUSTO — listener su window in capture ★
+   Va in esecuzione PRIMA di qualunque handler di Shaka
+   ============================================================ */
+window.addEventListener('pointerdown', e => {
+  const tile = e.target.closest('.mv-tile');
+  if (!tile) return;
+  if (tile.classList.contains('empty')) return;
+  const idx = parseInt(tile.dataset.slot);
+  if (isNaN(idx) || !tiles[idx] || !tiles[idx].ch) return;
+  // Non cambiare audio se clicchi sui controlli o sui pulsantini
+  if (e.target.closest('[data-act]')) return;
+  if (e.target.closest('.shaka-controls-container')) return;
+  if (e.target.closest('.shaka-settings-menu')) return;
+  if (e.target.closest('.shaka-overflow-menu')) return;
+  if (e.target.closest('.shaka-back-to-overflow-button')) return;
+
+  if (activeAudio !== idx) {
+    setAudio(idx);
+  }
+  activateUI(tile);
+}, true);
 
 /* ============================================================ WATCHDOG */
 const lastTimes = new Map();
@@ -999,9 +1047,7 @@ function renderPicker(q) {
       closePicker();
       if (tiles[idx]) destroyTile(tiles[idx]);
       tiles[idx] = newTileObj(ch);
-      const old = document.querySelector(`.mv-tile[data-slot="${idx}"]`);
-      const nw = buildTileEl(idx);
-      if (old) old.replaceWith(nw);
+      refreshSlot(idx);
       loadTile(idx, ch);
       if (activeAudio < 0) setAudio(idx);
       else applyAudioState();
