@@ -196,11 +196,14 @@ img { display: block; }
 
 <script>
 /* ============================================================
-   MULTIVIEW v14 — approccio identico all'amico (semplice)
+   MULTIVIEW v15
+   - Click handler in CAPTURE su .mv-tile (vince su Shaka UI)
+   - Esclusioni mirate (solo pulsanti/menu, non il container)
+   - Mute sincronizzato via controls.setMuted() + video.muted
    ============================================================ */
 
 const IFRAME_GROUPS = ['PRIME VIDEO', 'DAZN PRIMEVIDEO DE'];
-const SOURCE_KEY = 'mv_source_v14';
+const SOURCE_KEY = 'mv_source_v15';
 const PROXY_BASE = 'https://dazn-ua-proxy.stefanoaccuont.workers.dev/';
 const proxyCategories = ['serie bkt','laliga ea sports','serie a enilive','amichevoli','jupiler pro league','liga portugal betclic','nerozone','dazn nerozone'];
 const UI_HIDE_MS = 3000;
@@ -230,6 +233,7 @@ function buildIframeSrc(ch) {
   return `https://hugoedgar.com/drm-player/?${p.toString()}`;
 }
 
+/* SORGENTE */
 function loadSourceConfig() {
   try { sourceConfig = JSON.parse(localStorage.getItem(SOURCE_KEY) || 'null'); } catch (e) { sourceConfig = null; }
   updateSrcBadge();
@@ -254,6 +258,7 @@ async function fetchM3UFromSource(cfg) {
   return await r.text();
 }
 
+/* PARSER */
 function parseM3U(m3u) {
   const out = [];
   const lines = m3u.split('\n');
@@ -304,6 +309,7 @@ async function initFromSource(cfg, silent) {
   console.log(`[MV] ${parsed.length} canali caricati`);
 }
 
+/* IFRAME */
 function sendIframeLive(fr) {
   if (!fr || !fr.contentWindow) return;
   const msgs = [{type:'seek',value:'live'}, {type:'seekToLive'}, {type:'goToLive'}, {action:'live'}, {action:'goToLive'}, {command:'live'}, {type:'liveEdge'}, {type:'live'}, {method:'live'}];
@@ -315,6 +321,7 @@ function startIframeLiveLoop(fr) {
   [100, 800, 1500, 3000].forEach(d => setTimeout(() => sendIframeLive(fr), d));
 }
 
+/* GRID */
 function renderGrid() {
   const g = $('mv-grid');
   g.innerHTML = '';
@@ -355,11 +362,12 @@ function buildTileEl(idx) {
   return el;
 }
 
-/* ★★★ BIND EVENTI — approccio semplice come l'amico ★★★ */
+/* ★★★ CLICK HANDLER — in CAPTURE phase, esclusioni mirate ★★★ */
 function bindTileEvents(el, idx) {
-  // Click generico sull'elemento tile
+  // Listener in capture: vince su Shaka UI
   el.addEventListener('click', e => {
-    // Pulsantini (reload/swap/close)
+
+    // 1) Pulsantini del tile (reload/swap/close) — gestione locale
     const btn = e.target.closest('[data-act]');
     if (btn) {
       e.stopPropagation();
@@ -371,19 +379,28 @@ function bindTileEvents(el, idx) {
       return;
     }
 
-    // Ignora click dentro i controlli Shaka
-    if (e.target.closest('.shaka-controls-container')) return;
-    if (e.target.closest('.shaka-settings-menu')) return;
+    // 2) Se clicco su un pulsante o slider Shaka → lascia passare
+    if (e.target.closest('.shaka-controls-button-panel')) return;
+    if (e.target.closest('.shaka-seek-bar-container')) return;
+    if (e.target.closest('.shaka-range-container')) return;
     if (e.target.closest('.shaka-overflow-menu')) return;
+    if (e.target.closest('.shaka-settings-menu')) return;
     if (e.target.closest('.shaka-back-to-overflow-button')) return;
+    if (e.target.closest('button')) return; // qualsiasi altro button
 
-    // ★ Cambia audio SOLO se il tile non è già quello attivo ★
+    // 3) Click sul video/scrim del tile NON attivo → cambia audio e blocca
     if (activeAudio !== idx && tiles[idx] && tiles[idx].ch) {
+      e.stopImmediatePropagation();
+      e.preventDefault();
       setAudio(idx);
+      activateUI(el);
+      return;
     }
 
+    // 4) Click sul video del tile GIÀ attivo → lascia passare a Shaka (play/pausa)
     activateUI(el);
-  });
+
+  }, true); // ← CAPTURE
 
   el.addEventListener('mousemove', () => activateUI(el));
   el.addEventListener('touchstart', () => activateUI(el), { passive: true });
@@ -395,11 +412,12 @@ function activateUI(el) {
   el._uiTimer = setTimeout(() => el.classList.remove('ui-active'), UI_HIDE_MS);
 }
 
-function newTileObj(ch) { return { ch, video: null, player: null, ui: null, container: null, iframe: null, loading: false, recovering: false }; }
+/* TILE */
+function newTileObj(ch) { return { ch, video: null, player: null, ui: null, controls: null, container: null, iframe: null, loading: false, recovering: false }; }
 function destroyTile(t) {
   if (!t) return;
   try { if (t.player) t.player.destroy(); } catch (e) {}
-  t.player = null; t.ui = null;
+  t.player = null; t.ui = null; t.controls = null;
   if (t.iframe) { try { t.iframe.remove(); } catch(e){} }
   t.iframe = null;
   if (t.video) { try { t.video.pause(); t.video.src = ''; t.video.load(); } catch(e){} }
@@ -413,7 +431,7 @@ function removeTile(idx) {
   if (activeAudio < 0) {
     const firstWithCh = tiles.findIndex(x => x && x.ch);
     if (firstWithCh >= 0) setAudio(firstWithCh);
-  }
+  } else applyAudioState();
 }
 function reloadTile(idx) {
   const t = tiles[idx];
@@ -478,9 +496,7 @@ async function loadTile(idx, ch) {
   video.setAttribute('autoplay', '');
   video.playsInline = true;
   video.autoplay = true;
-  // ★ Il primo tile caricato parte smutato, gli altri mutati ★
-  const willBeActive = (activeAudio === -1 || activeAudio === idx);
-  video.muted = !willBeActive;
+  video.muted = true;
   video.volume = 1;
 
   container.appendChild(video);
@@ -493,8 +509,9 @@ async function loadTile(idx, ch) {
 
   try {
     const ui = new shaka.ui.Overlay(player, container, video);
-    ui.getControls();
+    const controls = ui.getControls();
     t.ui = ui;
+    t.controls = controls;
   } catch (e) { console.warn('[MV] UI Shaka init fallita:', e); }
 
   player.addEventListener('streaming', () => {
@@ -528,11 +545,9 @@ async function loadTile(idx, ch) {
   try {
     await player.load(ch.url);
 
-    // ★ Se questo è il primo tile, diventa automaticamente attivo ★
+    // ★ Se è il primo tile caricato, diventa attivo automaticamente ★
     if (activeAudio === -1) {
       activeAudio = idx;
-      video.muted = false;
-      video.volume = 1;
     }
 
     if (player.isLive()) {
@@ -545,6 +560,9 @@ async function loadTile(idx, ch) {
 
     video.play().catch(() => { video.muted = true; video.play().catch(()=>{}); });
     if (loading) loading.classList.add('hidden');
+
+    // ★ Applica lo stato audio (mute/unmute di tutti i tile) ★
+    applyAudioState();
   } catch (err) {
     console.error('[MV] load tile', idx, err);
     if (loading) loading.classList.add('hidden');
@@ -563,22 +581,47 @@ function showTileError(idx, msg, actions) {
   err.classList.remove('hidden');
 }
 
-/* ★★★ SET AUDIO — identico all'amico: solo video.muted ★★★ */
-function setAudio(targetIdx) {
-  activeAudio = targetIdx;
+/* ★★★ AUDIO — uso controls.setMuted() per sincronizzare icona ★★★ */
+function setAudio(idx) {
+  activeAudio = idx;
+  applyAudioState();
+}
+function applyAudioState() {
   tiles.forEach((t, i) => {
     if (!t || !t.video) return;
-    const on = (i === targetIdx);
-    t.video.muted = !on;
-    if (on) {
-      t.video.volume = 1;
-      if (t.video.paused && t.video.readyState >= 2) {
-        t.video.play().catch(() => {});
+    const v = t.video;
+    const isAudio = (i === activeAudio);
+    const targetMuted = !isAudio;
+
+    // Prova prima con controls.setMuted (aggiorna icona Shaka)
+    if (t.controls) {
+      try {
+        t.controls.setMuted(targetMuted);
+      } catch(e) {
+        v.muted = targetMuted;
+      }
+    } else {
+      v.muted = targetMuted;
+    }
+
+    // Assicura che il valore sia applicato anche direttamente
+    // (nel caso controls.setMuted non fosse supportato)
+    if (v.muted !== targetMuted) {
+      v.muted = targetMuted;
+    }
+
+    // Se sto attivando questo tile, volume al massimo e play se in pausa
+    if (isAudio) {
+      v.volume = 1;
+      if (t.controls) { try { t.controls.setVolume(1); } catch(e) {} }
+      if (v.paused && v.readyState >= 2) {
+        v.play().catch(()=>{});
       }
     }
   });
 }
 
+/* WATCHDOG */
 const lastTimes = new Map();
 const stallCounts = new Map();
 setInterval(() => {
@@ -600,6 +643,7 @@ setInterval(() => {
   });
 }, 3500);
 
+/* PICKER */
 function openPicker(idx) {
   pickSlot = idx;
   const t = tiles[idx];
@@ -644,11 +688,11 @@ function renderPicker(q) {
       tiles[idx] = newTileObj(ch);
       refreshSlot(idx);
       loadTile(idx, ch);
-      if (activeAudio < 0) setAudio(idx);
     });
   });
 }
 
+/* SOURCE MODAL */
 function openSourceModal() {
   const err = $('srcErr'); err.textContent = '';
   const type = sourceConfig ? sourceConfig.type : 'url';
@@ -666,6 +710,7 @@ document.querySelectorAll('input[name="srcType"]').forEach(r => {
   });
 });
 
+/* UI */
 $('btnReloadAll').addEventListener('click', () => { tiles.forEach((t, i) => { if (t && t.ch) reloadTile(i); }); });
 $('btnFullscreen').addEventListener('click', () => {
   const el = $('mv-grid');
@@ -694,6 +739,7 @@ $('srcSave').addEventListener('click', async () => {
   } catch (e) { err.textContent = 'Errore: ' + e.message; } finally { btn.disabled = false; btn.textContent = 'Salva e carica'; }
 });
 
+/* KEYBOARD */
 document.addEventListener('keydown', e => {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
     if (e.key === 'Escape') { closePicker(); closeSourceModal(); }
@@ -739,6 +785,7 @@ document.addEventListener('keydown', e => {
   }
 }, true);
 
+/* BOOT */
 (async function boot() {
   renderGrid();
   loadSourceConfig();
