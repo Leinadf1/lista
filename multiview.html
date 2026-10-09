@@ -16,7 +16,7 @@
   font-style: normal;
   font-display: swap;
 }
-/* Ripristino esplicito Material Icons */
+/* Ripristino classe material-icons (evita che font custom la sovrascriva) */
 .material-icons {
   font-family: 'Material Icons' !important;
   font-weight: normal !important;
@@ -110,12 +110,29 @@ img { display: block; }
 .mv-add-label {
   font-size: 10px; letter-spacing: .8px; text-transform: uppercase; font-weight: 700;
 }
-.mv-video-layer { position: absolute; inset: 0; background: #000; overflow: hidden; }
+
+/* ★ IMPORTANTE: video e iframe devono riempire il layer ★ */
+.mv-video-layer {
+  position: absolute; inset: 0;
+  background: #000;
+  overflow: hidden;
+}
+.mv-video-layer video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+  display: block;
+}
 .mv-video-layer iframe {
-  position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: #000;
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  border: 0; background: #000;
 }
 
-/* ==================== OVERLAY NOME CANALE (auto-hide) ==================== */
+/* ==================== OVERLAY NOME CANALE ==================== */
 .mv-ui {
   position: absolute; top: 0; left: 0; right: 0;
   z-index: 8;
@@ -174,7 +191,7 @@ img { display: block; }
 .mv-err-btn.retry { background: #0a3; border-color: #0a3; }
 
 /* ============================================================
-   SHAKA UI — testo F1, icone Material intatte
+   SHAKA UI — testo in Formula1, icone Material intatte
    ============================================================ */
 .shaka-current-time,
 .shaka-duration,
@@ -194,53 +211,55 @@ img { display: block; }
   background: linear-gradient(transparent, rgba(0,0,0,.7)) !important;
 }
 
-/* Barra controlli */
+/* Barra controlli: più compatta */
 .mv-tile .shaka-controls-container .shaka-bottom-controls {
-  padding: 0 8px 6px 8px !important;
+  padding: 0 6px 4px 6px !important;
 }
 .mv-tile .shaka-controls-container .shaka-controls-button-panel button {
   padding: 0 !important;
-  margin: 0 3px !important;
-  width: 26px !important;
-  height: 26px !important;
-  min-width: 26px !important;
+  margin: 0 2px !important;
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
 }
 .mv-tile .shaka-controls-container .shaka-controls-button-panel button i.material-icons {
-  font-size: 18px !important;
-  width: 18px !important;
-  height: 18px !important;
+  font-size: 17px !important;
+  width: 17px !important;
+  height: 17px !important;
 }
 
-/* Times */
+/* Tempo */
 .mv-tile .shaka-current-time,
 .mv-tile .shaka-duration,
 .mv-tile .shaka-current-time-divider {
-  font-size: 11px !important;
+  font-size: 10.5px !important;
   font-weight: 700 !important;
-  padding: 0 3px !important;
+  padding: 0 2px !important;
   line-height: 1 !important;
 }
 
-/* Seek bar: altezza normale ma con margine extra */
+/* Seek bar: visibile e cliccabile */
 .mv-tile .shaka-controls-container .shaka-seek-bar-container {
-  margin: 4px 8px 0 !important;
-  height: 4px !important;
+  margin: 3px 6px 0 !important;
+  height: 3px !important;
+  min-height: 3px !important;
 }
 .mv-tile .shaka-controls-container .shaka-range-container {
-  height: 4px !important; margin: 0 !important;
+  height: 3px !important; margin: 0 !important;
+  min-height: 3px !important;
 }
 .mv-tile .shaka-controls-container .shaka-range-element {
-  height: 4px !important;
+  height: 3px !important;
+  min-height: 3px !important;
 }
 .mv-tile .shaka-controls-container .shaka-seek-bar-container .shaka-range-element::-webkit-slider-thumb {
-  width: 12px !important; height: 12px !important; margin-top: -4px !important;
+  width: 11px !important; height: 11px !important; margin-top: -4px !important;
 }
 
 /* Menu a comparsa (qualità/sottotitoli) */
 .mv-tile .shaka-controls-container .shaka-overflow-menu,
 .mv-tile .shaka-controls-container .shaka-settings-menu {
-  font-size: 11px !important;
-  padding: 3px !important;
+  font-size: 11px !important; padding: 3px !important;
 }
 .mv-tile .shaka-controls-container .shaka-overflow-menu button,
 .mv-tile .shaka-controls-container .shaka-settings-menu button {
@@ -254,24 +273,24 @@ img { display: block; }
   font-size: 15px !important;
 }
 
-/* NASCONDI big play button centrale (compare al mouse move ma non lo vogliamo grande) */
+/* Big play button centrale: piccolo e discreto */
 .mv-tile .shaka-play-button-container {
-  width: 54px !important;
-  height: 54px !important;
+  width: 50px !important;
+  height: 50px !important;
 }
 .mv-tile .shaka-play-button-container svg,
 .mv-tile .shaka-play-button-container i.material-icons {
-  width: 28px !important;
-  height: 28px !important;
-  font-size: 28px !important;
+  width: 24px !important;
+  height: 24px !important;
+  font-size: 24px !important;
 }
 .mv-tile .shaka-play-button-container .shaka-play-button {
-  background: rgba(255,255,255,.92) !important;
+  background: rgba(255,255,255,.9) !important;
   color: #000 !important;
   padding: 12px !important;
 }
 
-/* Nascondi pulsanti inutili (rate, cast, pip, airplay) */
+/* Nascondi pulsanti inutili */
 .mv-tile .shaka-cast-button,
 .mv-tile .shaka-pip-button,
 .mv-tile .shaka-airplay-button,
@@ -280,7 +299,7 @@ img { display: block; }
 .mv-tile .shaka-ad-controls { display: none !important; }
 
 /* Volume compatto */
-.mv-tile .shaka-volume-bar-container { width: 48px !important; }
+.mv-tile .shaka-volume-bar-container { width: 44px !important; }
 
 /* ==================== MODALS ==================== */
 .modal-mask {
@@ -446,11 +465,11 @@ img { display: block; }
 
 <script>
 /* ============================================================
-   MULTIVIEW 2x2 — Shaka UI default + fix seekbar
+   MULTIVIEW 2x2 — struttura Shaka originale + UI compatta
    ============================================================ */
 
 const IFRAME_GROUPS = ['PRIME VIDEO', 'DAZN PRIMEVIDEO DE'];
-const SOURCE_KEY = 'mv_source_v7';
+const SOURCE_KEY = 'mv_source_v8';
 const PROXY_BASE = 'https://dazn-ua-proxy.stefanoaccuont.workers.dev/';
 const proxyCategories = [
   'serie bkt','laliga ea sports','serie a enilive','amichevoli',
@@ -781,7 +800,9 @@ async function loadTile(idx, ch) {
   }
   try { shaka.polyfill.installAll(); } catch (e) {}
 
+  // ★ Container + video con attributi che Shaka UI si aspetta ★
   const container = document.createElement('div');
+  container.setAttribute('data-shaka-player-container', '');
   container.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;background:#000;';
 
   const video = document.createElement('video');
@@ -789,6 +810,7 @@ async function loadTile(idx, ch) {
   video.playsInline = true;
   video.autoplay = true;
   video.muted = true;
+  video.setAttribute('data-shaka-player', '');
   video.style.cssText = 'width:100%;height:100%;object-fit:contain;background:#000;display:block;';
 
   container.appendChild(video);
@@ -796,10 +818,12 @@ async function loadTile(idx, ch) {
   t.video = video;
   t.container = container;
 
-  // Blocca click play/pausa sul video (fuori dai controlli)
+  // Blocca play/pausa al click fuori dai controlli (solo su video/scrim)
   container.addEventListener('click', e => {
-    const isControl = e.target.closest('.shaka-controls-container, .shaka-settings-menu, .shaka-overflow-menu');
-    if (!isControl) {
+    const isVideoOrScrim =
+      e.target.tagName === 'VIDEO' ||
+      e.target.classList.contains('shaka-scrim-container');
+    if (isVideoOrScrim) {
       e.stopImmediatePropagation();
       e.preventDefault();
       const tile = e.target.closest('.mv-tile');
@@ -810,7 +834,7 @@ async function loadTile(idx, ch) {
   const player = new shaka.Player(video);
   t.player = player;
 
-  // ==== Shaka UI con DEFAULT (funzionante) ====
+  // Shaka UI con config DEFAULT
   try {
     const ui = new shaka.ui.Overlay(player, container, video);
     ui.getControls();
@@ -819,7 +843,7 @@ async function loadTile(idx, ch) {
     console.warn('[MV] UI Shaka init fallita:', e);
   }
 
-  // Forza rate a 1x
+  // Forza rate 1x
   video.addEventListener('ratechange', () => {
     if (video.playbackRate !== 1) video.playbackRate = 1;
   });
