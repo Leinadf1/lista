@@ -213,7 +213,7 @@ img { display: block; }
     </label>
 
     <div class="src-hint">
-      • <strong>URL M3U</strong>: gist GitHub, pastebin, raw.githubusercontent (proxy CORS automatico).<br>
+      • <strong>URL M3U</strong>: usa un URL che supporta CORS (raw.githubusercontent, pastebin raw, il tuo sito).<br>
       • <strong>Incolla testo</strong>: copia il contenuto della tua lista e incollalo sopra.<br>
       • La scelta viene salvata in questo browser.
     </div>
@@ -227,25 +227,19 @@ img { display: block; }
 
 <script>
 /* ============================================================
-   MULTIVIEW v19
-   - Proxy CORS automatico per URL gist/raw
-   - Fix automatico URL gist.github.com → gist.githubusercontent.com
-   - Timeout 15s sul load dei tile
-   - Click in capture = cambia audio
+   MULTIVIEW v20
+   - Fetch diretto, niente proxy CORS
+   - Play/pausa SOLO da barra spaziatrice o tasto nella barra Shaka
+   - Click sul video NON mette pausa (solo cambia audio)
+   - Timeout 15s sul load
    ============================================================ */
 
 const IFRAME_GROUPS = ['PRIME VIDEO', 'DAZN PRIMEVIDEO DE'];
-const SOURCE_KEY = 'mv_source_v19';
+const SOURCE_KEY = 'mv_source_v20';
 const PROXY_BASE = 'https://dazn-ua-proxy.stefanoaccuont.workers.dev/';
 const proxyCategories = ['serie bkt','laliga ea sports','serie a enilive','amichevoli','jupiler pro league','liga portugal betclic','nerozone','dazn nerozone'];
 const UI_HIDE_MS = 3000;
 const LOAD_TIMEOUT_MS = 15000;
-
-/* Proxy CORS pubblici — se il primo fallisce, prova il secondo */
-const CORS_PROXIES = [
-  { wrap: u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u), name: 'allorigins' },
-  { wrap: u => 'https://corsproxy.io/?' + encodeURIComponent(u), name: 'corsproxy.io' }
-];
 
 let allChannels = [];
 let tiles = [null, null, null, null];
@@ -272,23 +266,7 @@ function buildIframeSrc(ch) {
   return `https://hugoedgar.com/drm-player/?${p.toString()}`;
 }
 
-/* ============================================================
-   URL HELPERS
-   ============================================================ */
-function fixGistUrl(url) {
-  // gist.github.com/.../raw/... → gist.githubusercontent.com/.../raw/...
-  // gist.github.com/user/ID/raw/file → gist.githubusercontent.com/user/ID/raw/file
-  try {
-    const u = new URL(url);
-    if (u.hostname === 'gist.github.com') {
-      u.hostname = 'gist.githubusercontent.com';
-      return u.toString();
-    }
-  } catch (e) {}
-  return url;
-}
-
-/* ============================================================ SORGENTE */
+/* SORGENTE */
 function loadSourceConfig() {
   try { sourceConfig = JSON.parse(localStorage.getItem(SOURCE_KEY) || 'null'); } catch (e) { sourceConfig = null; }
   updateSrcBadge();
@@ -306,43 +284,18 @@ function updateSrcBadge() {
   else { try { el.textContent = 'M3U · ' + new URL(sourceConfig.url).hostname; } catch (e) { el.textContent = 'M3U URL'; } el.classList.add('custom'); }
 }
 
-async function fetchWithCORS(url) {
-  // 1° tentativo: fetch diretto
+function fixGistUrl(url) {
   try {
-    const r = await fetch(url, { cache: 'no-store', redirect: 'follow', headers: { 'Accept': 'text/plain, application/x-mpegURL, */*' } });
-    if (r.ok) {
-      const txt = await r.text();
-      if (txt && txt.trim().length > 10) {
-        console.log('[MV] Fetch diretto OK:', url);
-        return txt;
-      }
+    const u = new URL(url);
+    if (u.hostname === 'gist.github.com') {
+      u.hostname = 'gist.githubusercontent.com';
+      return u.toString();
     }
-    console.warn('[MV] Fetch diretto ha risposto ' + r.status + ', provo con proxy');
-  } catch (e) {
-    console.warn('[MV] Fetch diretto fallito (probabile CORS):', e.message);
-  }
-
-  // 2° tentativo: proxy CORS
-  for (const proxy of CORS_PROXIES) {
-    try {
-      const proxyUrl = proxy.wrap(url);
-      console.log('[MV] Provo proxy ' + proxy.name + ':', proxyUrl);
-      const r = await fetch(proxyUrl, { cache: 'no-store' });
-      if (r.ok) {
-        const txt = await r.text();
-        if (txt && txt.trim().length > 10) {
-          console.log('[MV] Proxy ' + proxy.name + ' OK');
-          return txt;
-        }
-      }
-    } catch (e) {
-      console.warn('[MV] Proxy ' + proxy.name + ' fallito:', e.message);
-    }
-  }
-
-  throw new Error('Impossibile scaricare la lista (CORS bloccato su tutti i proxy)');
+  } catch (e) {}
+  return url;
 }
 
+/* FETCH M3U — semplice, senza proxy */
 async function fetchM3UFromSource(cfg) {
   if (cfg.type === 'backend') {
     const psw = prompt("Password per il backend del sito:");
@@ -352,11 +305,17 @@ async function fetchM3UFromSource(cfg) {
     return decodeBase64UTF8(await r.text());
   }
   if (cfg.type === 'text') return cfg.text || '';
+
   const url = fixGistUrl(cfg.url);
-  return await fetchWithCORS(url);
+  console.log('[MV] Fetch:', url);
+  const r = await fetch(url, { cache: 'no-store', redirect: 'follow' });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  const txt = await r.text();
+  if (!txt || txt.trim().length < 10) throw new Error('File M3U vuoto');
+  return txt;
 }
 
-/* ============================================================ PARSER M3U */
+/* PARSER M3U */
 function parseM3U(m3u) {
   const out = [];
   const lines = m3u.replace(/\r\n/g, '\n').split('\n');
@@ -426,7 +385,7 @@ async function initFromSource(cfg, silent) {
   console.log(`[MV] ${parsed.length} canali caricati`);
 }
 
-/* ============================================================ IFRAME */
+/* IFRAME */
 function sendIframeLive(fr) {
   if (!fr || !fr.contentWindow) return;
   const msgs = [{type:'seek',value:'live'}, {type:'seekToLive'}, {type:'goToLive'}, {action:'live'}, {action:'goToLive'}, {command:'live'}, {type:'liveEdge'}, {type:'live'}, {method:'live'}];
@@ -438,7 +397,7 @@ function startIframeLiveLoop(fr) {
   [100, 800, 1500, 3000].forEach(d => setTimeout(() => sendIframeLive(fr), d));
 }
 
-/* ============================================================ GRID */
+/* GRID */
 function renderGrid() {
   const g = $('mv-grid');
   g.innerHTML = '';
@@ -479,8 +438,15 @@ function buildTileEl(idx) {
   return el;
 }
 
+/* ============================================================
+   EVENTI TILE
+   - click sui pulsantini → reload/swap/remove
+   - click su pulsanti Shaka → lascia passare (play/pausa, seek, menu)
+   - click sul video/scrim → NON fa play/pausa. Solo attiva audio se il tile non è attivo.
+   ============================================================ */
 function bindTileEvents(el, idx) {
   el.addEventListener('click', e => {
+    // 1) Pulsantini del tile
     const btn = e.target.closest('[data-act]');
     if (btn) {
       e.stopPropagation();
@@ -491,20 +457,22 @@ function bindTileEvents(el, idx) {
       activateUI(el);
       return;
     }
-    if (e.target.closest('.shaka-controls-button-panel')) return;
-    if (e.target.closest('.shaka-seek-bar-container')) return;
-    if (e.target.closest('.shaka-range-container')) return;
-    if (e.target.closest('.shaka-overflow-menu')) return;
+
+    // 2) Click dentro i controlli Shaka → lascia passare normalmente
+    if (e.target.closest('.shaka-controls-container')) return;
     if (e.target.closest('.shaka-settings-menu')) return;
+    if (e.target.closest('.shaka-overflow-menu')) return;
     if (e.target.closest('.shaka-back-to-overflow-button')) return;
     if (e.target.closest('button')) return;
 
+    // 3) Click sul video/scrim:
+    //    - BLOCCA sempre il play/pausa di Shaka
+    //    - Se il tile non è attivo → cambia audio
+    e.stopImmediatePropagation();
+    e.preventDefault();
+
     if (activeAudio !== idx && tiles[idx] && tiles[idx].ch) {
-      e.stopImmediatePropagation();
-      e.preventDefault();
       setAudio(idx);
-      activateUI(el);
-      return;
     }
     activateUI(el);
   }, true);
@@ -519,7 +487,7 @@ function activateUI(el) {
   el._uiTimer = setTimeout(() => el.classList.remove('ui-active'), UI_HIDE_MS);
 }
 
-/* ============================================================ TILE */
+/* TILE */
 function newTileObj(ch) { return { ch, video: null, player: null, ui: null, controls: null, container: null, iframe: null, loading: false, loaded: false, recovering: false }; }
 function destroyTile(t) {
   if (!t) return;
@@ -625,6 +593,7 @@ async function loadTile(idx, ch) {
     t.controls = controls;
   } catch (e) { console.warn('[MV] UI Shaka init fallita:', e); }
 
+  /* TIMEOUT 15s */
   const loadTimeout = setTimeout(() => {
     if (!t.loaded && tiles[idx] === t) {
       console.warn('[MV] Timeout caricamento tile', idx, ch.name);
