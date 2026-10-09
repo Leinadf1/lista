@@ -2,45 +2,57 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Multiview 2×2</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 @font-face {
   font-family: 'Formula1 Display Bold';
   src: url('https://raw.githubusercontent.com/Leinadf1/lista/main/Formula1-Bold_web_0.ttf') format('truetype');
   font-weight: bold;
 }
-* { box-sizing: border-box; }
-html, body {
-  margin: 0; padding: 0; height: 100%;
-  background: #0d1117; color: #c9d1d9;
-  font-family: 'Formula1 Display Bold', 'Inter', sans-serif;
-  overflow: hidden;
-}
-button { font-family: inherit; cursor: pointer; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-/* ===== HEADER ===== */
+html {
+  margin: 0; padding: 0; height: 100%;
+  background: #0d1117;
+}
+body {
+  margin: 0; padding: 0;
+  height: 100dvh;
+  min-height: 100vh;
+  background: #0d1117;
+  color: #c9d1d9;
+  font-family: 'Formula1 Display Bold', 'Inter', -apple-system, sans-serif;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+}
+button { font-family: inherit; cursor: pointer; border: none; }
+img { display: block; }
+
+/* ==================== HEADER ==================== */
 #mv-header {
-  height: 52px;
+  flex: 0 0 auto;
+  height: 50px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 0 14px;
+  gap: 8px;
+  padding: 0 12px;
   background: #0a0e13;
-  border-bottom: 1px solid #30363d;
-  flex-shrink: 0;
+  border-bottom: 1px solid #21262d;
 }
 #mv-header .mv-title {
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 800;
   color: #f0f6fc;
-  letter-spacing: .5px;
+  letter-spacing: .6px;
   text-transform: uppercase;
+  white-space: nowrap;
 }
-#mv-header .mv-src-badge {
+#mv-header .mv-src {
   font-size: 11px;
   font-weight: 700;
   padding: 3px 10px;
@@ -49,98 +61,105 @@ button { font-family: inherit; cursor: pointer; }
   border: 1px solid #30363d;
   color: #8b949e;
   text-transform: uppercase;
-  letter-spacing: .6px;
-  max-width: 220px;
+  letter-spacing: .5px;
+  max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-#mv-header .mv-src-badge.custom { color: #f1e05a; border-color: #444; }
+#mv-header .mv-src.custom { color: #f1e05a; border-color: #444; }
 #mv-header .mv-spacer { flex: 1; }
+
 .mv-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 7px 13px;
+  gap: 5px;
+  padding: 7px 12px;
   background: #161b22;
   color: #c9d1d9;
   border: 1px solid #30363d;
-  border-radius: 20px;
-  font-size: 12.5px;
+  border-radius: 18px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: .4px;
-  transition: all .15s ease;
+  transition: all .15s;
   white-space: nowrap;
 }
 .mv-btn:hover { background: #1c2128; border-color: #58a6ff; color: #f0f6fc; }
-.mv-btn.primary {
-  background: #0a2540;
-  border-color: #58a6ff;
-  color: #fff;
-}
+.mv-btn.primary { background: #0a2540; border-color: #58a6ff; color: #fff; }
 .mv-btn.primary:hover { background: #123b66; }
+.mv-btn:disabled { opacity: .5; cursor: not-allowed; }
 
-/* ===== GRID 2x2 ===== */
+/* ==================== GRID ==================== */
+#mv-main {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  overflow: hidden;
+}
 #mv-grid {
+  flex: 1;
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr 1fr;
-  gap: 6px;
-  padding: 6px;
+  gap: 4px;
+  padding: 4px;
+  min-width: 0;
+  min-height: 0;
+  background: #0d1117;
+}
+#mv-grid:fullscreen,
+#mv-grid:-webkit-full-screen {
+  padding: 3px;
+  gap: 3px;
   width: 100vw;
-  height: calc(100vh - 52px);
+  height: 100vh;
+  background: #000;
 }
 
+/* ==================== TILE ==================== */
 .mv-tile {
   position: relative;
-  background: #05080c;
-  border: 1px solid #30363d;
-  border-radius: 8px;
+  background: #000;
+  border-radius: 6px;
   overflow: hidden;
   min-width: 0;
   min-height: 0;
-  transition: border-color .2s;
+  border: 1px solid #21262d;
+  transition: border-color .2s, box-shadow .2s;
+  cursor: pointer;
 }
-.mv-tile.audio { border-color: #00e676; box-shadow: 0 0 0 2px #00e676, 0 0 20px rgba(0,230,118,.25); }
+.mv-tile.audio {
+  border-color: #00e676;
+  box-shadow: 0 0 0 2px #00e676 inset, 0 0 15px rgba(0,230,118,.3);
+}
 .mv-tile.empty {
   display: flex;
   align-items: center;
   justify-content: center;
   border: 2px dashed #30363d;
-  cursor: pointer;
   background: #0d1117;
 }
-.mv-tile.empty:hover {
-  border-color: #58a6ff;
-  background: #101822;
-}
+.mv-tile.empty:hover { border-color: #58a6ff; background: #101822; }
+
 .mv-add-inner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  color: #8b949e;
-  pointer-events: none;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  color: #6a737d; pointer-events: none;
 }
 .mv-add-circle {
-  width: 52px; height: 52px;
-  border-radius: 50%;
-  border: 2px solid #30363d;
-  background: rgba(88,166,255,.06);
-  color: #58a6ff;
-  font-size: 28px;
-  font-weight: 300;
-  line-height: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 48px; height: 48px; border-radius: 50%;
+  border: 2px solid #30363d; background: rgba(88,166,255,.06);
+  color: #58a6ff; font-size: 26px; font-weight: 300; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
 }
-.mv-add-label { font-size: 12.5px; letter-spacing: .4px; text-transform: uppercase; }
+.mv-add-label { font-size: 11.5px; letter-spacing: .5px; text-transform: uppercase; font-weight: 700; }
 
 .mv-video-layer {
   position: absolute;
   inset: 0;
   background: #000;
+  overflow: hidden;
 }
 .mv-video-layer video,
 .mv-video-layer iframe {
@@ -154,131 +173,54 @@ button { font-family: inherit; cursor: pointer; }
   display: block;
 }
 
-.mv-tile-bar {
+/* ==================== LOADING ==================== */
+.mv-loading {
   position: absolute;
-  left: 0; right: 0; bottom: 0;
+  inset: 0;
   display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
-  background: linear-gradient(transparent, rgba(0,0,0,.85));
-  font-size: 13px;
-  font-weight: 700;
-  color: #fff;
-  z-index: 3;
-  pointer-events: auto;
-}
-.mv-tile-logo {
-  width: 26px; height: 26px;
-  object-fit: contain;
-  flex: 0 0 auto;
-  border-radius: 4px;
-  background: rgba(255,255,255,.05);
-  padding: 1px;
-}
-.mv-tile-name {
-  flex: 1;
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  cursor: pointer;
-  transition: color .15s;
-}
-.mv-tile-name:hover { color: #58a6ff; }
-.mv-tile-actions {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  flex: 0 0 auto;
-}
-.mv-tile-audio-on { color: #00e676; font-size: 14px; }
-
-.mv-tbtn {
-  width: 26px; height: 26px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(255,255,255,.12);
-  color: #fff;
-  font-size: 13px;
-  line-height: 1;
-  display: inline-flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  transition: all .15s;
-  padding: 0;
+  flex-direction: column;
+  gap: 12px;
+  background: rgba(5,8,12,.9);
+  z-index: 6;
+  color: #8b949e;
+  font-size: 12px;
+  letter-spacing: .5px;
+  text-transform: uppercase;
 }
-.mv-tbtn:hover { background: rgba(255,255,255,.25); transform: scale(1.08); }
-.mv-tbtn.reload:hover { background: rgba(88,166,255,.5); }
-.mv-tbtn.swap:hover   { background: rgba(0,230,118,.4); }
-.mv-tbtn.close:hover  { background: #ff1744; }
+.mv-loading.hidden { display: none; }
+.mv-spinner {
+  width: 34px; height: 34px;
+  border: 3px solid #21262d;
+  border-top-color: #58a6ff;
+  border-radius: 50%;
+  animation: spin .9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 
-/* audio popup */
-.mv-aud-menu {
-  position: absolute;
-  right: 10px; bottom: 46px;
-  background: rgba(6,16,23,.98);
-  border: 1px solid #30363d;
-  border-radius: 8px;
-  min-width: 180px; max-width: 260px;
-  max-height: 55%;
-  overflow-y: auto;
-  z-index: 20;
-  padding: 6px;
-  box-shadow: 0 10px 30px rgba(0,0,0,.7);
-  display: none;
-}
-.mv-aud-menu.active { display: block; }
-.mv-aud-head {
-  display: flex; justify-content: space-between;
-  padding: 4px 8px 8px;
-  font-size: 11px; font-weight: 800;
-  color: #8b949e; text-transform: uppercase;
-  letter-spacing: .6px;
-  border-bottom: 1px solid #21262d;
-  margin-bottom: 4px;
-}
-.mv-aud-head span:last-child { cursor: pointer; color: #8b949e; font-size: 16px; line-height: 1; }
-.mv-aud-head span:last-child:hover { color: #fff; }
-.mv-aud-item {
-  display: block;
-  width: 100%;
-  text-align: left;
-  background: none;
-  border: none;
-  color: #c9d1d9;
-  font-size: 12.5px;
-  font-weight: 600;
-  padding: 7px 10px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-.mv-aud-item:hover { background: rgba(255,255,255,.06); }
-.mv-aud-item.active { color: #00e676; background: rgba(0,230,118,.1); }
-
-/* tile error */
+/* ==================== ERROR ==================== */
 .mv-err {
   position: absolute;
   inset: 0;
-  z-index: 4;
+  z-index: 7;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 16px;
+  padding: 14px;
   text-align: center;
-  background: rgba(5,8,12,.92);
+  background: rgba(5,8,12,.95);
   color: #ff9b9b;
-  font-size: 13px;
+  font-size: 12.5px;
 }
 .mv-err.hidden { display: none; }
 .mv-err-actions { display: flex; gap: 8px; }
 .mv-err-btn {
-  padding: 6px 14px;
+  padding: 6px 13px;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 700;
   border: 1px solid #30363d;
   background: #161b22;
@@ -288,31 +230,213 @@ button { font-family: inherit; cursor: pointer; }
 .mv-err-btn.retry:hover { background: #123b66; }
 .mv-err-btn.swap:hover { border-color: #00e676; color: #00e676; }
 
-/* ===== MODAL ===== */
+/* ==================== OVERLAY (seekbar + bar) ==================== */
+.mv-overlay {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .18s;
+  background: linear-gradient(transparent 0%, rgba(0,0,0,.55) 30%, rgba(0,0,0,.88) 100%);
+  padding-top: 30px;
+}
+.mv-tile:hover .mv-overlay,
+.mv-tile.show-controls .mv-overlay {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* seekbar */
+.mv-seek {
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mv-seek-track {
+  flex: 1;
+  height: 5px;
+  background: rgba(255,255,255,.22);
+  border-radius: 3px;
+  position: relative;
+  cursor: pointer;
+  overflow: visible;
+  min-width: 0;
+}
+.mv-seek-played {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  background: linear-gradient(90deg, #58a6ff, #00e676);
+  border-radius: 3px;
+  transition: width .25s linear;
+  max-width: 100%;
+}
+.mv-seek-handle {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 13px; height: 13px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(255,255,255,.6);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .15s;
+}
+.mv-seek-track:hover .mv-seek-handle { opacity: 1; }
+.mv-seek-times {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+.mv-t-cur.is-live {
+  color: #00e676;
+  letter-spacing: 1px;
+}
+.mv-t-cur.is-live::before {
+  content: '';
+  display: inline-block;
+  width: 6px; height: 6px;
+  background: #00e676;
+  border-radius: 50%;
+  margin-right: 5px;
+  animation: pulse 1.4s infinite;
+  vertical-align: middle;
+}
+.mv-t-dur { color: #8b949e; }
+.mv-t-sep { color: #6a737d; }
+.mv-t-sep.hidden { display: none; }
+.mv-t-dur.hidden { display: none; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .3; }
+}
+
+/* tile bar */
+.mv-bar {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 10px 8px;
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+.mv-logo {
+  width: 24px; height: 24px;
+  object-fit: contain;
+  border-radius: 4px;
+  background: rgba(255,255,255,.06);
+  padding: 1px;
+  flex: 0 0 auto;
+}
+.mv-name {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+.mv-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+}
+.mv-tbtn {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.14);
+  color: #fff;
+  font-size: 12.5px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .15s;
+  padding: 0;
+}
+.mv-tbtn:hover { background: rgba(255,255,255,.28); transform: scale(1.08); }
+.mv-tbtn.reload:hover { background: rgba(88,166,255,.55); }
+.mv-tbtn.swap:hover { background: rgba(0,230,118,.4); }
+.mv-tbtn.close:hover { background: #ff1744; }
+.mv-audio-badge { color: #00e676; font-size: 13px; }
+
+/* audio menu */
+.mv-aud-menu {
+  position: absolute;
+  right: 10px; bottom: 90px;
+  background: rgba(6,16,23,.98);
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  min-width: 170px; max-width: 240px;
+  max-height: 55%;
+  overflow-y: auto;
+  z-index: 20;
+  padding: 6px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.75);
+  display: none;
+}
+.mv-aud-menu.active { display: block; }
+.mv-aud-head {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 4px 8px 8px;
+  font-size: 10.5px; font-weight: 800;
+  color: #8b949e; text-transform: uppercase;
+  letter-spacing: .6px;
+  border-bottom: 1px solid #21262d;
+  margin-bottom: 4px;
+}
+.mv-aud-head .mv-aud-close { cursor: pointer; font-size: 16px; line-height: 1; color: #8b949e; }
+.mv-aud-head .mv-aud-close:hover { color: #fff; }
+.mv-aud-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  color: #c9d1d9;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 7px 10px;
+  border-radius: 6px;
+}
+.mv-aud-item:hover { background: rgba(255,255,255,.06); }
+.mv-aud-item.active { color: #00e676; background: rgba(0,230,118,.1); }
+
+/* ==================== MODALS ==================== */
 .modal-mask {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,.78);
+  background: rgba(0,0,0,.8);
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
   z-index: 100;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 18px;
+  padding: 14px;
 }
 .modal-mask.hidden { display: none; }
 .modal-box {
   background: #0d1117;
   border: 1px solid #30363d;
   border-radius: 14px;
-  padding: 22px;
+  padding: 20px;
   max-width: 720px;
   width: 100%;
-  max-height: 88vh;
+  max-height: 90dvh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 20px 60px rgba(0,0,0,.65);
+  box-shadow: 0 20px 60px rgba(0,0,0,.7);
 }
 .modal-head {
   display: flex;
@@ -321,26 +445,16 @@ button { font-family: inherit; cursor: pointer; }
   gap: 12px;
   margin-bottom: 14px;
 }
-.modal-head h3 {
-  margin: 0;
-  font-size: 17px;
-  font-weight: 700;
-  color: #f0f6fc;
-}
-.modal-head .sub {
-  font-size: 12.5px;
-  color: #8b949e;
-  margin-top: 3px;
-}
+.modal-head h3 { margin: 0; font-size: 16px; font-weight: 800; color: #f0f6fc; }
+.modal-head .sub { font-size: 12px; color: #8b949e; margin-top: 3px; }
 .modal-close {
   background: rgba(255,255,255,.06);
-  border: none;
   color: #c9d1d9;
   border-radius: 50%;
   width: 30px; height: 30px;
   font-size: 18px;
   line-height: 1;
-  cursor: pointer;
+  flex: 0 0 auto;
 }
 .modal-close:hover { background: rgba(255,255,255,.14); color: #fff; }
 
@@ -348,12 +462,12 @@ button { font-family: inherit; cursor: pointer; }
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 9px 14px;
+  padding: 9px 13px;
   background: #161b22;
   border: 1px solid #30363d;
   border-radius: 8px;
   color: #8b949e;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 .pick-search input {
   flex: 1;
@@ -363,6 +477,7 @@ button { font-family: inherit; cursor: pointer; }
   color: #f0f6fc;
   font-size: 14px;
   font-family: inherit;
+  min-width: 0;
 }
 .pick-search input::placeholder { color: #6a737d; }
 .pick-list {
@@ -371,8 +486,8 @@ button { font-family: inherit; cursor: pointer; }
   padding-right: 4px;
   min-height: 200px;
 }
-.pick-cat-head {
-  font-size: 11.5px;
+.pick-cat {
+  font-size: 11px;
   font-weight: 800;
   color: #f1e05a;
   text-transform: uppercase;
@@ -380,7 +495,10 @@ button { font-family: inherit; cursor: pointer; }
   padding: 12px 4px 6px;
   border-bottom: 1px solid #21262d;
   margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
 }
+.pick-cat small { color: #8b949e; font-weight: 600; }
 .pick-row {
   display: flex;
   align-items: center;
@@ -392,7 +510,6 @@ button { font-family: inherit; cursor: pointer; }
   border-radius: 8px;
   color: #c9d1d9;
   text-align: left;
-  cursor: pointer;
   font-size: 13.5px;
   font-family: inherit;
   transition: background .12s, border-color .12s;
@@ -402,11 +519,18 @@ button { font-family: inherit; cursor: pointer; }
   border-color: #30363d;
   color: #f0f6fc;
 }
-.pick-row:disabled { opacity: .38; cursor: not-allowed; }
-.pick-row img { width: 34px; height: 34px; object-fit: contain; flex: 0 0 auto; }
-.pick-row .pick-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 700; }
+.pick-row:disabled { opacity: .35; cursor: not-allowed; }
+.pick-row img { width: 32px; height: 32px; object-fit: contain; flex: 0 0 auto; }
+.pick-row .pick-name {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 700;
+}
 .pick-row .pick-inuse { font-size: 11px; color: #8b949e; font-weight: 500; }
-.pick-empty { text-align: center; color: #6a737d; padding: 40px 10px; font-style: italic; }
+.pick-empty { text-align: center; color: #6a737d; padding: 40px 10px; font-style: italic; font-size: 13px; }
 
 /* source modal */
 .src-opt {
@@ -418,77 +542,88 @@ button { font-family: inherit; cursor: pointer; }
   border-radius: 8px;
   margin-bottom: 8px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13.5px;
 }
 .src-opt:hover { border-color: #58a6ff; }
-.src-opt input { accent-color: #58a6ff; }
-.src-url-input {
+.src-opt input[type=radio] { accent-color: #58a6ff; }
+.src-opt.col { flex-direction: column; align-items: stretch; gap: 8px; }
+.src-opt-row { display: flex; align-items: center; gap: 10px; }
+.src-url {
   width: 100%;
   background: #161b22;
   border: 1px solid #30363d;
   border-radius: 8px;
   color: #f0f6fc;
-  padding: 11px 14px;
-  font-size: 14px;
+  padding: 10px 12px;
+  font-size: 13.5px;
   font-family: inherit;
-  margin-top: 6px;
   outline: none;
+  display: none;
 }
-.src-url-input:focus { border-color: #58a6ff; }
-.src-hint {
-  font-size: 12px;
-  color: #8b949e;
-  margin-top: 8px;
-  line-height: 1.5;
-}
+.src-url.active { display: block; }
+.src-url:focus { border-color: #58a6ff; }
+.src-hint { font-size: 11.5px; color: #8b949e; margin-top: 8px; line-height: 1.55; }
 .modal-actions {
   display: flex;
   gap: 10px;
   justify-content: flex-end;
-  margin-top: 18px;
+  margin-top: 16px;
   padding-top: 14px;
   border-top: 1px solid #21262d;
 }
-.err-text { color: #ff7b7b; font-size: 12.5px; margin-top: 10px; min-height: 16px; }
+.err-text { color: #ff7b7b; font-size: 12px; margin-top: 8px; min-height: 15px; }
 
-/* ===== FULLSCREEN ===== */
-#mv-grid:fullscreen,
-#mv-grid:-webkit-full-screen {
-  padding: 4px;
-  gap: 4px;
-  background: #000;
+/* ==================== MOBILE ==================== */
+@media (max-width: 700px), (pointer: coarse) {
+  #mv-header { height: 44px; padding: 0 8px; gap: 5px; }
+  .mv-title { display: none; }
+  .mv-btn { padding: 6px 10px; font-size: 11px; }
+  .mv-btn .mv-btn-label { display: none; }
+  .mv-src { font-size: 10px; max-width: 110px; padding: 2px 8px; }
+
+  #mv-grid { gap: 3px; padding: 3px; }
+
+  .mv-bar { font-size: 11px; padding: 5px 8px 6px; gap: 5px; }
+  .mv-logo { width: 20px; height: 20px; }
+  .mv-tbtn { width: 24px; height: 24px; font-size: 11px; }
+  .mv-seek { padding: 0 8px; gap: 7px; }
+  .mv-seek-times { font-size: 10.5px; }
+  .mv-seek-track { height: 4px; }
+
+  /* touch: overlay visibile per 3s dopo tap */
+  .mv-tile.show-controls .mv-overlay { opacity: 1; pointer-events: auto; }
+  .mv-overlay { transition: opacity .25s; }
+
+  .modal-box { padding: 16px; border-radius: 12px; }
+  .modal-head h3 { font-size: 15px; }
+  .pick-row { padding: 8px 10px; font-size: 13px; }
+  .pick-row img { width: 28px; height: 28px; }
+}
+
+/* ==================== DESKTOP FINE TUNING ==================== */
+@media (min-width: 1200px) {
+  #mv-grid { gap: 6px; padding: 6px; }
+  .mv-tile { border-radius: 8px; }
+  .mv-bar { padding: 8px 12px; font-size: 13px; }
 }
 </style>
 </head>
 <body>
 
 <header id="mv-header">
-  <div class="mv-title">⊞ Multiview 2×2</div>
-  <div class="mv-src-badge" id="srcBadge">Sorgente non impostata</div>
+  <div class="mv-title">⊞ Multiview</div>
+  <div class="mv-src" id="srcBadge">Sorgente non impostata</div>
   <div class="mv-spacer"></div>
-  <button class="mv-btn" id="btnReloadAll" title="Ricarica tutti i flussi">🔄 Ricarica</button>
-  <button class="mv-btn" id="btnSource" title="Cambia sorgente M3U">⚙️ Sorgente</button>
-  <button class="mv-btn" id="btnFullscreen" title="Schermo intero (F)">⛶ Fullscreen</button>
+  <button class="mv-btn" id="btnReloadAll" title="Ricarica tutti i flussi">🔄 <span class="mv-btn-label">Ricarica</span></button>
+  <button class="mv-btn" id="btnSource" title="Cambia sorgente M3U">⚙️ <span class="mv-btn-label">Sorgente</span></button>
+  <button class="mv-btn" id="btnFullscreen" title="Schermo intero (F)">⛶ <span class="mv-btn-label">Fullscreen</span></button>
 </header>
 
-<main>
-  <div id="mv-grid">
-    <div class="mv-tile empty" data-slot="0">
-      <div class="mv-add-inner"><div class="mv-add-circle">+</div><div class="mv-add-label">Riquadro 1</div></div>
-    </div>
-    <div class="mv-tile empty" data-slot="1">
-      <div class="mv-add-inner"><div class="mv-add-circle">+</div><div class="mv-add-label">Riquadro 2</div></div>
-    </div>
-    <div class="mv-tile empty" data-slot="2">
-      <div class="mv-add-inner"><div class="mv-add-circle">+</div><div class="mv-add-label">Riquadro 3</div></div>
-    </div>
-    <div class="mv-tile empty" data-slot="3">
-      <div class="mv-add-inner"><div class="mv-add-circle">+</div><div class="mv-add-label">Riquadro 4</div></div>
-    </div>
-  </div>
+<main id="mv-main">
+  <div id="mv-grid"></div>
 </main>
 
-<!-- ===== PICKER MODAL ===== -->
+<!-- PICKER MODAL -->
 <div class="modal-mask hidden" id="pickerModal">
   <div class="modal-box">
     <div class="modal-head">
@@ -506,7 +641,7 @@ button { font-family: inherit; cursor: pointer; }
   </div>
 </div>
 
-<!-- ===== SOURCE MODAL ===== -->
+<!-- SOURCE MODAL -->
 <div class="modal-mask hidden" id="sourceModal">
   <div class="modal-box" style="max-width:520px">
     <div class="modal-head">
@@ -520,16 +655,16 @@ button { font-family: inherit; cursor: pointer; }
       <input type="radio" name="srcType" value="backend">
       <span>Backend del sito <small style="color:#8b949e">(richiede password)</small></span>
     </label>
-    <label class="src-opt" style="flex-direction:column;align-items:flex-start">
-      <span style="display:flex;align-items:center;gap:10px">
+    <label class="src-opt col">
+      <span class="src-opt-row">
         <input type="radio" name="srcType" value="url">
-        URL M3U personalizzato
+        <span>URL M3U personalizzato</span>
       </span>
-      <input type="text" class="src-url-input" id="srcUrl" placeholder="https://esempio.com/lista.m3u" style="display:none">
+      <input type="text" class="src-url" id="srcUrl" placeholder="https://esempio.com/lista.m3u">
     </label>
     <div class="src-hint">
-      Con "Backend" userai gli stessi canali del sito (ti verrà chiesta la password).<br>
-      Con "URL M3U" puoi usare qualsiasi lista pubblica — la scelta verrà salvata in questo browser.
+      Con <strong>Backend</strong> usi i canali del sito (password richiesta).<br>
+      Con <strong>URL M3U</strong> puoi usare qualsiasi lista pubblica — la scelta verrà salvata in questo browser.
     </div>
     <div class="err-text" id="srcErr"></div>
     <div class="modal-actions">
@@ -541,91 +676,93 @@ button { font-family: inherit; cursor: pointer; }
 
 <script>
 /* ============================================================
-   MULTIVIEW 2x2 — standalone
-   - Sorgente: backend (/api/get-list) oppure URL M3U custom
-   - 4 tile: Shaka Player (clearKeys) oppure iframe (PRIME VIDEO / DAZN PRIMEVIDEO DE)
+   MULTIVIEW 2x2 — clean build
+   - Sorgente: backend (/api/get-list) o URL M3U custom
+   - 4 tile: Shaka (clearKeys) o iframe (PRIME VIDEO / DAZN PRIMEVIDEO DE)
+   - Seekbar per tile con LIVE / time-shift
    - Live-edge keeper + watchdog anti-freeze
    ============================================================ */
 
 const IFRAME_GROUPS = ['PRIME VIDEO', 'DAZN PRIMEVIDEO DE'];
-const SOURCE_KEY = 'mv_source_v1';
+const SOURCE_KEY = 'mv_source_v2';
 const PROXY_BASE = 'https://dazn-ua-proxy.stefanoaccuont.workers.dev/';
-
 const proxyCategories = [
-  'serie bkt', 'laliga ea sports', 'serie a enilive', 'amichevoli',
-  'jupiler pro league', 'liga portugal betclic', 'nerozone', 'dazn nerozone'
+  'serie bkt','laliga ea sports','serie a enilive','amichevoli',
+  'jupiler pro league','liga portugal betclic','nerozone','dazn nerozone'
 ];
 
 let allChannels = [];
-let tiles = [null, null, null, null]; // { ch, video, player, iframe, loading, recovering, audio }
+let tiles = [null, null, null, null];
 let activeAudio = -1;
 let pickSlot = -1;
-let sourceConfig = null; // { type: 'backend' } | { type: 'url', url: '...' }
+let sourceConfig = null;
+let seekTimer = null;
 
-/* ---------- utility ---------- */
-function normalizeName(name) {
-  return String(name || '').toLowerCase().replace(/[^a-z0-9]/gi, '');
-}
-function decodeBase64UTF8(base64) {
-  const binary = atob(base64);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+/* ---------- utils ---------- */
+const $ = id => document.getElementById(id);
+function normalizeName(s) { return String(s || '').toLowerCase().replace(/[^a-z0-9]/gi, ''); }
+function decodeBase64UTF8(b64) {
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
   return new TextDecoder('utf-8').decode(bytes);
 }
 function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, c =>
     ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 }
+function pad(n) { return String(n).padStart(2, '0'); }
+function fmtTime(sec) {
+  if (!isFinite(sec) || sec < 0) return '--:--';
+  const s = Math.floor(sec % 60);
+  const m = Math.floor((sec / 60) % 60);
+  const h = Math.floor(sec / 3600);
+  return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+}
+function fmtLatency(sec) {
+  if (!isFinite(sec) || sec <= 0) return '-0s';
+  if (sec < 60) return `-${Math.round(sec)}s`;
+  return `-${fmtTime(sec)}`;
+}
 function shouldUseIframe(ch) {
-  const g = (ch.group || '').toUpperCase().trim();
-  return IFRAME_GROUPS.includes(g);
+  return IFRAME_GROUPS.includes((ch.group || '').toUpperCase().trim());
 }
 function buildIframeSrc(ch) {
   const drm = ch.drm || {};
-  const entries = Object.entries(drm);
-  if (!entries.length) return null;
-  const [kid, key] = entries[0];
-  if (!kid || !key || !ch.url) return null;
-  const params = new URLSearchParams({
-    'embed-url': ch.url,
-    'kid': kid,
-    'key': key,
-    'autoplay': 'true',
-    'live': 'true',
-    'start': 'live',
-    'startAt': 'live',
-    'start-at': 'live',
-    'starttime': 'live',
-    'seekable': 'false',
-    'dvr': 'false'
+  const e = Object.entries(drm)[0];
+  if (!e || !ch.url) return null;
+  const [kid, key] = e;
+  const p = new URLSearchParams({
+    'embed-url': ch.url, 'kid': kid, 'key': key,
+    'autoplay': 'true', 'live': 'true', 'start': 'live',
+    'startAt': 'live', 'start-at': 'live', 'starttime': 'live',
+    'seekable': 'false', 'dvr': 'false'
   });
-  return `https://hugoedgar.com/drm-player/?${params.toString()}`;
+  return `https://hugoedgar.com/drm-player/?${p.toString()}`;
 }
 
-/* ---------- iframe live loop ---------- */
-function sendIframeLive(iframe) {
-  if (!iframe || !iframe.contentWindow) return;
+/* ---------- iframe live keep-alive ---------- */
+function sendIframeLive(fr) {
+  if (!fr || !fr.contentWindow) return;
   const msgs = [
-    { type:'seek', value:'live' }, { type:'seekToLive' }, { type:'goToLive' },
-    { action:'live' }, { action:'goToLive' }, { command:'live' },
-    { type:'liveEdge' }, { type:'live' }, { method:'live' }
+    {type:'seek',value:'live'}, {type:'seekToLive'}, {type:'goToLive'},
+    {action:'live'}, {action:'goToLive'}, {command:'live'},
+    {type:'liveEdge'}, {type:'live'}, {method:'live'}
   ];
-  msgs.forEach(m => { try { iframe.contentWindow.postMessage(m, '*'); } catch (e) {} });
+  msgs.forEach(m => { try { fr.contentWindow.postMessage(m,'*'); } catch(e){} });
 }
-function startIframeLiveLoop(iframe) {
-  if (!iframe) return;
+function startIframeLiveLoop(fr) {
   let n = 0;
   const iv = setInterval(() => {
-    const still = tiles.some(t => t && t.iframe === iframe);
+    const still = tiles.some(t => t && t.iframe === fr);
     if (!still || n >= 30) { clearInterval(iv); return; }
-    sendIframeLive(iframe);
-    n++;
+    sendIframeLive(fr); n++;
   }, 500);
-  [100, 800, 1500, 3000].forEach(d => setTimeout(() => sendIframeLive(iframe), d));
+  [100, 800, 1500, 3000].forEach(d => setTimeout(() => sendIframeLive(fr), d));
 }
 
 /* ============================================================
-   CARICAMENTO SORGENTE
+   SORGENTE
    ============================================================ */
 function loadSourceConfig() {
   try { sourceConfig = JSON.parse(localStorage.getItem(SOURCE_KEY) || 'null'); }
@@ -638,7 +775,7 @@ function saveSourceConfig(cfg) {
   updateSrcBadge();
 }
 function updateSrcBadge() {
-  const el = document.getElementById('srcBadge');
+  const el = $('srcBadge');
   if (!sourceConfig) {
     el.textContent = 'Sorgente non impostata';
     el.classList.remove('custom');
@@ -648,16 +785,11 @@ function updateSrcBadge() {
     el.textContent = 'Backend sito';
     el.classList.remove('custom');
   } else {
-    try {
-      const u = new URL(sourceConfig.url);
-      el.textContent = 'M3U · ' + u.hostname;
-    } catch (e) {
-      el.textContent = 'M3U personalizzato';
-    }
+    try { el.textContent = 'M3U · ' + new URL(sourceConfig.url).hostname; }
+    catch (e) { el.textContent = 'M3U personalizzato'; }
     el.classList.add('custom');
   }
 }
-
 async function fetchM3UFromSource(cfg) {
   if (cfg.type === 'backend') {
     const psw = prompt("Password per il backend del sito:");
@@ -671,18 +803,17 @@ async function fetchM3UFromSource(cfg) {
     const encoded = await r.text();
     return decodeBase64UTF8(encoded);
   }
-  // custom URL
   const r = await fetch(cfg.url, { cache: 'no-store' });
   if (!r.ok) throw new Error('HTTP ' + r.status + ' — impossibile scaricare la M3U');
   return await r.text();
 }
 
 /* ============================================================
-   PARSER M3U (stessa logica del tuo index.html)
+   PARSER M3U
    ============================================================ */
-function parseM3U(m3uContent) {
+function parseM3U(m3u) {
   const out = [];
-  const lines = m3uContent.split('\n');
+  const lines = m3u.split('\n');
   let ch = { name:'', logo:'', group:'LISTA', drm:{}, url:'', streamHeaders:{}, userAgent:null, tvgId:null, id:'' };
 
   for (let raw of lines) {
@@ -710,15 +841,14 @@ function parseM3U(m3uContent) {
       ch.userAgent = line.substring(line.indexOf('=') + 1).trim();
     }
     else if (line.startsWith('#EXTINF:')) {
-      const logo   = line.match(/tvg-logo="([^"]+)"/i);
-      const group  = line.match(/group-title="([^"]+)"/i);
-      const name   = line.match(/,(.*)$/);
-      const tvgId  = line.match(/tvg-id="([^"]+)"/i);
+      const logo  = line.match(/tvg-logo="([^"]+)"/i);
+      const group = line.match(/group-title="([^"]+)"/i);
+      const name  = line.match(/,(.*)$/);
+      const tvgId = line.match(/tvg-id="([^"]+)"/i);
       if (logo)  ch.logo = logo[1];
       if (group) ch.group = group[1];
       if (name)  ch.name = name[1].trim();
       if (tvgId) ch.tvgId = tvgId[1];
-      // mapping tvg-id speciali
       const nn = normalizeName(ch.name);
       if (nn === 'skyunoplus') ch.tvgId = 'Sky.Uno.+..it';
       else if (nn === 'skyuno') ch.tvgId = 'Sky.Uno.it';
@@ -726,29 +856,22 @@ function parseM3U(m3uContent) {
     }
     else if (line.startsWith('http')) {
       let url = line;
-
-      const groupNorm = (ch.group || '').toLowerCase().replace(/[\s\-_]/g, '');
-      const nameNorm  = (ch.name  || '').toLowerCase().replace(/[\s\-_]/g, '');
-      const isNeroZone = groupNorm.includes('nerozone') || nameNorm.includes('nerozone')
-                      || groupNorm.includes('daznnero') || nameNorm.includes('daznnero');
-      const isDazn1Lineare   = nameNorm === 'dazn1' && groupNorm === 'daznlineari';
-      const isDaznSvizzeri   = groupNorm.includes('daznsvizzeri');
-      const isDaznPrimeDE    = groupNorm.includes('daznprimevideode');
-      const isDaznChannel    = groupNorm.includes('dazn') || nameNorm.includes('dazn');
-      const isProxyCategory  = proxyCategories.includes((ch.group || '').toLowerCase().trim());
-      const alreadyProxied   = url.startsWith(PROXY_BASE);
-
-      if (!alreadyProxied && (
-        isProxyCategory || isNeroZone ||
-        (!isDazn1Lineare && !isDaznSvizzeri && !isDaznPrimeDE && isDaznChannel)
-      )) {
+      const gN = (ch.group || '').toLowerCase().replace(/[\s\-_]/g, '');
+      const nN = (ch.name  || '').toLowerCase().replace(/[\s\-_]/g, '');
+      const isNero = gN.includes('nerozone') || nN.includes('nerozone') ||
+                     gN.includes('daznnero') || nN.includes('daznnero');
+      const isDazn1     = nN === 'dazn1' && gN === 'daznlineari';
+      const isDaznSvi   = gN.includes('daznsvizzeri');
+      const isDaznPVDE  = gN.includes('daznprimevideode');
+      const isDaznAny   = gN.includes('dazn') || nN.includes('dazn');
+      const isProxyCat  = proxyCategories.includes((ch.group || '').toLowerCase().trim());
+      const alreadyPx   = url.startsWith(PROXY_BASE);
+      if (!alreadyPx && (isProxyCat || isNero || (!isDazn1 && !isDaznSvi && !isDaznPVDE && isDaznAny))) {
         url = PROXY_BASE + url;
       }
-
       ch.url = url;
       ch.id = `${ch.name}|${ch.group}|${url}`;
       out.push({ ...ch });
-
       ch = { name:'', logo:'', group:'LISTA', drm:{}, url:'', streamHeaders:{}, userAgent:null, tvgId:null, id:'' };
     }
   }
@@ -756,84 +879,80 @@ function parseM3U(m3uContent) {
 }
 
 /* ============================================================
-   INIT: carica M3U e popola griglia
+   CARICAMENTO SORGENTE
    ============================================================ */
-async function initAll(cfg, silent) {
-  try {
-    const m3u = await fetchM3UFromSource(cfg);
-    const parsed = parseM3U(m3u);
-    if (!parsed.length) throw new Error('Nessun canale trovato nella M3U');
-    allChannels = parsed;
-    if (!silent) saveSourceConfig(cfg);
-    console.log(`[MV] Caricati ${parsed.length} canali`);
-  } catch (e) {
-    console.error('[MV] Errore caricamento M3U:', e);
-    if (!silent) alert('Errore: ' + e.message);
-    throw e;
-  }
+async function initFromSource(cfg, silent) {
+  const m3u = await fetchM3UFromSource(cfg);
+  const parsed = parseM3U(m3u);
+  if (!parsed.length) throw new Error('Nessun canale trovato nella M3U');
+  allChannels = parsed;
+  if (!silent) saveSourceConfig(cfg);
+  console.log(`[MV] Caricati ${parsed.length} canali`);
 }
 
 /* ============================================================
-   TILE
+   RENDER GRID
    ============================================================ */
-function buildEmptyTile(idx) {
-  return `
-    <div class="mv-tile empty" data-slot="${idx}">
-      <div class="mv-add-inner">
-        <div class="mv-add-circle">+</div>
-        <div class="mv-add-label">Riquadro ${idx + 1}</div>
-      </div>
-    </div>`;
+function renderGrid() {
+  const grid = $('mv-grid');
+  grid.innerHTML = '';
+  for (let i = 0; i < 4; i++) grid.appendChild(buildTileEl(i));
 }
 
-function buildLoadedTile(idx, ch) {
-  const logoHtml = ch.logo
-    ? `<img class="mv-tile-logo" src="${esc(ch.logo)}" onerror="this.style.display='none'">`
-    : `<span class="mv-tile-logo" style="display:inline-block"></span>`;
-  return `
-    <div class="mv-tile${activeAudio === idx ? ' audio' : ''}" data-slot="${idx}">
-      <div class="mv-video-layer"></div>
-      <div class="mv-tile-bar">
-        ${logoHtml}
-        <span class="mv-tile-name" data-act="setaudio">${esc(ch.name)}</span>
-        <div class="mv-tile-actions">
-          ${activeAudio === idx ? '<span class="mv-tile-audio-on">🔊</span>' : ''}
-          <button class="mv-tbtn" data-act="audio"  title="Tracce audio">🎧</button>
+function buildTileEl(idx) {
+  const t = tiles[idx];
+  const ch = t && t.ch;
+
+  const el = document.createElement('div');
+  el.className = 'mv-tile' + (t && activeAudio === idx ? ' audio' : '') + (ch ? '' : ' empty');
+  el.dataset.slot = idx;
+
+  if (!ch) {
+    el.innerHTML = `<div class="mv-add-inner">
+      <div class="mv-add-circle">+</div>
+      <div class="mv-add-label">Riquadro ${idx+1}</div>
+    </div>`;
+    el.addEventListener('click', () => openPicker(idx));
+    return el;
+  }
+
+  el.innerHTML = `
+    <div class="mv-video-layer"></div>
+    <div class="mv-loading hidden"><div class="mv-spinner"></div><span>Connessione…</span></div>
+    <div class="mv-err hidden"></div>
+    <div class="mv-overlay">
+      <div class="mv-seek" data-seek>
+        <div class="mv-seek-track">
+          <div class="mv-seek-played"></div>
+          <div class="mv-seek-handle"></div>
+        </div>
+        <div class="mv-seek-times">
+          <span class="mv-t-cur">--:--</span>
+          <span class="mv-t-sep">/</span>
+          <span class="mv-t-dur">LIVE</span>
+        </div>
+      </div>
+      <div class="mv-bar">
+        ${ch.logo ? `<img class="mv-logo" src="${esc(ch.logo)}" onerror="this.style.display='none'">` : ''}
+        <span class="mv-name" data-act="setaudio">${esc(ch.name)}</span>
+        <div class="mv-actions">
+          ${activeAudio === idx ? '<span class="mv-audio-badge">🔊</span>' : ''}
+          <button class="mv-tbtn" data-act="audio" title="Tracce audio">🎧</button>
           <button class="mv-tbtn reload" data-act="reload" title="Ricarica">🔄</button>
-          <button class="mv-tbtn swap"  data-act="swap"   title="Cambia canale">⇄</button>
+          <button class="mv-tbtn swap" data-act="swap" title="Cambia canale">⇄</button>
           <button class="mv-tbtn close" data-act="remove" title="Rimuovi">×</button>
         </div>
       </div>
-      <div class="mv-aud-menu"></div>
-      <div class="mv-err hidden"></div>
-    </div>`;
-}
+    </div>
+    <div class="mv-aud-menu"></div>
+  `;
 
-function renderSlot(idx) {
-  const oldEl = document.querySelector(`.mv-tile[data-slot="${idx}"]`);
-  const t = tiles[idx];
-  const wrapper = document.createElement('div');
-  wrapper.innerHTML = t && t.ch ? buildLoadedTile(idx, t.ch) : buildEmptyTile(idx);
-  const newEl = wrapper.firstElementChild;
-  if (oldEl) oldEl.replaceWith(newEl);
-  else document.getElementById('mv-grid').appendChild(newEl);
+  // rimonta player esistente (se c'è)
+  if (t && t.video) el.querySelector('.mv-video-layer').appendChild(t.video);
+  if (t && t.iframe) el.querySelector('.mv-video-layer').appendChild(t.iframe);
 
-  // Se aveva un player già montato, rimettilo dentro il nuovo DOM
-  if (t && t.ch) {
-    const layer = newEl.querySelector('.mv-video-layer');
-    if (t.iframe) {
-      layer.appendChild(t.iframe);
-    } else if (t.video) {
-      layer.appendChild(t.video);
-    }
-    bindTileEvents(newEl, idx);
-  } else {
-    newEl.addEventListener('click', () => openPicker(idx));
-  }
-}
-
-function renderGrid() {
-  for (let i = 0; i < 4; i++) renderSlot(i);
+  bindTileEvents(el, idx);
+  return el;
 }
 
 function bindTileEvents(el, idx) {
@@ -842,51 +961,51 @@ function bindTileEvents(el, idx) {
     if (btn) {
       e.stopPropagation();
       const act = btn.dataset.act;
-      if (act === 'audio')     { toggleAudioMenu(idx); return; }
-      if (act === 'reload')    { reloadTile(idx); return; }
-      if (act === 'swap')      { openPicker(idx); return; }
-      if (act === 'remove')    { removeTile(idx); return; }
-      if (act === 'setaudio')  { setAudio(idx); return; }
+      if (act === 'audio')    { toggleAudioMenu(idx); return; }
+      if (act === 'reload')   { reloadTile(idx); return; }
+      if (act === 'swap')     { openPicker(idx); return; }
+      if (act === 'remove')   { removeTile(idx); return; }
+      if (act === 'setaudio') { setAudio(idx); showControls(el); return; }
       return;
     }
-    // click generico sul tile → attiva audio
+    // click generico sul tile → attiva audio + mostra controlli
     setAudio(idx);
+    showControls(el);
   });
+
+  // seekbar
+  const seek = el.querySelector('[data-seek]');
+  if (seek) {
+    seek.addEventListener('click', e => {
+      e.stopPropagation();
+      const track = seek.querySelector('.mv-seek-track');
+      const r = track.getBoundingClientRect();
+      const pct = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+      seekTo(idx, pct);
+      showControls(el);
+    });
+  }
+}
+
+function showControls(el) {
+  el.classList.add('show-controls');
+  clearTimeout(el._hideTimer);
+  el._hideTimer = setTimeout(() => el.classList.remove('show-controls'), 3000);
 }
 
 /* ============================================================
-   LOAD / UNLOAD TILE
+   TILE LIFECYCLE
    ============================================================ */
-function makeVideoEl() {
-  const v = document.createElement('video');
-  v.setAttribute('playsinline', '');
-  v.playsInline = true;
-  v.autoplay = true;
-  v.muted = true; // parte muto, gestiamo noi
-  v.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;';
-  return v;
+function newTileObj(ch) {
+  return { ch, video: null, player: null, iframe: null, loading: false, recovering: false, audio: false };
 }
-
-function getOrCreateTile(idx, ch) {
-  let t = tiles[idx];
-  if (!t || t.ch.id !== ch.id) {
-    // distruggi vecchio
-    if (t) destroyTile(t);
-    t = { ch, video: null, player: null, iframe: null, loading: false, recovering: false, audio: false };
-    tiles[idx] = t;
-  }
-  return t;
-}
-
 function destroyTile(t) {
   if (!t) return;
   try { if (t.player) t.player.destroy(); } catch (e) {}
   t.player = null;
   if (t.iframe) { try { t.iframe.remove(); } catch (e) {} }
   t.iframe = null;
-  if (t.video) {
-    try { t.video.pause(); t.video.src = ''; t.video.load(); } catch (e) {}
-  }
+  if (t.video) { try { t.video.pause(); t.video.src = ''; t.video.load(); } catch (e) {} }
   t.video = null;
 }
 
@@ -894,67 +1013,95 @@ function removeTile(idx) {
   if (tiles[idx]) destroyTile(tiles[idx]);
   tiles[idx] = null;
   if (activeAudio === idx) activeAudio = -1;
-  renderSlot(idx);
-  applyAudioState();
+  const old = document.querySelector(`.mv-tile[data-slot="${idx}"]`);
+  const nw = buildTileEl(idx);
+  if (old) old.replaceWith(nw);
+  if (activeAudio < 0) {
+    const firstWithCh = tiles.findIndex(x => x && x.ch);
+    if (firstWithCh >= 0) setAudio(firstWithCh);
+  }
+}
+
+function reloadTile(idx) {
+  const t = tiles[idx];
+  if (!t || !t.ch) return;
+  const ch = t.ch;
+  destroyTile(t);
+  tiles[idx] = newTileObj(ch);
+  const old = document.querySelector(`.mv-tile[data-slot="${idx}"]`);
+  const nw = buildTileEl(idx);
+  if (old) old.replaceWith(nw);
+  loadTile(idx, ch);
 }
 
 async function loadTile(idx, ch) {
-  const t = getOrCreateTile(idx, ch);
+  const t = tiles[idx];
+  if (!t) return;
   if (t.loading) return;
   t.loading = true;
 
-  // pulisci errori
   const el = document.querySelector(`.mv-tile[data-slot="${idx}"]`);
-  const errBox = el && el.querySelector('.mv-err');
+  if (!el) { t.loading = false; return; }
+  const loading = el.querySelector('.mv-loading');
+  const errBox = el.querySelector('.mv-err');
+  if (loading) loading.classList.remove('hidden');
   if (errBox) errBox.classList.add('hidden');
 
-  // pulisci eventuale iframe/video precedente
-  if (t.iframe) { t.iframe.remove(); t.iframe = null; }
-  if (t.player)  { try { t.player.destroy(); } catch (e) {} t.player = null; }
+  // chiudi eventuali residui
+  if (t.iframe) { try { t.iframe.remove(); } catch(e){} t.iframe = null; }
+  if (t.player) { try { t.player.destroy(); } catch(e){} t.player = null; }
 
-  // ====== IFRAME ======
+  const layer = el.querySelector('.mv-video-layer');
+  if (!layer) { t.loading = false; return; }
+
+  // ===== IFRAME =====
   if (shouldUseIframe(ch)) {
     const src = buildIframeSrc(ch);
     if (!src) {
       t.loading = false;
+      if (loading) loading.classList.add('hidden');
       showTileError(idx, 'Parametri DRM mancanti per questo canale', false);
       return;
     }
-    const iframe = document.createElement('iframe');
-    iframe.setAttribute('allow', 'autoplay; encrypted-media; fullscreen');
-    iframe.setAttribute('allowfullscreen', '');
-    iframe.src = src;
-    iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:0;background:#000;';
-    t.iframe = iframe;
-
-    // monta nel DOM
-    const layer = document.querySelector(`.mv-tile[data-slot="${idx}"] .mv-video-layer`);
-    if (layer) layer.appendChild(iframe);
-
-    iframe.addEventListener('load', () => startIframeLiveLoop(iframe));
-    startIframeLiveLoop(iframe);
+    const fr = document.createElement('iframe');
+    fr.setAttribute('allow', 'autoplay; encrypted-media; fullscreen');
+    fr.setAttribute('allowfullscreen', '');
+    fr.src = src;
+    fr.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:0;background:#000;';
+    t.iframe = fr;
+    layer.appendChild(fr);
+    fr.addEventListener('load', () => startIframeLiveLoop(fr));
+    startIframeLiveLoop(fr);
+    if (loading) loading.classList.add('hidden');
     t.loading = false;
+    // seekbar non disponibile per iframe
+    const seek = el.querySelector('[data-seek]');
+    if (seek) seek.style.display = 'none';
     return;
   }
 
-  // ====== SHAKA ======
+  // ===== SHAKA =====
   if (!window.shaka || !shaka.Player.isBrowserSupported()) {
     t.loading = false;
+    if (loading) loading.classList.add('hidden');
     showTileError(idx, 'Shaka Player non supportato dal browser', false);
     return;
   }
   try { shaka.polyfill.installAll(); } catch (e) {}
 
-  const video = makeVideoEl();
+  const video = document.createElement('video');
+  video.setAttribute('playsinline', '');
+  video.playsInline = true;
+  video.autoplay = true;
+  video.muted = true;
+  video.preload = 'auto';
+  video.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;';
   t.video = video;
-
-  const layer = document.querySelector(`.mv-tile[data-slot="${idx}"] .mv-video-layer`);
-  if (layer) layer.appendChild(video);
+  layer.appendChild(video);
 
   const player = new shaka.Player(video);
   t.player = player;
 
-  // live-edge all'avvio dello streaming
   player.addEventListener('streaming', () => {
     if (player.isLive && player.isLive()) {
       try {
@@ -968,12 +1115,12 @@ async function loadTile(idx, ch) {
     const d = ev && ev.detail;
     if (d && d.severity === 2 && !t.recovering) {
       t.recovering = true;
-      setTimeout(() => { t.recovering = false; loadTile(idx, ch); }, 2500);
+      setTimeout(() => { t.recovering = false; reloadTile(idx); }, 2500);
     }
   });
 
-  // ====== CONFIGURAZIONE SHAKA (fix "1 minuto poi si blocca") ======
   const drmConf = { clearKeys: ch.drm || {} };
+
   player.configure({
     drm: drmConf,
     streaming: {
@@ -988,23 +1135,18 @@ async function loadTile(idx, ch) {
       rebufferingGoal: 1.5,
       updateIntervalSeconds: 2,
       retryParameters: {
-        timeout: 12000,
-        maxAttempts: 5,
-        baseDelay: 500,
-        backoffFactor: 2,
-        fuzzFactor: 0.5
+        timeout: 12000, maxAttempts: 5,
+        baseDelay: 500, backoffFactor: 2, fuzzFactor: 0.5
       }
     },
     manifest: {
       retryParameters: {
-        timeout: 12000,
-        maxAttempts: 5,
-        baseDelay: 500,
-        backoffFactor: 2,
-        fuzzFactor: 0.5
+        timeout: 12000, maxAttempts: 5,
+        baseDelay: 500, backoffFactor: 2, fuzzFactor: 0.5
       }
     }
   });
+
   if (ch.streamHeaders && Object.keys(ch.streamHeaders).length) {
     player.configure({ streaming: { customHttpHeaders: ch.streamHeaders } });
   }
@@ -1017,7 +1159,7 @@ async function loadTile(idx, ch) {
         if (r && isFinite(r.end)) video.currentTime = r.end;
       } catch (e) {}
     }
-    // audio italiano se presente
+    // audio italiano se c'è
     const tracks = player.getAudioLanguagesAndRoles();
     const it = tracks.find(x =>
       (x.language && (x.language.toLowerCase().startsWith('it') || x.language.toLowerCase() === 'ita')) ||
@@ -1027,8 +1169,11 @@ async function loadTile(idx, ch) {
 
     video.muted = activeAudio !== idx;
     video.play().catch(() => { video.muted = true; video.play().catch(()=>{}); });
+    if (loading) loading.classList.add('hidden');
+    startSeekLoop();
   } catch (err) {
-    console.error('[MV] Errore load tile', idx, err);
+    console.error('[MV] load tile', idx, err);
+    if (loading) loading.classList.add('hidden');
     showTileError(idx, 'Riproduzione non riuscita', true);
   } finally {
     t.loading = false;
@@ -1044,21 +1189,10 @@ function showTileError(idx, msg, actions) {
     <div>${esc(msg)}</div>
     ${actions ? `<div class="mv-err-actions">
       <button class="mv-err-btn retry" data-act="reload">Riprova</button>
-      <button class="mv-err-btn swap"  data-act="swap">Cambia</button>
+      <button class="mv-err-btn swap" data-act="swap">Cambia</button>
     </div>` : ''}
   `;
   err.classList.remove('hidden');
-}
-
-function reloadTile(idx) {
-  const t = tiles[idx];
-  if (!t || !t.ch) return;
-  if (t.player)  { try { t.player.destroy(); } catch (e) {} t.player = null; }
-  if (t.iframe)  { t.iframe.remove(); t.iframe = null; }
-  if (t.video)   { try { t.video.pause(); t.video.src = ''; t.video.load(); } catch (e) {} }
-  t.video = null;
-  renderSlot(idx); // ricrea il DOM pulito
-  loadTile(idx, t.ch);
 }
 
 /* ============================================================
@@ -1068,34 +1202,30 @@ function setAudio(idx) {
   activeAudio = idx;
   applyAudioState();
 }
-
 function applyAudioState() {
   tiles.forEach((t, i) => {
     if (!t) return;
     const el = document.querySelector(`.mv-tile[data-slot="${i}"]`);
-    if (el) el.classList.toggle('audio', i === activeAudio);
-    if (t.video) {
-      t.video.muted = i !== activeAudio;
-      // aggiorna icona
-    }
-    // aggiorna icona 🔊 nella barra
-    const actions = el && el.querySelector('.mv-tile-actions');
+    if (!el) return;
+    el.classList.toggle('audio', i === activeAudio);
+    if (t.video) t.video.muted = i !== activeAudio;
+    const actions = el.querySelector('.mv-actions');
     if (actions) {
-      const existing = actions.querySelector('.mv-tile-audio-on');
-      if (i === activeAudio && !existing) {
-        const span = document.createElement('span');
-        span.className = 'mv-tile-audio-on';
-        span.textContent = '🔊';
-        actions.insertBefore(span, actions.firstChild);
-      } else if (i !== activeAudio && existing) {
-        existing.remove();
+      const badge = actions.querySelector('.mv-audio-badge');
+      if (i === activeAudio && !badge) {
+        const s = document.createElement('span');
+        s.className = 'mv-audio-badge';
+        s.textContent = '🔊';
+        actions.insertBefore(s, actions.firstChild);
+      } else if (i !== activeAudio && badge) {
+        badge.remove();
       }
     }
   });
 }
 
 /* ============================================================
-   MENU AUDIO (tracce)
+   AUDIO MENU
    ============================================================ */
 function toggleAudioMenu(idx) {
   const el = document.querySelector(`.mv-tile[data-slot="${idx}"]`);
@@ -1105,122 +1235,137 @@ function toggleAudioMenu(idx) {
   if (menu.classList.contains('active')) { menu.classList.remove('active'); return; }
 
   const t = tiles[idx];
+  let html = `<div class="mv-aud-head"><span>Tracce audio</span><span class="mv-aud-close" data-close>×</span></div>`;
   if (!t || !t.player) {
-    menu.innerHTML = `<div class="mv-aud-head"><span>Audio</span><span data-close>×</span></div>
-      <div style="padding:8px 10px;color:#8b949e;font-size:12.5px">Solo una traccia (o iframe)</div>`;
+    html += `<div style="padding:8px 10px;color:#8b949e;font-size:12px">Solo una traccia (o iframe)</div>`;
   } else {
     const tracks = t.player.getAudioLanguagesAndRoles() || [];
-    let html = `<div class="mv-aud-head"><span>Tracce audio</span><span data-close>×</span></div>`;
     if (!tracks.length) {
-      html += `<div style="padding:8px 10px;color:#8b949e;font-size:12.5px">Nessuna traccia</div>`;
+      html += `<div style="padding:8px 10px;color:#8b949e;font-size:12px">Nessuna traccia</div>`;
     } else {
       tracks.forEach((tr, k) => {
-        const label = (tr.label || tr.language || ('Track ' + (k+1)));
-        const active = t.player.isAudioTrackActive && t.player.isAudioTrackActive(tr) ? ' active' : '';
-        html += `<button class="mv-aud-item${active}" data-track="${k}">${esc(label)}</button>`;
+        const label = tr.label || tr.language || ('Track ' + (k+1));
+        html += `<button class="mv-aud-item" data-track="${k}">${esc(label)}</button>`;
       });
     }
-    menu.innerHTML = html;
-    menu.querySelectorAll('[data-track]').forEach(b => {
-      b.addEventListener('click', () => {
-        const k = parseInt(b.dataset.track);
-        const tr = tracks[k];
-        try {
-          if (tr.language) t.player.selectAudioLanguage(tr.language, tr.roles && tr.roles[0]);
-        } catch (e) {}
-        setAudio(idx);
-        menu.classList.remove('active');
-      });
-    });
   }
-  menu.querySelector('[data-close]')?.addEventListener('click', () => menu.classList.remove('active'));
+  menu.innerHTML = html;
   menu.classList.add('active');
-}
 
-/* ============================================================
-   PICKER
-   ============================================================ */
-function openPicker(idx) {
-  pickSlot = idx;
-  const t = tiles[idx];
-  document.getElementById('pickerTitle').textContent =
-    t && t.ch ? `Cambia canale — Riquadro ${idx+1}` : `Scegli canale — Riquadro ${idx+1}`;
-  renderPicker('');
-  document.getElementById('pickerModal').classList.remove('hidden');
-  setTimeout(() => {
-    const inp = document.getElementById('pickerSearch');
-    if (inp) { inp.value = ''; inp.focus(); }
-  }, 60);
-}
-
-function renderPicker(query) {
-  const list = document.getElementById('pickerList');
-  if (!allChannels.length) {
-    list.innerHTML = `<div class="pick-empty">Nessun canale caricato. Imposta una sorgente.</div>`;
-    return;
-  }
-  const inUse = new Set(tiles.filter(Boolean).map(t => t.ch.id));
-  const q = query.trim().toLowerCase();
-  const groups = new Map();
-
-  allChannels.forEach(ch => {
-    const hay = (ch.name + ' ' + ch.group).toLowerCase();
-    if (q && !hay.includes(q)) return;
-    const g = (ch.group || 'ALTRO').toUpperCase();
-    if (!groups.has(g)) groups.set(g, []);
-    groups.get(g).push(ch);
-  });
-
-  if (!groups.size) {
-    list.innerHTML = `<div class="pick-empty">Nessun risultato per "${esc(query)}"</div>`;
-    return;
-  }
-
-  const order = Array.from(groups.keys()).sort((a, b) => a.localeCompare(b, 'it'));
-  let html = '';
-  order.forEach(g => {
-    html += `<div class="pick-cat-head">${esc(g)} <small style="color:#8b949e">(${groups.get(g).length})</small></div>`;
-    groups.get(g).forEach(ch => {
-      const used = inUse.has(ch.id);
-      html += `<button class="pick-row" data-id="${esc(ch.id)}" ${used ? 'disabled' : ''}>
-        ${ch.logo ? `<img src="${esc(ch.logo)}" onerror="this.style.display='none'">` : `<span style="width:34px;height:34px;display:inline-block"></span>`}
-        <span class="pick-name">${esc(ch.name)}</span>
-        ${used ? '<span class="pick-inuse">già aggiunto</span>' : ''}
-      </button>`;
-    });
-  });
-  list.innerHTML = html;
-  list.querySelectorAll('.pick-row:not([disabled])').forEach(b => {
+  menu.querySelector('[data-close]').addEventListener('click', () => menu.classList.remove('active'));
+  menu.querySelectorAll('[data-track]').forEach(b => {
     b.addEventListener('click', () => {
-      const id = b.dataset.id;
-      const ch = allChannels.find(c => c.id === id);
-      if (!ch || pickSlot < 0) return;
-      tiles[pickSlot] = null; // pulisci
-      renderSlot(pickSlot);
-      loadTile(pickSlot, ch);
-      if (activeAudio < 0) setAudio(pickSlot);
-      closePicker();
+      const k = parseInt(b.dataset.track);
+      const tracks = t.player.getAudioLanguagesAndRoles();
+      const tr = tracks[k];
+      try {
+        if (tr.language) t.player.selectAudioLanguage(tr.language, tr.roles && tr.roles[0]);
+      } catch (e) {}
+      setAudio(idx);
+      menu.classList.remove('active');
     });
   });
 }
 
-function closePicker() {
-  document.getElementById('pickerModal').classList.add('hidden');
-  pickSlot = -1;
+/* ============================================================
+   SEEK / LIVE
+   ============================================================ */
+function startSeekLoop() {
+  if (seekTimer) return;
+  seekTimer = setInterval(() => {
+    tiles.forEach((t, i) => {
+      if (!t || !t.video) return;
+      const el = document.querySelector(`.mv-tile[data-slot="${i}"]`);
+      if (!el) return;
+      const played = el.querySelector('.mv-seek-played');
+      const handle = el.querySelector('.mv-seek-handle');
+      const cur = el.querySelector('.mv-t-cur');
+      const sep = el.querySelector('.mv-t-sep');
+      const dur = el.querySelector('.mv-t-dur');
+      if (!played || !cur || !dur) return;
+
+      const v = t.video;
+      const ct = v.currentTime;
+
+      if (t.player && t.player.isLive && t.player.isLive()) {
+        let range = null;
+        try { range = t.player.seekRange(); } catch (e) {}
+        if (range && isFinite(range.start) && isFinite(range.end) && range.end > range.start) {
+          const total = range.end - range.start;
+          const pos = Math.max(0, Math.min(total, ct - range.start));
+          const latency = Math.max(0, range.end - ct);
+          const pct = (pos / total) * 100;
+          played.style.width = pct + '%';
+          if (handle) handle.style.left = pct + '%';
+
+          if (latency < 2) {
+            cur.textContent = 'LIVE';
+            cur.classList.add('is-live');
+            sep.classList.add('hidden');
+            dur.classList.add('hidden');
+          } else {
+            cur.textContent = fmtLatency(latency);
+            cur.classList.remove('is-live');
+            sep.classList.remove('hidden');
+            dur.classList.remove('hidden');
+            dur.textContent = 'LIVE';
+          }
+        } else {
+          played.style.width = '100%';
+          if (handle) handle.style.left = '100%';
+          cur.textContent = 'LIVE';
+          cur.classList.add('is-live');
+          sep.classList.add('hidden');
+          dur.classList.add('hidden');
+        }
+      } else if (isFinite(v.duration) && v.duration > 0) {
+        const pct = Math.max(0, Math.min(100, (ct / v.duration) * 100));
+        played.style.width = pct + '%';
+        if (handle) handle.style.left = pct + '%';
+        cur.textContent = fmtTime(ct);
+        cur.classList.remove('is-live');
+        sep.classList.remove('hidden');
+        dur.classList.remove('hidden');
+        dur.textContent = fmtTime(v.duration);
+      } else {
+        played.style.width = '100%';
+        if (handle) handle.style.left = '100%';
+        cur.textContent = 'LIVE';
+        cur.classList.add('is-live');
+        sep.classList.add('hidden');
+        dur.classList.add('hidden');
+      }
+    });
+  }, 700);
+}
+
+function seekTo(idx, pct) {
+  const t = tiles[idx];
+  if (!t || !t.video) return;
+  const v = t.video;
+  if (t.player && t.player.isLive && t.player.isLive()) {
+    let range = null;
+    try { range = t.player.seekRange(); } catch (e) {}
+    if (range && isFinite(range.start) && isFinite(range.end)) {
+      const target = range.start + pct * (range.end - range.start);
+      v.currentTime = target;
+    }
+  } else if (isFinite(v.duration) && v.duration > 0) {
+    v.currentTime = pct * v.duration;
+  }
 }
 
 /* ============================================================
-   WATCHDOG (fix freeze 1 minuto)
+   WATCHDOG anti-freeze
    ============================================================ */
-let lastTimes = new Map();
-let stallCounts = new Map();
+const lastTimes = new Map();
+const stallCounts = new Map();
 setInterval(() => {
   tiles.forEach((t, i) => {
     if (!t || !t.video || !t.player || t.loading) return;
     const v = t.video;
     if (v.paused || v.ended || v.seeking || v.readyState < 2) {
-      stallCounts.delete(i);
-      return;
+      stallCounts.delete(i); return;
     }
     const cur = v.currentTime;
     const prev = lastTimes.get(i);
@@ -1230,7 +1375,7 @@ setInterval(() => {
       stallCounts.set(i, s);
       if (s >= 3) {
         stallCounts.delete(i);
-        console.warn('[MV] Tile', i, 'bloccato → goToLive');
+        console.warn('[MV] tile', i, 'bloccato → goToLive');
         try {
           if (t.player.isLive && t.player.isLive()) {
             t.player.goToLive();
@@ -1238,9 +1383,7 @@ setInterval(() => {
           } else {
             reloadTile(i);
           }
-        } catch (e) {
-          reloadTile(i);
-        }
+        } catch (e) { reloadTile(i); }
       }
     } else {
       stallCounts.delete(i);
@@ -1249,118 +1392,177 @@ setInterval(() => {
 }, 3500);
 
 /* ============================================================
-   EVENTI UI
+   PICKER
    ============================================================ */
-document.getElementById('btnReloadAll').addEventListener('click', () => {
-  tiles.forEach((t, i) => { if (t && t.ch) reloadTile(i); });
-});
-document.getElementById('btnFullscreen').addEventListener('click', () => {
-  const el = document.getElementById('mv-grid');
-  if (document.fullscreenElement) document.exitFullscreen();
-  else if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
-});
-document.getElementById('btnSource').addEventListener('click', openSourceModal);
-document.getElementById('pickerClose').addEventListener('click', closePicker);
-document.getElementById('pickerModal').addEventListener('click', e => {
-  if (e.target.id === 'pickerModal') closePicker();
-});
-document.getElementById('pickerSearch').addEventListener('input', e => {
-  renderPicker(e.target.value);
-});
-
-/* ===== SOURCE MODAL ===== */
-function openSourceModal() {
-  const modal = document.getElementById('sourceModal');
-  const err = document.getElementById('srcErr');
-  err.textContent = '';
-  const radio = sourceConfig ? sourceConfig.type : 'url';
-  document.querySelector(`input[name="srcType"][value="${radio}"]`).checked = true;
-  const urlInput = document.getElementById('srcUrl');
-  urlInput.value = sourceConfig && sourceConfig.type === 'url' ? sourceConfig.url : '';
-  urlInput.style.display = radio === 'url' ? 'block' : 'none';
-  modal.classList.remove('hidden');
+function openPicker(idx) {
+  pickSlot = idx;
+  const t = tiles[idx];
+  $('pickerTitle').textContent = t && t.ch
+    ? `Cambia canale — Riquadro ${idx+1}`
+    : `Scegli canale — Riquadro ${idx+1}`;
+  $('pickerSearch').value = '';
+  renderPicker('');
+  $('pickerModal').classList.remove('hidden');
+  setTimeout(() => $('pickerSearch').focus(), 60);
 }
-document.getElementById('sourceClose').addEventListener('click', () => {
-  document.getElementById('sourceModal').classList.add('hidden');
-});
-document.getElementById('srcCancel').addEventListener('click', () => {
-  document.getElementById('sourceModal').classList.add('hidden');
-});
+function closePicker() {
+  $('pickerModal').classList.add('hidden');
+  pickSlot = -1;
+}
+function renderPicker(q) {
+  const list = $('pickerList');
+  if (!allChannels.length) {
+    list.innerHTML = `<div class="pick-empty">Nessun canale caricato. Imposta una sorgente con ⚙️</div>`;
+    return;
+  }
+  const inUse = new Set(tiles.filter(Boolean).map(t => t.ch.id));
+  q = q.trim().toLowerCase();
+  const groups = new Map();
+  allChannels.forEach(ch => {
+    const hay = (ch.name + ' ' + ch.group).toLowerCase();
+    if (q && !hay.includes(q)) return;
+    const g = (ch.group || 'ALTRO').toUpperCase();
+    if (!groups.has(g)) groups.set(g, []);
+    groups.get(g).push(ch);
+  });
+  if (!groups.size) {
+    list.innerHTML = `<div class="pick-empty">Nessun risultato per "${esc(q)}"</div>`;
+    return;
+  }
+  const order = Array.from(groups.keys()).sort((a, b) => a.localeCompare(b, 'it'));
+  let html = '';
+  order.forEach(g => {
+    html += `<div class="pick-cat">${esc(g)} <small>${groups.get(g).length}</small></div>`;
+    groups.get(g).forEach(ch => {
+      const used = inUse.has(ch.id);
+      html += `<button class="pick-row" data-id="${esc(ch.id)}" ${used ? 'disabled' : ''}>
+        ${ch.logo ? `<img src="${esc(ch.logo)}" onerror="this.style.display='none'">` : `<span style="width:32px;height:32px;display:inline-block"></span>`}
+        <span class="pick-name">${esc(ch.name)}</span>
+        ${used ? '<span class="pick-inuse">già aggiunto</span>' : ''}
+      </button>`;
+    });
+  });
+  list.innerHTML = html;
+  list.querySelectorAll('.pick-row:not([disabled])').forEach(b => {
+    b.addEventListener('click', () => {
+      const ch = allChannels.find(c => c.id === b.dataset.id);
+      if (!ch || pickSlot < 0) return;
+      const idx = pickSlot;
+      closePicker();
+      // distruggi precedente
+      if (tiles[idx]) destroyTile(tiles[idx]);
+      // imposta subito il tile (così il DOM ha .mv-video-layer)
+      tiles[idx] = newTileObj(ch);
+      const old = document.querySelector(`.mv-tile[data-slot="${idx}"]`);
+      const nw = buildTileEl(idx);
+      if (old) old.replaceWith(nw);
+      loadTile(idx, ch);
+      if (activeAudio < 0) setAudio(idx);
+    });
+  });
+}
+
+/* ============================================================
+   SOURCE MODAL
+   ============================================================ */
+function openSourceModal() {
+  const err = $('srcErr'); err.textContent = '';
+  const type = sourceConfig ? sourceConfig.type : 'url';
+  document.querySelector(`input[name="srcType"][value="${type}"]`).checked = true;
+  const url = $('srcUrl');
+  url.value = sourceConfig && sourceConfig.type === 'url' ? sourceConfig.url : '';
+  url.classList.toggle('active', type === 'url');
+  $('sourceModal').classList.remove('hidden');
+}
+function closeSourceModal() { $('sourceModal').classList.add('hidden'); }
+
 document.querySelectorAll('input[name="srcType"]').forEach(r => {
   r.addEventListener('change', () => {
-    document.getElementById('srcUrl').style.display =
-      r.value === 'url' && r.checked ? 'block' : 'none';
+    $('srcUrl').classList.toggle('active', r.value === 'url' && r.checked);
+    if (r.value === 'url' && r.checked) setTimeout(() => $('srcUrl').focus(), 50);
   });
 });
-document.getElementById('srcSave').addEventListener('click', async () => {
-  const err = document.getElementById('srcErr');
-  err.textContent = '';
+
+/* ============================================================
+   UI HANDLERS
+   ============================================================ */
+$('btnReloadAll').addEventListener('click', () => {
+  tiles.forEach((t, i) => { if (t && t.ch) reloadTile(i); });
+});
+$('btnFullscreen').addEventListener('click', () => {
+  const el = $('mv-grid');
+  if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+  else if (el.requestFullscreen) el.requestFullscreen().catch(()=>{});
+});
+$('btnSource').addEventListener('click', openSourceModal);
+$('pickerClose').addEventListener('click', closePicker);
+$('pickerModal').addEventListener('click', e => { if (e.target.id === 'pickerModal') closePicker(); });
+$('pickerSearch').addEventListener('input', e => renderPicker(e.target.value));
+$('sourceClose').addEventListener('click', closeSourceModal);
+$('srcCancel').addEventListener('click', closeSourceModal);
+$('sourceModal').addEventListener('click', e => { if (e.target.id === 'sourceModal') closeSourceModal(); });
+
+$('srcSave').addEventListener('click', async () => {
+  const err = $('srcErr'); err.textContent = '';
   const type = document.querySelector('input[name="srcType"]:checked').value;
   const cfg = type === 'url'
-    ? { type: 'url', url: document.getElementById('srcUrl').value.trim() }
+    ? { type: 'url', url: $('srcUrl').value.trim() }
     : { type: 'backend' };
   if (type === 'url' && !/^https?:\/\//i.test(cfg.url)) {
     err.textContent = 'Inserisci un URL valido (http/https)';
     return;
   }
+  const btn = $('srcSave');
+  btn.disabled = true; btn.textContent = 'Caricamento…';
   try {
-    await initAll(cfg, false);
-    document.getElementById('sourceModal').classList.add('hidden');
-    // pulisci tutte le tile perché i canali potrebbero essere diversi
+    await initFromSource(cfg, false);
+    // reset tiles
     for (let i = 0; i < 4; i++) { if (tiles[i]) destroyTile(tiles[i]); tiles[i] = null; }
     activeAudio = -1;
     renderGrid();
+    closeSourceModal();
   } catch (e) {
     err.textContent = 'Errore: ' + e.message;
+  } finally {
+    btn.disabled = false; btn.textContent = 'Salva e carica';
   }
 });
 
 /* ============================================================
-   SCORCIATOIE
+   KEYBOARD
    ============================================================ */
 document.addEventListener('keydown', e => {
   if (e.target.tagName === 'INPUT') {
-    if (e.key === 'Escape') { closePicker(); document.getElementById('sourceModal').classList.add('hidden'); }
+    if (e.key === 'Escape') { closePicker(); closeSourceModal(); }
     return;
   }
-  // 1-4 audio
   if (e.key >= '1' && e.key <= '4') {
     const i = parseInt(e.key) - 1;
     if (tiles[i] && tiles[i].ch) setAudio(i);
     else if (!tiles[i]) openPicker(i);
     return;
   }
-  if (e.key === 'f' || e.key === 'F') {
-    document.getElementById('btnFullscreen').click();
-    return;
-  }
-  if (e.key === 'r' || e.key === 'R') {
-    if (activeAudio >= 0) reloadTile(activeAudio);
-    return;
-  }
+  if (e.key === 'f' || e.key === 'F') { $('btnFullscreen').click(); return; }
+  if (e.key === 'r' || e.key === 'R') { if (activeAudio >= 0) reloadTile(activeAudio); return; }
   if (e.key === 'Escape') {
-    if (!document.getElementById('pickerModal').classList.contains('hidden')) closePicker();
-    else if (!document.getElementById('sourceModal').classList.contains('hidden')) document.getElementById('sourceModal').classList.add('hidden');
+    if (!$('pickerModal').classList.contains('hidden')) closePicker();
+    else if (!$('sourceModal').classList.contains('hidden')) closeSourceModal();
     else if (document.fullscreenElement) document.exitFullscreen();
   }
 });
 
 /* ============================================================
-   AVVIO
+   BOOT
    ============================================================ */
 (async function boot() {
+  renderGrid();
   loadSourceConfig();
   if (sourceConfig) {
-    try {
-      await initAll(sourceConfig, true);
-    } catch (e) {
-      console.warn('[MV] Auto-load fallito, chiedo la sorgente.', e);
-      openSourceModal();
-    }
+    try { await initFromSource(sourceConfig, true); }
+    catch (e) { console.warn('[MV] auto-load fallito:', e); openSourceModal(); }
   } else {
     openSourceModal();
   }
-  renderGrid();
 })();
 </script>
 </body>
