@@ -41,107 +41,43 @@ img { display: block; }
   gap: 6px; padding: 0 10px; background: #050505; border-bottom: 1px solid #111;
 }
 #mv-header .mv-title { font-size: 12px; font-weight: 800; color: #888; letter-spacing: .8px; text-transform: uppercase; }
-#mv-header .mv-src {
-  font-size: 10.5px; font-weight: 700; padding: 3px 9px; border-radius: 11px;
-  background: #111; color: #666; max-width: 180px;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
+#mv-header .mv-src { font-size: 10.5px; font-weight: 700; padding: 3px 9px; border-radius: 11px; background: #111; color: #666; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 #mv-header .mv-src.custom { color: #e0b400; }
 #mv-header .mv-spacer { flex: 1; }
-.mv-btn {
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 5px 10px; background: #111; color: #aaa;
-  border: 1px solid #222; border-radius: 12px;
-  font-size: 11px; font-weight: 700; letter-spacing: .4px;
-  transition: background .15s; white-space: nowrap;
-}
+.mv-btn { display: inline-flex; align-items: center; gap: 4px; padding: 5px 10px; background: #111; color: #aaa; border: 1px solid #222; border-radius: 12px; font-size: 11px; font-weight: 700; letter-spacing: .4px; transition: background .15s; white-space: nowrap; }
 .mv-btn:hover { background: #1a1a1a; color: #fff; }
 
 #mv-main { flex: 1 1 auto; min-height: 0; min-width: 0; display: flex; }
-#mv-grid {
-  flex: 1; display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
-  gap: 2px; background: #141414; min-width: 0; min-height: 0;
-}
+#mv-grid { flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px; background: #141414; min-width: 0; min-height: 0; }
 #mv-grid:fullscreen, #mv-grid:-webkit-full-screen { width: 100vw; height: 100vh; gap: 2px; background: #141414; }
 
 .mv-tile { position: relative; background: #000; overflow: hidden; min-width: 0; min-height: 0; }
-.mv-tile.empty {
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; background: #0a0a0a;
-}
+.mv-tile.empty { display: flex; align-items: center; justify-content: center; cursor: pointer; background: #0a0a0a; }
 .mv-tile.empty:hover { background: #111; }
 .mv-add-inner { display: flex; flex-direction: column; align-items: center; gap: 8px; color: #444; pointer-events: none; }
-.mv-add-circle {
-  width: 44px; height: 44px; border-radius: 50%; border: 1px solid #333;
-  color: #666; font-size: 24px; font-weight: 300;
-  display: flex; align-items: center; justify-content: center;
-}
+.mv-add-circle { width: 44px; height: 44px; border-radius: 50%; border: 1px solid #333; color: #666; font-size: 24px; font-weight: 300; display: flex; align-items: center; justify-content: center; }
 .mv-add-label { font-size: 10px; letter-spacing: .8px; text-transform: uppercase; font-weight: 700; }
 
 .mv-video-layer { position: absolute; inset: 0; background: #000; overflow: hidden; }
 .mv-video-layer .shaka-container { position: relative; width: 100%; height: 100%; background: #000; }
 .mv-video-layer iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: #000; }
 
-/* ★ Click-shield: copre SOLO i tile inattivi per intercettare il click audio ★ */
-.mv-click-shield {
-  position: absolute;
-  inset: 0;
-  z-index: 7;
-  background: transparent;
-  cursor: pointer;
-}
-
-.mv-ui {
-  position: absolute; top: 0; left: 0; right: 0; z-index: 8;
-  display: flex; align-items: center; gap: 8px; padding: 6px 8px;
-  background: linear-gradient(to bottom, rgba(0,0,0,.75), transparent);
-  opacity: 0; pointer-events: none; transition: opacity .25s ease;
-}
+.mv-ui { position: absolute; top: 0; left: 0; right: 0; z-index: 8; display: flex; align-items: center; gap: 8px; padding: 6px 8px; background: linear-gradient(to bottom, rgba(0,0,0,.75), transparent); opacity: 0; pointer-events: none; transition: opacity .25s ease; }
 .mv-tile.ui-active .mv-ui { opacity: 1; pointer-events: auto; }
-.mv-ui-name {
-  flex: 1; min-width: 0; font-size: 12px; font-weight: 700; color: #fff;
-  letter-spacing: .3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  text-shadow: 0 1px 3px rgba(0,0,0,.9);
-}
+.mv-ui-name { flex: 1; min-width: 0; font-size: 12px; font-weight: 700; color: #fff; letter-spacing: .3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 3px rgba(0,0,0,.9); }
 .mv-ui-actions { display: flex; align-items: center; gap: 4px; flex: 0 0 auto; }
-.mv-ibtn {
-  width: 24px; height: 24px; border-radius: 50%;
-  background: rgba(255,255,255,.12); color: #fff;
-  font-size: 12px; line-height: 1;
-  display: inline-flex; align-items: center; justify-content: center;
-  padding: 0; border: 1px solid rgba(255,255,255,.1);
-  transition: background .15s, transform .15s;
-}
+.mv-ibtn { width: 24px; height: 24px; border-radius: 50%; background: rgba(255,255,255,.12); color: #fff; font-size: 12px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; padding: 0; border: 1px solid rgba(255,255,255,.1); transition: background .15s, transform .15s; }
 .mv-ibtn:hover { background: rgba(255,255,255,.28); transform: scale(1.08); }
 .mv-ibtn.close:hover { background: #c00; border-color: #c00; }
 
-.mv-loading {
-  position: absolute; inset: 0;
-  display: flex; align-items: center; justify-content: center;
-  flex-direction: column; gap: 10px;
-  background: #000; z-index: 5; color: #666;
-  font-size: 11px; letter-spacing: .5px; text-transform: uppercase;
-}
+.mv-loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 10px; background: #000; z-index: 5; color: #666; font-size: 11px; letter-spacing: .5px; text-transform: uppercase; }
 .mv-loading.hidden { display: none; }
-.mv-spinner {
-  width: 28px; height: 28px; border: 2px solid #222; border-top-color: #58a6ff;
-  border-radius: 50%; animation: spin .8s linear infinite;
-}
+.mv-spinner { width: 28px; height: 28px; border: 2px solid #222; border-top-color: #58a6ff; border-radius: 50%; animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
-.mv-err {
-  position: absolute; inset: 0; z-index: 9;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 10px; padding: 14px; text-align: center;
-  background: rgba(0,0,0,.92); color: #ff9999; font-size: 12px;
-}
+.mv-err { position: absolute; inset: 0; z-index: 9; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 14px; text-align: center; background: rgba(0,0,0,.92); color: #ff9999; font-size: 12px; }
 .mv-err.hidden { display: none; }
 .mv-err-actions { display: flex; gap: 6px; }
-.mv-err-btn {
-  padding: 5px 12px; border-radius: 5px; font-size: 11px; font-weight: 700;
-  border: 1px solid #333; background: #111; color: #fff;
-}
+.mv-err-btn { padding: 5px 12px; border-radius: 5px; font-size: 11px; font-weight: 700; border: 1px solid #333; background: #111; color: #fff; }
 .mv-err-btn.retry { background: #0a3; border-color: #0a3; }
 
 /* Shaka UI compact */
@@ -262,11 +198,11 @@ img { display: block; }
 
 <script>
 /* ============================================================
-   MULTIVIEW v11 — click-audio via shield, mute sync via setMuted
+   MULTIVIEW v12 — click-audio via pointerdown capture + mute sync
    ============================================================ */
 
 const IFRAME_GROUPS = ['PRIME VIDEO', 'DAZN PRIMEVIDEO DE'];
-const SOURCE_KEY = 'mv_source_v11';
+const SOURCE_KEY = 'mv_source_v12';
 const PROXY_BASE = 'https://dazn-ua-proxy.stefanoaccuont.workers.dev/';
 const proxyCategories = ['serie bkt','laliga ea sports','serie a enilive','amichevoli','jupiler pro league','liga portugal betclic','nerozone','dazn nerozone'];
 const UI_HIDE_MS = 3000;
@@ -321,7 +257,7 @@ async function fetchM3UFromSource(cfg) {
   return await r.text();
 }
 
-/* PARSER M3U */
+/* PARSER */
 function parseM3U(m3u) {
   const out = [];
   const lines = m3u.split('\n');
@@ -422,30 +358,32 @@ function buildTileEl(idx) {
   if (t && t.iframe) el.querySelector('.mv-video-layer').appendChild(t.iframe);
 
   bindTileEvents(el, idx);
-
-  // ★ Se NON è il tile attivo → aggiungi shield ★
-  if (activeAudio !== idx) {
-    addShield(el, idx);
-  }
-
   return el;
 }
 
-function addShield(el, idx) {
-  const shield = document.createElement('div');
-  shield.className = 'mv-click-shield';
-  shield.addEventListener('click', e => {
-    e.stopPropagation();
-    e.preventDefault();
-    setAudio(idx);
-    activateUI(el);
-  });
-  el.appendChild(shield);
-}
-
+/* ★★★ FIX PRINCIPALE: pointerdown + click in CAPTURE sull'elemento tile ★★★ */
 function bindTileEvents(el, idx) {
-  el.addEventListener('mousemove', () => activateUI(el));
-  el.addEventListener('touchstart', () => activateUI(el), { passive: true });
+  // 1. pointerdown in capture: se il tile NON è attivo, cambio audio e blocco la propagazione
+  el.addEventListener('pointerdown', e => {
+    if (e.target.closest('[data-act]')) return;
+    if (e.target.closest('.shaka-controls-container')) return;
+    if (e.target.closest('.shaka-settings-menu')) return;
+    if (e.target.closest('.shaka-overflow-menu')) return;
+    if (e.target.closest('.shaka-back-to-overflow-button')) return;
+
+    activateUI(el);
+
+    if (activeAudio !== idx && tiles[idx] && tiles[idx].ch) {
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      e.preventDefault();
+      setAudio(idx);
+      el._switched = true;  // flag per bloccare anche il click che segue
+      setTimeout(() => { el._switched = false; }, 250);
+    }
+  }, true);
+
+  // 2. click in capture: se abbiamo appena swittato su pointerdown, blocca il click
   el.addEventListener('click', e => {
     const btn = e.target.closest('[data-act]');
     if (btn) {
@@ -457,8 +395,19 @@ function bindTileEvents(el, idx) {
       activateUI(el);
       return;
     }
+    if (el._switched) {
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      e.preventDefault();
+      el._switched = false;
+      activateUI(el);
+      return;
+    }
     activateUI(el);
-  });
+  }, true);
+
+  el.addEventListener('mousemove', () => activateUI(el));
+  el.addEventListener('touchstart', () => activateUI(el), { passive: true });
 }
 
 function activateUI(el) {
@@ -601,7 +550,7 @@ async function loadTile(idx, ch) {
   try {
     await player.load(ch.url);
 
-    // ★ Applica lo stato audio tramite Shaka controls (NON toccare video.muted) ★
+    // ★ Applica stato audio (mute) dopo load ★
     applyAudioState();
 
     if (player.isLive()) {
@@ -614,6 +563,10 @@ async function loadTile(idx, ch) {
 
     video.play().catch(() => { video.muted = true; video.play().catch(()=>{}); });
     if (loading) loading.classList.add('hidden');
+
+    // ★ Reapplica stato audio DOPO un tick (l'icona Shaka a volte si aggiorna dopo) ★
+    setTimeout(() => applyAudioState(), 300);
+    setTimeout(() => applyAudioState(), 1200);
   } catch (err) {
     console.error('[MV] load tile', idx, err);
     if (loading) loading.classList.add('hidden');
@@ -632,38 +585,32 @@ function showTileError(idx, msg, actions) {
   err.classList.remove('hidden');
 }
 
-/* AUDIO — niente bordo verde, solo setMuted su controls */
+/* ★★★ AUDIO — mute sync via video.muted + volumechange dispatch ★★★ */
 function setAudio(idx) {
   activeAudio = idx;
   applyAudioState();
 }
 function applyAudioState() {
   tiles.forEach((t, i) => {
-    if (!t) return;
-    const el = document.querySelector(`.mv-tile[data-slot="${i}"]`);
-    if (!el) return;
+    if (!t || !t.video) return;
+    const v = t.video;
     const isAudio = (i === activeAudio);
+    const targetMuted = !isAudio;
 
-    // Shield: rimuovi se attivo, aggiungi se inattivo
-    const shield = el.querySelector('.mv-click-shield');
-    if (isAudio && shield) shield.remove();
-    else if (!isAudio && !shield) addShield(el, i);
-
-    // ★ Sync mute SOLO tramite controls Shaka (o fallback video.muted)
-    const muted = !isAudio;
-    if (t.controls) {
-      try {
-        t.controls.setMuted(muted);
-        if (!muted) { t.controls.setVolume(1); }
-      } catch (e) {}
-    } else if (t.video) {
-      t.video.muted = muted;
-      if (!muted) t.video.volume = 1;
+    // Cambia SOLO se serve (evita loop)
+    if (v.muted !== targetMuted) {
+      v.muted = targetMuted;
+    }
+    if (isAudio && v.volume < 1) {
+      v.volume = 1;
     }
 
+    // ★ Forza Shaka UI a ridisegnare l'icona (lei ascolta 'volumechange') ★
+    v.dispatchEvent(new Event('volumechange', { bubbles: true }));
+
     // Riprendi se era in pausa e ora ha audio
-    if (isAudio && t.video && t.video.paused && t.video.readyState >= 2) {
-      t.video.play().catch(()=>{});
+    if (isAudio && v.paused && v.readyState >= 2) {
+      v.play().catch(()=>{});
     }
   });
 }
@@ -741,7 +688,7 @@ function renderPicker(q) {
   });
 }
 
-/* SOURCE MODAL */
+/* SOURCE */
 function openSourceModal() {
   const err = $('srcErr'); err.textContent = '';
   const type = sourceConfig ? sourceConfig.type : 'url';
@@ -821,15 +768,9 @@ document.addEventListener('keydown', e => {
     }
     return;
   }
-  if (e.key === 'ArrowUp') { e.preventDefault(); e.stopPropagation(); if (v) { v.volume = Math.min(1, v.volume + 0.1); v.muted = false; if (t.controls) t.controls.setMuted(false); } return; }
-  if (e.key === 'ArrowDown') { e.preventDefault(); e.stopPropagation(); if (v) v.volume = Math.max(0, v.volume - 0.1); return; }
-  if (e.key === 'm' || e.key === 'M') {
-    if (v) {
-      const newMuted = !v.muted;
-      if (t.controls) { try { t.controls.setMuted(newMuted); } catch(e){} } else { v.muted = newMuted; }
-    }
-    return;
-  }
+  if (e.key === 'ArrowUp') { e.preventDefault(); e.stopPropagation(); if (v) { v.volume = Math.min(1, v.volume + 0.1); v.muted = false; v.dispatchEvent(new Event('volumechange', { bubbles: true })); } return; }
+  if (e.key === 'ArrowDown') { e.preventDefault(); e.stopPropagation(); if (v) { v.volume = Math.max(0, v.volume - 0.1); v.dispatchEvent(new Event('volumechange', { bubbles: true })); } return; }
+  if (e.key === 'm' || e.key === 'M') { if (v) { v.muted = !v.muted; v.dispatchEvent(new Event('volumechange', { bubbles: true })); } return; }
   if (e.key === 'f' || e.key === 'F') { $('btnFullscreen').click(); return; }
   if (e.key === 'r' || e.key === 'R') { if (activeAudio >= 0) reloadTile(activeAudio); return; }
   if (e.key === 'l' || e.key === 'L') { if (p && p.isLive && p.isLive()) { try { p.goToLive(); } catch(e){} } return; }
