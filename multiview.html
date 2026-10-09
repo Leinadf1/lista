@@ -213,7 +213,7 @@ img { display: block; }
     </label>
 
     <div class="src-hint">
-      • <strong>URL M3U</strong>: usa un URL che supporta CORS (raw.githubusercontent, pastebin raw, il tuo sito).<br>
+      • <strong>URL M3U</strong>: funziona con gist GitHub, pastebin, raw.githubusercontent, ecc.<br>
       • <strong>Incolla testo</strong>: copia il contenuto della tua lista e incollalo sopra.<br>
       • La scelta viene salvata in questo browser.
     </div>
@@ -227,15 +227,15 @@ img { display: block; }
 
 <script>
 /* ============================================================
-   MULTIVIEW v20
-   - Fetch diretto, niente proxy CORS
-   - Play/pausa SOLO da barra spaziatrice o tasto nella barra Shaka
-   - Click sul video NON mette pausa (solo cambia audio)
+   MULTIVIEW v19-senza-cors
+   - Fetch diretto (nessun proxy CORS)
+   - Fix automatico gist.github.com → gist.githubusercontent.com
    - Timeout 15s sul load
+   - Click sul video = cambia audio (capture)
    ============================================================ */
 
 const IFRAME_GROUPS = ['PRIME VIDEO', 'DAZN PRIMEVIDEO DE'];
-const SOURCE_KEY = 'mv_source_v20';
+const SOURCE_KEY = 'mv_source_v19';
 const PROXY_BASE = 'https://dazn-ua-proxy.stefanoaccuont.workers.dev/';
 const proxyCategories = ['serie bkt','laliga ea sports','serie a enilive','amichevoli','jupiler pro league','liga portugal betclic','nerozone','dazn nerozone'];
 const UI_HIDE_MS = 3000;
@@ -295,7 +295,7 @@ function fixGistUrl(url) {
   return url;
 }
 
-/* FETCH M3U — semplice, senza proxy */
+/* FETCH M3U — semplice, niente CORS proxy */
 async function fetchM3UFromSource(cfg) {
   if (cfg.type === 'backend') {
     const psw = prompt("Password per il backend del sito:");
@@ -305,13 +305,12 @@ async function fetchM3UFromSource(cfg) {
     return decodeBase64UTF8(await r.text());
   }
   if (cfg.type === 'text') return cfg.text || '';
-
   const url = fixGistUrl(cfg.url);
   console.log('[MV] Fetch:', url);
   const r = await fetch(url, { cache: 'no-store', redirect: 'follow' });
-  if (!r.ok) throw new Error('HTTP ' + r.status);
+  if (!r.ok) throw new Error('HTTP ' + r.status + ' — impossibile scaricare la M3U');
   const txt = await r.text();
-  if (!txt || txt.trim().length < 10) throw new Error('File M3U vuoto');
+  if (!txt || txt.trim().length < 10) throw new Error('Il file M3U è vuoto o troppo corto');
   return txt;
 }
 
@@ -438,15 +437,8 @@ function buildTileEl(idx) {
   return el;
 }
 
-/* ============================================================
-   EVENTI TILE
-   - click sui pulsantini → reload/swap/remove
-   - click su pulsanti Shaka → lascia passare (play/pausa, seek, menu)
-   - click sul video/scrim → NON fa play/pausa. Solo attiva audio se il tile non è attivo.
-   ============================================================ */
 function bindTileEvents(el, idx) {
   el.addEventListener('click', e => {
-    // 1) Pulsantini del tile
     const btn = e.target.closest('[data-act]');
     if (btn) {
       e.stopPropagation();
@@ -457,22 +449,20 @@ function bindTileEvents(el, idx) {
       activateUI(el);
       return;
     }
-
-    // 2) Click dentro i controlli Shaka → lascia passare normalmente
-    if (e.target.closest('.shaka-controls-container')) return;
-    if (e.target.closest('.shaka-settings-menu')) return;
+    if (e.target.closest('.shaka-controls-button-panel')) return;
+    if (e.target.closest('.shaka-seek-bar-container')) return;
+    if (e.target.closest('.shaka-range-container')) return;
     if (e.target.closest('.shaka-overflow-menu')) return;
+    if (e.target.closest('.shaka-settings-menu')) return;
     if (e.target.closest('.shaka-back-to-overflow-button')) return;
     if (e.target.closest('button')) return;
 
-    // 3) Click sul video/scrim:
-    //    - BLOCCA sempre il play/pausa di Shaka
-    //    - Se il tile non è attivo → cambia audio
-    e.stopImmediatePropagation();
-    e.preventDefault();
-
     if (activeAudio !== idx && tiles[idx] && tiles[idx].ch) {
+      e.stopImmediatePropagation();
+      e.preventDefault();
       setAudio(idx);
+      activateUI(el);
+      return;
     }
     activateUI(el);
   }, true);
@@ -593,7 +583,6 @@ async function loadTile(idx, ch) {
     t.controls = controls;
   } catch (e) { console.warn('[MV] UI Shaka init fallita:', e); }
 
-  /* TIMEOUT 15s */
   const loadTimeout = setTimeout(() => {
     if (!t.loaded && tiles[idx] === t) {
       console.warn('[MV] Timeout caricamento tile', idx, ch.name);
