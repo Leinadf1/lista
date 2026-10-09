@@ -125,7 +125,6 @@ img { display: block; }
 .pick-row .pick-inuse { font-size: 10.5px; color: #8b949e; font-weight: 500; }
 .pick-empty { text-align: center; color: #6a737d; padding: 40px 10px; font-style: italic; font-size: 12.5px; }
 
-/* Source modal */
 .src-opt { display: flex; align-items: flex-start; gap: 10px; padding: 11px 13px; border: 1px solid #30363d; border-radius: 8px; margin-bottom: 8px; cursor: pointer; font-size: 13px; }
 .src-opt:hover { border-color: #58a6ff; }
 .src-opt input[type=radio] { accent-color: #58a6ff; margin-top: 2px; flex: 0 0 auto; }
@@ -189,16 +188,14 @@ img { display: block; }
       <button class="modal-close" id="sourceClose">×</button>
     </div>
 
-    <!-- Opzione 1: backend del sito -->
-    <label class="src-opt" for="srcTypeBackend">
-      <input type="radio" name="srcType" id="srcTypeBackend" value="backend">
+    <label class="src-opt">
+      <input type="radio" name="srcType" value="backend">
       <div>
         <div style="font-weight:700">Backend del sito</div>
         <div style="font-size:11px;color:#8b949e;margin-top:2px">Usa i canali del tuo sito (richiede password)</div>
       </div>
     </label>
 
-    <!-- Opzione 2: URL M3U -->
     <label class="src-opt col">
       <span class="src-opt-col-head">
         <input type="radio" name="srcType" value="url">
@@ -207,7 +204,6 @@ img { display: block; }
       <input type="text" class="src-url" id="srcUrl" placeholder="https://esempio.com/lista.m3u">
     </label>
 
-    <!-- Opzione 3: incolla testo M3U -->
     <label class="src-opt col">
       <span class="src-opt-col-head">
         <input type="radio" name="srcType" value="text">
@@ -231,14 +227,13 @@ img { display: block; }
 
 <script>
 /* ============================================================
-   MULTIVIEW v16
-   - Sorgente: backend | URL M3U | testo incollato
-   - Click handler in CAPTURE (click tile = cambia audio)
-   - Mute sync via controls.setMuted + video.muted
+   MULTIVIEW v17
+   - LIVE NON FORZATO: il player mantiene qualsiasi ritardo
+   - Nessun liveSync, nessun goToLive, nessun seek to live
    ============================================================ */
 
 const IFRAME_GROUPS = ['PRIME VIDEO', 'DAZN PRIMEVIDEO DE'];
-const SOURCE_KEY = 'mv_source_v16';
+const SOURCE_KEY = 'mv_source_v17';
 const PROXY_BASE = 'https://dazn-ua-proxy.stefanoaccuont.workers.dev/';
 const proxyCategories = ['serie bkt','laliga ea sports','serie a enilive','amichevoli','jupiler pro league','liga portugal betclic','nerozone','dazn nerozone'];
 const UI_HIDE_MS = 3000;
@@ -268,9 +263,7 @@ function buildIframeSrc(ch) {
   return `https://hugoedgar.com/drm-player/?${p.toString()}`;
 }
 
-/* ============================================================
-   SORGENTE
-   ============================================================ */
+/* ============================================================ SORGENTE */
 function loadSourceConfig() {
   try { sourceConfig = JSON.parse(localStorage.getItem(SOURCE_KEY) || 'null'); } catch (e) { sourceConfig = null; }
   updateSrcBadge();
@@ -285,44 +278,26 @@ function updateSrcBadge() {
   if (!sourceConfig) { el.textContent = 'Sorgente non impostata'; el.classList.remove('custom'); return; }
   if (sourceConfig.type === 'backend') { el.textContent = 'Backend sito'; el.classList.remove('custom'); }
   else if (sourceConfig.type === 'text') { el.textContent = 'M3U incollato'; el.classList.add('custom'); }
-  else {
-    try { el.textContent = 'M3U · ' + new URL(sourceConfig.url).hostname; }
-    catch (e) { el.textContent = 'M3U URL'; }
-    el.classList.add('custom');
-  }
+  else { try { el.textContent = 'M3U · ' + new URL(sourceConfig.url).hostname; } catch (e) { el.textContent = 'M3U URL'; } el.classList.add('custom'); }
 }
 
 async function fetchM3UFromSource(cfg) {
   if (cfg.type === 'backend') {
     const psw = prompt("Password per il backend del sito:");
     if (!psw) throw new Error('Password richiesta');
-    const r = await fetch('/api/get-list', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password: psw })
-    });
+    const r = await fetch('/api/get-list', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: psw }) });
     if (!r.ok) throw new Error('Password errata o sessione già attiva');
     return decodeBase64UTF8(await r.text());
   }
-  if (cfg.type === 'text') {
-    return cfg.text || '';
-  }
-  // URL mode
-  const r = await fetch(cfg.url, {
-    cache: 'no-store',
-    redirect: 'follow',
-    headers: { 'Accept': 'text/plain, application/x-mpegURL, */*' }
-  });
+  if (cfg.type === 'text') return cfg.text || '';
+  const r = await fetch(cfg.url, { cache: 'no-store', redirect: 'follow', headers: { 'Accept': 'text/plain, application/x-mpegURL, */*' } });
   if (!r.ok) throw new Error('HTTP ' + r.status + ' — impossibile scaricare la M3U');
   const txt = await r.text();
   if (!txt || txt.trim().length < 10) throw new Error('Il file M3U è vuoto o troppo corto');
-  if (!/^#EXTM3U/i.test(txt.trim())) console.warn('[MV] Il file non inizia con #EXTM3U, provo comunque il parsing');
   return txt;
 }
 
-/* ============================================================
-   PARSER M3U
-   ============================================================ */
+/* ============================================================ PARSER M3U */
 function parseM3U(m3u) {
   const out = [];
   const lines = m3u.replace(/\r\n/g, '\n').split('\n');
@@ -334,11 +309,7 @@ function parseM3U(m3u) {
 
     if (line.startsWith('#KODIPROP:inputstream.adaptive.license_key=')) {
       const val = line.slice(line.indexOf('=') + 1).trim();
-      // Prova JSON (es. {"kid":"...","key":"..."})
-      if (val.startsWith('{')) {
-        try { ch.drm = JSON.parse(val); } catch (e) {}
-      }
-      // Formato KID:KEY
+      if (val.startsWith('{')) { try { ch.drm = JSON.parse(val); } catch (e) {} }
       if (!Object.keys(ch.drm).length && val.includes(':')) {
         const idx = val.indexOf(':');
         const kid = val.slice(0, idx).trim().toLowerCase();
@@ -348,16 +319,10 @@ function parseM3U(m3u) {
     }
     else if (line.startsWith('#KODIPROP:inputstream.adaptive.stream_headers=')) {
       const val = line.slice(line.indexOf('=') + 1).trim();
-      if (val) {
-        val.split('&').forEach(pair => {
-          const i = pair.indexOf('=');
-          if (i > 0) {
-            const k = pair.slice(0, i).trim();
-            const v = pair.slice(i + 1).trim();
-            if (k && v) ch.streamHeaders[k] = v;
-          }
-        });
-      }
+      if (val) val.split('&').forEach(pair => {
+        const i = pair.indexOf('=');
+        if (i > 0) { const k = pair.slice(0, i).trim(); const v = pair.slice(i + 1).trim(); if (k && v) ch.streamHeaders[k] = v; }
+      });
     }
     else if (line.startsWith('#EXTVLCOPT:http-user-agent=')) {
       ch.userAgent = line.substring(line.indexOf('=') + 1).trim();
@@ -378,17 +343,12 @@ function parseM3U(m3u) {
     }
     else if (/^https?:\/\//i.test(line)) {
       let url = line;
-      const gN = (ch.group || '').toLowerCase().replace(/[\s\-_]/g, '');
-      const nN = (ch.name  || '').toLowerCase().replace(/[\s\-_]/g, '');
+      const gN = (ch.group || '').toLowerCase().replace(/[\s\-_]/g, ''), nN = (ch.name || '').toLowerCase().replace(/[\s\-_]/g, '');
       const isNero = gN.includes('nerozone') || nN.includes('nerozone') || gN.includes('daznnero') || nN.includes('daznnero');
-      const isDazn1    = nN === 'dazn1' && gN === 'daznlineari';
-      const isDaznSvi  = gN.includes('daznsvizzeri');
-      const isDaznPVDE = gN.includes('daznprimevideode');
-      const isDaznAny  = gN.includes('dazn') || nN.includes('dazn');
+      const isDazn1 = nN === 'dazn1' && gN === 'daznlineari';
+      const isDaznSvi = gN.includes('daznsvizzeri'), isDaznPVDE = gN.includes('daznprimevideode'), isDaznAny = gN.includes('dazn') || nN.includes('dazn');
       const isProxyCat = proxyCategories.includes((ch.group || '').toLowerCase().trim());
-      if (!url.startsWith(PROXY_BASE) && (isProxyCat || isNero || (!isDazn1 && !isDaznSvi && !isDaznPVDE && isDaznAny))) {
-        url = PROXY_BASE + url;
-      }
+      if (!url.startsWith(PROXY_BASE) && (isProxyCat || isNero || (!isDazn1 && !isDaznSvi && !isDaznPVDE && isDaznAny))) url = PROXY_BASE + url;
       ch.url = url;
       ch.id = `${ch.name}|${ch.group}|${url}`;
       out.push({ ...ch });
@@ -401,7 +361,7 @@ function parseM3U(m3u) {
 async function initFromSource(cfg, silent) {
   const m3u = await fetchM3UFromSource(cfg);
   const parsed = parseM3U(m3u);
-  if (!parsed.length) throw new Error('Nessun canale trovato nella M3U (controlla il formato)');
+  if (!parsed.length) throw new Error('Nessun canale trovato nella M3U');
   allChannels = parsed;
   if (!silent) saveSourceConfig(cfg);
   console.log(`[MV] ${parsed.length} canali caricati`);
@@ -602,12 +562,6 @@ async function loadTile(idx, ch) {
     t.controls = controls;
   } catch (e) { console.warn('[MV] UI Shaka init fallita:', e); }
 
-  player.addEventListener('streaming', () => {
-    if (player.isLive && player.isLive()) {
-      try { const r = player.seekRange(); if (r && isFinite(r.end)) video.currentTime = r.end; } catch (e) {}
-    }
-  });
-
   player.addEventListener('error', ev => {
     const d = ev && ev.detail;
     if (d && d.severity === 2 && !t.recovering) {
@@ -616,18 +570,22 @@ async function loadTile(idx, ch) {
     }
   });
 
+  // ★★★ CONFIGURAZIONE SHAKA — NIENTE FORZATURA LIVE ★★★
   player.configure({
     drm: { clearKeys: ch.drm || {} },
     streaming: {
-      jumpLargeGaps: true,
-      liveSync: { enabled: true, targetLatency: 5, maxPlaybackRate: 1.06, minPlaybackRate: 0.94 },
-      bufferingGoal: 12, rebufferingGoal: 1.5, updateIntervalSeconds: 2,
-      retryParameters: { timeout: 12000, maxAttempts: 5, baseDelay: 500, backoffFactor: 2, fuzzFactor: 0.5 }
+      // jumpLargeGaps: RIMOSSO (forzava il salto al live)
+      // liveSync: RIMOSSO (forzava il rate adjustment per restare al live)
+      bufferingGoal: 20,
+      rebufferingGoal: 1.5,
+      updateIntervalSeconds: 5,
+      retryParameters: { timeout: 20000, maxAttempts: 5, baseDelay: 500, backoffFactor: 2, fuzzFactor: 0.5 }
     },
-    manifest: { retryParameters: { timeout: 12000, maxAttempts: 5, baseDelay: 500, backoffFactor: 2, fuzzFactor: 0.5 } }
+    manifest: {
+      retryParameters: { timeout: 20000, maxAttempts: 5, baseDelay: 500, backoffFactor: 2, fuzzFactor: 0.5 }
+    }
   });
 
-  // Headers custom (user-agent, referer, origin, ecc.)
   const hdrs = {};
   if (ch.streamHeaders && Object.keys(ch.streamHeaders).length) {
     Object.entries(ch.streamHeaders).forEach(([k, v]) => { hdrs[k] = v; });
@@ -642,9 +600,7 @@ async function loadTile(idx, ch) {
 
     if (activeAudio === -1) activeAudio = idx;
 
-    if (player.isLive()) {
-      try { const r = player.seekRange(); if (r && isFinite(r.end)) video.currentTime = r.end; } catch (e) {}
-    }
+    // ★ NON forzo il seek al live edge dopo il load — lascia stare dove parte ★
 
     const tracks = player.getAudioLanguagesAndRoles();
     const it = tracks.find(x => (x.language && (x.language.toLowerCase().startsWith('it') || x.language.toLowerCase() === 'ita')) || (x.label && x.label.toLowerCase().includes('ital')));
@@ -693,7 +649,9 @@ function applyAudioState() {
   });
 }
 
-/* ============================================================ WATCHDOG */
+/* ============================================================
+   WATCHDOG — solo play, MAI goToLive
+   ============================================================ */
 const lastTimes = new Map();
 const stallCounts = new Map();
 setInterval(() => {
@@ -707,9 +665,11 @@ setInterval(() => {
     if (prev !== undefined && Math.abs(cur - prev) < 0.2) {
       const s = (stallCounts.get(i) || 0) + 1;
       stallCounts.set(i, s);
-      if (s >= 3) {
+      if (s >= 6) {  // alzato da 3 a 6 (20 sec circa invece di 10)
         stallCounts.delete(i);
-        try { if (t.player.isLive && t.player.isLive()) { t.player.goToLive(); v.play().catch(()=>{}); } else reloadTile(i); } catch (e) { reloadTile(i); }
+        // ★ NON chiamo goToLive: semplicemente provo a far ripartire il video ★
+        console.warn('[MV] tile', i, 'bloccato — provo play() senza seek');
+        v.play().catch(() => { reloadTile(i); });
       }
     } else stallCounts.delete(i);
   });
@@ -827,11 +787,7 @@ $('srcSave').addEventListener('click', async () => {
     activeAudio = -1;
     renderGrid();
     closeSourceModal();
-  } catch (e) {
-    err.textContent = 'Errore: ' + e.message;
-  } finally {
-    btn.disabled = false; btn.textContent = 'Salva e carica';
-  }
+  } catch (e) { err.textContent = 'Errore: ' + e.message; } finally { btn.disabled = false; btn.textContent = 'Salva e carica'; }
 });
 
 /* ============================================================ KEYBOARD */
@@ -853,13 +809,16 @@ document.addEventListener('keydown', e => {
 
   if (e.code === 'Space' || e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); e.stopPropagation(); if (v) { v.paused ? v.play().catch(()=>{}) : v.pause(); } return; }
   if (e.key === 'ArrowLeft') { e.preventDefault(); e.stopPropagation(); if (v) v.currentTime = Math.max(0, v.currentTime - 10); return; }
-  if (e.key === 'ArrowRight') { e.preventDefault(); e.stopPropagation(); if (v) { let maxT = v.currentTime + 10; if (p && p.isLive && p.isLive()) { try { maxT = Math.min(p.seekRange().end, maxT); } catch (er) {} } else if (isFinite(v.duration)) maxT = Math.min(v.duration, maxT); v.currentTime = maxT; } return; }
+  if (e.key === 'ArrowRight') {
+    e.preventDefault(); e.stopPropagation();
+    if (v) { let maxT = v.currentTime + 10; if (isFinite(v.duration)) maxT = Math.min(v.duration, maxT); v.currentTime = maxT; }
+    return;
+  }
   if (e.key === 'ArrowUp') { e.preventDefault(); e.stopPropagation(); if (v) { v.volume = Math.min(1, v.volume + 0.1); v.muted = false; } return; }
   if (e.key === 'ArrowDown') { e.preventDefault(); e.stopPropagation(); if (v) v.volume = Math.max(0, v.volume - 0.1); return; }
   if (e.key === 'm' || e.key === 'M') { if (v) v.muted = !v.muted; return; }
   if (e.key === 'f' || e.key === 'F') { $('btnFullscreen').click(); return; }
   if (e.key === 'r' || e.key === 'R') { if (activeAudio >= 0) reloadTile(activeAudio); return; }
-  if (e.key === 'l' || e.key === 'L') { if (p && p.isLive && p.isLive()) { try { p.goToLive(); } catch(e){} } return; }
   if (e.key === 'Escape') {
     if (!$('pickerModal').classList.contains('hidden')) closePicker();
     else if (!$('sourceModal').classList.contains('hidden')) closeSourceModal();
