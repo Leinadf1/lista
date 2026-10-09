@@ -6,7 +6,6 @@
 <title>Multiview 2×2</title>
 
 <link rel="preload" href="https://raw.githubusercontent.com/Leinadf1/lista/main/Formula1-Bold_web_0.ttf" as="font" type="font/ttf" crossorigin>
-<!-- Material Icons: NECESSARIO per i pulsanti Shaka -->
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
 <style>
@@ -17,7 +16,7 @@
   font-style: normal;
   font-display: swap;
 }
-/* Ripristino classe material-icons (evita che font custom la sovrascriva) */
+/* Ripristino esplicito Material Icons */
 .material-icons {
   font-family: 'Material Icons' !important;
   font-weight: normal !important;
@@ -43,14 +42,9 @@
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html { margin: 0; height: 100%; background: #000; }
 body {
-  margin: 0;
-  height: 100dvh;
-  background: #000;
-  color: #c9d1d9;
+  margin: 0; height: 100dvh; background: #000; color: #c9d1d9;
   font-family: 'Formula1 Display Bold', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  overflow: hidden; display: flex; flex-direction: column;
   -webkit-font-smoothing: antialiased;
 }
 button { font-family: inherit; cursor: pointer; border: none; }
@@ -58,14 +52,8 @@ img { display: block; }
 
 /* ==================== HEADER ==================== */
 #mv-header {
-  flex: 0 0 auto;
-  height: 38px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 0 10px;
-  background: #050505;
-  border-bottom: 1px solid #111;
+  flex: 0 0 auto; height: 38px; display: flex; align-items: center;
+  gap: 6px; padding: 0 10px; background: #050505; border-bottom: 1px solid #111;
 }
 #mv-header .mv-title {
   font-size: 12px; font-weight: 800; color: #888;
@@ -90,12 +78,10 @@ img { display: block; }
 /* ==================== GRID ==================== */
 #mv-main { flex: 1 1 auto; min-height: 0; min-width: 0; display: flex; }
 #mv-grid {
-  flex: 1;
-  display: grid;
+  flex: 1; display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr 1fr;
-  gap: 2px;
-  background: #141414;
+  gap: 2px; background: #141414;
   min-width: 0; min-height: 0;
 }
 #mv-grid:fullscreen, #mv-grid:-webkit-full-screen {
@@ -129,7 +115,7 @@ img { display: block; }
   position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: #000;
 }
 
-/* ==================== OVERLAY AUTO-HIDE ==================== */
+/* ==================== OVERLAY NOME CANALE (auto-hide) ==================== */
 .mv-ui {
   position: absolute; top: 0; left: 0; right: 0;
   z-index: 8;
@@ -153,8 +139,7 @@ img { display: block; }
   background: rgba(255,255,255,.12); color: #fff;
   font-size: 12px; line-height: 1;
   display: inline-flex; align-items: center; justify-content: center;
-  padding: 0;
-  border: 1px solid rgba(255,255,255,.1);
+  padding: 0; border: 1px solid rgba(255,255,255,.1);
   transition: background .15s, transform .15s;
 }
 .mv-ibtn:hover { background: rgba(255,255,255,.28); transform: scale(1.08); }
@@ -189,16 +174,14 @@ img { display: block; }
 .mv-err-btn.retry { background: #0a3; border-color: #0a3; }
 
 /* ============================================================
-   SHAKA UI — solo testo usa Formula1, icone restano Material
+   SHAKA UI — testo F1, icone Material intatte
    ============================================================ */
-.mv-tile .shaka-current-time,
-.mv-tile .shaka-duration,
-.mv-tile .shaka-current-time-divider,
-.mv-tile .shaka-overflow-menu button span,
-.mv-tile .shaka-settings-menu button span,
-.mv-tile .shaka-back-to-overflow-button span,
-.mv-tile .shaka-tooltips,
-.mv-tile .shaka-ad-controls button span {
+.shaka-current-time,
+.shaka-duration,
+.shaka-current-time-divider,
+.shaka-overflow-menu button span,
+.shaka-settings-menu button span,
+.shaka-back-to-overflow-button span {
   font-family: 'Formula1 Display Bold', 'Inter', sans-serif !important;
 }
 
@@ -208,28 +191,19 @@ img { display: block; }
   height: 100% !important;
 }
 .mv-tile .shaka-scrim-container {
-  background: linear-gradient(transparent, rgba(0,0,0,.75)) !important;
+  background: linear-gradient(transparent, rgba(0,0,0,.7)) !important;
 }
 
-/* Barra inferiore: layout orizzontale normale (come il single player) */
+/* Barra controlli */
 .mv-tile .shaka-controls-container .shaka-bottom-controls {
-  padding: 0 6px 4px 6px !important;
-}
-.mv-tile .shaka-controls-container .shaka-controls-button-panel {
-  padding: 0 !important;
-  gap: 2px !important;
-  display: flex !important;
-  align-items: center !important;
+  padding: 0 8px 6px 8px !important;
 }
 .mv-tile .shaka-controls-container .shaka-controls-button-panel button {
   padding: 0 !important;
   margin: 0 3px !important;
-  width: 24px !important;
-  height: 24px !important;
-  min-width: 24px !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
+  width: 26px !important;
+  height: 26px !important;
+  min-width: 26px !important;
 }
 .mv-tile .shaka-controls-container .shaka-controls-button-panel button i.material-icons {
   font-size: 18px !important;
@@ -247,9 +221,9 @@ img { display: block; }
   line-height: 1 !important;
 }
 
-/* Seek bar SOTTO i pulsanti */
+/* Seek bar: altezza normale ma con margine extra */
 .mv-tile .shaka-controls-container .shaka-seek-bar-container {
-  margin: 2px 4px 0 !important;
+  margin: 4px 8px 0 !important;
   height: 4px !important;
 }
 .mv-tile .shaka-controls-container .shaka-range-container {
@@ -262,10 +236,11 @@ img { display: block; }
   width: 12px !important; height: 12px !important; margin-top: -4px !important;
 }
 
-/* Menu a comparsa */
+/* Menu a comparsa (qualità/sottotitoli) */
 .mv-tile .shaka-controls-container .shaka-overflow-menu,
 .mv-tile .shaka-controls-container .shaka-settings-menu {
-  font-size: 11px !important; padding: 3px !important;
+  font-size: 11px !important;
+  padding: 3px !important;
 }
 .mv-tile .shaka-controls-container .shaka-overflow-menu button,
 .mv-tile .shaka-controls-container .shaka-settings-menu button {
@@ -274,29 +249,38 @@ img { display: block; }
   height: auto !important;
   line-height: 1.2 !important;
 }
-.mv-tile .shaka-controls-container .shaka-back-to-overflow-button {
-  font-size: 11px !important; padding: 6px 10px !important;
-}
 .mv-tile .shaka-controls-container .shaka-overflow-menu button i.material-icons,
 .mv-tile .shaka-controls-container .shaka-settings-menu button i.material-icons {
   font-size: 15px !important;
 }
 
-/* NASCONDI il big play button centrale */
-.mv-tile .shaka-play-button-container { display: none !important; }
+/* NASCONDI big play button centrale (compare al mouse move ma non lo vogliamo grande) */
+.mv-tile .shaka-play-button-container {
+  width: 54px !important;
+  height: 54px !important;
+}
+.mv-tile .shaka-play-button-container svg,
+.mv-tile .shaka-play-button-container i.material-icons {
+  width: 28px !important;
+  height: 28px !important;
+  font-size: 28px !important;
+}
+.mv-tile .shaka-play-button-container .shaka-play-button {
+  background: rgba(255,255,255,.92) !important;
+  color: #000 !important;
+  padding: 12px !important;
+}
 
-/* Nascondi pulsanti inutili */
+/* Nascondi pulsanti inutili (rate, cast, pip, airplay) */
 .mv-tile .shaka-cast-button,
 .mv-tile .shaka-pip-button,
 .mv-tile .shaka-airplay-button,
+.mv-tile .shaka-playbackrate-button,
 .mv-tile .shaka-client-side-ad-ui,
-.mv-tile .shaka-ad-controls,
-.mv-tile .shaka-playback-rate-button { display: none !important; }
+.mv-tile .shaka-ad-controls { display: none !important; }
 
-/* Volume slider compatto */
-.mv-tile .shaka-volume-bar-container {
-  width: 50px !important;
-}
+/* Volume compatto */
+.mv-tile .shaka-volume-bar-container { width: 48px !important; }
 
 /* ==================== MODALS ==================== */
 .modal-mask {
@@ -339,8 +323,7 @@ img { display: block; }
   font-size: 10.5px; font-weight: 800; color: #f1e05a;
   text-transform: uppercase; letter-spacing: 1px;
   padding: 12px 4px 6px;
-  border-bottom: 1px solid #21262d;
-  margin-bottom: 6px;
+  border-bottom: 1px solid #21262d; margin-bottom: 6px;
   display: flex; justify-content: space-between;
 }
 .pick-cat small { color: #8b949e; font-weight: 600; }
@@ -361,11 +344,9 @@ img { display: block; }
 }
 .pick-row .pick-inuse { font-size: 10.5px; color: #8b949e; font-weight: 500; }
 .pick-empty { text-align: center; color: #6a737d; padding: 40px 10px; font-style: italic; font-size: 12.5px; }
-
 .src-opt {
   display: flex; align-items: center; gap: 10px;
-  padding: 11px 13px;
-  border: 1px solid #30363d; border-radius: 8px;
+  padding: 11px 13px; border: 1px solid #30363d; border-radius: 8px;
   margin-bottom: 8px; cursor: pointer; font-size: 13px;
 }
 .src-opt:hover { border-color: #58a6ff; }
@@ -465,11 +446,11 @@ img { display: block; }
 
 <script>
 /* ============================================================
-   MULTIVIEW 2x2 — click-free play/pause + speed 1x
+   MULTIVIEW 2x2 — Shaka UI default + fix seekbar
    ============================================================ */
 
 const IFRAME_GROUPS = ['PRIME VIDEO', 'DAZN PRIMEVIDEO DE'];
-const SOURCE_KEY = 'mv_source_v6';
+const SOURCE_KEY = 'mv_source_v7';
 const PROXY_BASE = 'https://dazn-ua-proxy.stefanoaccuont.workers.dev/';
 const proxyCategories = [
   'serie bkt','laliga ea sports','serie a enilive','amichevoli',
@@ -677,7 +658,6 @@ function buildTileEl(idx) {
 }
 
 function bindTileEvents(el, idx) {
-  // click su tile NON attivo → cambia audio (senza far partire play/pausa)
   el.addEventListener('mousedown', e => {
     if (e.target.closest('[data-act]')) return;
     if (e.target.closest('.shaka-controls-container')) return;
@@ -688,7 +668,6 @@ function bindTileEvents(el, idx) {
       e.preventDefault();
       setAudio(idx);
       activateUI(el);
-      return;
     }
   }, true);
 
@@ -803,7 +782,6 @@ async function loadTile(idx, ch) {
   try { shaka.polyfill.installAll(); } catch (e) {}
 
   const container = document.createElement('div');
-  container.setAttribute('data-shaka-player-container', '');
   container.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;background:#000;';
 
   const video = document.createElement('video');
@@ -811,7 +789,6 @@ async function loadTile(idx, ch) {
   video.playsInline = true;
   video.autoplay = true;
   video.muted = true;
-  video.setAttribute('data-shaka-player', '');
   video.style.cssText = 'width:100%;height:100%;object-fit:contain;background:#000;display:block;';
 
   container.appendChild(video);
@@ -819,21 +796,10 @@ async function loadTile(idx, ch) {
   t.video = video;
   t.container = container;
 
-  // ==== BLOCCA play/pausa al click sul video ====
+  // Blocca click play/pausa sul video (fuori dai controlli)
   container.addEventListener('click', e => {
-    // Permetti click solo dentro i controlli/menu
-    const isControl = e.target.closest('.shaka-controls-container');
-    const isMenu = e.target.closest('.shaka-settings-menu, .shaka-overflow-menu');
-    if (!isControl && !isMenu) {
-      e.stopImmediatePropagation();
-      e.preventDefault();
-      // mostra comunque la UI del tile
-      const tile = e.target.closest('.mv-tile');
-      if (tile) activateUI(tile);
-      return;
-    }
-    // Se è sul scrim (area video sotto i controlli) → blocca
-    if (e.target.closest('.shaka-scrim-container')) {
+    const isControl = e.target.closest('.shaka-controls-container, .shaka-settings-menu, .shaka-overflow-menu');
+    if (!isControl) {
       e.stopImmediatePropagation();
       e.preventDefault();
       const tile = e.target.closest('.mv-tile');
@@ -844,37 +810,19 @@ async function loadTile(idx, ch) {
   const player = new shaka.Player(video);
   t.player = player;
 
-  // ==== Shaka UI: pannello custom senza playback_rate ====
+  // ==== Shaka UI con DEFAULT (funzionante) ====
   try {
-    const ui = new shaka.ui.Overlay(player, container, video, {
-      addSeekBar: true,
-      addBigPlayButton: false,   // niente big play button centrale
-      controlPanelElements: [
-        'play_pause',
-        'time_and_duration',
-        'spacer',
-        'mute',
-        'volume',
-        'fullscreen',
-        'overflow_menu'
-      ],
-      overflowMenuButtons: [
-        'quality',
-        'captions',
-        'picture_in_picture'
-        // NOTA: 'playback_rate' omesso di proposito → speed fissa a 1x
-      ],
-      seekBarColors: {
-        base: 'rgba(255,255,255,.22)',
-        buffered: 'rgba(255,255,255,.35)',
-        played: '#e0e0e0'
-      }
-    });
+    const ui = new shaka.ui.Overlay(player, container, video);
     ui.getControls();
     t.ui = ui;
   } catch (e) {
     console.warn('[MV] UI Shaka init fallita:', e);
   }
+
+  // Forza rate a 1x
+  video.addEventListener('ratechange', () => {
+    if (video.playbackRate !== 1) video.playbackRate = 1;
+  });
 
   player.addEventListener('streaming', () => {
     if (player.isLive && player.isLive()) {
@@ -905,9 +853,7 @@ async function loadTile(idx, ch) {
     },
     manifest: {
       retryParameters: { timeout: 12000, maxAttempts: 5, baseDelay: 500, backoffFactor: 2, fuzzFactor: 0.5 }
-    },
-    // Speed forzata a 1x di base (l'utente non può cambiarla dal menu)
-    playbackRates: [1]
+    }
   });
 
   if (ch.streamHeaders && Object.keys(ch.streamHeaders).length) {
@@ -916,8 +862,7 @@ async function loadTile(idx, ch) {
 
   try {
     await player.load(ch.url);
-    // Forza rate 1x dopo il load (alcuni contenuti potrebbero impostarlo diversamente)
-    try { player.setPlaybackRate(1); } catch(e) {}
+    try { video.playbackRate = 1; } catch(e) {}
 
     if (player.isLive()) {
       try {
