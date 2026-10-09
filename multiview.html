@@ -124,15 +124,23 @@ img { display: block; }
 .pick-row .pick-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 700; }
 .pick-row .pick-inuse { font-size: 10.5px; color: #8b949e; font-weight: 500; }
 .pick-empty { text-align: center; color: #6a737d; padding: 40px 10px; font-style: italic; font-size: 12.5px; }
-.src-opt { display: flex; align-items: center; gap: 10px; padding: 11px 13px; border: 1px solid #30363d; border-radius: 8px; margin-bottom: 8px; cursor: pointer; font-size: 13px; }
+
+/* Source modal */
+.src-opt { display: flex; align-items: flex-start; gap: 10px; padding: 11px 13px; border: 1px solid #30363d; border-radius: 8px; margin-bottom: 8px; cursor: pointer; font-size: 13px; }
 .src-opt:hover { border-color: #58a6ff; }
-.src-opt input[type=radio] { accent-color: #58a6ff; }
+.src-opt input[type=radio] { accent-color: #58a6ff; margin-top: 2px; flex: 0 0 auto; }
 .src-opt.col { flex-direction: column; align-items: stretch; gap: 8px; }
-.src-opt-row { display: flex; align-items: center; gap: 10px; }
-.src-url { width: 100%; background: #161b22; border: 1px solid #30363d; border-radius: 8px; color: #f0f6fc; padding: 10px 12px; font-size: 13px; font-family: inherit; outline: none; display: none; }
-.src-url.active { display: block; }
-.src-url:focus { border-color: #58a6ff; }
+.src-opt-col-head { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.src-url, .src-text {
+  width: 100%; background: #161b22; border: 1px solid #30363d; border-radius: 8px;
+  color: #f0f6fc; padding: 10px 12px; font-size: 12.5px;
+  font-family: 'JetBrains Mono', 'Menlo', monospace; outline: none; display: none;
+}
+.src-url.active, .src-text.active { display: block; }
+.src-url:focus, .src-text:focus { border-color: #58a6ff; }
+.src-text { min-height: 130px; resize: vertical; line-height: 1.4; }
 .src-hint { font-size: 11px; color: #8b949e; margin-top: 8px; line-height: 1.5; }
+.src-hint code { background: #161b22; padding: 1px 5px; border-radius: 4px; font-size: 10.5px; color: #f1e05a; }
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px; padding-top: 12px; border-top: 1px solid #21262d; }
 .err-text { color: #ff7b7b; font-size: 11.5px; margin-top: 8px; min-height: 15px; }
 
@@ -175,17 +183,44 @@ img { display: block; }
 </div>
 
 <div class="modal-mask hidden" id="sourceModal">
-  <div class="modal-box" style="max-width:500px">
+  <div class="modal-box" style="max-width:560px">
     <div class="modal-head">
       <div><h3>Sorgente canali</h3><div class="sub">Scegli da dove caricare la lista</div></div>
       <button class="modal-close" id="sourceClose">×</button>
     </div>
-    <label class="src-opt"><input type="radio" name="srcType" value="backend"><span>Backend del sito <small style="color:#8b949e">(password richiesta)</small></span></label>
+
+    <!-- Opzione 1: backend del sito -->
+    <label class="src-opt" for="srcTypeBackend">
+      <input type="radio" name="srcType" id="srcTypeBackend" value="backend">
+      <div>
+        <div style="font-weight:700">Backend del sito</div>
+        <div style="font-size:11px;color:#8b949e;margin-top:2px">Usa i canali del tuo sito (richiede password)</div>
+      </div>
+    </label>
+
+    <!-- Opzione 2: URL M3U -->
     <label class="src-opt col">
-      <span class="src-opt-row"><input type="radio" name="srcType" value="url"><span>URL M3U personalizzato</span></span>
+      <span class="src-opt-col-head">
+        <input type="radio" name="srcType" value="url">
+        <span style="font-weight:700">URL M3U personalizzato</span>
+      </span>
       <input type="text" class="src-url" id="srcUrl" placeholder="https://esempio.com/lista.m3u">
     </label>
-    <div class="src-hint">Con <strong>Backend</strong> usi i canali del sito.<br>Con <strong>URL M3U</strong> puoi usare qualsiasi lista pubblica.</div>
+
+    <!-- Opzione 3: incolla testo M3U -->
+    <label class="src-opt col">
+      <span class="src-opt-col-head">
+        <input type="radio" name="srcType" value="text">
+        <span style="font-weight:700">Incolla testo M3U</span>
+      </span>
+      <textarea class="src-text" id="srcText" placeholder="#EXTM3U&#10;#EXTINF:-1 group-title=&quot;F1&quot;,NOME CANALE&#10;#KODIPROP:inputstream.adaptive.license_key=KID:KEY&#10;https://.../stream.mpd"></textarea>
+    </label>
+
+    <div class="src-hint">
+      • <strong>URL M3U</strong>: funziona con gist GitHub, pastebin, raw.githubusercontent, ecc.<br>
+      • <strong>Incolla testo</strong>: copia il contenuto della tua lista e incollalo sopra.<br>
+      • La scelta viene salvata in questo browser.
+    </div>
     <div class="err-text" id="srcErr"></div>
     <div class="modal-actions">
       <button class="mv-btn" id="srcCancel">Annulla</button>
@@ -196,14 +231,14 @@ img { display: block; }
 
 <script>
 /* ============================================================
-   MULTIVIEW v15
-   - Click handler in CAPTURE su .mv-tile (vince su Shaka UI)
-   - Esclusioni mirate (solo pulsanti/menu, non il container)
-   - Mute sincronizzato via controls.setMuted() + video.muted
+   MULTIVIEW v16
+   - Sorgente: backend | URL M3U | testo incollato
+   - Click handler in CAPTURE (click tile = cambia audio)
+   - Mute sync via controls.setMuted + video.muted
    ============================================================ */
 
 const IFRAME_GROUPS = ['PRIME VIDEO', 'DAZN PRIMEVIDEO DE'];
-const SOURCE_KEY = 'mv_source_v15';
+const SOURCE_KEY = 'mv_source_v16';
 const PROXY_BASE = 'https://dazn-ua-proxy.stefanoaccuont.workers.dev/';
 const proxyCategories = ['serie bkt','laliga ea sports','serie a enilive','amichevoli','jupiler pro league','liga portugal betclic','nerozone','dazn nerozone'];
 const UI_HIDE_MS = 3000;
@@ -233,65 +268,127 @@ function buildIframeSrc(ch) {
   return `https://hugoedgar.com/drm-player/?${p.toString()}`;
 }
 
-/* SORGENTE */
+/* ============================================================
+   SORGENTE
+   ============================================================ */
 function loadSourceConfig() {
   try { sourceConfig = JSON.parse(localStorage.getItem(SOURCE_KEY) || 'null'); } catch (e) { sourceConfig = null; }
   updateSrcBadge();
 }
-function saveSourceConfig(cfg) { sourceConfig = cfg; localStorage.setItem(SOURCE_KEY, JSON.stringify(cfg)); updateSrcBadge(); }
+function saveSourceConfig(cfg) {
+  sourceConfig = cfg;
+  try { localStorage.setItem(SOURCE_KEY, JSON.stringify(cfg)); } catch (e) {}
+  updateSrcBadge();
+}
 function updateSrcBadge() {
   const el = $('srcBadge');
   if (!sourceConfig) { el.textContent = 'Sorgente non impostata'; el.classList.remove('custom'); return; }
   if (sourceConfig.type === 'backend') { el.textContent = 'Backend sito'; el.classList.remove('custom'); }
-  else { try { el.textContent = 'M3U · ' + new URL(sourceConfig.url).hostname; } catch (e) { el.textContent = 'M3U personalizzato'; } el.classList.add('custom'); }
+  else if (sourceConfig.type === 'text') { el.textContent = 'M3U incollato'; el.classList.add('custom'); }
+  else {
+    try { el.textContent = 'M3U · ' + new URL(sourceConfig.url).hostname; }
+    catch (e) { el.textContent = 'M3U URL'; }
+    el.classList.add('custom');
+  }
 }
+
 async function fetchM3UFromSource(cfg) {
   if (cfg.type === 'backend') {
     const psw = prompt("Password per il backend del sito:");
     if (!psw) throw new Error('Password richiesta');
-    const r = await fetch('/api/get-list', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: psw }) });
+    const r = await fetch('/api/get-list', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: psw })
+    });
     if (!r.ok) throw new Error('Password errata o sessione già attiva');
     return decodeBase64UTF8(await r.text());
   }
-  const r = await fetch(cfg.url, { cache: 'no-store' });
-  if (!r.ok) throw new Error('HTTP ' + r.status);
-  return await r.text();
+  if (cfg.type === 'text') {
+    return cfg.text || '';
+  }
+  // URL mode
+  const r = await fetch(cfg.url, {
+    cache: 'no-store',
+    redirect: 'follow',
+    headers: { 'Accept': 'text/plain, application/x-mpegURL, */*' }
+  });
+  if (!r.ok) throw new Error('HTTP ' + r.status + ' — impossibile scaricare la M3U');
+  const txt = await r.text();
+  if (!txt || txt.trim().length < 10) throw new Error('Il file M3U è vuoto o troppo corto');
+  if (!/^#EXTM3U/i.test(txt.trim())) console.warn('[MV] Il file non inizia con #EXTM3U, provo comunque il parsing');
+  return txt;
 }
 
-/* PARSER */
+/* ============================================================
+   PARSER M3U
+   ============================================================ */
 function parseM3U(m3u) {
   const out = [];
-  const lines = m3u.split('\n');
+  const lines = m3u.replace(/\r\n/g, '\n').split('\n');
   let ch = { name:'', logo:'', group:'LISTA', drm:{}, url:'', streamHeaders:{}, userAgent:null, tvgId:null, id:'' };
+
   for (let raw of lines) {
     const line = raw.trim();
     if (!line) continue;
+
     if (line.startsWith('#KODIPROP:inputstream.adaptive.license_key=')) {
-      const val = line.split('=').slice(1).join('=');
-      try { ch.drm = JSON.parse(val); } catch (e) { const parts = val.split(':'); if (parts.length === 2) ch.drm[parts[0].toLowerCase()] = parts[1].toLowerCase(); }
-    } else if (line.startsWith('#KODIPROP:inputstream.adaptive.stream_headers=')) {
-      const val = line.split('=').slice(1).join('=');
-      if (val) val.split('&').forEach(p => { const [k, v] = p.split('='); if (k && v) ch.streamHeaders[k.trim()] = v.trim(); });
-    } else if (line.startsWith('#EXTVLCOPT:http-user-agent=')) {
+      const val = line.slice(line.indexOf('=') + 1).trim();
+      // Prova JSON (es. {"kid":"...","key":"..."})
+      if (val.startsWith('{')) {
+        try { ch.drm = JSON.parse(val); } catch (e) {}
+      }
+      // Formato KID:KEY
+      if (!Object.keys(ch.drm).length && val.includes(':')) {
+        const idx = val.indexOf(':');
+        const kid = val.slice(0, idx).trim().toLowerCase();
+        const key = val.slice(idx + 1).trim().toLowerCase();
+        if (kid && key) ch.drm[kid] = key;
+      }
+    }
+    else if (line.startsWith('#KODIPROP:inputstream.adaptive.stream_headers=')) {
+      const val = line.slice(line.indexOf('=') + 1).trim();
+      if (val) {
+        val.split('&').forEach(pair => {
+          const i = pair.indexOf('=');
+          if (i > 0) {
+            const k = pair.slice(0, i).trim();
+            const v = pair.slice(i + 1).trim();
+            if (k && v) ch.streamHeaders[k] = v;
+          }
+        });
+      }
+    }
+    else if (line.startsWith('#EXTVLCOPT:http-user-agent=')) {
       ch.userAgent = line.substring(line.indexOf('=') + 1).trim();
-    } else if (line.startsWith('#EXTINF:')) {
-      const logo = line.match(/tvg-logo="([^"]+)"/i), group = line.match(/group-title="([^"]+)"/i), name = line.match(/,(.*)$/), tvgId = line.match(/tvg-id="([^"]+)"/i);
-      if (logo) ch.logo = logo[1];
+    }
+    else if (line.startsWith('#EXTINF:')) {
+      const logo  = line.match(/tvg-logo="([^"]*)"/i);
+      const group = line.match(/group-title="([^"]*)"/i);
+      const name  = line.match(/,(.*)$/);
+      const tvgId = line.match(/tvg-id="([^"]*)"/i);
+      if (logo && logo[1]) ch.logo = logo[1];
       if (group) ch.group = group[1];
-      if (name) ch.name = name[1].trim();
+      if (name)  ch.name = name[1].trim();
       if (tvgId) ch.tvgId = tvgId[1];
       const nn = normalizeName(ch.name);
       if (nn === 'skyunoplus') ch.tvgId = 'Sky.Uno.+..it';
       else if (nn === 'skyuno') ch.tvgId = 'Sky.Uno.it';
       else if (nn === 'skycinemastories') ch.tvgId = 'Sky.Cinema.Due.it';
-    } else if (line.startsWith('http')) {
+    }
+    else if (/^https?:\/\//i.test(line)) {
       let url = line;
-      const gN = (ch.group || '').toLowerCase().replace(/[\s\-_]/g, ''), nN = (ch.name || '').toLowerCase().replace(/[\s\-_]/g, '');
+      const gN = (ch.group || '').toLowerCase().replace(/[\s\-_]/g, '');
+      const nN = (ch.name  || '').toLowerCase().replace(/[\s\-_]/g, '');
       const isNero = gN.includes('nerozone') || nN.includes('nerozone') || gN.includes('daznnero') || nN.includes('daznnero');
-      const isDazn1 = nN === 'dazn1' && gN === 'daznlineari';
-      const isDaznSvi = gN.includes('daznsvizzeri'), isDaznPVDE = gN.includes('daznprimevideode'), isDaznAny = gN.includes('dazn') || nN.includes('dazn');
+      const isDazn1    = nN === 'dazn1' && gN === 'daznlineari';
+      const isDaznSvi  = gN.includes('daznsvizzeri');
+      const isDaznPVDE = gN.includes('daznprimevideode');
+      const isDaznAny  = gN.includes('dazn') || nN.includes('dazn');
       const isProxyCat = proxyCategories.includes((ch.group || '').toLowerCase().trim());
-      if (!url.startsWith(PROXY_BASE) && (isProxyCat || isNero || (!isDazn1 && !isDaznSvi && !isDaznPVDE && isDaznAny))) url = PROXY_BASE + url;
+      if (!url.startsWith(PROXY_BASE) && (isProxyCat || isNero || (!isDazn1 && !isDaznSvi && !isDaznPVDE && isDaznAny))) {
+        url = PROXY_BASE + url;
+      }
       ch.url = url;
       ch.id = `${ch.name}|${ch.group}|${url}`;
       out.push({ ...ch });
@@ -300,16 +397,17 @@ function parseM3U(m3u) {
   }
   return out;
 }
+
 async function initFromSource(cfg, silent) {
   const m3u = await fetchM3UFromSource(cfg);
   const parsed = parseM3U(m3u);
-  if (!parsed.length) throw new Error('Nessun canale trovato');
+  if (!parsed.length) throw new Error('Nessun canale trovato nella M3U (controlla il formato)');
   allChannels = parsed;
   if (!silent) saveSourceConfig(cfg);
   console.log(`[MV] ${parsed.length} canali caricati`);
 }
 
-/* IFRAME */
+/* ============================================================ IFRAME */
 function sendIframeLive(fr) {
   if (!fr || !fr.contentWindow) return;
   const msgs = [{type:'seek',value:'live'}, {type:'seekToLive'}, {type:'goToLive'}, {action:'live'}, {action:'goToLive'}, {command:'live'}, {type:'liveEdge'}, {type:'live'}, {method:'live'}];
@@ -321,7 +419,7 @@ function startIframeLiveLoop(fr) {
   [100, 800, 1500, 3000].forEach(d => setTimeout(() => sendIframeLive(fr), d));
 }
 
-/* GRID */
+/* ============================================================ GRID */
 function renderGrid() {
   const g = $('mv-grid');
   g.innerHTML = '';
@@ -362,12 +460,8 @@ function buildTileEl(idx) {
   return el;
 }
 
-/* ★★★ CLICK HANDLER — in CAPTURE phase, esclusioni mirate ★★★ */
 function bindTileEvents(el, idx) {
-  // Listener in capture: vince su Shaka UI
   el.addEventListener('click', e => {
-
-    // 1) Pulsantini del tile (reload/swap/close) — gestione locale
     const btn = e.target.closest('[data-act]');
     if (btn) {
       e.stopPropagation();
@@ -378,17 +472,14 @@ function bindTileEvents(el, idx) {
       activateUI(el);
       return;
     }
-
-    // 2) Se clicco su un pulsante o slider Shaka → lascia passare
     if (e.target.closest('.shaka-controls-button-panel')) return;
     if (e.target.closest('.shaka-seek-bar-container')) return;
     if (e.target.closest('.shaka-range-container')) return;
     if (e.target.closest('.shaka-overflow-menu')) return;
     if (e.target.closest('.shaka-settings-menu')) return;
     if (e.target.closest('.shaka-back-to-overflow-button')) return;
-    if (e.target.closest('button')) return; // qualsiasi altro button
+    if (e.target.closest('button')) return;
 
-    // 3) Click sul video/scrim del tile NON attivo → cambia audio e blocca
     if (activeAudio !== idx && tiles[idx] && tiles[idx].ch) {
       e.stopImmediatePropagation();
       e.preventDefault();
@@ -396,11 +487,8 @@ function bindTileEvents(el, idx) {
       activateUI(el);
       return;
     }
-
-    // 4) Click sul video del tile GIÀ attivo → lascia passare a Shaka (play/pausa)
     activateUI(el);
-
-  }, true); // ← CAPTURE
+  }, true);
 
   el.addEventListener('mousemove', () => activateUI(el));
   el.addEventListener('touchstart', () => activateUI(el), { passive: true });
@@ -412,7 +500,7 @@ function activateUI(el) {
   el._uiTimer = setTimeout(() => el.classList.remove('ui-active'), UI_HIDE_MS);
 }
 
-/* TILE */
+/* ============================================================ TILE */
 function newTileObj(ch) { return { ch, video: null, player: null, ui: null, controls: null, container: null, iframe: null, loading: false, recovering: false }; }
 function destroyTile(t) {
   if (!t) return;
@@ -538,17 +626,21 @@ async function loadTile(idx, ch) {
     },
     manifest: { retryParameters: { timeout: 12000, maxAttempts: 5, baseDelay: 500, backoffFactor: 2, fuzzFactor: 0.5 } }
   });
+
+  // Headers custom (user-agent, referer, origin, ecc.)
+  const hdrs = {};
   if (ch.streamHeaders && Object.keys(ch.streamHeaders).length) {
-    player.configure({ streaming: { customHttpHeaders: ch.streamHeaders } });
+    Object.entries(ch.streamHeaders).forEach(([k, v]) => { hdrs[k] = v; });
+  }
+  if (ch.userAgent) hdrs['User-Agent'] = ch.userAgent;
+  if (Object.keys(hdrs).length) {
+    player.configure({ streaming: { customHttpHeaders: hdrs } });
   }
 
   try {
     await player.load(ch.url);
 
-    // ★ Se è il primo tile caricato, diventa attivo automaticamente ★
-    if (activeAudio === -1) {
-      activeAudio = idx;
-    }
+    if (activeAudio === -1) activeAudio = idx;
 
     if (player.isLive()) {
       try { const r = player.seekRange(); if (r && isFinite(r.end)) video.currentTime = r.end; } catch (e) {}
@@ -561,12 +653,11 @@ async function loadTile(idx, ch) {
     video.play().catch(() => { video.muted = true; video.play().catch(()=>{}); });
     if (loading) loading.classList.add('hidden');
 
-    // ★ Applica lo stato audio (mute/unmute di tutti i tile) ★
     applyAudioState();
   } catch (err) {
     console.error('[MV] load tile', idx, err);
     if (loading) loading.classList.add('hidden');
-    showTileError(idx, 'Riproduzione non riuscita', true);
+    showTileError(idx, 'Riproduzione non riuscita: ' + (err.message || ''), true);
   } finally {
     t.loading = false;
   }
@@ -581,7 +672,7 @@ function showTileError(idx, msg, actions) {
   err.classList.remove('hidden');
 }
 
-/* ★★★ AUDIO — uso controls.setMuted() per sincronizzare icona ★★★ */
+/* ============================================================ AUDIO */
 function setAudio(idx) {
   activeAudio = idx;
   applyAudioState();
@@ -592,36 +683,17 @@ function applyAudioState() {
     const v = t.video;
     const isAudio = (i === activeAudio);
     const targetMuted = !isAudio;
-
-    // Prova prima con controls.setMuted (aggiorna icona Shaka)
-    if (t.controls) {
-      try {
-        t.controls.setMuted(targetMuted);
-      } catch(e) {
-        v.muted = targetMuted;
-      }
-    } else {
-      v.muted = targetMuted;
-    }
-
-    // Assicura che il valore sia applicato anche direttamente
-    // (nel caso controls.setMuted non fosse supportato)
-    if (v.muted !== targetMuted) {
-      v.muted = targetMuted;
-    }
-
-    // Se sto attivando questo tile, volume al massimo e play se in pausa
+    if (t.controls) { try { t.controls.setMuted(targetMuted); } catch(e) { v.muted = targetMuted; } }
+    if (v.muted !== targetMuted) v.muted = targetMuted;
     if (isAudio) {
       v.volume = 1;
       if (t.controls) { try { t.controls.setVolume(1); } catch(e) {} }
-      if (v.paused && v.readyState >= 2) {
-        v.play().catch(()=>{});
-      }
+      if (v.paused && v.readyState >= 2) v.play().catch(()=>{});
     }
   });
 }
 
-/* WATCHDOG */
+/* ============================================================ WATCHDOG */
 const lastTimes = new Map();
 const stallCounts = new Map();
 setInterval(() => {
@@ -643,7 +715,7 @@ setInterval(() => {
   });
 }, 3500);
 
-/* PICKER */
+/* ============================================================ PICKER */
 function openPicker(idx) {
   pickSlot = idx;
   const t = tiles[idx];
@@ -692,25 +764,33 @@ function renderPicker(q) {
   });
 }
 
-/* SOURCE MODAL */
+/* ============================================================ SOURCE MODAL */
 function openSourceModal() {
   const err = $('srcErr'); err.textContent = '';
   const type = sourceConfig ? sourceConfig.type : 'url';
   document.querySelector(`input[name="srcType"][value="${type}"]`).checked = true;
-  const url = $('srcUrl');
-  url.value = sourceConfig && sourceConfig.type === 'url' ? sourceConfig.url : '';
-  url.classList.toggle('active', type === 'url');
+  const urlInput = $('srcUrl');
+  const textInput = $('srcText');
+  urlInput.value = (sourceConfig && sourceConfig.type === 'url') ? sourceConfig.url : '';
+  textInput.value = (sourceConfig && sourceConfig.type === 'text') ? sourceConfig.text : '';
+  urlInput.classList.toggle('active', type === 'url');
+  textInput.classList.toggle('active', type === 'text');
   $('sourceModal').classList.remove('hidden');
 }
 function closeSourceModal() { $('sourceModal').classList.add('hidden'); }
+
 document.querySelectorAll('input[name="srcType"]').forEach(r => {
   r.addEventListener('change', () => {
-    $('srcUrl').classList.toggle('active', r.value === 'url' && r.checked);
-    if (r.value === 'url' && r.checked) setTimeout(() => $('srcUrl').focus(), 50);
+    const urlInput = $('srcUrl');
+    const textInput = $('srcText');
+    urlInput.classList.toggle('active', r.value === 'url' && r.checked);
+    textInput.classList.toggle('active', r.value === 'text' && r.checked);
+    if (r.value === 'url' && r.checked) setTimeout(() => urlInput.focus(), 50);
+    if (r.value === 'text' && r.checked) setTimeout(() => textInput.focus(), 50);
   });
 });
 
-/* UI */
+/* ============================================================ UI HANDLERS */
 $('btnReloadAll').addEventListener('click', () => { tiles.forEach((t, i) => { if (t && t.ch) reloadTile(i); }); });
 $('btnFullscreen').addEventListener('click', () => {
   const el = $('mv-grid');
@@ -724,11 +804,22 @@ $('pickerSearch').addEventListener('input', e => renderPicker(e.target.value));
 $('sourceClose').addEventListener('click', closeSourceModal);
 $('srcCancel').addEventListener('click', closeSourceModal);
 $('sourceModal').addEventListener('click', e => { if (e.target.id === 'sourceModal') closeSourceModal(); });
+
 $('srcSave').addEventListener('click', async () => {
   const err = $('srcErr'); err.textContent = '';
   const type = document.querySelector('input[name="srcType"]:checked').value;
-  const cfg = type === 'url' ? { type: 'url', url: $('srcUrl').value.trim() } : { type: 'backend' };
-  if (type === 'url' && !/^https?:\/\//i.test(cfg.url)) { err.textContent = 'Inserisci un URL valido (http/https)'; return; }
+  let cfg;
+  if (type === 'url') {
+    const u = $('srcUrl').value.trim();
+    if (!/^https?:\/\//i.test(u)) { err.textContent = 'Inserisci un URL valido (http/https)'; return; }
+    cfg = { type: 'url', url: u };
+  } else if (type === 'text') {
+    const t = $('srcText').value.trim();
+    if (!t || t.length < 20) { err.textContent = 'Incolla il contenuto della M3U nel campo di testo'; return; }
+    cfg = { type: 'text', text: t };
+  } else {
+    cfg = { type: 'backend' };
+  }
   const btn = $('srcSave'); btn.disabled = true; btn.textContent = 'Caricamento…';
   try {
     await initFromSource(cfg, false);
@@ -736,10 +827,14 @@ $('srcSave').addEventListener('click', async () => {
     activeAudio = -1;
     renderGrid();
     closeSourceModal();
-  } catch (e) { err.textContent = 'Errore: ' + e.message; } finally { btn.disabled = false; btn.textContent = 'Salva e carica'; }
+  } catch (e) {
+    err.textContent = 'Errore: ' + e.message;
+  } finally {
+    btn.disabled = false; btn.textContent = 'Salva e carica';
+  }
 });
 
-/* KEYBOARD */
+/* ============================================================ KEYBOARD */
 document.addEventListener('keydown', e => {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
     if (e.key === 'Escape') { closePicker(); closeSourceModal(); }
@@ -756,22 +851,9 @@ document.addEventListener('keydown', e => {
   const v = t && t.video;
   const p = t && t.player;
 
-  if (e.code === 'Space' || e.key === ' ' || e.key === 'Spacebar') {
-    e.preventDefault(); e.stopPropagation();
-    if (v) { v.paused ? v.play().catch(()=>{}) : v.pause(); }
-    return;
-  }
+  if (e.code === 'Space' || e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); e.stopPropagation(); if (v) { v.paused ? v.play().catch(()=>{}) : v.pause(); } return; }
   if (e.key === 'ArrowLeft') { e.preventDefault(); e.stopPropagation(); if (v) v.currentTime = Math.max(0, v.currentTime - 10); return; }
-  if (e.key === 'ArrowRight') {
-    e.preventDefault(); e.stopPropagation();
-    if (v) {
-      let maxT = v.currentTime + 10;
-      if (p && p.isLive && p.isLive()) { try { maxT = Math.min(p.seekRange().end, maxT); } catch (er) {} }
-      else if (isFinite(v.duration)) maxT = Math.min(v.duration, maxT);
-      v.currentTime = maxT;
-    }
-    return;
-  }
+  if (e.key === 'ArrowRight') { e.preventDefault(); e.stopPropagation(); if (v) { let maxT = v.currentTime + 10; if (p && p.isLive && p.isLive()) { try { maxT = Math.min(p.seekRange().end, maxT); } catch (er) {} } else if (isFinite(v.duration)) maxT = Math.min(v.duration, maxT); v.currentTime = maxT; } return; }
   if (e.key === 'ArrowUp') { e.preventDefault(); e.stopPropagation(); if (v) { v.volume = Math.min(1, v.volume + 0.1); v.muted = false; } return; }
   if (e.key === 'ArrowDown') { e.preventDefault(); e.stopPropagation(); if (v) v.volume = Math.max(0, v.volume - 0.1); return; }
   if (e.key === 'm' || e.key === 'M') { if (v) v.muted = !v.muted; return; }
@@ -785,12 +867,13 @@ document.addEventListener('keydown', e => {
   }
 }, true);
 
-/* BOOT */
+/* ============================================================ BOOT */
 (async function boot() {
   renderGrid();
   loadSourceConfig();
   if (sourceConfig) {
-    try { await initFromSource(sourceConfig, true); } catch (e) { console.warn('[MV] auto-load fallito:', e); openSourceModal(); }
+    try { await initFromSource(sourceConfig, true); }
+    catch (e) { console.warn('[MV] auto-load fallito:', e); openSourceModal(); }
   } else { openSourceModal(); }
 })();
 </script>
