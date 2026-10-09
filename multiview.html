@@ -6,7 +6,7 @@
 <title>Multiview 2×2</title>
 
 <link rel="preload" href="https://raw.githubusercontent.com/Leinadf1/lista/main/Formula1-Bold_web_0.ttf" as="font" type="font/ttf" crossorigin>
-<!-- ★ MATERIAL ICONS: necessari per i pulsanti Shaka UI ★ -->
+<!-- Material Icons: NECESSARIO per i pulsanti Shaka -->
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
 <style>
@@ -16,6 +16,22 @@
   font-weight: bold;
   font-style: normal;
   font-display: swap;
+}
+/* Ripristino classe material-icons (evita che font custom la sovrascriva) */
+.material-icons {
+  font-family: 'Material Icons' !important;
+  font-weight: normal !important;
+  font-style: normal !important;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
 }
 </style>
 
@@ -52,50 +68,27 @@ img { display: block; }
   border-bottom: 1px solid #111;
 }
 #mv-header .mv-title {
-  font-size: 12px;
-  font-weight: 800;
-  color: #888;
-  letter-spacing: .8px;
-  text-transform: uppercase;
+  font-size: 12px; font-weight: 800; color: #888;
+  letter-spacing: .8px; text-transform: uppercase;
 }
 #mv-header .mv-src {
-  font-size: 10.5px;
-  font-weight: 700;
-  padding: 3px 9px;
-  border-radius: 11px;
-  background: #111;
-  color: #666;
-  max-width: 180px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-size: 10.5px; font-weight: 700; padding: 3px 9px;
+  border-radius: 11px; background: #111; color: #666;
+  max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 #mv-header .mv-src.custom { color: #e0b400; }
 #mv-header .mv-spacer { flex: 1; }
 .mv-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 5px 10px;
-  background: #111;
-  color: #aaa;
-  border: 1px solid #222;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: .4px;
-  transition: background .15s;
-  white-space: nowrap;
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 5px 10px; background: #111; color: #aaa;
+  border: 1px solid #222; border-radius: 12px;
+  font-size: 11px; font-weight: 700; letter-spacing: .4px;
+  transition: background .15s; white-space: nowrap;
 }
 .mv-btn:hover { background: #1a1a1a; color: #fff; }
 
 /* ==================== GRID ==================== */
-#mv-main {
-  flex: 1 1 auto;
-  min-height: 0;
-  min-width: 0;
-  display: flex;
-}
+#mv-main { flex: 1 1 auto; min-height: 0; min-width: 0; display: flex; }
 #mv-grid {
   flex: 1;
   display: grid;
@@ -103,31 +96,20 @@ img { display: block; }
   grid-template-rows: 1fr 1fr;
   gap: 2px;
   background: #141414;
-  min-width: 0;
-  min-height: 0;
+  min-width: 0; min-height: 0;
 }
-#mv-grid:fullscreen,
-#mv-grid:-webkit-full-screen {
-  width: 100vw;
-  height: 100vh;
-  gap: 2px;
-  background: #141414;
+#mv-grid:fullscreen, #mv-grid:-webkit-full-screen {
+  width: 100vw; height: 100vh; gap: 2px; background: #141414;
 }
 
 /* ==================== TILE ==================== */
 .mv-tile {
-  position: relative;
-  background: #000;
-  overflow: hidden;
-  min-width: 0;
-  min-height: 0;
+  position: relative; background: #000; overflow: hidden;
+  min-width: 0; min-height: 0;
 }
 .mv-tile.empty {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  background: #0a0a0a;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; background: #0a0a0a;
 }
 .mv-tile.empty:hover { background: #111; }
 .mv-add-inner {
@@ -136,150 +118,87 @@ img { display: block; }
 }
 .mv-add-circle {
   width: 44px; height: 44px; border-radius: 50%;
-  border: 1px solid #333;
-  color: #666; font-size: 24px; font-weight: 300; line-height: 1;
+  border: 1px solid #333; color: #666; font-size: 24px; font-weight: 300;
   display: flex; align-items: center; justify-content: center;
 }
 .mv-add-label {
-  font-size: 10px; letter-spacing: .8px;
-  text-transform: uppercase; font-weight: 700;
+  font-size: 10px; letter-spacing: .8px; text-transform: uppercase; font-weight: 700;
 }
-
-.mv-video-layer {
-  position: absolute;
-  inset: 0;
-  background: #000;
-  overflow: hidden;
-}
+.mv-video-layer { position: absolute; inset: 0; background: #000; overflow: hidden; }
 .mv-video-layer iframe {
-  position: absolute;
-  inset: 0;
-  width: 100%; height: 100%;
-  border: 0;
-  background: #000;
+  position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: #000;
 }
 
-/* ==================== OVERLAY AUTO-HIDE (nome + pulsanti) ==================== */
+/* ==================== OVERLAY AUTO-HIDE ==================== */
 .mv-ui {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+  position: absolute; top: 0; left: 0; right: 0;
   z-index: 8;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  display: flex; align-items: center; gap: 8px;
   padding: 6px 8px;
   background: linear-gradient(to bottom, rgba(0,0,0,.75), transparent);
-  opacity: 0;
-  pointer-events: none;
+  opacity: 0; pointer-events: none;
   transition: opacity .25s ease;
 }
-.mv-tile.ui-active .mv-ui {
-  opacity: 1;
-  pointer-events: auto;
-}
-
+.mv-tile.ui-active .mv-ui { opacity: 1; pointer-events: auto; }
 .mv-ui-name {
-  flex: 1;
-  min-width: 0;
-  font-size: 12px;
-  font-weight: 700;
-  color: #fff;
+  flex: 1; min-width: 0;
+  font-size: 12px; font-weight: 700; color: #fff;
   letter-spacing: .3px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   text-shadow: 0 1px 3px rgba(0,0,0,.9);
 }
-.mv-ui-actions {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex: 0 0 auto;
-}
+.mv-ui-actions { display: flex; align-items: center; gap: 4px; flex: 0 0 auto; }
 .mv-ibtn {
-  width: 24px; height: 24px;
-  border-radius: 50%;
-  background: rgba(255,255,255,.12);
-  color: #fff;
-  font-size: 12px;
-  line-height: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  width: 24px; height: 24px; border-radius: 50%;
+  background: rgba(255,255,255,.12); color: #fff;
+  font-size: 12px; line-height: 1;
+  display: inline-flex; align-items: center; justify-content: center;
   padding: 0;
-  transition: background .15s, transform .15s;
   border: 1px solid rgba(255,255,255,.1);
+  transition: background .15s, transform .15s;
 }
 .mv-ibtn:hover { background: rgba(255,255,255,.28); transform: scale(1.08); }
 .mv-ibtn.close:hover { background: #c00; border-color: #c00; }
 
-/* ==================== LOADING ==================== */
+/* ==================== LOADING / ERR ==================== */
 .mv-loading {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  gap: 10px;
-  background: #000;
-  z-index: 5;
-  color: #666;
-  font-size: 11px;
-  letter-spacing: .5px;
-  text-transform: uppercase;
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 10px;
+  background: #000; z-index: 5; color: #666;
+  font-size: 11px; letter-spacing: .5px; text-transform: uppercase;
 }
 .mv-loading.hidden { display: none; }
 .mv-spinner {
   width: 28px; height: 28px;
-  border: 2px solid #222;
-  border-top-color: #58a6ff;
-  border-radius: 50%;
-  animation: spin .8s linear infinite;
+  border: 2px solid #222; border-top-color: #58a6ff;
+  border-radius: 50%; animation: spin .8s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
-
-/* ==================== ERROR ==================== */
 .mv-err {
-  position: absolute;
-  inset: 0;
-  z-index: 9;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 14px;
-  text-align: center;
-  background: rgba(0,0,0,.92);
-  color: #ff9999;
-  font-size: 12px;
+  position: absolute; inset: 0; z-index: 9;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px; padding: 14px; text-align: center;
+  background: rgba(0,0,0,.92); color: #ff9999; font-size: 12px;
 }
 .mv-err.hidden { display: none; }
 .mv-err-actions { display: flex; gap: 6px; }
 .mv-err-btn {
-  padding: 5px 12px;
-  border-radius: 5px;
-  font-size: 11px;
-  font-weight: 700;
-  border: 1px solid #333;
-  background: #111;
-  color: #fff;
+  padding: 5px 12px; border-radius: 5px; font-size: 11px; font-weight: 700;
+  border: 1px solid #333; background: #111; color: #fff;
 }
 .mv-err-btn.retry { background: #0a3; border-color: #0a3; }
 
 /* ============================================================
-   SHAKA UI COMPATTA (ridimensionata per riquadri piccoli)
+   SHAKA UI — solo testo usa Formula1, icone restano Material
    ============================================================ */
-.shaka-video-container *,
-.shaka-controls-container *,
-.shaka-settings-menu *,
-.shaka-overflow-menu *,
-.shaka-tooltips *,
-.shaka-text-container *,
-.shaka-ad-controls * {
+.mv-tile .shaka-current-time,
+.mv-tile .shaka-duration,
+.mv-tile .shaka-current-time-divider,
+.mv-tile .shaka-overflow-menu button span,
+.mv-tile .shaka-settings-menu button span,
+.mv-tile .shaka-back-to-overflow-button span,
+.mv-tile .shaka-tooltips,
+.mv-tile .shaka-ad-controls button span {
   font-family: 'Formula1 Display Bold', 'Inter', sans-serif !important;
 }
 
@@ -292,131 +211,106 @@ img { display: block; }
   background: linear-gradient(transparent, rgba(0,0,0,.75)) !important;
 }
 
-/* Barra controlli COMPATTA */
+/* Barra inferiore: layout orizzontale normale (come il single player) */
 .mv-tile .shaka-controls-container .shaka-bottom-controls {
-  padding: 0 4px 3px 4px !important;
+  padding: 0 6px 4px 6px !important;
 }
 .mv-tile .shaka-controls-container .shaka-controls-button-panel {
   padding: 0 !important;
-  gap: 0 !important;
+  gap: 2px !important;
+  display: flex !important;
+  align-items: center !important;
 }
 .mv-tile .shaka-controls-container .shaka-controls-button-panel button {
   padding: 0 !important;
-  margin: 0 2px !important;
-  width: 22px !important;
-  height: 22px !important;
-  min-width: 22px !important;
-  font-size: 14px !important;
+  margin: 0 3px !important;
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
-.mv-tile .shaka-controls-container .shaka-controls-button-panel button svg,
-.mv-tile .shaka-controls-container .shaka-controls-button-panel button i {
-  font-size: 16px !important;
-  width: 16px !important;
-  height: 16px !important;
+.mv-tile .shaka-controls-container .shaka-controls-button-panel button i.material-icons {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
 }
 
 /* Times */
 .mv-tile .shaka-current-time,
 .mv-tile .shaka-duration,
 .mv-tile .shaka-current-time-divider {
-  font-size: 10px !important;
+  font-size: 11px !important;
   font-weight: 700 !important;
-  padding: 0 2px !important;
+  padding: 0 3px !important;
   line-height: 1 !important;
 }
 
-/* Seek bar compatta */
+/* Seek bar SOTTO i pulsanti */
 .mv-tile .shaka-controls-container .shaka-seek-bar-container {
-  margin: 0 4px !important;
-  height: 3px !important;
+  margin: 2px 4px 0 !important;
+  height: 4px !important;
 }
 .mv-tile .shaka-controls-container .shaka-range-container {
-  height: 3px !important;
-  margin: 0 !important;
+  height: 4px !important; margin: 0 !important;
 }
 .mv-tile .shaka-controls-container .shaka-range-element {
-  height: 3px !important;
+  height: 4px !important;
 }
 .mv-tile .shaka-controls-container .shaka-seek-bar-container .shaka-range-element::-webkit-slider-thumb {
-  width: 10px !important;
-  height: 10px !important;
-  margin-top: -3.5px !important;
+  width: 12px !important; height: 12px !important; margin-top: -4px !important;
 }
 
-/* Menu a comparsa (qualità / velocità) */
+/* Menu a comparsa */
 .mv-tile .shaka-controls-container .shaka-overflow-menu,
 .mv-tile .shaka-controls-container .shaka-settings-menu {
-  font-size: 11px !important;
-  padding: 3px !important;
+  font-size: 11px !important; padding: 3px !important;
 }
 .mv-tile .shaka-controls-container .shaka-overflow-menu button,
 .mv-tile .shaka-controls-container .shaka-settings-menu button {
-  padding: 5px 10px !important;
+  padding: 6px 10px !important;
   font-size: 11px !important;
   height: auto !important;
   line-height: 1.2 !important;
 }
 .mv-tile .shaka-controls-container .shaka-back-to-overflow-button {
-  font-size: 11px !important;
-  padding: 5px 10px !important;
+  font-size: 11px !important; padding: 6px 10px !important;
 }
-.mv-tile .shaka-controls-container .shaka-overflow-menu button i,
-.mv-tile .shaka-controls-container .shaka-settings-menu button i {
-  font-size: 14px !important;
-}
-
-/* Big play/pause button */
-.mv-tile .shaka-play-button-container svg,
-.mv-tile .shaka-play-button-container i {
-  width: 40px !important;
-  height: 40px !important;
-  font-size: 40px !important;
-}
-.mv-tile .shaka-play-button-container .shaka-play-button {
-  background: rgba(255,255,255,.94) !important;
-  color: #000 !important;
-  width: 58px !important;
-  height: 58px !important;
-  padding: 10px !important;
+.mv-tile .shaka-controls-container .shaka-overflow-menu button i.material-icons,
+.mv-tile .shaka-controls-container .shaka-settings-menu button i.material-icons {
+  font-size: 15px !important;
 }
 
-/* Nascondi pulsanti inutili in griglia */
+/* NASCONDI il big play button centrale */
+.mv-tile .shaka-play-button-container { display: none !important; }
+
+/* Nascondi pulsanti inutili */
 .mv-tile .shaka-cast-button,
 .mv-tile .shaka-pip-button,
 .mv-tile .shaka-airplay-button,
 .mv-tile .shaka-client-side-ad-ui,
 .mv-tile .shaka-ad-controls,
-.mv-tile .shaka-spacer { display: none !important; }
+.mv-tile .shaka-playback-rate-button { display: none !important; }
 
 /* Volume slider compatto */
 .mv-tile .shaka-volume-bar-container {
-  width: 40px !important;
+  width: 50px !important;
 }
 
 /* ==================== MODALS ==================== */
 .modal-mask {
-  position: fixed;
-  inset: 0;
+  position: fixed; inset: 0;
   background: rgba(0,0,0,.82);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  z-index: 100; display: flex; align-items: center; justify-content: center;
   padding: 14px;
 }
 .modal-mask.hidden { display: none; }
 .modal-box {
-  background: #0d1117;
-  border: 1px solid #30363d;
-  border-radius: 12px;
-  padding: 18px;
-  max-width: 700px;
-  width: 100%;
-  max-height: 90dvh;
-  display: flex;
-  flex-direction: column;
+  background: #0d1117; border: 1px solid #30363d; border-radius: 12px;
+  padding: 18px; max-width: 700px; width: 100%; max-height: 90dvh;
+  display: flex; flex-direction: column;
   box-shadow: 0 20px 60px rgba(0,0,0,.7);
 }
 .modal-head {
@@ -426,31 +320,21 @@ img { display: block; }
 .modal-head h3 { margin: 0; font-size: 15px; font-weight: 800; color: #f0f6fc; }
 .modal-head .sub { font-size: 11.5px; color: #8b949e; margin-top: 3px; }
 .modal-close {
-  background: rgba(255,255,255,.06);
-  color: #c9d1d9;
-  border-radius: 50%;
-  width: 28px; height: 28px;
-  font-size: 17px;
-  line-height: 1;
-  flex: 0 0 auto;
+  background: rgba(255,255,255,.06); color: #c9d1d9; border-radius: 50%;
+  width: 28px; height: 28px; font-size: 17px; line-height: 1; flex: 0 0 auto;
 }
 .modal-close:hover { background: rgba(255,255,255,.14); color: #fff; }
 .pick-search {
   display: flex; align-items: center; gap: 8px;
-  padding: 8px 12px;
-  background: #161b22;
-  border: 1px solid #30363d;
-  border-radius: 8px;
-  color: #8b949e;
+  padding: 8px 12px; background: #161b22;
+  border: 1px solid #30363d; border-radius: 8px; color: #8b949e;
   margin-bottom: 10px;
 }
 .pick-search input {
   flex: 1; background: none; border: none; outline: none;
   color: #f0f6fc; font-size: 13.5px; font-family: inherit; min-width: 0;
 }
-.pick-list {
-  flex: 1; overflow-y: auto; padding-right: 4px; min-height: 200px;
-}
+.pick-list { flex: 1; overflow-y: auto; padding-right: 4px; min-height: 200px; }
 .pick-cat {
   font-size: 10.5px; font-weight: 800; color: #f1e05a;
   text-transform: uppercase; letter-spacing: 1px;
@@ -471,7 +355,10 @@ img { display: block; }
 .pick-row:hover:not(:disabled) { background: #161b22; border-color: #30363d; color: #f0f6fc; }
 .pick-row:disabled { opacity: .35; cursor: not-allowed; }
 .pick-row img { width: 30px; height: 30px; object-fit: contain; flex: 0 0 auto; }
-.pick-row .pick-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 700; }
+.pick-row .pick-name {
+  flex: 1; min-width: 0; white-space: nowrap; overflow: hidden;
+  text-overflow: ellipsis; font-weight: 700;
+}
 .pick-row .pick-inuse { font-size: 10.5px; color: #8b949e; font-weight: 500; }
 .pick-empty { text-align: center; color: #6a737d; padding: 40px 10px; font-style: italic; font-size: 12.5px; }
 
@@ -486,8 +373,7 @@ img { display: block; }
 .src-opt.col { flex-direction: column; align-items: stretch; gap: 8px; }
 .src-opt-row { display: flex; align-items: center; gap: 10px; }
 .src-url {
-  width: 100%;
-  background: #161b22;
+  width: 100%; background: #161b22;
   border: 1px solid #30363d; border-radius: 8px;
   color: #f0f6fc; padding: 10px 12px;
   font-size: 13px; font-family: inherit;
@@ -503,13 +389,13 @@ img { display: block; }
 }
 .err-text { color: #ff7b7b; font-size: 11.5px; margin-top: 8px; min-height: 15px; }
 
-/* ==================== MOBILE ==================== */
 @media (max-width: 700px), (pointer: coarse) {
   #mv-header { height: 34px; gap: 4px; padding: 0 8px; }
   .mv-title { display: none; }
   .mv-btn { padding: 4px 9px; font-size: 10px; }
   .mv-src { max-width: 110px; font-size: 9.5px; }
-  .mv-ui { opacity: 1; pointer-events: auto; background: linear-gradient(to bottom, rgba(0,0,0,.6), transparent); }
+  .mv-ui { opacity: 1; pointer-events: auto;
+    background: linear-gradient(to bottom, rgba(0,0,0,.6), transparent); }
   .mv-ui-name { font-size: 11px; }
   .mv-ibtn { width: 22px; height: 22px; font-size: 11px; }
 }
@@ -528,7 +414,6 @@ img { display: block; }
 
 <main id="mv-main"><div id="mv-grid"></div></main>
 
-<!-- PICKER MODAL -->
 <div class="modal-mask hidden" id="pickerModal">
   <div class="modal-box">
     <div class="modal-head">
@@ -546,7 +431,6 @@ img { display: block; }
   </div>
 </div>
 
-<!-- SOURCE MODAL -->
 <div class="modal-mask hidden" id="sourceModal">
   <div class="modal-box" style="max-width:500px">
     <div class="modal-head">
@@ -581,11 +465,11 @@ img { display: block; }
 
 <script>
 /* ============================================================
-   MULTIVIEW 2x2 — Shaka UI compatta + auto-hide overlay
+   MULTIVIEW 2x2 — click-free play/pause + speed 1x
    ============================================================ */
 
 const IFRAME_GROUPS = ['PRIME VIDEO', 'DAZN PRIMEVIDEO DE'];
-const SOURCE_KEY = 'mv_source_v5';
+const SOURCE_KEY = 'mv_source_v6';
 const PROXY_BASE = 'https://dazn-ua-proxy.stefanoaccuont.workers.dev/';
 const proxyCategories = [
   'serie bkt','laliga ea sports','serie a enilive','amichevoli',
@@ -624,9 +508,7 @@ function buildIframeSrc(ch) {
   return `https://hugoedgar.com/drm-player/?${p.toString()}`;
 }
 
-/* ============================================================
-   SORGENTE
-   ============================================================ */
+/* ============================================================ SORGENTE */
 function loadSourceConfig() {
   try { sourceConfig = JSON.parse(localStorage.getItem(SOURCE_KEY) || 'null'); }
   catch (e) { sourceConfig = null; }
@@ -664,9 +546,7 @@ async function fetchM3UFromSource(cfg) {
   return await r.text();
 }
 
-/* ============================================================
-   PARSER M3U
-   ============================================================ */
+/* ============================================================ PARSER M3U */
 function parseM3U(m3u) {
   const out = [];
   const lines = m3u.split('\n');
@@ -732,9 +612,7 @@ async function initFromSource(cfg, silent) {
   console.log(`[MV] ${parsed.length} canali caricati`);
 }
 
-/* ============================================================
-   IFRAME LIVE KEEP-ALIVE
-   ============================================================ */
+/* ============================================================ IFRAME */
 function sendIframeLive(fr) {
   if (!fr || !fr.contentWindow) return;
   const msgs = [
@@ -754,9 +632,7 @@ function startIframeLiveLoop(fr) {
   [100, 800, 1500, 3000].forEach(d => setTimeout(() => sendIframeLive(fr), d));
 }
 
-/* ============================================================
-   GRID
-   ============================================================ */
+/* ============================================================ GRID */
 function renderGrid() {
   const g = $('mv-grid');
   g.innerHTML = '';
@@ -801,9 +677,12 @@ function buildTileEl(idx) {
 }
 
 function bindTileEvents(el, idx) {
-  // Click su tile NON attivo → cambia audio (senza far partire play/pausa)
+  // click su tile NON attivo → cambia audio (senza far partire play/pausa)
   el.addEventListener('mousedown', e => {
     if (e.target.closest('[data-act]')) return;
+    if (e.target.closest('.shaka-controls-container')) return;
+    if (e.target.closest('.shaka-settings-menu')) return;
+    if (e.target.closest('.shaka-overflow-menu')) return;
     if (activeAudio !== idx && tiles[idx] && tiles[idx].ch) {
       e.stopPropagation();
       e.preventDefault();
@@ -827,10 +706,7 @@ function bindTileEvents(el, idx) {
     activateUI(el);
   });
 
-  // Mostra overlay a ogni movimento del mouse nel tile
   el.addEventListener('mousemove', () => activateUI(el));
-
-  // Touch: mostra overlay per 3s
   el.addEventListener('touchstart', () => activateUI(el), { passive: true });
 }
 
@@ -840,22 +716,18 @@ function activateUI(el) {
   el._uiTimer = setTimeout(() => el.classList.remove('ui-active'), UI_HIDE_MS);
 }
 
-/* ============================================================
-   TILE LIFECYCLE
-   ============================================================ */
+/* ============================================================ TILE */
 function newTileObj(ch) {
   return { ch, video: null, player: null, ui: null, container: null, iframe: null, loading: false, recovering: false };
 }
 function destroyTile(t) {
   if (!t) return;
   try { if (t.player) t.player.destroy(); } catch (e) {}
-  t.player = null;
-  t.ui = null;
+  t.player = null; t.ui = null;
   if (t.iframe) { try { t.iframe.remove(); } catch(e){} }
   t.iframe = null;
   if (t.video) { try { t.video.pause(); t.video.src = ''; t.video.load(); } catch(e){} }
-  t.video = null;
-  t.container = null;
+  t.video = null; t.container = null;
 }
 function removeTile(idx) {
   if (tiles[idx]) destroyTile(tiles[idx]);
@@ -867,9 +739,7 @@ function removeTile(idx) {
   if (activeAudio < 0) {
     const firstWithCh = tiles.findIndex(x => x && x.ch);
     if (firstWithCh >= 0) setAudio(firstWithCh);
-  } else {
-    applyAudioState();
-  }
+  } else applyAudioState();
 }
 function reloadTile(idx) {
   const t = tiles[idx];
@@ -923,7 +793,7 @@ async function loadTile(idx, ch) {
     return;
   }
 
-  // ==== SHAKA + UI ====
+  // ==== SHAKA ====
   if (!window.shaka || !shaka.Player.isBrowserSupported()) {
     t.loading = false;
     if (loading) loading.classList.add('hidden');
@@ -949,11 +819,57 @@ async function loadTile(idx, ch) {
   t.video = video;
   t.container = container;
 
+  // ==== BLOCCA play/pausa al click sul video ====
+  container.addEventListener('click', e => {
+    // Permetti click solo dentro i controlli/menu
+    const isControl = e.target.closest('.shaka-controls-container');
+    const isMenu = e.target.closest('.shaka-settings-menu, .shaka-overflow-menu');
+    if (!isControl && !isMenu) {
+      e.stopImmediatePropagation();
+      e.preventDefault();
+      // mostra comunque la UI del tile
+      const tile = e.target.closest('.mv-tile');
+      if (tile) activateUI(tile);
+      return;
+    }
+    // Se è sul scrim (area video sotto i controlli) → blocca
+    if (e.target.closest('.shaka-scrim-container')) {
+      e.stopImmediatePropagation();
+      e.preventDefault();
+      const tile = e.target.closest('.mv-tile');
+      if (tile) activateUI(tile);
+    }
+  }, true);
+
   const player = new shaka.Player(video);
   t.player = player;
 
+  // ==== Shaka UI: pannello custom senza playback_rate ====
   try {
-    const ui = new shaka.ui.Overlay(player, container, video);
+    const ui = new shaka.ui.Overlay(player, container, video, {
+      addSeekBar: true,
+      addBigPlayButton: false,   // niente big play button centrale
+      controlPanelElements: [
+        'play_pause',
+        'time_and_duration',
+        'spacer',
+        'mute',
+        'volume',
+        'fullscreen',
+        'overflow_menu'
+      ],
+      overflowMenuButtons: [
+        'quality',
+        'captions',
+        'picture_in_picture'
+        // NOTA: 'playback_rate' omesso di proposito → speed fissa a 1x
+      ],
+      seekBarColors: {
+        base: 'rgba(255,255,255,.22)',
+        buffered: 'rgba(255,255,255,.35)',
+        played: '#e0e0e0'
+      }
+    });
     ui.getControls();
     t.ui = ui;
   } catch (e) {
@@ -989,7 +905,9 @@ async function loadTile(idx, ch) {
     },
     manifest: {
       retryParameters: { timeout: 12000, maxAttempts: 5, baseDelay: 500, backoffFactor: 2, fuzzFactor: 0.5 }
-    }
+    },
+    // Speed forzata a 1x di base (l'utente non può cambiarla dal menu)
+    playbackRates: [1]
   });
 
   if (ch.streamHeaders && Object.keys(ch.streamHeaders).length) {
@@ -998,12 +916,16 @@ async function loadTile(idx, ch) {
 
   try {
     await player.load(ch.url);
+    // Forza rate 1x dopo il load (alcuni contenuti potrebbero impostarlo diversamente)
+    try { player.setPlaybackRate(1); } catch(e) {}
+
     if (player.isLive()) {
       try {
         const r = player.seekRange();
         if (r && isFinite(r.end)) video.currentTime = r.end;
       } catch (e) {}
     }
+
     const tracks = player.getAudioLanguagesAndRoles();
     const it = tracks.find(x =>
       (x.language && (x.language.toLowerCase().startsWith('it') || x.language.toLowerCase() === 'ita')) ||
@@ -1038,9 +960,7 @@ function showTileError(idx, msg, actions) {
   err.classList.remove('hidden');
 }
 
-/* ============================================================
-   AUDIO
-   ============================================================ */
+/* ============================================================ AUDIO */
 function setAudio(idx) {
   activeAudio = idx;
   applyAudioState();
@@ -1052,9 +972,7 @@ function applyAudioState() {
   });
 }
 
-/* ============================================================
-   WATCHDOG anti-freeze
-   ============================================================ */
+/* ============================================================ WATCHDOG */
 const lastTimes = new Map();
 const stallCounts = new Map();
 setInterval(() => {
@@ -1077,20 +995,14 @@ setInterval(() => {
           if (t.player.isLive && t.player.isLive()) {
             t.player.goToLive();
             v.play().catch(()=>{});
-          } else {
-            reloadTile(i);
-          }
+          } else reloadTile(i);
         } catch (e) { reloadTile(i); }
       }
-    } else {
-      stallCounts.delete(i);
-    }
+    } else stallCounts.delete(i);
   });
 }, 3500);
 
-/* ============================================================
-   PICKER
-   ============================================================ */
+/* ============================================================ PICKER */
 function openPicker(idx) {
   pickSlot = idx;
   const t = tiles[idx];
@@ -1158,9 +1070,7 @@ function renderPicker(q) {
   });
 }
 
-/* ============================================================
-   SOURCE MODAL
-   ============================================================ */
+/* ============================================================ SOURCE */
 function openSourceModal() {
   const err = $('srcErr'); err.textContent = '';
   const type = sourceConfig ? sourceConfig.type : 'url';
@@ -1179,9 +1089,7 @@ document.querySelectorAll('input[name="srcType"]').forEach(r => {
   });
 });
 
-/* ============================================================
-   UI HANDLERS
-   ============================================================ */
+/* ============================================================ UI HANDLERS */
 $('btnReloadAll').addEventListener('click', () => {
   tiles.forEach((t, i) => { if (t && t.ch) reloadTile(i); });
 });
@@ -1223,9 +1131,7 @@ $('srcSave').addEventListener('click', async () => {
   }
 });
 
-/* ============================================================
-   KEYBOARD — controlli sul tile ATTIVO
-   ============================================================ */
+/* ============================================================ KEYBOARD */
 document.addEventListener('keydown', e => {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
     if (e.key === 'Escape') { closePicker(); closeSourceModal(); }
@@ -1251,35 +1157,29 @@ document.addEventListener('keydown', e => {
     return;
   }
   if (e.key === 'ArrowLeft') {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault(); e.stopPropagation();
     if (v) v.currentTime = Math.max(0, v.currentTime - 10);
     return;
   }
   if (e.key === 'ArrowRight') {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault(); e.stopPropagation();
     if (v) {
       let maxT = v.currentTime + 10;
       if (p && p.isLive && p.isLive()) {
         try { maxT = Math.min(p.seekRange().end, maxT); } catch (er) {}
-      } else if (isFinite(v.duration)) {
-        maxT = Math.min(v.duration, maxT);
-      }
+      } else if (isFinite(v.duration)) maxT = Math.min(v.duration, maxT);
       v.currentTime = maxT;
     }
     return;
   }
   if (e.key === 'ArrowUp') {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault(); e.stopPropagation();
     if (v) { v.volume = Math.min(1, v.volume + 0.1); v.muted = false; }
     return;
   }
   if (e.key === 'ArrowDown') {
-    e.preventDefault();
-    e.stopPropagation();
-    if (v) { v.volume = Math.max(0, v.volume - 0.1); }
+    e.preventDefault(); e.stopPropagation();
+    if (v) v.volume = Math.max(0, v.volume - 0.1);
     return;
   }
   if (e.key === 'm' || e.key === 'M') { if (v) v.muted = !v.muted; return; }
@@ -1296,9 +1196,7 @@ document.addEventListener('keydown', e => {
   }
 }, true);
 
-/* ============================================================
-   BOOT
-   ============================================================ */
+/* ============================================================ BOOT */
 (async function boot() {
   renderGrid();
   loadSourceConfig();
