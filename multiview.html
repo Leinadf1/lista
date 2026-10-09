@@ -213,7 +213,7 @@ img { display: block; }
     </label>
 
     <div class="src-hint">
-      • <strong>URL M3U</strong>: funziona con gist GitHub, pastebin, raw.githubusercontent, ecc.<br>
+      • <strong>URL M3U</strong>: gist GitHub, pastebin, raw.githubusercontent (proxy CORS automatico).<br>
       • <strong>Incolla testo</strong>: copia il contenuto della tua lista e incollalo sopra.<br>
       • La scelta viene salvata in questo browser.
     </div>
@@ -227,19 +227,25 @@ img { display: block; }
 
 <script>
 /* ============================================================
-   MULTIVIEW v18
-   - LIVE NON FORZATO (nessun goToLive / liveSync / seek to live)
-   - Timeout 15s: evita loading infinito se licenza 403
-   - Click handler in CAPTURE: click tile = cambia audio
-   - Mute sync via controls.setMuted + video.muted
+   MULTIVIEW v19
+   - Proxy CORS automatico per URL gist/raw
+   - Fix automatico URL gist.github.com → gist.githubusercontent.com
+   - Timeout 15s sul load dei tile
+   - Click in capture = cambia audio
    ============================================================ */
 
 const IFRAME_GROUPS = ['PRIME VIDEO', 'DAZN PRIMEVIDEO DE'];
-const SOURCE_KEY = 'mv_source_v18';
+const SOURCE_KEY = 'mv_source_v19';
 const PROXY_BASE = 'https://dazn-ua-proxy.stefanoaccuont.workers.dev/';
 const proxyCategories = ['serie bkt','laliga ea sports','serie a enilive','amichevoli','jupiler pro league','liga portugal betclic','nerozone','dazn nerozone'];
 const UI_HIDE_MS = 3000;
 const LOAD_TIMEOUT_MS = 15000;
+
+/* Proxy CORS pubblici — se il primo fallisce, prova il secondo */
+const CORS_PROXIES = [
+  { wrap: u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u), name: 'allorigins' },
+  { wrap: u => 'https://corsproxy.io/?' + encodeURIComponent(u), name: 'corsproxy.io' }
+];
 
 let allChannels = [];
 let tiles = [null, null, null, null];
@@ -266,6 +272,22 @@ function buildIframeSrc(ch) {
   return `https://hugoedgar.com/drm-player/?${p.toString()}`;
 }
 
+/* ============================================================
+   URL HELPERS
+   ============================================================ */
+function fixGistUrl(url) {
+  // gist.github.com/.../raw/... → gist.githubusercontent.com/.../raw/...
+  // gist.github.com/user/ID/raw/file → gist.githubusercontent.com/user/ID/raw/file
+  try {
+    const u = new URL(url);
+    if (u.hostname === 'gist.github.com') {
+      u.hostname = 'gist.githubusercontent.com';
+      return u.toString();
+    }
+  } catch (e) {}
+  return url;
+}
+
 /* ============================================================ SORGENTE */
 function loadSourceConfig() {
   try { sourceConfig = JSON.parse(localStorage.getItem(SOURCE_KEY) || 'null'); } catch (e) { sourceConfig = null; }
@@ -284,6 +306,43 @@ function updateSrcBadge() {
   else { try { el.textContent = 'M3U · ' + new URL(sourceConfig.url).hostname; } catch (e) { el.textContent = 'M3U URL'; } el.classList.add('custom'); }
 }
 
+async function fetchWithCORS(url) {
+  // 1° tentativo: fetch diretto
+  try {
+    const r = await fetch(url, { cache: 'no-store', redirect: 'follow', headers: { 'Accept': 'text/plain, application/x-mpegURL, */*' } });
+    if (r.ok) {
+      const txt = await r.text();
+      if (txt && txt.trim().length > 10) {
+        console.log('[MV] Fetch diretto OK:', url);
+        return txt;
+      }
+    }
+    console.warn('[MV] Fetch diretto ha risposto ' + r.status + ', provo con proxy');
+  } catch (e) {
+    console.warn('[MV] Fetch diretto fallito (probabile CORS):', e.message);
+  }
+
+  // 2° tentativo: proxy CORS
+  for (const proxy of CORS_PROXIES) {
+    try {
+      const proxyUrl = proxy.wrap(url);
+      console.log('[MV] Provo proxy ' + proxy.name + ':', proxyUrl);
+      const r = await fetch(proxyUrl, { cache: 'no-store' });
+      if (r.ok) {
+        const txt = await r.text();
+        if (txt && txt.trim().length > 10) {
+          console.log('[MV] Proxy ' + proxy.name + ' OK');
+          return txt;
+        }
+      }
+    } catch (e) {
+      console.warn('[MV] Proxy ' + proxy.name + ' fallito:', e.message);
+    }
+  }
+
+  throw new Error('Impossibile scaricare la lista (CORS bloccato su tutti i proxy)');
+}
+
 async function fetchM3UFromSource(cfg) {
   if (cfg.type === 'backend') {
     const psw = prompt("Password per il backend del sito:");
@@ -293,11 +352,8 @@ async function fetchM3UFromSource(cfg) {
     return decodeBase64UTF8(await r.text());
   }
   if (cfg.type === 'text') return cfg.text || '';
-  const r = await fetch(cfg.url, { cache: 'no-store', redirect: 'follow', headers: { 'Accept': 'text/plain, application/x-mpegURL, */*' } });
-  if (!r.ok) throw new Error('HTTP ' + r.status + ' — impossibile scaricare la M3U');
-  const txt = await r.text();
-  if (!txt || txt.trim().length < 10) throw new Error('Il file M3U è vuoto o troppo corto');
-  return txt;
+  const url = fixGistUrl(cfg.url);
+  return await fetchWithCORS(url);
 }
 
 /* ============================================================ PARSER M3U */
@@ -518,7 +574,7 @@ async function loadTile(idx, ch) {
   const layer = el.querySelector('.mv-video-layer');
   if (!layer) { t.loading = false; return; }
 
-  /* ===== IFRAME ===== */
+  /* IFRAME */
   if (shouldUseIframe(ch)) {
     const src = buildIframeSrc(ch);
     if (!src) { t.loading = false; if (loading) loading.classList.add('hidden'); showTileError(idx, 'Parametri DRM mancanti', false); return; }
@@ -535,7 +591,7 @@ async function loadTile(idx, ch) {
     return;
   }
 
-  /* ===== SHAKA ===== */
+  /* SHAKA */
   if (!window.shaka || !shaka.Player.isBrowserSupported()) {
     t.loading = false; if (loading) loading.classList.add('hidden'); showTileError(idx, 'Shaka non supportato', false); return;
   }
@@ -569,32 +625,27 @@ async function loadTile(idx, ch) {
     t.controls = controls;
   } catch (e) { console.warn('[MV] UI Shaka init fallita:', e); }
 
-  /* ★ TIMEOUT: se non parte entro 15s, mostra errore ★ */
   const loadTimeout = setTimeout(() => {
     if (!t.loaded && tiles[idx] === t) {
       console.warn('[MV] Timeout caricamento tile', idx, ch.name);
       t.loading = false;
       if (loading) loading.classList.add('hidden');
-      showTileError(idx, 'Timeout: lo stream non parte (probabile licenza 403 o server non raggiungibile)', true);
+      showTileError(idx, 'Timeout: lo stream non parte (licenza 403 o server non raggiungibile)', true);
       try { player.destroy(); } catch(e) {}
       t.player = null;
     }
   }, LOAD_TIMEOUT_MS);
 
-  const onPlaying = () => {
-    t.loaded = true;
-    clearTimeout(loadTimeout);
-  };
+  const onPlaying = () => { t.loaded = true; clearTimeout(loadTimeout); };
   video.addEventListener('playing', onPlaying, { once: true });
   video.addEventListener('canplay', onPlaying, { once: true });
 
-  /* Log errori di licenza (403 tipico F1) */
   try {
     const net = player.getNetworkingEngine();
     if (net) {
       net.registerResponseFilter((type, response) => {
         if (type === shaka.net.NetworkingEngine.RequestType.LICENSE && response.status >= 400) {
-          console.error('[MV] Errore licenza (' + response.status + ') per', ch.name, '— stream non decodificabile');
+          console.error('[MV] Errore licenza (' + response.status + ') per', ch.name);
         }
       });
     }
@@ -609,7 +660,6 @@ async function loadTile(idx, ch) {
     }
   });
 
-  /* Config Shaka — NIENTE forzatura live */
   player.configure({
     drm: { clearKeys: ch.drm || {} },
     streaming: {
@@ -643,11 +693,7 @@ async function loadTile(idx, ch) {
 
     video.play().catch(() => { video.muted = true; video.play().catch(()=>{}); });
 
-    const hideLoading = () => {
-      t.loaded = true;
-      clearTimeout(loadTimeout);
-      if (loading) loading.classList.add('hidden');
-    };
+    const hideLoading = () => { t.loaded = true; clearTimeout(loadTimeout); if (loading) loading.classList.add('hidden'); };
     video.addEventListener('playing', hideLoading, { once: true });
     video.addEventListener('canplay', hideLoading, { once: true });
 
@@ -671,11 +717,8 @@ function showTileError(idx, msg, actions) {
   err.classList.remove('hidden');
 }
 
-/* ============================================================ AUDIO */
-function setAudio(idx) {
-  activeAudio = idx;
-  applyAudioState();
-}
+/* AUDIO */
+function setAudio(idx) { activeAudio = idx; applyAudioState(); }
 function applyAudioState() {
   tiles.forEach((t, i) => {
     if (!t || !t.video) return;
@@ -692,7 +735,7 @@ function applyAudioState() {
   });
 }
 
-/* ============================================================ WATCHDOG */
+/* WATCHDOG */
 const lastTimes = new Map();
 const stallCounts = new Map();
 setInterval(() => {
@@ -708,14 +751,13 @@ setInterval(() => {
       stallCounts.set(i, s);
       if (s >= 6) {
         stallCounts.delete(i);
-        console.warn('[MV] tile', i, 'bloccato — provo play() senza seek');
         v.play().catch(() => { reloadTile(i); });
       }
     } else stallCounts.delete(i);
   });
 }, 3500);
 
-/* ============================================================ PICKER */
+/* PICKER */
 function openPicker(idx) {
   pickSlot = idx;
   const t = tiles[idx];
@@ -764,7 +806,7 @@ function renderPicker(q) {
   });
 }
 
-/* ============================================================ SOURCE MODAL */
+/* SOURCE MODAL */
 function openSourceModal() {
   const err = $('srcErr'); err.textContent = '';
   const type = sourceConfig ? sourceConfig.type : 'url';
@@ -790,7 +832,7 @@ document.querySelectorAll('input[name="srcType"]').forEach(r => {
   });
 });
 
-/* ============================================================ UI HANDLERS */
+/* UI */
 $('btnReloadAll').addEventListener('click', () => { tiles.forEach((t, i) => { if (t && t.ch) reloadTile(i); }); });
 $('btnFullscreen').addEventListener('click', () => {
   const el = $('mv-grid');
@@ -830,7 +872,7 @@ $('srcSave').addEventListener('click', async () => {
   } catch (e) { err.textContent = 'Errore: ' + e.message; } finally { btn.disabled = false; btn.textContent = 'Salva e carica'; }
 });
 
-/* ============================================================ KEYBOARD */
+/* KEYBOARD */
 document.addEventListener('keydown', e => {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
     if (e.key === 'Escape') { closePicker(); closeSourceModal(); }
@@ -866,7 +908,7 @@ document.addEventListener('keydown', e => {
   }
 }, true);
 
-/* ============================================================ BOOT */
+/* BOOT */
 (async function boot() {
   renderGrid();
   loadSourceConfig();
