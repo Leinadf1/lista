@@ -16,7 +16,6 @@
   font-style: normal;
   font-display: swap;
 }
-/* Ripristino classe material-icons (evita che font custom la sovrascriva) */
 .material-icons {
   font-family: 'Material Icons' !important;
   font-weight: normal !important;
@@ -111,20 +110,21 @@ img { display: block; }
   font-size: 10px; letter-spacing: .8px; text-transform: uppercase; font-weight: 700;
 }
 
-/* ★ IMPORTANTE: video e iframe devono riempire il layer ★ */
+/* ★★★ STRUTTURA CORRETTA ★★★
+   .mv-video-layer (absolute, riempie il tile)
+     └── .shaka-container (relative, width/height 100% - quello che Shaka vuole)
+         └── <video>  ← Shaka ci mette attorno i suoi wrapper
+*/
 .mv-video-layer {
   position: absolute; inset: 0;
   background: #000;
   overflow: hidden;
 }
-.mv-video-layer video {
-  position: absolute;
-  inset: 0;
+.mv-video-layer .shaka-container {
+  position: relative;
   width: 100%;
   height: 100%;
-  object-fit: contain;
   background: #000;
-  display: block;
 }
 .mv-video-layer iframe {
   position: absolute; inset: 0;
@@ -191,7 +191,7 @@ img { display: block; }
 .mv-err-btn.retry { background: #0a3; border-color: #0a3; }
 
 /* ============================================================
-   SHAKA UI — testo in Formula1, icone Material intatte
+   SHAKA UI — testo in Formula1, icone Material
    ============================================================ */
 .shaka-current-time,
 .shaka-duration,
@@ -206,12 +206,20 @@ img { display: block; }
   border-radius: 0 !important;
   width: 100% !important;
   height: 100% !important;
+  position: relative !important;
+}
+/* ★ IMPORTANTE: NON forzare position:absolute sul video! */
+.mv-tile .shaka-video-container video {
+  position: static !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  background: #000 !important;
+  display: block !important;
 }
 .mv-tile .shaka-scrim-container {
   background: linear-gradient(transparent, rgba(0,0,0,.7)) !important;
 }
-
-/* Barra controlli: più compatta */
 .mv-tile .shaka-controls-container .shaka-bottom-controls {
   padding: 0 6px 4px 6px !important;
 }
@@ -227,8 +235,6 @@ img { display: block; }
   width: 17px !important;
   height: 17px !important;
 }
-
-/* Tempo */
 .mv-tile .shaka-current-time,
 .mv-tile .shaka-duration,
 .mv-tile .shaka-current-time-divider {
@@ -237,17 +243,12 @@ img { display: block; }
   padding: 0 2px !important;
   line-height: 1 !important;
 }
-
-/* Seek bar: visibile e cliccabile */
 .mv-tile .shaka-controls-container .shaka-seek-bar-container {
   margin: 3px 6px 0 !important;
   height: 3px !important;
   min-height: 3px !important;
 }
-.mv-tile .shaka-controls-container .shaka-range-container {
-  height: 3px !important; margin: 0 !important;
-  min-height: 3px !important;
-}
+.mv-tile .shaka-controls-container .shaka-range-container,
 .mv-tile .shaka-controls-container .shaka-range-element {
   height: 3px !important;
   min-height: 3px !important;
@@ -255,8 +256,6 @@ img { display: block; }
 .mv-tile .shaka-controls-container .shaka-seek-bar-container .shaka-range-element::-webkit-slider-thumb {
   width: 11px !important; height: 11px !important; margin-top: -4px !important;
 }
-
-/* Menu a comparsa (qualità/sottotitoli) */
 .mv-tile .shaka-controls-container .shaka-overflow-menu,
 .mv-tile .shaka-controls-container .shaka-settings-menu {
   font-size: 11px !important; padding: 3px !important;
@@ -268,12 +267,6 @@ img { display: block; }
   height: auto !important;
   line-height: 1.2 !important;
 }
-.mv-tile .shaka-controls-container .shaka-overflow-menu button i.material-icons,
-.mv-tile .shaka-controls-container .shaka-settings-menu button i.material-icons {
-  font-size: 15px !important;
-}
-
-/* Big play button centrale: piccolo e discreto */
 .mv-tile .shaka-play-button-container {
   width: 50px !important;
   height: 50px !important;
@@ -289,16 +282,12 @@ img { display: block; }
   color: #000 !important;
   padding: 12px !important;
 }
-
-/* Nascondi pulsanti inutili */
 .mv-tile .shaka-cast-button,
 .mv-tile .shaka-pip-button,
 .mv-tile .shaka-airplay-button,
 .mv-tile .shaka-playbackrate-button,
 .mv-tile .shaka-client-side-ad-ui,
 .mv-tile .shaka-ad-controls { display: none !important; }
-
-/* Volume compatto */
 .mv-tile .shaka-volume-bar-container { width: 44px !important; }
 
 /* ==================== MODALS ==================== */
@@ -465,11 +454,11 @@ img { display: block; }
 
 <script>
 /* ============================================================
-   MULTIVIEW 2x2 — struttura Shaka originale + UI compatta
+   MULTIVIEW 2x2 — struttura Shaka corretta (v9)
    ============================================================ */
 
 const IFRAME_GROUPS = ['PRIME VIDEO', 'DAZN PRIMEVIDEO DE'];
-const SOURCE_KEY = 'mv_source_v8';
+const SOURCE_KEY = 'mv_source_v9';
 const PROXY_BASE = 'https://dazn-ua-proxy.stefanoaccuont.workers.dev/';
 const proxyCategories = [
   'serie bkt','laliga ea sports','serie a enilive','amichevoli',
@@ -800,41 +789,28 @@ async function loadTile(idx, ch) {
   }
   try { shaka.polyfill.installAll(); } catch (e) {}
 
-  // ★ Container + video con attributi che Shaka UI si aspetta ★
+  // ★ Container RELATIVE (non absolute) — quello che Shaka UI si aspetta ★
   const container = document.createElement('div');
+  container.className = 'shaka-container';
   container.setAttribute('data-shaka-player-container', '');
-  container.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;background:#000;';
 
   const video = document.createElement('video');
+  video.setAttribute('data-shaka-player', '');
   video.setAttribute('playsinline', '');
+  video.setAttribute('autoplay', '');
   video.playsInline = true;
   video.autoplay = true;
   video.muted = true;
-  video.setAttribute('data-shaka-player', '');
-  video.style.cssText = 'width:100%;height:100%;object-fit:contain;background:#000;display:block;';
 
   container.appendChild(video);
   layer.appendChild(container);
   t.video = video;
   t.container = container;
 
-  // Blocca play/pausa al click fuori dai controlli (solo su video/scrim)
-  container.addEventListener('click', e => {
-    const isVideoOrScrim =
-      e.target.tagName === 'VIDEO' ||
-      e.target.classList.contains('shaka-scrim-container');
-    if (isVideoOrScrim) {
-      e.stopImmediatePropagation();
-      e.preventDefault();
-      const tile = e.target.closest('.mv-tile');
-      if (tile) activateUI(tile);
-    }
-  }, true);
-
   const player = new shaka.Player(video);
   t.player = player;
 
-  // Shaka UI con config DEFAULT
+  // ★ Inizializza UI prima del load (Shaka gestisce il video da solo) ★
   try {
     const ui = new shaka.ui.Overlay(player, container, video);
     ui.getControls();
@@ -842,11 +818,6 @@ async function loadTile(idx, ch) {
   } catch (e) {
     console.warn('[MV] UI Shaka init fallita:', e);
   }
-
-  // Forza rate 1x
-  video.addEventListener('ratechange', () => {
-    if (video.playbackRate !== 1) video.playbackRate = 1;
-  });
 
   player.addEventListener('streaming', () => {
     if (player.isLive && player.isLive()) {
@@ -886,7 +857,6 @@ async function loadTile(idx, ch) {
 
   try {
     await player.load(ch.url);
-    try { video.playbackRate = 1; } catch(e) {}
 
     if (player.isLive()) {
       try {
