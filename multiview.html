@@ -89,7 +89,6 @@ img { display: block; }
 .mv-spinner { width: 28px; height: 28px; border: 2px solid #222; border-top-color: #58a6ff; border-radius: 50%; animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ★ ERRORE DETTAGLIATO NEL TILE ★ */
 .mv-err {
   position: absolute; inset: 0; z-index: 9;
   display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start;
@@ -290,17 +289,22 @@ img { display: block; }
 
 <script>
 /* ============================================================
-   MULTIVIEW v24
-   - Log dettagliato degli errori DENTRO al riquadro
-   - Pulsante "Copia log" per copiare negli appunti
+   MULTIVIEW v25
+   - Proxy universale: DAZN + F1TV + NOWTV via dazn-ua-proxy
    ============================================================ */
 
 const IFRAME_GROUPS = ['PRIME VIDEO', 'DAZN PRIMEVIDEO DE'];
-const SOURCE_KEY = 'mv_source_v24';
+const SOURCE_KEY = 'mv_source_v25';
 const PROXY_BASE = 'https://dazn-ua-proxy.stefanoaccuont.workers.dev/';
 const proxyCategories = ['serie bkt','laliga ea sports','serie a enilive','amichevoli','jupiler pro league','liga portugal betclic','nerozone','dazn nerozone'];
 const UI_HIDE_MS = 3000;
 const LOAD_TIMEOUT_MS = 15000;
+
+/* Domini che richiedono il proxy per il CORS */
+const PROXY_DOMAINS = [
+  /f1prodlive\.akamaized\.net/i,   // F1TV
+  /ott-video-cf\.formula1\.com/i   // F1TV alternativo
+];
 
 let allChannels = [];
 let tiles = [null, null, null, null];
@@ -431,13 +435,18 @@ function parseM3U(m3u) {
       const isProxyCat = proxyCategories.includes((ch.group || '').toLowerCase().trim());
       if (!url.startsWith(PROXY_BASE) && (isProxyCat || isNero || (!isDazn1 && !isDaznSvi && !isDaznPVDE && isDaznAny))) url = PROXY_BASE + url;
 
+      /* ★ NUOVO: F1TV passa per il proxy ★ */
+      if (!url.startsWith(PROXY_BASE) && PROXY_DOMAINS.some(rx => rx.test(url))) {
+        url = PROXY_BASE + url;
+      }
+
       if (!ch.group) {
         if (/f1prodlive\.akamaized\.net|formula1\.com|hdnea=/i.test(url)) ch.group = 'F1';
         else ch.group = 'LISTA';
       }
 
       ch.url = url;
-      ch.id = `${ch.name}|${ch.group}|${url}`;
+      ch.id = `${ch.name}|${ch.group}|${ch.url}`;
       out.push({ ...ch });
       ch = { name:'', logo:'', group:'', drm:{}, url:'', streamHeaders:{}, userAgent:null, tvgId:null, id:'' };
     }
@@ -690,7 +699,6 @@ async function loadTile(idx, ch) {
     t.controls = controls;
   } catch (e) { console.warn('[MV] UI Shaka init fallita:', e); }
 
-  /* ★ Raccogli errori di rete (403, 404, CORS) ★ */
   const networkErrors = [];
   try {
     const net = player.getNetworkingEngine();
@@ -709,7 +717,6 @@ async function loadTile(idx, ch) {
     }
   } catch (e) {}
 
-  /* ★ Cattura errori Shaka player con dettagli ★ */
   player.addEventListener('error', ev => {
     const d = ev && ev.detail;
     if (d && d.severity === 2 && !t.recovering) {
@@ -770,7 +777,7 @@ async function loadTile(idx, ch) {
   }
 
   try {
-    console.log('[MV] Loading:', ch.name, '| DRM keys:', Object.keys(ch.drm || {}).length, '| Headers:', Object.keys(hdrs).length);
+    console.log('[MV] Loading:', ch.name, '| DRM keys:', Object.keys(ch.drm || {}).length, '| Headers:', Object.keys(hdrs).length, '| URL:', ch.url.slice(0, 100));
     await player.load(ch.url);
 
     if (activeAudio === -1) activeAudio = idx;
@@ -790,7 +797,6 @@ async function loadTile(idx, ch) {
   } catch (err) {
     console.error('[MV] load tile FAILED', idx, ch.name, err);
 
-    /* ★ Costruisci dettagli errore per il riquadro ★ */
     let errCode = '', errCat = '', errMsg = (err && err.message) || String(err);
     if (err && err.code !== undefined) errCode = shaka.util.Error.Code[err.code] || ('code:' + err.code);
     if (err && err.category !== undefined) errCat = shaka.util.Error.Category[err.category] || ('cat:' + err.category);
@@ -814,7 +820,6 @@ async function loadTile(idx, ch) {
   }
 }
 
-/* ★★★ MOSTRA ERRORE DETTAGLIATO NEL TILE ★★★ */
 function showTileError(idx, msg, actions, ch, details) {
   const el = document.querySelector(`.mv-tile[data-slot="${idx}"]`);
   if (!el) return;
