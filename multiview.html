@@ -65,6 +65,21 @@ img { display: block; }
 .mv-ui { position: absolute; top: 0; left: 0; right: 0; z-index: 8; display: flex; align-items: center; gap: 8px; padding: 6px 8px; background: linear-gradient(to bottom, rgba(0,0,0,.75), transparent); opacity: 0; pointer-events: none; transition: opacity .25s ease; }
 .mv-tile.ui-active .mv-ui { opacity: 1; pointer-events: auto; }
 .mv-ui-name { flex: 1; min-width: 0; font-size: 12px; font-weight: 700; color: #fff; letter-spacing: .3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 3px rgba(0,0,0,.9); }
+
+/* ★ NUOVO: badge risoluzione in alto a destra ★ */
+.mv-res {
+  flex: 0 0 auto;
+  padding: 2px 7px;
+  background: rgba(0,0,0,.55);
+  border-radius: 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: .3px;
+  text-shadow: 0 1px 2px rgba(0,0,0,.8);
+}
+.mv-res:empty { display: none; }
+
 .mv-ui-actions { display: flex; align-items: center; gap: 4px; flex: 0 0 auto; }
 .mv-ibtn { width: 24px; height: 24px; border-radius: 50%; background: rgba(255,255,255,.12); color: #fff; font-size: 12px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; padding: 0; border: 1px solid rgba(255,255,255,.1); transition: background .15s, transform .15s; }
 .mv-ibtn:hover { background: rgba(255,255,255,.28); transform: scale(1.08); }
@@ -87,10 +102,7 @@ img { display: block; }
 }
 .mv-tile .shaka-video-container { border-radius: 0 !important; width: 100% !important; height: 100% !important; position: relative !important; }
 .mv-tile .shaka-video-container video { position: static !important; width: 100% !important; height: 100% !important; object-fit: contain !important; background: #000 !important; display: block !important; }
-
-/* ★ MODIFICA: scrim trasparente (niente più bordo nero sotto) ★ */
 .mv-tile .shaka-scrim-container { background: transparent !important; }
-
 .mv-tile .shaka-controls-container .shaka-bottom-controls { padding: 0 6px 4px 6px !important; }
 .mv-tile .shaka-controls-container .shaka-controls-button-panel button { padding: 0 !important; margin: 0 2px !important; width: 24px !important; height: 24px !important; min-width: 24px !important; }
 .mv-tile .shaka-controls-container .shaka-controls-button-panel button i.material-icons { font-size: 17px !important; width: 17px !important; height: 17px !important; }
@@ -153,6 +165,7 @@ img { display: block; }
   .mv-src { max-width: 110px; font-size: 9.5px; }
   .mv-ui { opacity: 1; pointer-events: auto; background: linear-gradient(to bottom, rgba(0,0,0,.6), transparent); }
   .mv-ui-name { font-size: 11px; }
+  .mv-res { font-size: 10px; padding: 1px 6px; }
   .mv-ibtn { width: 22px; height: 22px; font-size: 11px; }
 }
 </style>
@@ -230,15 +243,13 @@ img { display: block; }
 
 <script>
 /* ============================================================
-   MULTIVIEW v21
-   - Scrim trasparente (niente bordo nero sotto il video)
-   - Fetch diretto (nessun proxy CORS)
-   - Timeout 15s sul load
-   - Click sul video = cambia audio (capture)
+   MULTIVIEW v22
+   - Badge risoluzione in alto a destra
+   - Frecce ← → spostano di 5 secondi (invece di 10)
    ============================================================ */
 
 const IFRAME_GROUPS = ['PRIME VIDEO', 'DAZN PRIMEVIDEO DE'];
-const SOURCE_KEY = 'mv_source_v21';
+const SOURCE_KEY = 'mv_source_v22';
 const PROXY_BASE = 'https://dazn-ua-proxy.stefanoaccuont.workers.dev/';
 const proxyCategories = ['serie bkt','laliga ea sports','serie a enilive','amichevoli','jupiler pro league','liga portugal betclic','nerozone','dazn nerozone'];
 const UI_HIDE_MS = 3000;
@@ -298,7 +309,6 @@ function fixGistUrl(url) {
   return url;
 }
 
-/* FETCH M3U — semplice, niente CORS proxy */
 async function fetchM3UFromSource(cfg) {
   if (cfg.type === 'backend') {
     const psw = prompt("Password per il backend del sito:");
@@ -423,6 +433,7 @@ function buildTileEl(idx) {
     <div class="mv-video-layer"></div>
     <div class="mv-ui">
       <span class="mv-ui-name">${esc(ch.name)}</span>
+      <span class="mv-res"></span>
       <div class="mv-ui-actions">
         <button class="mv-ibtn" data-act="reload" title="Ricarica">🔄</button>
         <button class="mv-ibtn" data-act="swap" title="Cambia canale">⇄</button>
@@ -437,6 +448,13 @@ function buildTileEl(idx) {
   if (t && t.iframe) el.querySelector('.mv-video-layer').appendChild(t.iframe);
 
   bindTileEvents(el, idx);
+
+  /* Ripristina badge risoluzione se già nota */
+  if (t && t.resLabel) {
+    const resEl = el.querySelector('.mv-res');
+    if (resEl) resEl.textContent = t.resLabel;
+  }
+
   return el;
 }
 
@@ -481,7 +499,7 @@ function activateUI(el) {
 }
 
 /* TILE */
-function newTileObj(ch) { return { ch, video: null, player: null, ui: null, controls: null, container: null, iframe: null, loading: false, loaded: false, recovering: false }; }
+function newTileObj(ch) { return { ch, video: null, player: null, ui: null, controls: null, container: null, iframe: null, loading: false, loaded: false, recovering: false, resLabel: '' }; }
 function destroyTile(t) {
   if (!t) return;
   try { if (t.player) t.player.destroy(); } catch (e) {}
@@ -514,6 +532,26 @@ function refreshSlot(idx) {
   const old = document.querySelector(`.mv-tile[data-slot="${idx}"]`);
   const nw = buildTileEl(idx);
   if (old) old.replaceWith(nw);
+}
+
+/* ★ NUOVO: aggiorna badge risoluzione ★ */
+function updateResolution(t) {
+  if (!t || !t.player) return;
+  const el = document.querySelector(`.mv-tile[data-slot="${tiles.indexOf(t)}"]`);
+  if (!el) return;
+  const resEl = el.querySelector('.mv-res');
+  if (!resEl) return;
+  try {
+    const tracks = t.player.getVariantTracks();
+    const active = tracks.find(tr => tr.active);
+    if (active && active.height) {
+      const label = active.height + 'p';
+      if (t.resLabel !== label) {
+        t.resLabel = label;
+        resEl.textContent = label;
+      }
+    }
+  } catch (e) {}
 }
 
 async function loadTile(idx, ch) {
@@ -621,6 +659,10 @@ async function loadTile(idx, ch) {
     }
   });
 
+  /* ★ NUOVO: aggiorna risoluzione quando Shaka cambia traccia ★ */
+  player.addEventListener('adaptation', () => updateResolution(t));
+  player.addEventListener('trackschanged', () => updateResolution(t));
+
   player.configure({
     drm: { clearKeys: ch.drm || {} },
     streaming: {
@@ -654,11 +696,12 @@ async function loadTile(idx, ch) {
 
     video.play().catch(() => { video.muted = true; video.play().catch(()=>{}); });
 
-    const hideLoading = () => { t.loaded = true; clearTimeout(loadTimeout); if (loading) loading.classList.add('hidden'); };
+    const hideLoading = () => { t.loaded = true; clearTimeout(loadTimeout); if (loading) loading.classList.add('hidden'); updateResolution(t); };
     video.addEventListener('playing', hideLoading, { once: true });
     video.addEventListener('canplay', hideLoading, { once: true });
 
     applyAudioState();
+    updateResolution(t);
   } catch (err) {
     console.error('[MV] load tile', idx, err);
     clearTimeout(loadTimeout);
@@ -851,12 +894,15 @@ document.addEventListener('keydown', e => {
   const p = t && t.player;
 
   if (e.code === 'Space' || e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); e.stopPropagation(); if (v) { v.paused ? v.play().catch(()=>{}) : v.pause(); } return; }
-  if (e.key === 'ArrowLeft') { e.preventDefault(); e.stopPropagation(); if (v) v.currentTime = Math.max(0, v.currentTime - 10); return; }
+
+  /* ★ MODIFICA: frecce avanti/indietro di 5 secondi ★ */
+  if (e.key === 'ArrowLeft') { e.preventDefault(); e.stopPropagation(); if (v) v.currentTime = Math.max(0, v.currentTime - 5); return; }
   if (e.key === 'ArrowRight') {
     e.preventDefault(); e.stopPropagation();
-    if (v) { let maxT = v.currentTime + 10; if (isFinite(v.duration)) maxT = Math.min(v.duration, maxT); v.currentTime = maxT; }
+    if (v) { let maxT = v.currentTime + 5; if (isFinite(v.duration)) maxT = Math.min(v.duration, maxT); v.currentTime = maxT; }
     return;
   }
+
   if (e.key === 'ArrowUp') { e.preventDefault(); e.stopPropagation(); if (v) { v.volume = Math.min(1, v.volume + 0.1); v.muted = false; } return; }
   if (e.key === 'ArrowDown') { e.preventDefault(); e.stopPropagation(); if (v) v.volume = Math.max(0, v.volume - 0.1); return; }
   if (e.key === 'm' || e.key === 'M') { if (v) v.muted = !v.muted; return; }
