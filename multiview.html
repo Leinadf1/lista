@@ -87,7 +87,10 @@ img { display: block; }
 }
 .mv-tile .shaka-video-container { border-radius: 0 !important; width: 100% !important; height: 100% !important; position: relative !important; }
 .mv-tile .shaka-video-container video { position: static !important; width: 100% !important; height: 100% !important; object-fit: contain !important; background: #000 !important; display: block !important; }
-.mv-tile .shaka-scrim-container { background: linear-gradient(transparent, rgba(0,0,0,.7)) !important; }
+
+/* ★ MODIFICA: scrim trasparente (niente più bordo nero sotto) ★ */
+.mv-tile .shaka-scrim-container { background: transparent !important; }
+
 .mv-tile .shaka-controls-container .shaka-bottom-controls { padding: 0 6px 4px 6px !important; }
 .mv-tile .shaka-controls-container .shaka-controls-button-panel button { padding: 0 !important; margin: 0 2px !important; width: 24px !important; height: 24px !important; min-width: 24px !important; }
 .mv-tile .shaka-controls-container .shaka-controls-button-panel button i.material-icons { font-size: 17px !important; width: 17px !important; height: 17px !important; }
@@ -227,15 +230,15 @@ img { display: block; }
 
 <script>
 /* ============================================================
-   MULTIVIEW v19-senza-cors
+   MULTIVIEW v21
+   - Scrim trasparente (niente bordo nero sotto il video)
    - Fetch diretto (nessun proxy CORS)
-   - Fix automatico gist.github.com → gist.githubusercontent.com
    - Timeout 15s sul load
    - Click sul video = cambia audio (capture)
    ============================================================ */
 
 const IFRAME_GROUPS = ['PRIME VIDEO', 'DAZN PRIMEVIDEO DE'];
-const SOURCE_KEY = 'mv_source_v19';
+const SOURCE_KEY = 'mv_source_v21';
 const PROXY_BASE = 'https://dazn-ua-proxy.stefanoaccuont.workers.dev/';
 const proxyCategories = ['serie bkt','laliga ea sports','serie a enilive','amichevoli','jupiler pro league','liga portugal betclic','nerozone','dazn nerozone'];
 const UI_HIDE_MS = 3000;
