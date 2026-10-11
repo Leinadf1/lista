@@ -2587,7 +2587,7 @@ async function checkAccess() {
         document.getElementById('expiry-info').textContent = '';
         startHeartbeat(psw);
         
-        fetch('https://dazn-ua-proxy.stefanoaccuont.workers.dev/', { mode: 'no-cors' })
+        fetch('https://dazn-ua-proxy.miniclashroyale3636-cdc.workers.dev/', { mode: 'no-cors' })
             .catch(() => {});
 
         loadEPG();
@@ -2914,14 +2914,14 @@ async function init(m3uContent) {
             
             const isProxyCategory = proxyCategories.includes((currentChannel.group || '').toLowerCase().trim());
             
-            const alreadyProxied = url.startsWith('https://dazn-ua-proxy.stefanoaccuont.workers.dev/');
+            const alreadyProxied = url.startsWith('https://dazn-ua-proxy.miniclashroyale3636-cdc.workers.dev/');
             
             if (!alreadyProxied && (
                 isProxyCategory || 
                 isNeroZone || 
                 (!isDazn1Lineare && !isDaznSvizzeri && !isDaznPrimeVideoDE && isDaznChannel)
             )) {
-                url = 'https://dazn-ua-proxy.stefanoaccuont.workers.dev/' + url;
+                url = 'https://dazn-ua-proxy.miniclashroyale3636-cdc.workers.dev/' + url;
             }
             
             currentChannel.url = url;
