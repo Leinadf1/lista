@@ -854,6 +854,54 @@
                 font-size: 22px;
             }
         }
+
+        /* ============ DEBUG TASTI TV MODE ============ */
+        #tv-debug-keys {
+            position: absolute;
+            top: 70px;
+            right: 20px;
+            background: rgba(0,0,0,0.92);
+            color: #00e676;
+            border: 2px solid #00e676;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            z-index: 3000;
+            display: none;
+            max-width: 340px;
+            word-wrap: break-word;
+            line-height: 1.45;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+            pointer-events: none;
+        }
+        #tv-debug-keys.active { display: block; }
+        #tv-debug-keys .dbg-title {
+            color: #f1e05a;
+            font-weight: bold;
+            margin-bottom: 6px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #30363d;
+            padding-bottom: 4px;
+        }
+        #tv-debug-keys .dbg-row { margin-bottom: 2px; }
+        #tv-debug-keys .dbg-label { color: #8b949e; }
+        #tv-debug-keys .dbg-key { color: #58a6ff; font-weight: bold; }
+        #tv-debug-keys .dbg-highlight { color: #ff1744; font-weight: bold; margin-top: 4px; }
+        #tv-debug-keys .dbg-history {
+            margin-top: 8px;
+            padding-top: 6px;
+            border-top: 1px solid #30363d;
+            font-size: 11px;
+            color: #c9d1d9;
+        }
+        #tv-debug-keys .dbg-history-title { color: #f1e05a; font-weight: bold; margin-bottom: 3px; }
+
+        @media (max-width: 600px) {
+            #tv-debug-keys { font-size: 11px; max-width: 260px; top: 60px; right: 10px; padding: 8px 10px; }
+        }
     </style>
 </head>
 <body id="mainBody" style="display:none;">
@@ -931,6 +979,8 @@
             </div>
             <span id="tv-seek-duration">00:00</span>
         </div>
+
+        <div id="tv-debug-keys"></div>
     </div>
 
 <script type="module">
@@ -1490,6 +1540,92 @@ const fullscreenBtn = document.getElementById('fullscreen-btn');
 let tvPlayer = null;
 let activeIframe = null;
 
+// ============ DEBUG TASTI TV MODE ============
+// Mostra in alto a destra i tasti premuti in TV Mode per diagnosticare
+// quali keyCode invia il telecomando (utile per CH+/CH-).
+// Per disattivare il debug: mettere DEBUG_TV_KEYS = false
+const DEBUG_TV_KEYS = true;
+const tvDebugKeysEl = document.getElementById('tv-debug-keys');
+let tvDebugHistory = [];
+
+function escapeHtmlDebug(str) {
+    return String(str)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function isLikelyChannelKey(info) {
+    const kc = info.keyCode;
+    const k  = (info.key  || '').toLowerCase();
+    const c  = (info.code || '').toLowerCase();
+    if (kc === 166 || kc === 167) return true;   // Android TV / Google TV CH+ / CH-
+    if (kc === 427 || kc === 428) return true;   // Samsung Tizen CH+ / CH-
+    if (kc === 33  || kc === 34)  return true;   // PageUp / PageDown
+    if (kc === 38  || kc === 40)  return true;   // ArrowUp / ArrowDown
+    if (k.includes('channel') || c.includes('channel')) return true;
+    if (k.includes('ch+') || k.includes('ch-')) return true;
+    if (k === 'mediachannelup' || k === 'mediachanneldown') return true;
+    return false;
+}
+
+function updateTvDebugKeys(e) {
+    if (!DEBUG_TV_KEYS || !tvModeActive || !tvDebugKeysEl) return;
+
+    const info = {
+        key: e.key || '',
+        code: e.code || '',
+        keyCode: e.keyCode || e.which || 0,
+        which: e.which || 0,
+        keyIdentifier: e.keyIdentifier || ''
+    };
+
+    tvDebugHistory.unshift(info);
+    if (tvDebugHistory.length > 6) tvDebugHistory.length = 6;
+
+    const likely = isLikelyChannelKey(info);
+
+    let html = '<div class="dbg-title">🔍 DEBUG TASTI (premi CH+ / CH-)</div>';
+    html += `<div class="dbg-row"><span class="dbg-label">key:</span> <span class="dbg-key">"${escapeHtmlDebug(info.key) || '∅'}"</span></div>`;
+    html += `<div class="dbg-row"><span class="dbg-label">code:</span> <span class="dbg-key">"${escapeHtmlDebug(info.code) || '∅'}"</span></div>`;
+    html += `<div class="dbg-row"><span class="dbg-label">keyCode:</span> <span class="dbg-key">${info.keyCode}</span> <span class="dbg-label">| which:</span> ${info.which}</div>`;
+    if (info.keyIdentifier) {
+        html += `<div class="dbg-row"><span class="dbg-label">keyIdentifier:</span> <span class="dbg-key">"${escapeHtmlDebug(info.keyIdentifier)}"</span></div>`;
+    }
+
+    if (likely) {
+        html += `<div class="dbg-highlight">✅ Tasto riconosciuto come CH+/CH-</div>`;
+    } else {
+        html += `<div class="dbg-highlight">❌ Tasto NON riconosciuto come CH+/CH-</div>`;
+    }
+
+    html += '<div class="dbg-history"><div class="dbg-history-title">Ultimi tasti:</div>';
+    tvDebugHistory.forEach((h, i) => {
+        html += `${i + 1}. key="${escapeHtmlDebug(h.key)}" code="${escapeHtmlDebug(h.code)}" keyCode=${h.keyCode}<br>`;
+    });
+    html += '</div>';
+
+    tvDebugKeysEl.innerHTML = html;
+    tvDebugKeysEl.classList.add('active');
+}
+
+function attachTvDebugListener() {
+    if (!DEBUG_TV_KEYS) return;
+    window.removeEventListener('keydown', updateTvDebugKeys, true);
+    window.addEventListener('keydown', updateTvDebugKeys, true);
+    tvDebugKeysEl.classList.add('active');
+    tvDebugHistory = [];
+    tvDebugKeysEl.innerHTML = '<div class="dbg-title">🔍 DEBUG TASTI (premi CH+ / CH-)</div><div class="dbg-row" style="color:#8b949e;">In attesa di tasti...</div>';
+}
+
+function detachTvDebugListener() {
+    if (!DEBUG_TV_KEYS) return;
+    window.removeEventListener('keydown', updateTvDebugKeys, true);
+    tvDebugKeysEl.classList.remove('active');
+    tvDebugHistory = [];
+}
+// ============ FINE DEBUG TASTI TV MODE ============
+
 function formatTime(seconds) {
     if (!isFinite(seconds) || seconds < 0) {
         return 'LIVE';
@@ -1729,6 +1865,8 @@ function enterTvMode() {
     
     tvOsdPrevBtn.addEventListener('click', () => navigateOsdEpg(-1));
     tvOsdNextBtn.addEventListener('click', () => navigateOsdEpg(1));
+
+    attachTvDebugListener();
 }
 
 function exitTvMode() {
@@ -1784,6 +1922,8 @@ function exitTvMode() {
     if (mainVideo && mainVideo.player) {
         mainVideo.player.unload();
     }
+
+    detachTvDebugListener();
     
     exitingTv = false;
 }
@@ -2281,11 +2421,15 @@ function handleTvKeys(e) {
         return;
     }
     
-    if (keyCode === 38 || key === 'ArrowUp' || key === 'PageUp' || key === 'ChannelUp' || key === 'MediaChannelUp') {
+    // CH+ : ArrowUp (38), Android TV (166), Samsung Tizen (427), PageUp (33)
+    if (keyCode === 38 || keyCode === 166 || keyCode === 427 || keyCode === 33 ||
+        key === 'ArrowUp' || key === 'PageUp' || key === 'ChannelUp' || key === 'MediaChannelUp') {
         changeChannel(1);
         return;
     }
-    if (keyCode === 40 || key === 'ArrowDown' || key === 'PageDown' || key === 'ChannelDown' || key === 'MediaChannelDown') {
+    // CH- : ArrowDown (40), Android TV (167), Samsung Tizen (428), PageDown (34)
+    if (keyCode === 40 || keyCode === 167 || keyCode === 428 || keyCode === 34 ||
+        key === 'ArrowDown' || key === 'PageDown' || key === 'ChannelDown' || key === 'MediaChannelDown') {
         changeChannel(-1);
         return;
     }
