@@ -91,7 +91,11 @@ img { display: block; }
 /* GRID base + layout classes */
 #mv-grid { flex: 1; display: grid; gap: 2px; background: #141414; min-width: 0; min-height: 0; position: relative; }
 #mv-grid.l-2 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr; }
-#mv-grid.l-3 { grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr; }
+
+/* ★ MODIFICA: Layout 3 schermi (1 sopra, 2 sotto) ★ */
+#mv-grid.l-3 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+#mv-grid.l-3 .mv-tile[data-slot="0"] { grid-column: 1 / -1; }
+
 #mv-grid.l-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
 
 #mv-grid:fullscreen, #mv-grid:-webkit-full-screen { width: 100vw; height: 100vh; gap: 2px; background: #141414; }
@@ -574,9 +578,7 @@ function startIframeLiveLoop(fr) {
 /* GRID */
 function renderGrid() {
   const g = $('mv-grid');
-  // Imposta la classe layout senza perdere l'ID
   g.className = 'l-' + currentLayout;
-  // Rimuove solo i tile esistenti, preserva il tasto Esci
   g.querySelectorAll('.mv-tile').forEach(t => t.remove());
   for (let i = 0; i < currentLayout; i++) g.appendChild(buildTileEl(i));
 }
@@ -1128,7 +1130,6 @@ $('layoutSelect').addEventListener('change', e => {
   if (newLayout === currentLayout) return;
 
   if (newLayout < currentLayout) {
-    // Distruggi i tile che non servono più
     for (let i = newLayout; i < currentLayout; i++) {
       if (tiles[i]) destroyTile(tiles[i]);
     }
@@ -1139,7 +1140,6 @@ $('layoutSelect').addEventListener('change', e => {
       if (first >= 0) setAudio(first);
     }
   } else {
-    // Aggiungi slot vuoti
     while (tiles.length < newLayout) tiles.push(null);
   }
 
