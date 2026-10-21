@@ -289,8 +289,7 @@ img { display: block; }
 
 <script>
 /* ============================================================
-   MULTIVIEW v25
-   - Proxy universale: DAZN + F1TV + NOWTV via dazn-ua-proxy
+   MULTIVIEW v25 + Auto-Exit Fullscreen su interazione
    ============================================================ */
 
 const IFRAME_GROUPS = ['PRIME VIDEO', 'DAZN PRIMEVIDEO DE'];
@@ -300,10 +299,9 @@ const proxyCategories = ['serie bkt','laliga ea sports','serie a enilive','amich
 const UI_HIDE_MS = 3000;
 const LOAD_TIMEOUT_MS = 15000;
 
-/* Domini che richiedono il proxy per il CORS */
 const PROXY_DOMAINS = [
-  /f1prodlive\.akamaized\.net/i,   // F1TV
-  /ott-video-cf\.formula1\.com/i   // F1TV alternativo
+  /f1prodlive\.akamaized\.net/i,
+  /ott-video-cf\.formula1\.com/i
 ];
 
 let allChannels = [];
@@ -435,7 +433,6 @@ function parseM3U(m3u) {
       const isProxyCat = proxyCategories.includes((ch.group || '').toLowerCase().trim());
       if (!url.startsWith(PROXY_BASE) && (isProxyCat || isNero || (!isDazn1 && !isDaznSvi && !isDaznPVDE && isDaznAny))) url = PROXY_BASE + url;
 
-      /* ★ NUOVO: F1TV passa per il proxy ★ */
       if (!url.startsWith(PROXY_BASE) && PROXY_DOMAINS.some(rx => rx.test(url))) {
         url = PROXY_BASE + url;
       }
@@ -524,6 +521,19 @@ function buildTileEl(idx) {
 }
 
 function bindTileEvents(el, idx) {
+  // Esci dal fullscreen se l'utente interagisce con i controlli di Shaka
+  el.addEventListener('pointerdown', e => {
+    if (document.fullscreenElement && (
+        e.target.closest('.shaka-seek-bar-container') ||
+        e.target.closest('.shaka-range-container') ||
+        e.target.closest('.shaka-controls-button-panel') ||
+        e.target.closest('.shaka-overflow-menu') ||
+        e.target.closest('.shaka-settings-menu')
+    )) {
+        document.exitFullscreen().catch(()=>{});
+    }
+  }, true);
+
   el.addEventListener('click', e => {
     const btn = e.target.closest('[data-act]');
     if (btn) {
@@ -1021,9 +1031,16 @@ document.addEventListener('keydown', e => {
   const v = t && t.video;
   const p = t && t.player;
 
-  if (e.code === 'Space' || e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); e.stopPropagation(); if (v) { v.paused ? v.play().catch(()=>{}) : v.pause(); } return; }
-  if (e.key === 'ArrowLeft') { e.preventDefault(); e.stopPropagation(); if (v) v.currentTime = Math.max(0, v.currentTime - 5); return; }
+  if (e.code === 'Space' || e.key === ' ' || e.key === 'Spacebar') {
+    if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+    e.preventDefault(); e.stopPropagation(); if (v) { v.paused ? v.play().catch(()=>{}) : v.pause(); } return;
+  }
+  if (e.key === 'ArrowLeft') {
+    if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+    e.preventDefault(); e.stopPropagation(); if (v) v.currentTime = Math.max(0, v.currentTime - 5); return;
+  }
   if (e.key === 'ArrowRight') {
+    if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});
     e.preventDefault(); e.stopPropagation();
     if (v) { let maxT = v.currentTime + 5; if (isFinite(v.duration)) maxT = Math.min(v.duration, maxT); v.currentTime = maxT; }
     return;
