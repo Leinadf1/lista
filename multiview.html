@@ -44,24 +44,11 @@ img { display: block; }
 #mv-header .mv-src { font-size: 10.5px; font-weight: 700; padding: 3px 9px; border-radius: 11px; background: #111; color: #666; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 #mv-header .mv-src.custom { color: #e0b400; }
 #mv-header .mv-spacer { flex: 1; }
-
-#layoutSelect {
-  padding: 5px 10px; background: #111; color: #aaa; border: 1px solid #222;
-  border-radius: 12px; font-size: 11px; font-weight: 700; letter-spacing: .4px;
-  outline: none; cursor: pointer; font-family: inherit;
-}
-#layoutSelect:hover { background: #1a1a1a; color: #fff; }
-
 .mv-btn { display: inline-flex; align-items: center; gap: 4px; padding: 5px 10px; background: #111; color: #aaa; border: 1px solid #222; border-radius: 12px; font-size: 11px; font-weight: 700; letter-spacing: .4px; transition: background .15s; white-space: nowrap; }
 .mv-btn:hover { background: #1a1a1a; color: #fff; }
 
 #mv-main { flex: 1 1 auto; min-height: 0; min-width: 0; display: flex; }
-#mv-grid { flex: 1; display: grid; gap: 2px; background: #141414; min-width: 0; min-height: 0; }
-
-#mv-grid.l-2 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr; }
-#mv-grid.l-3 { grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr; }
-#mv-grid.l-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
-
+#mv-grid { flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px; background: #141414; min-width: 0; min-height: 0; }
 #mv-grid:fullscreen, #mv-grid:-webkit-full-screen { width: 100vw; height: 100vh; gap: 2px; background: #141414; }
 
 .mv-tile { position: relative; background: #000; overflow: hidden; min-width: 0; min-height: 0; }
@@ -74,13 +61,6 @@ img { display: block; }
 .mv-video-layer { position: absolute; inset: 0; background: #000; overflow: hidden; }
 .mv-video-layer .shaka-container { position: relative; width: 100%; height: 100%; background: #000; }
 .mv-video-layer iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: #000; }
-
-/* FORZA LA GPU PER I VIDEO */
-.mv-video-layer video {
-  transform: translateZ(0);
-  will-change: transform;
-  backface-visibility: hidden;
-}
 
 .mv-ui { position: absolute; top: 0; left: 0; right: 0; z-index: 8; display: flex; align-items: center; gap: 8px; padding: 6px 8px; background: linear-gradient(to bottom, rgba(0,0,0,.75), transparent); opacity: 0; pointer-events: none; transition: opacity .25s ease; }
 .mv-tile.ui-active .mv-ui { opacity: 1; pointer-events: auto; }
@@ -226,7 +206,7 @@ img { display: block; }
 @media (max-width: 700px), (pointer: coarse) {
   #mv-header { height: 34px; gap: 4px; padding: 0 8px; }
   .mv-title { display: none; }
-  .mv-btn, #layoutSelect { padding: 4px 9px; font-size: 10px; }
+  .mv-btn { padding: 4px 9px; font-size: 10px; }
   .mv-src { max-width: 110px; font-size: 9.5px; }
   .mv-ui { opacity: 1; pointer-events: auto; background: linear-gradient(to bottom, rgba(0,0,0,.6), transparent); }
   .mv-ui-name { font-size: 11px; }
@@ -242,19 +222,12 @@ img { display: block; }
   <span class="mv-title">⊞ Multiview</span>
   <span class="mv-src" id="srcBadge">Sorgente non impostata</span>
   <span class="mv-spacer"></span>
-  
-  <select id="layoutSelect">
-    <option value="2">2 Schermi</option>
-    <option value="3">3 Schermi</option>
-    <option value="4" selected>4 Schermi (2x2)</option>
-  </select>
-
   <button class="mv-btn" id="btnReloadAll" title="Ricarica tutti">🔄</button>
   <button class="mv-btn" id="btnSource" title="Sorgente canali">⚙️</button>
   <button class="mv-btn" id="btnFullscreen" title="Fullscreen (F)">⛶</button>
 </header>
 
-<main id="mv-main"><div id="mv-grid" class="l-4"></div></main>
+<main id="mv-main"><div id="mv-grid"></div></main>
 
 <div class="modal-mask hidden" id="pickerModal">
   <div class="modal-box">
@@ -316,25 +289,23 @@ img { display: block; }
 
 <script>
 /* ============================================================
-   MULTIVIEW v29
-   - Layout dinamico (2, 3, 4 schermi)
-   - Nessun limite di risoluzione (1080p+ disponibile)
-   - Solo ottimizzazioni di base per alleggerire
+   MULTIVIEW v25
+   - Proxy universale: DAZN + F1TV + NOWTV via dazn-ua-proxy
    ============================================================ */
 
 const IFRAME_GROUPS = ['PRIME VIDEO', 'DAZN PRIMEVIDEO DE'];
-const SOURCE_KEY = 'mv_source_v29';
+const SOURCE_KEY = 'mv_source_v25';
 const PROXY_BASE = 'https://dazn-ua-proxy.stefanoaccuont.workers.dev/';
 const proxyCategories = ['serie bkt','laliga ea sports','serie a enilive','amichevoli','jupiler pro league','liga portugal betclic','nerozone','dazn nerozone'];
 const UI_HIDE_MS = 3000;
 const LOAD_TIMEOUT_MS = 15000;
 
+/* Domini che richiedono il proxy per il CORS */
 const PROXY_DOMAINS = [
-  /f1prodlive\.akamaized\.net/i,
-  /ott-video-cf\.formula1\.com/i
+  /f1prodlive\.akamaized\.net/i,   // F1TV
+  /ott-video-cf\.formula1\.com/i   // F1TV alternativo
 ];
 
-let currentLayout = 4;
 let allChannels = [];
 let tiles = [null, null, null, null];
 let activeAudio = -1;
@@ -464,6 +435,7 @@ function parseM3U(m3u) {
       const isProxyCat = proxyCategories.includes((ch.group || '').toLowerCase().trim());
       if (!url.startsWith(PROXY_BASE) && (isProxyCat || isNero || (!isDazn1 && !isDaznSvi && !isDaznPVDE && isDaznAny))) url = PROXY_BASE + url;
 
+      /* ★ NUOVO: F1TV passa per il proxy ★ */
       if (!url.startsWith(PROXY_BASE) && PROXY_DOMAINS.some(rx => rx.test(url))) {
         url = PROXY_BASE + url;
       }
@@ -506,9 +478,8 @@ function startIframeLiveLoop(fr) {
 /* GRID */
 function renderGrid() {
   const g = $('mv-grid');
-  g.className = 'l-' + currentLayout;
   g.innerHTML = '';
-  for (let i = 0; i < currentLayout; i++) g.appendChild(buildTileEl(i));
+  for (let i = 0; i < 4; i++) g.appendChild(buildTileEl(i));
 }
 
 function buildTileEl(idx) {
@@ -783,17 +754,16 @@ async function loadTile(idx, ch) {
   player.addEventListener('adaptation', () => updateResolution(t));
   player.addEventListener('trackschanged', () => updateResolution(t));
 
-  // Configurazione base: solo alleggerimento del buffer, nessun limite di qualità
   player.configure({
     drm: { clearKeys: ch.drm || {} },
     streaming: {
-      bufferingGoal: 10,      // Buffer ridotto (default 20)
+      bufferingGoal: 20,
       rebufferingGoal: 1.5,
       updateIntervalSeconds: 5,
-      retryParameters: { timeout: 15000, maxAttempts: 2, baseDelay: 500, backoffFactor: 2, fuzzFactor: 0.5 }
+      retryParameters: { timeout: 20000, maxAttempts: 3, baseDelay: 500, backoffFactor: 2, fuzzFactor: 0.5 }
     },
     manifest: {
-      retryParameters: { timeout: 15000, maxAttempts: 2, baseDelay: 500, backoffFactor: 2, fuzzFactor: 0.5 }
+      retryParameters: { timeout: 20000, maxAttempts: 3, baseDelay: 500, backoffFactor: 2, fuzzFactor: 0.5 }
     }
   });
 
@@ -807,6 +777,7 @@ async function loadTile(idx, ch) {
   }
 
   try {
+    console.log('[MV] Loading:', ch.name, '| DRM keys:', Object.keys(ch.drm || {}).length, '| Headers:', Object.keys(hdrs).length, '| URL:', ch.url.slice(0, 100));
     await player.load(ch.url);
 
     if (activeAudio === -1) activeAudio = idx;
@@ -1068,30 +1039,6 @@ document.addEventListener('keydown', e => {
     else if (document.fullscreenElement) document.exitFullscreen();
   }
 }, true);
-
-/* Layout Selector */
-const layoutSelect = $('layoutSelect');
-layoutSelect.addEventListener('change', e => {
-  const newLayout = parseInt(e.target.value);
-  if (newLayout === currentLayout) return;
-
-  if (newLayout < currentLayout) {
-    for (let i = newLayout; i < currentLayout; i++) {
-      if (tiles[i]) destroyTile(tiles[i]);
-    }
-    tiles.length = newLayout;
-    if (activeAudio >= newLayout) {
-      activeAudio = -1;
-      const first = tiles.findIndex(t => t && t.ch);
-      if (first >= 0) setAudio(first);
-    }
-  } else {
-    while (tiles.length < newLayout) tiles.push(null);
-  }
-
-  currentLayout = newLayout;
-  renderGrid();
-});
 
 /* BOOT */
 (async function boot() {
