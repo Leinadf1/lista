@@ -37,19 +37,92 @@ button { font-family: inherit; cursor: pointer; border: none; }
 img { display: block; }
 
 #mv-header {
-  flex: 0 0 auto; height: 38px; display: flex; align-items: center;
+  flex: 0 0 auto; height: 42px; display: flex; align-items: center;
   gap: 6px; padding: 0 10px; background: #050505; border-bottom: 1px solid #111;
+  position: relative;
 }
 #mv-header .mv-title { font-size: 12px; font-weight: 800; color: #888; letter-spacing: .8px; text-transform: uppercase; }
 #mv-header .mv-src { font-size: 10.5px; font-weight: 700; padding: 3px 9px; border-radius: 11px; background: #111; color: #666; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 #mv-header .mv-src.custom { color: #e0b400; }
 #mv-header .mv-spacer { flex: 1; }
+
+/* Tasto Fullscreen Centrale ed Evidente */
+.mv-btn-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #0a2540;
+  color: #fff;
+  border: 1px solid #58a6ff;
+  border-radius: 20px;
+  padding: 6px 22px;
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  box-shadow: 0 0 12px rgba(88,166,255,0.4);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.mv-btn-center:hover {
+  background: #123b66;
+  box-shadow: 0 0 18px rgba(88,166,255,0.7);
+  transform: translateX(-50%) scale(1.05);
+}
+@media (max-width: 900px) {
+  .mv-btn-center { display: none; }
+}
+
 .mv-btn { display: inline-flex; align-items: center; gap: 4px; padding: 5px 10px; background: #111; color: #aaa; border: 1px solid #222; border-radius: 12px; font-size: 11px; font-weight: 700; letter-spacing: .4px; transition: background .15s; white-space: nowrap; }
 .mv-btn:hover { background: #1a1a1a; color: #fff; }
 
 #mv-main { flex: 1 1 auto; min-height: 0; min-width: 0; display: flex; }
-#mv-grid { flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px; background: #141414; min-width: 0; min-height: 0; }
+#mv-grid { flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px; background: #141414; min-width: 0; min-height: 0; position: relative; }
 #mv-grid:fullscreen, #mv-grid:-webkit-full-screen { width: 100vw; height: 100vh; gap: 2px; background: #141414; }
+
+/* ★ NUOVO: Tasto Esci a comparsa in Fullscreen ★ */
+.fs-exit-btn {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px);
+  background: rgba(10, 10, 10, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.3s, transform 0.3s, visibility 0.3s;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+#mv-grid:fullscreen .fs-exit-btn,
+#mv-grid:-webkit-full-screen .fs-exit-btn {
+  display: flex;
+}
+.fs-exit-btn.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+.fs-exit-btn:hover {
+  background: rgba(200, 20, 20, 0.85);
+  border-color: rgba(255, 255, 255, 0.4);
+}
 
 .mv-tile { position: relative; background: #000; overflow: hidden; min-width: 0; min-height: 0; }
 .mv-tile.empty { display: flex; align-items: center; justify-content: center; cursor: pointer; background: #0a0a0a; }
@@ -222,12 +295,22 @@ img { display: block; }
   <span class="mv-title">⊞ Multiview</span>
   <span class="mv-src" id="srcBadge">Sorgente non impostata</span>
   <span class="mv-spacer"></span>
+
+  <button class="mv-btn-center" id="btnFullscreenCenter" title="Schermo Intero (F)">
+    ⛶ SCHERMO INTERO
+  </button>
+
   <button class="mv-btn" id="btnReloadAll" title="Ricarica tutti">🔄</button>
   <button class="mv-btn" id="btnSource" title="Sorgente canali">⚙️</button>
   <button class="mv-btn" id="btnFullscreen" title="Fullscreen (F)">⛶</button>
 </header>
 
-<main id="mv-main"><div id="mv-grid"></div></main>
+<main id="mv-main">
+  <div id="mv-grid">
+    <!-- Tasto Esci a comparsa (solo in fullscreen) -->
+    <button id="fs-exit-btn" class="fs-exit-btn" title="Esci da Schermo Intero">✕ Esci</button>
+  </div>
+</main>
 
 <div class="modal-mask hidden" id="pickerModal">
   <div class="modal-box">
@@ -289,7 +372,7 @@ img { display: block; }
 
 <script>
 /* ============================================================
-   MULTIVIEW v25 + Auto-Exit Fullscreen su interazione
+   MULTIVIEW v25 + Auto-Exit Fullscreen (con delay per click) + Tasto Centrale
    ============================================================ */
 
 const IFRAME_GROUPS = ['PRIME VIDEO', 'DAZN PRIMEVIDEO DE'];
@@ -309,6 +392,7 @@ let tiles = [null, null, null, null];
 let activeAudio = -1;
 let pickSlot = -1;
 let sourceConfig = null;
+let fsExitTimeout = null; // Timer per il tasto "Esci"
 
 const $ = id => document.getElementById(id);
 const normalizeName = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/gi, '');
@@ -475,7 +559,10 @@ function startIframeLiveLoop(fr) {
 /* GRID */
 function renderGrid() {
   const g = $('mv-grid');
-  g.innerHTML = '';
+  // Non svuotiamo tutto il grid per non perdere il tasto Esci se presente
+  const oldTiles = g.querySelectorAll('.mv-tile');
+  oldTiles.forEach(t => t.remove());
+  
   for (let i = 0; i < 4; i++) g.appendChild(buildTileEl(i));
 }
 
@@ -521,16 +608,18 @@ function buildTileEl(idx) {
 }
 
 function bindTileEvents(el, idx) {
-  // Esci dal fullscreen se l'utente interagisce con i controlli di Shaka
   el.addEventListener('pointerdown', e => {
     if (document.fullscreenElement && (
         e.target.closest('.shaka-seek-bar-container') ||
         e.target.closest('.shaka-range-container') ||
         e.target.closest('.shaka-controls-button-panel') ||
         e.target.closest('.shaka-overflow-menu') ||
-        e.target.closest('.shaka-settings-menu')
+        e.target.closest('.shaka-settings-menu') ||
+        e.target.closest('.shaka-current-time')
     )) {
-        document.exitFullscreen().catch(()=>{});
+        setTimeout(() => {
+            if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+        }, 150);
     }
   }, true);
 
@@ -976,11 +1065,15 @@ document.querySelectorAll('input[name="srcType"]').forEach(r => {
 
 /* UI */
 $('btnReloadAll').addEventListener('click', () => { tiles.forEach((t, i) => { if (t && t.ch) reloadTile(i); }); });
-$('btnFullscreen').addEventListener('click', () => {
+
+function toggleFullscreen() {
   const el = $('mv-grid');
   if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});
   else if (el.requestFullscreen) el.requestFullscreen().catch(()=>{});
-});
+}
+$('btnFullscreen').addEventListener('click', toggleFullscreen);
+$('btnFullscreenCenter').addEventListener('click', toggleFullscreen);
+
 $('btnSource').addEventListener('click', openSourceModal);
 $('pickerClose').addEventListener('click', closePicker);
 $('pickerModal').addEventListener('click', e => { if (e.target.id === 'pickerModal') closePicker(); });
@@ -1031,16 +1124,24 @@ document.addEventListener('keydown', e => {
   const v = t && t.video;
   const p = t && t.player;
 
+  const exitFsDelayed = () => {
+    if (document.fullscreenElement) {
+      setTimeout(() => {
+        if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+      }, 150);
+    }
+  };
+
   if (e.code === 'Space' || e.key === ' ' || e.key === 'Spacebar') {
-    if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+    exitFsDelayed();
     e.preventDefault(); e.stopPropagation(); if (v) { v.paused ? v.play().catch(()=>{}) : v.pause(); } return;
   }
   if (e.key === 'ArrowLeft') {
-    if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+    exitFsDelayed();
     e.preventDefault(); e.stopPropagation(); if (v) v.currentTime = Math.max(0, v.currentTime - 5); return;
   }
   if (e.key === 'ArrowRight') {
-    if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+    exitFsDelayed();
     e.preventDefault(); e.stopPropagation();
     if (v) { let maxT = v.currentTime + 5; if (isFinite(v.duration)) maxT = Math.min(v.duration, maxT); v.currentTime = maxT; }
     return;
@@ -1048,7 +1149,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowUp') { e.preventDefault(); e.stopPropagation(); if (v) { v.volume = Math.min(1, v.volume + 0.1); v.muted = false; } return; }
   if (e.key === 'ArrowDown') { e.preventDefault(); e.stopPropagation(); if (v) v.volume = Math.max(0, v.volume - 0.1); return; }
   if (e.key === 'm' || e.key === 'M') { if (v) v.muted = !v.muted; return; }
-  if (e.key === 'f' || e.key === 'F') { $('btnFullscreen').click(); return; }
+  if (e.key === 'f' || e.key === 'F') { toggleFullscreen(); return; }
   if (e.key === 'r' || e.key === 'R') { if (activeAudio >= 0) reloadTile(activeAudio); return; }
   if (e.key === 'Escape') {
     if (!$('pickerModal').classList.contains('hidden')) closePicker();
@@ -1056,6 +1157,31 @@ document.addEventListener('keydown', e => {
     else if (document.fullscreenElement) document.exitFullscreen();
   }
 }, true);
+
+/* GESTIONE TASTO "ESCI" IN FULLSCREEN */
+const fsExitBtn = $('fs-exit-btn');
+
+document.addEventListener('mousemove', () => {
+  if (document.fullscreenElement) {
+    fsExitBtn.classList.add('active');
+    clearTimeout(fsExitTimeout);
+    fsExitTimeout = setTimeout(() => {
+      fsExitBtn.classList.remove('active');
+    }, 2500);
+  }
+});
+
+fsExitBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+});
+
+document.addEventListener('fullscreenchange', () => {
+  if (!document.fullscreenElement) {
+    fsExitBtn.classList.remove('active');
+    clearTimeout(fsExitTimeout);
+  }
+});
 
 /* BOOT */
 (async function boot() {
