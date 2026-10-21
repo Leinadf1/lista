@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Multiview 2×2</title>
+<title>Multiview</title>
 <link rel="preload" href="https://raw.githubusercontent.com/Leinadf1/lista/main/Formula1-Bold_web_0.ttf" as="font" type="font/ttf" crossorigin>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <style>
@@ -46,6 +46,14 @@ img { display: block; }
 #mv-header .mv-src.custom { color: #e0b400; }
 #mv-header .mv-spacer { flex: 1; }
 
+/* Selettore Layout */
+#layoutSelect {
+  padding: 5px 10px; background: #111; color: #aaa; border: 1px solid #222;
+  border-radius: 12px; font-size: 11px; font-weight: 700; letter-spacing: .4px;
+  outline: none; cursor: pointer; font-family: inherit;
+}
+#layoutSelect:hover { background: #1a1a1a; color: #fff; }
+
 /* Tasto Fullscreen Centrale ed Evidente */
 .mv-btn-center {
   position: absolute;
@@ -79,10 +87,16 @@ img { display: block; }
 .mv-btn:hover { background: #1a1a1a; color: #fff; }
 
 #mv-main { flex: 1 1 auto; min-height: 0; min-width: 0; display: flex; }
-#mv-grid { flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px; background: #141414; min-width: 0; min-height: 0; position: relative; }
+
+/* GRID base + layout classes */
+#mv-grid { flex: 1; display: grid; gap: 2px; background: #141414; min-width: 0; min-height: 0; position: relative; }
+#mv-grid.l-2 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr; }
+#mv-grid.l-3 { grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr; }
+#mv-grid.l-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+
 #mv-grid:fullscreen, #mv-grid:-webkit-full-screen { width: 100vw; height: 100vh; gap: 2px; background: #141414; }
 
-/* ★ NUOVO: Tasto Esci a comparsa in Fullscreen ★ */
+/* Tasto Esci a comparsa in Fullscreen */
 .fs-exit-btn {
   position: fixed;
   top: 20px;
@@ -108,10 +122,6 @@ img { display: block; }
   display: flex;
   align-items: center;
   gap: 6px;
-}
-#mv-grid:fullscreen .fs-exit-btn,
-#mv-grid:-webkit-full-screen .fs-exit-btn {
-  display: flex;
 }
 .fs-exit-btn.active {
   opacity: 1;
@@ -202,7 +212,6 @@ img { display: block; }
   overflow-y: auto;
   min-height: 0;
 }
-.mv-err-details .key { color: #8b949e; }
 .mv-err-actions { display: flex; gap: 6px; flex: 0 0 auto; }
 .mv-err-btn {
   padding: 6px 12px; border-radius: 5px; font-size: 11px; font-weight: 700;
@@ -279,7 +288,7 @@ img { display: block; }
 @media (max-width: 700px), (pointer: coarse) {
   #mv-header { height: 34px; gap: 4px; padding: 0 8px; }
   .mv-title { display: none; }
-  .mv-btn { padding: 4px 9px; font-size: 10px; }
+  .mv-btn, #layoutSelect { padding: 4px 9px; font-size: 10px; }
   .mv-src { max-width: 110px; font-size: 9.5px; }
   .mv-ui { opacity: 1; pointer-events: auto; background: linear-gradient(to bottom, rgba(0,0,0,.6), transparent); }
   .mv-ui-name { font-size: 11px; }
@@ -296,6 +305,12 @@ img { display: block; }
   <span class="mv-src" id="srcBadge">Sorgente non impostata</span>
   <span class="mv-spacer"></span>
 
+  <select id="layoutSelect" title="Numero di schermi">
+    <option value="2">2 Schermi</option>
+    <option value="3">3 Schermi</option>
+    <option value="4" selected>4 Schermi (2x2)</option>
+  </select>
+
   <button class="mv-btn-center" id="btnFullscreenCenter" title="Schermo Intero (F)">
     ⛶ SCHERMO INTERO
   </button>
@@ -306,8 +321,7 @@ img { display: block; }
 </header>
 
 <main id="mv-main">
-  <div id="mv-grid">
-    <!-- Tasto Esci a comparsa (solo in fullscreen) -->
+  <div id="mv-grid" class="l-4">
     <button id="fs-exit-btn" class="fs-exit-btn" title="Esci da Schermo Intero">✕ Esci</button>
   </div>
 </main>
@@ -372,7 +386,7 @@ img { display: block; }
 
 <script>
 /* ============================================================
-   MULTIVIEW v25 + Auto-Exit Fullscreen (con delay per click) + Tasto Centrale
+   MULTIVIEW - Layout dinamico (2/3/4) + Auto-Exit FS + Tasto Centrale
    ============================================================ */
 
 const IFRAME_GROUPS = ['PRIME VIDEO', 'DAZN PRIMEVIDEO DE'];
@@ -387,12 +401,13 @@ const PROXY_DOMAINS = [
   /ott-video-cf\.formula1\.com/i
 ];
 
+let currentLayout = 4;
 let allChannels = [];
 let tiles = [null, null, null, null];
 let activeAudio = -1;
 let pickSlot = -1;
 let sourceConfig = null;
-let fsExitTimeout = null; // Timer per il tasto "Esci"
+let fsExitTimeout = null;
 
 const $ = id => document.getElementById(id);
 const normalizeName = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/gi, '');
@@ -559,11 +574,11 @@ function startIframeLiveLoop(fr) {
 /* GRID */
 function renderGrid() {
   const g = $('mv-grid');
-  // Non svuotiamo tutto il grid per non perdere il tasto Esci se presente
-  const oldTiles = g.querySelectorAll('.mv-tile');
-  oldTiles.forEach(t => t.remove());
-  
-  for (let i = 0; i < 4; i++) g.appendChild(buildTileEl(i));
+  // Imposta la classe layout senza perdere l'ID
+  g.className = 'l-' + currentLayout;
+  // Rimuove solo i tile esistenti, preserva il tasto Esci
+  g.querySelectorAll('.mv-tile').forEach(t => t.remove());
+  for (let i = 0; i < currentLayout; i++) g.appendChild(buildTileEl(i));
 }
 
 function buildTileEl(idx) {
@@ -1100,16 +1115,41 @@ $('srcSave').addEventListener('click', async () => {
   const btn = $('srcSave'); btn.disabled = true; btn.textContent = 'Caricamento…';
   try {
     await initFromSource(cfg, false);
-    for (let i = 0; i < 4; i++) { if (tiles[i]) destroyTile(tiles[i]); tiles[i] = null; }
+    for (let i = 0; i < tiles.length; i++) { if (tiles[i]) destroyTile(tiles[i]); tiles[i] = null; }
     activeAudio = -1;
     renderGrid();
     closeSourceModal();
   } catch (e) { err.textContent = 'Errore: ' + e.message; } finally { btn.disabled = false; btn.textContent = 'Salva e carica'; }
 });
 
+/* LAYOUT SELECTOR */
+$('layoutSelect').addEventListener('change', e => {
+  const newLayout = parseInt(e.target.value);
+  if (newLayout === currentLayout) return;
+
+  if (newLayout < currentLayout) {
+    // Distruggi i tile che non servono più
+    for (let i = newLayout; i < currentLayout; i++) {
+      if (tiles[i]) destroyTile(tiles[i]);
+    }
+    tiles.length = newLayout;
+    if (activeAudio >= newLayout) {
+      activeAudio = -1;
+      const first = tiles.findIndex(t => t && t.ch);
+      if (first >= 0) setAudio(first);
+    }
+  } else {
+    // Aggiungi slot vuoti
+    while (tiles.length < newLayout) tiles.push(null);
+  }
+
+  currentLayout = newLayout;
+  renderGrid();
+});
+
 /* KEYBOARD */
 document.addEventListener('keydown', e => {
-  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
     if (e.key === 'Escape') { closePicker(); closeSourceModal(); }
     return;
   }
@@ -1158,7 +1198,7 @@ document.addEventListener('keydown', e => {
   }
 }, true);
 
-/* GESTIONE TASTO "ESCI" IN FULLSCREEN */
+/* TASTO ESCI IN FULLSCREEN */
 const fsExitBtn = $('fs-exit-btn');
 
 document.addEventListener('mousemove', () => {
