@@ -2879,7 +2879,18 @@ async function init(m3uContent) {
             if (name) currentChannel.name = name[1].trim();
             if (tvgId) currentChannel.tvgId = tvgId[1];
 
-            // RIMOSSI GLI OVERRIDE FORZATI DELL'EPG QUI
+            // CORREZIONE ID SKY UNO E SKY UNO +
+            if (currentChannel.name) {
+                const upperName = currentChannel.name.toUpperCase();
+                if (upperName.includes('SKY UNO +') || upperName.includes('SKY UNO PLUS') || upperName.includes('SKYUNOPLUS')) {
+                    currentChannel.tvgId = 'Sky.Uno.+..it';
+                } else if ((upperName.includes('SKY UNO') || upperName.includes('SKYUNO')) && !upperName.includes('+') && !upperName.includes('PLUS')) {
+                    currentChannel.tvgId = 'Sky.Uno.it';
+                }
+            }
+            if (currentChannel.name && normalizeName(currentChannel.name) === 'skycinemastories') {
+                currentChannel.tvgId = 'Sky.Cinema.Due.it';
+            }
         } 
         else if (line.startsWith('http')) {
             let url = line;
