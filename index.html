@@ -372,7 +372,6 @@
             height: 100%;
             object-fit: contain;
         }
-        /* OSD TV mode: più grande, più orizzontale, barra progresso sempre spessa */
         #tv-osd {
             position: absolute;
             bottom: 60px;
@@ -501,7 +500,6 @@
             background: currentColor;
             display: inline-block;
         }
-        /* Barra progresso: altezza fissa garantita anche con desc lunga */
         #tv-osd .osd-progress {
             height: 4px;
             min-height: 4px;
@@ -2587,7 +2585,7 @@ async function checkAccess() {
         document.getElementById('expiry-info').textContent = '';
         startHeartbeat(psw);
         
-        fetch('https://dazn-ua-proxy.miniclashroyale3636-cdc.workers.dev/', { mode: 'no-cors' })
+        fetch('https://dazn-ua-proxy.stefanoaccuont.workers.dev/', { mode: 'no-cors' })
             .catch(() => {});
 
         loadEPG();
@@ -2889,7 +2887,6 @@ async function init(m3uContent) {
             if (currentChannel.name && normalizeName(currentChannel.name) === 'skyuno') {
                 currentChannel.tvgId = 'Sky.Uno.it';
             }
-            // Sky Cinema Stories prende l'EPG di Sky Cinema Due
             if (currentChannel.name && normalizeName(currentChannel.name) === 'skycinemastories') {
                 currentChannel.tvgId = 'Sky.Cinema.Due.it';
             }
@@ -2900,7 +2897,6 @@ async function init(m3uContent) {
             const groupNorm = (currentChannel.group || '').toLowerCase().replace(/[\s\-_]/g, '');
             const nameNorm = (currentChannel.name || '').toLowerCase().replace(/[\s\-_]/g, '');
             
-            // *** MODIFICA: escludi DAZN 1 in categoria ST dal proxy ***
             const isDazn1ST = (nameNorm === 'dazn1' && groupNorm === 'st');
             
             const isNeroZone = 
@@ -2917,15 +2913,14 @@ async function init(m3uContent) {
             
             const isProxyCategory = proxyCategories.includes((currentChannel.group || '').toLowerCase().trim());
             
-            const alreadyProxied = url.startsWith('https://dazn-ua-proxy.miniclashroyale3636-cdc.workers.dev/');
+            const alreadyProxied = url.startsWith('https://dazn-ua-proxy.stefanoaccuont.workers.dev/');
             
-            // Aggiunto !isDazn1ST per escludere DAZN 1 in ST dal proxy
             if (!alreadyProxied && !isDazn1ST && (
                 isProxyCategory || 
                 isNeroZone || 
                 (!isDazn1Lineare && !isDaznSvizzeri && !isDaznPrimeVideoDE && isDaznChannel)
             )) {
-                url = 'https://dazn-ua-proxy.miniclashroyale3636-cdc.workers.dev/' + url;
+                url = 'https://dazn-ua-proxy.stefanoaccuont.workers.dev/' + url;
             }
             
             currentChannel.url = url;
@@ -3031,4 +3026,4 @@ function sortCategories() {
 document.getElementById('reload-btn').addEventListener('click', reloadPlaylist);
 </script>
 </body>
-</html>
+    </html>
