@@ -1126,27 +1126,11 @@ async function loadEPG() {
             throw new Error('XML non valido');
         }
         
-        const normNameCounts = new Map();
-        xmlDoc.querySelectorAll('channel').forEach(ch => {
-            const id = ch.getAttribute('id');
-            const displayNames = ch.querySelectorAll('display-name');
-            let displayName = id;
-            if (displayNames.length > 0) {
-                displayName = displayNames[0].textContent.trim();
-            }
-            const normName = normalizeName(displayName);
-            normNameCounts.set(normName, (normNameCounts.get(normName) || 0) + 1);
-        });
-
-        const ambiguousNormNames = new Set();
-        for (const [n, count] of normNameCounts.entries()) {
-            if (count > 1) ambiguousNormNames.add(n);
-        }
-        if (ambiguousNormNames.size > 0) {
-            console.warn('⚠️ EPG: nomi ambigui esclusi dal match:', [...ambiguousNormNames]);
-        }
-
         const channelMap = new Map();
+        epgChannels.clear(); // Assicuriamoci che sia vuoto
+        epgNames.clear();
+
+        // 1. Mappiamo tutti i canali presenti nell'EPG
         xmlDoc.querySelectorAll('channel').forEach(ch => {
             const id = ch.getAttribute('id');
             const displayNames = ch.querySelectorAll('display-name');
@@ -1156,15 +1140,17 @@ async function loadEPG() {
             }
             const normName = normalizeName(displayName);
             const normId = normalizeName(id);
+            
             channelMap.set(id, normName);
             epgNames.add(normName);
-            epgChannels.set(id, []);
-            if (!ambiguousNormNames.has(normName) && !epgChannels.has(normName)) {
-                epgChannels.set(normName, []);
-            }
+            
+            // Inizializziamo l'array per questo canale (sia per ID che per nome)
+            if (!epgChannels.has(id)) epgChannels.set(id, []);
+            if (!epgChannels.has(normName)) epgChannels.set(normName, []);
             if (!epgChannels.has(normId)) epgChannels.set(normId, []);
         });
         
+        // 2. Assegniamo i programmi ai rispettivi canali
         xmlDoc.querySelectorAll('programme').forEach(prog => {
             const channelId = prog.getAttribute('channel');
             const startStr = prog.getAttribute('start');
@@ -1177,23 +1163,32 @@ async function loadEPG() {
             const start = parseXmltvTime(startStr);
             const stop = parseXmltvTime(stopStr);
             const program = { start, stop, title, desc, episode };
+            
+            // Aggiungiamo il programma all'ID esatto
             if (epgChannels.has(channelId)) epgChannels.get(channelId).push(program);
-            const normChannelId = normalizeName(channelId);
-            if (epgChannels.has(normChannelId)) epgChannels.get(normChannelId).push(program);
+            
+            // Aggiungiamo il programma anche al nome normalizzato (senza scartare nulla)
             if (channelMap.has(channelId)) {
                 const norm = channelMap.get(channelId);
-                if (!ambiguousNormNames.has(norm) && epgChannels.has(norm)) {
+                if (epgChannels.has(norm)) {
                     epgChannels.get(norm).push(program);
                 }
             }
+            
+            // Aggiungiamo anche all'ID normalizzato (se diverso)
+            const normChannelId = normalizeName(channelId);
+            if (epgChannels.has(normChannelId)) {
+                epgChannels.get(normChannelId).push(program);
+            }
         });
         
+        // 3. Ordiniamo i programmi per orario di inizio
         for (const [key, programs] of epgChannels.entries()) {
             programs.sort((a, b) => a.start - b.start);
         }
         
         epgReady = true;
-        console.log('EPG caricato con', epgChannels.size, 'voci');
+        console.log('EPG caricato con successo:', epgChannels.size, 'voci totali');
     } catch (error) {
         console.error('Errore EPG:', error);
         epgReady = false;
@@ -2672,7 +2667,8 @@ async function init(m3uContent) {
     const expiryDiv = document.getElementById('expiry-info');
     const playerContainer = document.querySelector('.player-container');
 
-    player.configure({ streaming: { jumpLargeGaps: true } });
+    // FIX Shaka Player: jumpLargeGaps non è più valido in questa versione
+    player.configure({ streaming: { gaps: { jump: true } } });
 
     function heartSVG() {
         return `
@@ -2883,16 +2879,7 @@ async function init(m3uContent) {
             if (name) currentChannel.name = name[1].trim();
             if (tvgId) currentChannel.tvgId = tvgId[1];
 
-            if (currentChannel.name && normalizeName(currentChannel.name) === 'skyunoplus') {
-                currentChannel.tvgId = 'Sky.Uno.+..it';
-            }
-            if (currentChannel.name && normalizeName(currentChannel.name) === 'skyuno') {
-                currentChannel.tvgId = 'Sky.Uno.it';
-            }
-            // Sky Cinema Stories prende l'EPG di Sky Cinema Due
-            if (currentChannel.name && normalizeName(currentChannel.name) === 'skycinemastories') {
-                currentChannel.tvgId = 'Sky.Cinema.Due.it';
-            }
+            // RIMOSSI GLI OVERRIDE FORZATI DELL'EPG QUI
         } 
         else if (line.startsWith('http')) {
             let url = line;
