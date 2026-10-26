@@ -1,6 +1,6 @@
 {
   "Serie A": {
-    "Zona Serie A Enilive": "2026-10-25T13:43:00Z",
+    "Zona Serie A Enilive": "2026-10-28T19:45:00Z",
     "Frosinone - Sassuolo": "2026-10-16T18:45:00Z",
     "Venezia - Napoli": "2026-10-17T12:12:00Z",
     "Bologna - Inter": "2026-10-17T16:00:00Z",
@@ -66,7 +66,8 @@
     "Cremonese - Benevento": "2026-10-31T14:00:00Z",
     "Südtirol - Cesena": "2026-10-31T14:00:00Z",
     "Modena - Mantova": "2026-10-31T14:00:00Z",
-    "Catanzaro - Padova": "2026-10-31T16:15:00Z"
+    "Catanzaro - Padova": "2026-10-31T16:15:00Z",
+    "Sampdoria - Virtus Entella": "2026-10-31T18:30:00Z"
   },
   "LALIGA": {
     "Deportivo A Coruña - Levante": "2026-10-16T19:00:00Z",
@@ -92,7 +93,9 @@
     "Siviglia - Osasuna": "2026-10-26T20:00:00Z",
     "Villarreal - Espanyol": "2026-10-30T20:00:00Z",
     "Levante - Atletico Madrid": "2026-10-31T13:00:00Z",
-    "Betis - Málaga": "2026-10-31T17:30:00Z"
+    "Betis - Málaga": "2026-10-31T17:30:00Z",
+    "Rayo Vallecano - Celta Vigo": "2026-10-31T15:15:00Z",
+    "Athletic Bilbao - Real Sociedad": "2026-11-01T20:00:00Z"
   },
-  "last_update": "2026-10-25 15:14:06"
+  "last_update": "2026-10-26 14:30:21"
 }
