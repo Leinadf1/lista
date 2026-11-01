@@ -1,7 +1,7 @@
 {
   "Serie A": {
-    "Zona Serie A Enilive": "https://image.discovery.indazn.com/eu/v3/eu/none/ag2lqviv1wfb7tr6b1i6a48z9_image-header_pIt_1756299253000/fill/none/top/none/100/1920/1080/webp/image",
-    "Zona Serie A": "https://image.discovery.indazn.com/eu/v3/eu/none/ag2lqviv1wfb7tr6b1i6a48z9_image-header_pIt_1756299253000/fill/none/top/none/100/1920/1080/webp/image",
+    "Zona Serie A Enilive": "https://image.discovery.indazn.com/eu/v3/eu/none/3gkaao8rh34je4f9166sbnvza_image-header_pIt_1756299253000/fill/none/top/none/100/1920/1080/webp/image",
+    "Zona Serie A": "https://image.discovery.indazn.com/eu/v3/eu/none/3gkaao8rh34je4f9166sbnvza_image-header_pIt_1756299253000/fill/none/top/none/100/1920/1080/webp/image",
     "Torino - Monza": "https://image.discovery.indazn.com/eu/v3/eu/none/e0bnqw7q4kv5o4oylfc8oeku6_image-header_pIt_1782214438000/fill/none/top/none/100/1920/1080/webp/image",
     "Como - Sassuolo": "https://image.discovery.indazn.com/eu/v3/eu/none/ej01aw1bmzhrhmqpyhy3gascy_image-header_pIt_1782214893000/fill/none/top/none/100/1920/1080/webp/image",
     "Cagliari - Bologna": "https://image.discovery.indazn.com/eu/v3/eu/none/cg6enhiuuvpg83i1zy6kd8wc7_image-header_pIt_1782212865000/fill/none/top/none/100/1920/1080/webp/image",
@@ -25,9 +25,9 @@
     "Bologna - Monza": "https://image.discovery.indazn.com/eu/v3/eu/none/6b1j8o888hep8n0feulbdyc5x_image-header_pIt_1782213946000/fill/none/top/none/100/1920/1080/webp/image",
     "Udinese - Roma": "https://image.discovery.indazn.com/eu/v3/eu/none/3jl7utnq2chtirsbn6f3ltw8j_image-header_pIt_1783426881000/fill/none/top/none/100/1920/1080/webp/image",
     "Milan - Inter": "https://image.discovery.indazn.com/eu/v3/eu/none/55mc3fr0ivzka7kr59onut6cj_image-header_pIt_1782214509000/fill/none/top/none/100/1920/1080/webp/image",
-    "Como - Venezia": "https://image.discovery.indazn.com/eu/v3/eu/none/8u57tkrn4oko2b20oey4x584r_image-header_pIt_1783698934000/fill/none/top/none/100/1920/1080/webp/image",
-    "Lazio - Cagliari": "https://image.discovery.indazn.com/eu/v3/eu/none/7u74vq3f97nyd74og8mnt7xx9_image-header_pIt_1786109142000/fill/none/top/none/100/1920/1080/webp/image",
-    "Frosinone - Torino": "https://image.discovery.indazn.com/eu/v3/eu/none/49zsevbgq4ria3w3ngdp1rcei_image-header_pIt_1782212864000/fill/none/top/none/100/1920/1080/webp/image",
+    "Como - Venezia": "https://image.discovery.indazn.com/eu/v3/eu/none/aaublxwaeropsyocsd2nty5ny_image-header_pIt_1783698934000/fill/none/top/none/100/1920/1080/webp/image",
+    "Lazio - Cagliari": "https://image.discovery.indazn.com/eu/v3/eu/none/34vdt4as0yi9x9qav9aevnsbw_image-header_pIt_1786109142000/fill/none/top/none/100/1920/1080/webp/image",
+    "Frosinone - Torino": "https://image.discovery.indazn.com/eu/v3/eu/none/8ys8d9sosl2g822fz3hzxtcuj_image-header_pIt_1782212864000/fill/none/top/none/100/1920/1080/webp/image",
     "Lecce - Genoa": "https://image.discovery.indazn.com/eu/v3/eu/none/3te7o9jcrypzp10f2rukhit1u_image-header_pIt_1775572313000/fill/none/top/none/100/1920/1080/webp/image",
     "Sassuolo - Fiorentina": "https://image.discovery.indazn.com/eu/v3/eu/none/55estvhkbt3qbugihhdt161s1_image-header_pIt_1782213386000/fill/none/top/none/100/1920/1080/webp/image",
     "Venezia - Udinese": "https://image.discovery.indazn.com/eu/v3/eu/none/71msakd9roz186ezam3f6tvvs_image-header_pIt_1783698928000/fill/none/top/none/100/1920/1080/webp/image",
@@ -67,9 +67,9 @@
     "Modena - Mantova": "https://image.discovery.indazn.com/eu/v3/eu/none/3p08xr9fm4e8y2z05ahd4b0i4_image-header_pIt_1787748042000/fill/none/top/none/100/1920/1080/webp/image",
     "Catanzaro - Padova": "https://image.discovery.indazn.com/eu/v3/eu/none/7im4h22rjxb9qyje44o9yumi2_image-header_pIt_1784922706000/fill/none/top/none/100/1920/1080/webp/image",
     "Sampdoria - Virtus Entella": "https://image.discovery.indazn.com/eu/v3/eu/none/9ve6fhp6pshnp24zi01dhsqpa_image-header_pIt_1787558069000/fill/none/top/none/100/1920/1080/webp/image",
-    "Empoli - Juve Stabia": "https://image.discovery.indazn.com/eu/v3/eu/none/etu587f7il6oz1psme1i8yrve_image-header_pIt_1784921978000/fill/none/top/none/100/1920/1080/webp/image",
-    "Arezzo - Ascoli": "https://image.discovery.indazn.com/eu/v3/eu/none/cgkfkiv66i6jx55f1xj0xi0nq_image-header_pIt_1788434317000/fill/none/top/none/100/1920/1080/webp/image",
-    "Avellino - Pisa": "https://image.discovery.indazn.com/eu/v3/eu/none/5fkut33a99nut7i9dkjnitvnd_image-header_pIt_1784921941000/fill/none/top/none/100/1920/1080/webp/image",
+    "Empoli - Juve Stabia": "https://image.discovery.indazn.com/eu/v3/eu/none/155z14msjlil2o3ko00b9124m_image-header_pIt_1784921978000/fill/none/top/none/100/1920/1080/webp/image",
+    "Arezzo - Ascoli": "https://image.discovery.indazn.com/eu/v3/eu/none/7bgyg67yhgxgf26xfvdpvkfps_image-header_pIt_1788434317000/fill/none/top/none/100/1920/1080/webp/image",
+    "Avellino - Pisa": "https://image.discovery.indazn.com/eu/v3/eu/none/9qi9b4v94o9y7vbe3lijtvck1_image-header_pIt_1784921941000/fill/none/top/none/100/1920/1080/webp/image",
     "Hellas Verona - Carrarese": "https://image.discovery.indazn.com/eu/v3/eu/none/7sdoud8p7qb8jc83zejnqaimr_image-header_pIt_1784922066000/fill/none/top/none/100/1920/1080/webp/image",
     "Palermo - L.R. Vicenza": "https://image.discovery.indazn.com/eu/v3/eu/none/5e4gk8rqm3kpxqzctk84gju8g_image-header_pIt_1786358863000/fill/none/top/none/100/1920/1080/webp/image",
     "Ascoli - Palermo": "https://image.discovery.indazn.com/eu/v3/eu/none/3guaqmcng1ego73fb9jrskeh5_image-header_pIt_1788434276000/fill/none/top/none/100/1920/1080/webp/image",
@@ -90,7 +90,6 @@
     "Valencia - Villarreal": "https://image.discovery.indazn.com/eu/v3/eu/none/7ismrugukw2svtosem5w3gkde_image-header_pIt_1783001510000/fill/none/top/none/100/1920/1080/webp/image",
     "Atlético Madrid - Deportivo A Coruña": "https://image.discovery.indazn.com/eu/v3/eu/none/4qcci8zo3p3npfa0pchcmynfk_image-header_pIt_1784531684000/fill/none/top/none/100/1920/1080/webp/image",
     "Athletic Bilbao - Getafe": "https://image.discovery.indazn.com/eu/v3/eu/none/2bor3ziyf2gg0btv4btxmn62i_image-header_pIt_1788165176000/fill/none/top/none/100/1920/1080/webp/image",
-    "Levante - Athletic Bilbao": "https://image.discovery.indazn.com/eu/v3/eu/none/c6aax6z7pqe1l1nab1vigfrqc_image-header_pIt_1788165486000/fill/none/top/none/100/1920/1080/webp/image",
     "Celta Vigo - Real Betis": "https://image.discovery.indazn.com/eu/v3/eu/none/c0x1ti0l97jhfiet6fqsnw4vj_image-header_pIt_1784627751000/fill/none/top/none/100/1920/1080/webp/image",
     "Real Sociedad - Levante": "https://image.discovery.indazn.com/eu/v3/eu/none/6csglhcv1r9pk39lezgfd62ec_image-header_pIt_1784628326000/fill/none/top/none/100/1920/1080/webp/image",
     "Siviglia - Osasuna": "https://image.discovery.indazn.com/eu/v3/eu/none/2c3vg0lcanmw41qnmwxc5xxej_image-header_pIt_1783001540000/fill/none/top/none/100/1920/1080/webp/image",
@@ -100,11 +99,11 @@
     "Rayo Vallecano - Celta Vigo": "https://image.discovery.indazn.com/eu/v3/eu/none/e6f4v2edkng2phswrfg9zru2u_image-header_pIt_1793007602000/fill/none/top/none/100/1920/1080/webp/image",
     "Athletic Bilbao - Real Sociedad": "https://image.discovery.indazn.com/eu/v3/eu/none/k4yz7a10mq8gc9767jh1d1vs_image-header_pIt_1793007602000/fill/none/top/none/100/1920/1080/webp/image",
     "Barcellona - Alavés": "https://image.discovery.indazn.com/eu/v3/eu/none/q8fcxoxlqnsntntyspp7ms3d_image-header_pIt_1783064998000/fill/none/top/none/100/1920/1080/webp/image",
-    "Getafe - Siviglia": "https://image.discovery.indazn.com/eu/v3/eu/none/2jhvbyjmxev8rqdt0047b88wn_image-header_pIt_1793007602000/fill/none/top/none/100/1920/1080/webp/image",
+    "Getafe - Siviglia": "https://image.discovery.indazn.com/eu/v3/eu/none/6fn6l4s8u11a9u6r739iu2zdw_image-header_pIt_1793007602000/fill/none/top/none/100/1920/1080/webp/image",
     "Racing Santander - Real Madrid": "https://image.discovery.indazn.com/eu/v3/eu/none/278oeyd1tgch2fo2vnexelacs_image-header_pIt_1783001597000/fill/none/top/none/100/1920/1080/webp/image",
     "Elche - Valencia": "https://image.discovery.indazn.com/eu/v3/eu/none/bhh9yp3gdmzyebq3ewag6fl8z_image-header_pIt_1782981761000/fill/none/top/none/100/1920/1080/webp/image",
     "Deportivo A Coruña - Osasuna": "https://image.discovery.indazn.com/eu/v3/eu/none/6f7a3vm30yl8bxp42tkkjq083_image-header_pIt_1789589314000/fill/none/top/none/100/1920/1080/webp/image",
     "Málaga - Racing Santander": "https://image.discovery.indazn.com/eu/v3/eu/none/b73gs7j84neigssyvr67stolc_image-header_pIt_1783001681000/fill/none/top/none/100/1920/1080/webp/image"
   },
-  "last_update": "2026-10-31 00:01:04"
+  "last_update": "2026-11-01 14:46:35"
 }
