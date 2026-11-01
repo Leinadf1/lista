@@ -398,7 +398,7 @@ export default async function handler(req, res) {
         // Ordine:
         //   Sky + base
         //   DAZN lineari
-        //   DAZN ST
+        //   (DAZN ST — RIMOSSO)
         //   DAZN Events (dazn_events.m3u)
         //   DAZN Eventi (dazn1.m3u)
         //   DAZN Primevideo DE
@@ -419,7 +419,8 @@ export default async function handler(req, res) {
         }
 
         if (daznContentFixed)           finalContent = finalContent.trimEnd() + "\n" + daznContentFixed;           // DAZN lineari
-        if (dazn1STContentFixed)        finalContent = finalContent.trimEnd() + "\n" + dazn1STContentFixed;        // DAZN ST
+        // RIMOSSO: DAZN ST
+        // if (dazn1STContentFixed)     finalContent = finalContent.trimEnd() + "\n" + dazn1STContentFixed;        // DAZN ST
         if (daznEventsContentFixed)     finalContent = finalContent.trimEnd() + "\n" + daznEventsContentFixed;     // DAZN Events (dazn_events.m3u)
         if (dazn1EventiContentFixed)    finalContent = finalContent.trimEnd() + "\n" + dazn1EventiContentFixed;    // DAZN Eventi (dazn1.m3u)
         if (primevideoDEContentFixed)   finalContent = finalContent.trimEnd() + "\n" + primevideoDEContentFixed;   // DAZN Primevideo DE
