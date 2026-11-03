@@ -1,9 +1,6 @@
 {
   "Serie A": {
     "Zona Serie A Enilive": "2026-11-01T13:43:00Z",
-    "Torino - Monza": "2026-10-23T18:45:00Z",
-    "Como - Sassuolo": "2026-10-24T12:27:00Z",
-    "Cagliari - Bologna": "2026-10-24T12:42:00Z",
     "Napoli - Roma": "2026-10-24T14:57:00Z",
     "Lazio - Parma": "2026-10-24T18:45:00Z",
     "Inter - Fiorentina": "2026-10-25T10:42:00Z",
@@ -40,12 +37,6 @@
     "Inter - Como": "2026-11-08T17:00:00Z"
   },
   "Serie B": {
-    "Empoli - Vicenza": "2026-10-23T18:30:00Z",
-    "Virtus Entella - Mantova": "2026-10-24T13:00:00Z",
-    "Südtirol - Sampdoria": "2026-10-24T13:00:00Z",
-    "Modena - Cesena": "2026-10-24T13:00:00Z",
-    "Cremonese - Juve Stabia": "2026-10-24T13:00:00Z",
-    "Avellino - Padova": "2026-10-24T13:00:00Z",
     "Catanzaro - Ascoli": "2026-10-24T15:15:00Z",
     "Arezzo - Benevento": "2026-10-24T17:30:00Z",
     "Palermo - Carrarese": "2026-10-25T14:00:00Z",
@@ -80,10 +71,7 @@
     "Virtus Entella - Modena": "2026-11-08T14:00:00Z"
   },
   "LALIGA": {
-    "Alavés - Málaga": "2026-10-23T19:00:00Z",
-    "Rayo Vallecano - Elche": "2026-10-24T12:00:00Z",
     "Barcellona - Real Madrid": "2026-10-25T20:00:00Z",
-    "Racing Santander - Espanyol": "2026-10-24T14:15:00Z",
     "Valencia - Villarreal": "2026-10-24T16:30:00Z",
     "Atlético Madrid - Deportivo A Coruña": "2026-10-24T19:00:00Z",
     "Athletic Bilbao - Getafe": "2026-10-25T13:00:00Z",
@@ -100,7 +88,12 @@
     "Racing Santander - Real Madrid": "2026-11-01T15:15:00Z",
     "Elche - Valencia": "2026-11-01T17:30:00Z",
     "Deportivo A Coruña - Osasuna": "2026-11-02T20:00:00Z",
-    "Málaga - Racing Santander": "2026-11-07T13:00:00Z"
+    "Málaga - Racing Santander": "2026-11-07T13:00:00Z",
+    "Siviglia - Alavés": "2026-11-06T20:00:00Z",
+    "Espanyol - Deportivo A Coruña": "2026-11-07T15:15:00Z",
+    "Osasuna - Athletic Bilbao": "2026-11-07T17:30:00Z",
+    "Valencia - Real Madrid": "2026-11-07T20:00:00Z",
+    "Elche - Betis": "2026-11-08T13:00:00Z"
   },
-  "last_update": "2026-11-02 00:35:34"
+  "last_update": "2026-11-03 15:52:35"
 }
