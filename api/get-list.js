@@ -147,7 +147,7 @@ function withCacheBust(url) {
 
 // === OVERRIDE LOGO "DAZN 1" (matcha "DAZN 1", "DAZN 1 WARP", "DAZN 1 (...)", ecc.) ===
 // NB: NON applicato a NeroZone (lo gestisce il suo script dedicato).
-const DAZN1_LOGO_FIXED = "https://nowtv-seven.vercel.app/logos/dazn1.png?v=2";
+const DAZN1_LOGO_FIXED = "https://nowtv-live.pages.dev/logos/dazn1.png?v=2";
 
 function applyDazn1LogoOverride(content) {
     if (!content) return content;
