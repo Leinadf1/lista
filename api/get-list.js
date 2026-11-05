@@ -145,8 +145,7 @@ function withCacheBust(url) {
     return `${url}${sep}t=${Date.now()}&r=${Math.random().toString(36).slice(2)}`;
 }
 
-// === OVERRIDE LOGO "DAZN 1" (matcha "DAZN 1", "DAZN 1 WARP", "DAZN 1 (...)", ecc.) ===
-// NB: NON applicato a NeroZone (lo gestisce il suo script dedicato).
+// === OVERRIDE LOGO "DAZN 1" ===
 const DAZN1_LOGO_FIXED = "https://nowtv-live.pages.dev/logos/dazn1.png?v=2";
 
 function applyDazn1LogoOverride(content) {
@@ -182,11 +181,32 @@ export default async function handler(req, res) {
     } catch (e) { body = {}; }
 
     const psw = body.password ? body.password.trim() : "";
+
+    // === LOGICA PROXY E PASSWORD ===
+    // 1. Leggiamo i Secrets da Vercel
+    const proxyMioUrl = process.env.PROXY_MIO || 'https://dazn-ua-proxy.miniclashroyale3636-cdc.workers.dev/';
+    const proxySteUrl = process.env.PROXY_STE || 'https://dazn-ua-proxy.stefanoaccuont.workers.dev/';
+    
+    const listaPassMio = (process.env.PASS_PROXY_MIO || '').split(',').map(p => p.trim()).filter(p => p !== '');
+    const listaPassSte = (process.env.PASS_PROXY_STE || '').split(',').map(p => p.trim()).filter(p => p !== '');
+    
+    // (Opzionale) Manteniamo la vecchia MASTER_PASSWORD per retrocompatibilità
     const authorizedPasswords = (process.env.MASTER_PASSWORD || "").split(',').map(p => p.trim());
 
-    if (!psw || !authorizedPasswords.includes(psw)) {
+    let proxyDaUsare = null;
+
+    // 2. Controlliamo a quale gruppo appartiene la password
+    if (listaPassMio.includes(psw)) {
+        proxyDaUsare = proxyMioUrl;
+    } else if (listaPassSte.includes(psw)) {
+        proxyDaUsare = proxySteUrl;
+    } else if (authorizedPasswords.includes(psw)) {
+        // Se usi ancora la vecchia password master, usa il proxy di default
+        proxyDaUsare = proxyMioUrl; 
+    } else {
         return res.status(401).json({ error: "Password errata" });
     }
+    // ==============================
 
     const sessionKey = `session_${psw}`;
 
@@ -370,7 +390,6 @@ export default async function handler(req, res) {
         const daznEventsContentFixed    = applyDazn1LogoOverride(daznEventsContent);
         const dazn1EventiContentFixed   = applyDazn1LogoOverride(dazn1EventiContent);
         const dazn1RestContentFixed     = applyDazn1LogoOverride(dazn1RestContent);
-        // NOTA: nerozoneContent NON viene passato nell'override — il logo lo gestisce dazn_nerozone.py
         const primevideoDEContentFixed  = applyDazn1LogoOverride(primevideoDEContent);
         const primevideoOtherFixed      = applyDazn1LogoOverride(primevideoOtherContent);
         const daznSwissContentFixed     = applyDazn1LogoOverride(daznSwissContent);
@@ -395,18 +414,6 @@ export default async function handler(req, res) {
         const baseContentFiltered = removeChannelsByName(fileContent, skyNamesSet);
 
         // === COSTRUZIONE CONTENUTO FINALE ===
-        // Ordine:
-        //   Sky + base
-        //   DAZN lineari
-        //   (DAZN ST — RIMOSSO)
-        //   DAZN Events (dazn_events.m3u)
-        //   DAZN Eventi (dazn1.m3u)
-        //   DAZN Primevideo DE
-        //   DAZN NeroZone
-        //   DAZN Svizzeri
-        //   Prime Video
-        //   Bluesport
-        //   (extra: eurosport-rsi, resto dazn1, Como TV)
         let finalContent = "#EXTM3U\n";
 
         if (finalSkyChannels.length > 0) {
@@ -419,8 +426,6 @@ export default async function handler(req, res) {
         }
 
         if (daznContentFixed)           finalContent = finalContent.trimEnd() + "\n" + daznContentFixed;           // DAZN lineari
-        // RIMOSSO: DAZN ST
-        // if (dazn1STContentFixed)     finalContent = finalContent.trimEnd() + "\n" + dazn1STContentFixed;        // DAZN ST
         if (daznEventsContentFixed)     finalContent = finalContent.trimEnd() + "\n" + daznEventsContentFixed;     // DAZN Events (dazn_events.m3u)
         if (dazn1EventiContentFixed)    finalContent = finalContent.trimEnd() + "\n" + dazn1EventiContentFixed;    // DAZN Eventi (dazn1.m3u)
         if (primevideoDEContentFixed)   finalContent = finalContent.trimEnd() + "\n" + primevideoDEContentFixed;   // DAZN Primevideo DE
@@ -442,7 +447,7 @@ export default async function handler(req, res) {
                 let filtered = "#EXTM3U\n";
                 filtered += buildM3U(f1FromSky);
                 const encoded = Buffer.from(filtered, 'utf-8').toString('base64');
-                return res.status(200).send(encoded);
+                return res.status(200).json({ m3u: encoded, proxy: proxyDaUsare }); // Modificato
             }
             const lines = baseContentFiltered.split('\n');
             let found = false;
@@ -460,11 +465,11 @@ export default async function handler(req, res) {
                 if (f1FromBackup) filtered += buildM3U(f1FromBackup);
             }
             const encoded = Buffer.from(filtered, 'utf-8').toString('base64');
-            return res.status(200).send(encoded);
+            return res.status(200).json({ m3u: encoded, proxy: proxyDaUsare }); // Modificato
         }
 
         const encoded = Buffer.from(finalContent, 'utf-8').toString('base64');
-        res.status(200).send(encoded);
+        return res.status(200).json({ m3u: encoded, proxy: proxyDaUsare }); // Modificato
 
     } catch (error) {
         console.error(error);
