@@ -60,25 +60,21 @@ function isChannelExpired(channel) {
     return Date.now() > exp;
 }
 
-// === NUOVA FUNZIONE PER NORMALIZZARE I NOMI ===
 function normalizeChannelName(name) {
     if (!name) return '';
     return name.toUpperCase()
-        .replace(/SKY/g, '')      // Rimuove "SKY"
-        .replace(/HD/g, '')       // Rimuove "HD"
-        .replace(/[^A-Z0-9]/g, ''); // Rimuove spazi e caratteri speciali
+        .replace(/SKY/g, '')      
+        .replace(/HD/g, '')       
+        .replace(/[^A-Z0-9]/g, ''); 
 }
 
-// === FUNZIONE DI MATCH TOLLERANTE MIGLIORATA ===
 function findBackupChannel(name, backupList) {
     const searchName = name.trim().toUpperCase();
     const normSearchName = normalizeChannelName(name);
 
-    // 1. Prova prima il match esatto (più veloce e sicuro)
     const exactMatch = backupList.find(ch => ch.name.trim().toUpperCase() === searchName);
     if (exactMatch) return exactMatch;
 
-    // 2. Prova con la normalizzazione (es. "Sport F1" == "Sky Sport F1")
     return backupList.find(ch => {
         const normBackupName = normalizeChannelName(ch.name);
         return normBackupName === normSearchName;
@@ -165,7 +161,6 @@ function withCacheBust(url) {
     return `${url}${sep}t=${Date.now()}&r=${Math.random().toString(36).slice(2)}`;
 }
 
-// === OVERRIDE LOGO "DAZN 1" ===
 const DAZN1_LOGO_FIXED = "https://nowtv-live.pages.dev/logos/dazn1.png?v=2";
 
 function applyDazn1LogoOverride(content) {
@@ -202,13 +197,21 @@ export default async function handler(req, res) {
 
     const psw = body.password ? body.password.trim() : "";
 
-    // === LOGICA PROXY E PASSWORD ===
-    const proxyMioUrl = process.env.PROXY_MIO || 'https://dazn-ua-proxy.miniclashroyale3636-cdc.workers.dev/';
-    const proxySteUrl = process.env.PROXY_STE || 'https://dazn-ua-proxy.stefanoaccuont.workers.dev/';
+    // === LOGICA PROXY E PASSWORD (SICURA, SENZA URL IN CHIARO) ===
+    // Legge SOLO dalle variabili d'ambiente di Vercel
+    const proxyMioUrl = process.env.PROXY_MIO;
+    const proxySteUrl = process.env.PROXY_STE;
+    const proxyTerzoUrl = process.env.PROXY_TERZO; // <-- TERZO PROXY
     
     const listaPassMio = (process.env.PASS_PROXY_MIO || '').split(',').map(p => p.trim()).filter(p => p !== '');
     const listaPassSte = (process.env.PASS_PROXY_STE || '').split(',').map(p => p.trim()).filter(p => p !== '');
-    const authorizedPasswords = (process.env.MASTER_PASSWORD || "").split(',').map(p => p.trim());
+    const listaPassTerzo = (process.env.PASS_PROXY_TERZO || '').split(',').map(p => p.trim()).filter(p => p !== ''); // <-- TERZO GRUPPO
+
+    // Se per qualche motivo le variabili non sono configurate, blocca tutto
+    if (!proxyMioUrl || !proxySteUrl || !proxyTerzoUrl) {
+        console.error("ERRORE CRITICO: Le variabili d'ambiente PROXY_* non sono configurate su Vercel.");
+        return res.status(500).json({ error: "Configurazione server incompleta" });
+    }
 
     let proxyDaUsare = null;
 
@@ -216,8 +219,8 @@ export default async function handler(req, res) {
         proxyDaUsare = proxyMioUrl;
     } else if (listaPassSte.includes(psw)) {
         proxyDaUsare = proxySteUrl;
-    } else if (authorizedPasswords.includes(psw)) {
-        proxyDaUsare = proxyMioUrl; 
+    } else if (listaPassTerzo.includes(psw)) {
+        proxyDaUsare = proxyTerzoUrl;
     } else {
         return res.status(401).json({ error: "Password errata" });
     }
@@ -243,12 +246,10 @@ export default async function handler(req, res) {
     try {
         const gistBase = process.env.GIST_RAW_URL.replace(/\/[^\/]+$/, '');
 
-        // 1. Lista base
         const githubResponse = await fetch(withCacheBust(process.env.GIST_RAW_URL));
         const fileContent = await githubResponse.text();
         const baseChannels = parseM3U(fileContent);
 
-        // 2. Sky primari
         let skyChannels = [];
         try {
             const skyUrl = withCacheBust(`${gistBase}/sky.m3u`);
@@ -257,11 +258,8 @@ export default async function handler(req, res) {
                 const skyContent = await skyResponse.text();
                 skyChannels = parseM3U(skyContent);
             }
-        } catch (e) {
-            console.error("Errore nel caricamento sky.m3u:", e);
-        }
+        } catch (e) { console.error("Errore sky.m3u:", e); }
 
-        // 3. Sky secondari
         let backupChannels = [];
         try {
             const backupUrl = withCacheBust(`${gistBase}/sky2.m3u`);
@@ -270,9 +268,8 @@ export default async function handler(req, res) {
                 const backupContent = await backupResponse.text();
                 backupChannels = parseM3U(backupContent);
             }
-        } catch (e) { console.error("Errore nel caricamento sky2.m3u:", e); }
+        } catch (e) { console.error("Errore sky2.m3u:", e); }
 
-        // 4. DAZN lineari
         let daznContent = "";
         try {
             const daznGistId = process.env.DAZN_GIST_ID;
@@ -282,13 +279,10 @@ export default async function handler(req, res) {
                 if (daznResponse.ok) {
                     let rawDazn = await daznResponse.text();
                     daznContent = rawDazn.replace(/^#EXTM3U\s*\n?/i, '').trim();
-                } else {
-                    console.error("[DAZN] Fetch dazn.m3u failed:", daznResponse.status);
                 }
             }
         } catch (e) { console.error("[DAZN] Errore dazn.m3u:", e); }
 
-        // 5. DAZN Events
         let daznEventsContent = "";
         try {
             const daznGistId = process.env.DAZN_GIST_ID;
@@ -298,13 +292,10 @@ export default async function handler(req, res) {
                 if (eventsResponse.ok) {
                     let rawEvents = await eventsResponse.text();
                     daznEventsContent = rawEvents.replace(/^#EXTM3U\s*\n?/i, '').trim();
-                } else {
-                    console.error("[DAZN] Fetch dazn_events.m3u failed:", eventsResponse.status);
                 }
             }
         } catch (e) { console.error("[DAZN] Errore dazn_events.m3u:", e); }
 
-        // 6. DAZN Swiss + Como TV
         let daznSwissContent = "";
         let comotvContent = "";
         try {
@@ -316,12 +307,9 @@ export default async function handler(req, res) {
                 const swissSplit = splitByGroup(rawSwiss, "Como TV");
                 comotvContent = swissSplit.matching;
                 daznSwissContent = swissSplit.others;
-            } else {
-                console.error("[DAZN Swiss] Fetch failed:", swissResponse.status);
             }
         } catch (e) { console.error("[DAZN Swiss] Errore:", e); }
 
-        // 7. Bluesport
         let bluesportContent = "";
         try {
             const bluesportUrl = withCacheBust(`${gistBase}/z_bluesport.m3u`);
@@ -329,12 +317,9 @@ export default async function handler(req, res) {
             if (bluesportResponse.ok) {
                 let rawBluesport = await bluesportResponse.text();
                 bluesportContent = rawBluesport.replace(/^#EXTM3U\s*\n?/i, '').trim();
-            } else {
-                console.error("[Bluesport] Fetch failed:", bluesportResponse.status);
             }
         } catch (e) { console.error("[Bluesport] Errore:", e); }
 
-        // 8. Primevideo
         let primevideoContent = "";
         try {
             const primevideoUrl = withCacheBust(`${gistBase}/z_primevideo.m3u`);
@@ -342,12 +327,9 @@ export default async function handler(req, res) {
             if (primevideoResponse.ok) {
                 let rawPrimevideo = await primevideoResponse.text();
                 primevideoContent = rawPrimevideo.replace(/^#EXTM3U\s*\n?/i, '').trim();
-            } else {
-                console.error("[Primevideo] Fetch failed:", primevideoResponse.status);
             }
         } catch (e) { console.error("[Primevideo] Errore:", e); }
 
-        // 9. NeroZone
         let nerozoneContent = "";
         try {
             const nerozoneUrl = withCacheBust(`${gistBase}/z_dazn_nerozone.m3u`);
@@ -355,12 +337,9 @@ export default async function handler(req, res) {
             if (nerozoneResponse.ok) {
                 let rawNerozone = await nerozoneResponse.text();
                 nerozoneContent = rawNerozone.replace(/^#EXTM3U\s*\n?/i, '').trim();
-            } else {
-                console.error("[NeroZone] Fetch failed:", nerozoneResponse.status);
             }
         } catch (e) { console.error("[NeroZone] Errore:", e); }
 
-        // 10. Eurosport/RSI (opzionale)
         let eurosportRsiContent = "";
         try {
             const eurosportRsiUrl = withCacheBust(`${gistBase}/z_eurosport-rsi.m3u`);
@@ -369,9 +348,8 @@ export default async function handler(req, res) {
                 let rawEurosportRsi = await eurosportRsiResponse.text();
                 eurosportRsiContent = rawEurosportRsi.replace(/^#EXTM3U\s*\n?/i, '').trim();
             }
-        } catch (e) { /* opzionale */ }
+        } catch (e) { }
 
-        // 11. DAZN1 (da stefa-menne)
         let dazn1Content = "";
         try {
             const dazn1Url = withCacheBust(`https://gist.githubusercontent.com/stefa-menne/607a5986fa5ddcf07639b79200a31aa4/raw/dazn1.m3u`);
@@ -379,17 +357,13 @@ export default async function handler(req, res) {
             if (dazn1Response.ok) {
                 let rawDazn1 = await dazn1Response.text();
                 dazn1Content = rawDazn1.replace(/^#EXTM3U\s*\n?/i, '').trim();
-            } else {
-                console.error("[DAZN1] Fetch failed:", dazn1Response.status);
             }
         } catch (e) { console.error("[DAZN1] Errore:", e); }
 
-        // === SPLIT PRIMEVIDEO ===
         const primevideoSplit = splitByGroup(primevideoContent, "DAZN PRIMEVIDEO DE");
         const primevideoDEContent = primevideoSplit.matching;
         const primevideoOtherContent = primevideoSplit.others;
 
-        // === SPLIT DAZN1 ===
         const dazn1SplitST = splitByGroup(dazn1Content, "DAZN ST");
         const dazn1STContent = dazn1SplitST.matching;
         const dazn1WithoutST = dazn1SplitST.others;
@@ -398,7 +372,6 @@ export default async function handler(req, res) {
         const dazn1EventiContent = dazn1SplitEventi.matching;
         const dazn1RestContent = dazn1SplitEventi.others;
 
-        // === APPLICA OVERRIDE LOGO "DAZN 1" SULLE SORGENTI ===
         const daznContentFixed          = applyDazn1LogoOverride(daznContent);
         const dazn1STContentFixed       = applyDazn1LogoOverride(dazn1STContent);
         const daznEventsContentFixed    = applyDazn1LogoOverride(daznEventsContent);
@@ -409,19 +382,14 @@ export default async function handler(req, res) {
         const daznSwissContentFixed     = applyDazn1LogoOverride(daznSwissContent);
         const comotvContentFixed        = applyDazn1LogoOverride(comotvContent);
 
-        // === LOGICA SKY CON TOLLERANZA ===
         let finalSkyChannels = skyChannels.map(ch => {
             if (isChannelExpired(ch)) {
-                // Cerca in sky2.m3u con tolleranza
                 const backupFromSky2 = findBackupChannel(ch.name, backupChannels);
                 if (backupFromSky2) {
-                    console.log(`[FALLBACK] Uso ${backupFromSky2.name} da sky2.m3u per sostituire ${ch.name}`);
                     return { ...ch, url: backupFromSky2.url, drm: backupFromSky2.drm };
                 }
-                // Se non c'è in sky2, cerca nella lista base
                 const backupFromBase = findBackupChannel(ch.name, baseChannels);
                 if (backupFromBase) {
-                    console.log(`[FALLBACK] Uso ${backupFromBase.name} dalla lista base per sostituire ${ch.name}`);
                     return { ...ch, url: backupFromBase.url, drm: backupFromBase.drm };
                 }
             }
@@ -431,7 +399,6 @@ export default async function handler(req, res) {
         const skyNamesSet = new Set(finalSkyChannels.map(ch => ch.name.toUpperCase()));
         const baseContentFiltered = removeChannelsByName(fileContent, skyNamesSet);
 
-        // === COSTRUZIONE CONTENUTO FINALE ===
         let finalContent = "#EXTM3U\n";
 
         if (finalSkyChannels.length > 0) {
@@ -455,12 +422,10 @@ export default async function handler(req, res) {
         if (dazn1RestContentFixed)      finalContent = finalContent.trimEnd() + "\n" + dazn1RestContentFixed;
         if (comotvContentFixed)         finalContent = finalContent.trimEnd() + "\n" + comotvContentFixed;
 
-        // F1-only
         const f1OnlyPasswords = (process.env.F1_ONLY_PASSWORD || "").split(',').map(p => p.trim().toLowerCase());
         const isF1Only = f1OnlyPasswords.includes(psw.toLowerCase());
 
         if (isF1Only) {
-            // Cerca F1 in skyChannels (usando la normalizzazione)
             const f1FromSky = finalSkyChannels.find(c => normalizeChannelName(c.name).includes("SPORTF1") || c.name.toUpperCase().includes("SKY SPORT F1"));
             if (f1FromSky) {
                 let filtered = "#EXTM3U\n";
@@ -469,7 +434,6 @@ export default async function handler(req, res) {
                 return res.status(200).json({ m3u: encoded, proxy: proxyDaUsare });
             }
             
-            // Cerca F1 nel resto
             const lines = baseContentFiltered.split('\n');
             let found = false;
             let filtered = "#EXTM3U\n";
