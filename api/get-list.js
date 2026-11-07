@@ -60,9 +60,29 @@ function isChannelExpired(channel) {
     return Date.now() > exp;
 }
 
+// === NUOVA FUNZIONE PER NORMALIZZARE I NOMI ===
+function normalizeChannelName(name) {
+    if (!name) return '';
+    return name.toUpperCase()
+        .replace(/SKY/g, '')      // Rimuove "SKY"
+        .replace(/HD/g, '')       // Rimuove "HD"
+        .replace(/[^A-Z0-9]/g, ''); // Rimuove spazi e caratteri speciali
+}
+
+// === FUNZIONE DI MATCH TOLLERANTE MIGLIORATA ===
 function findBackupChannel(name, backupList) {
     const searchName = name.trim().toUpperCase();
-    return backupList.find(ch => ch.name.trim().toUpperCase() === searchName);
+    const normSearchName = normalizeChannelName(name);
+
+    // 1. Prova prima il match esatto (più veloce e sicuro)
+    const exactMatch = backupList.find(ch => ch.name.trim().toUpperCase() === searchName);
+    if (exactMatch) return exactMatch;
+
+    // 2. Prova con la normalizzazione (es. "Sport F1" == "Sky Sport F1")
+    return backupList.find(ch => {
+        const normBackupName = normalizeChannelName(ch.name);
+        return normBackupName === normSearchName;
+    });
 }
 
 function removeChannelsByName(m3uContent, namesSet) {
@@ -183,30 +203,24 @@ export default async function handler(req, res) {
     const psw = body.password ? body.password.trim() : "";
 
     // === LOGICA PROXY E PASSWORD ===
-    // 1. Leggiamo i Secrets da Vercel
     const proxyMioUrl = process.env.PROXY_MIO || 'https://dazn-ua-proxy.miniclashroyale3636-cdc.workers.dev/';
     const proxySteUrl = process.env.PROXY_STE || 'https://dazn-ua-proxy.stefanoaccuont.workers.dev/';
     
     const listaPassMio = (process.env.PASS_PROXY_MIO || '').split(',').map(p => p.trim()).filter(p => p !== '');
     const listaPassSte = (process.env.PASS_PROXY_STE || '').split(',').map(p => p.trim()).filter(p => p !== '');
-    
-    // (Opzionale) Manteniamo la vecchia MASTER_PASSWORD per retrocompatibilità
     const authorizedPasswords = (process.env.MASTER_PASSWORD || "").split(',').map(p => p.trim());
 
     let proxyDaUsare = null;
 
-    // 2. Controlliamo a quale gruppo appartiene la password
     if (listaPassMio.includes(psw)) {
         proxyDaUsare = proxyMioUrl;
     } else if (listaPassSte.includes(psw)) {
         proxyDaUsare = proxySteUrl;
     } else if (authorizedPasswords.includes(psw)) {
-        // Se usi ancora la vecchia password master, usa il proxy di default
         proxyDaUsare = proxyMioUrl; 
     } else {
         return res.status(401).json({ error: "Password errata" });
     }
-    // ==============================
 
     const sessionKey = `session_${psw}`;
 
@@ -384,7 +398,7 @@ export default async function handler(req, res) {
         const dazn1EventiContent = dazn1SplitEventi.matching;
         const dazn1RestContent = dazn1SplitEventi.others;
 
-        // === APPLICA OVERRIDE LOGO "DAZN 1" SULLE SORGENTI (NON su NeroZone) ===
+        // === APPLICA OVERRIDE LOGO "DAZN 1" SULLE SORGENTI ===
         const daznContentFixed          = applyDazn1LogoOverride(daznContent);
         const dazn1STContentFixed       = applyDazn1LogoOverride(dazn1STContent);
         const daznEventsContentFixed    = applyDazn1LogoOverride(daznEventsContent);
@@ -395,15 +409,19 @@ export default async function handler(req, res) {
         const daznSwissContentFixed     = applyDazn1LogoOverride(daznSwissContent);
         const comotvContentFixed        = applyDazn1LogoOverride(comotvContent);
 
-        // === LOGICA SKY ===
+        // === LOGICA SKY CON TOLLERANZA ===
         let finalSkyChannels = skyChannels.map(ch => {
             if (isChannelExpired(ch)) {
+                // Cerca in sky2.m3u con tolleranza
                 const backupFromSky2 = findBackupChannel(ch.name, backupChannels);
                 if (backupFromSky2) {
+                    console.log(`[FALLBACK] Uso ${backupFromSky2.name} da sky2.m3u per sostituire ${ch.name}`);
                     return { ...ch, url: backupFromSky2.url, drm: backupFromSky2.drm };
                 }
+                // Se non c'è in sky2, cerca nella lista base
                 const backupFromBase = findBackupChannel(ch.name, baseChannels);
                 if (backupFromBase) {
+                    console.log(`[FALLBACK] Uso ${backupFromBase.name} dalla lista base per sostituire ${ch.name}`);
                     return { ...ch, url: backupFromBase.url, drm: backupFromBase.drm };
                 }
             }
@@ -425,14 +443,14 @@ export default async function handler(req, res) {
             finalContent += baseContentFiltered + "\n";
         }
 
-        if (daznContentFixed)           finalContent = finalContent.trimEnd() + "\n" + daznContentFixed;           // DAZN lineari
-        if (daznEventsContentFixed)     finalContent = finalContent.trimEnd() + "\n" + daznEventsContentFixed;     // DAZN Events (dazn_events.m3u)
-        if (dazn1EventiContentFixed)    finalContent = finalContent.trimEnd() + "\n" + dazn1EventiContentFixed;    // DAZN Eventi (dazn1.m3u)
-        if (primevideoDEContentFixed)   finalContent = finalContent.trimEnd() + "\n" + primevideoDEContentFixed;   // DAZN Primevideo DE
-        if (nerozoneContent)            finalContent = finalContent.trimEnd() + "\n" + nerozoneContent;            // DAZN NeroZone (logo gestito dallo script)
-        if (daznSwissContentFixed)      finalContent = finalContent.trimEnd() + "\n" + daznSwissContentFixed;      // DAZN Svizzeri
-        if (primevideoOtherFixed)       finalContent = finalContent.trimEnd() + "\n" + primevideoOtherFixed;       // Prime Video
-        if (bluesportContent)           finalContent = finalContent.trimEnd() + "\n" + bluesportContent;           // Bluesport
+        if (daznContentFixed)           finalContent = finalContent.trimEnd() + "\n" + daznContentFixed;
+        if (daznEventsContentFixed)     finalContent = finalContent.trimEnd() + "\n" + daznEventsContentFixed;
+        if (dazn1EventiContentFixed)    finalContent = finalContent.trimEnd() + "\n" + dazn1EventiContentFixed;
+        if (primevideoDEContentFixed)   finalContent = finalContent.trimEnd() + "\n" + primevideoDEContentFixed;
+        if (nerozoneContent)            finalContent = finalContent.trimEnd() + "\n" + nerozoneContent;
+        if (daznSwissContentFixed)      finalContent = finalContent.trimEnd() + "\n" + daznSwissContentFixed;
+        if (primevideoOtherFixed)       finalContent = finalContent.trimEnd() + "\n" + primevideoOtherFixed;
+        if (bluesportContent)           finalContent = finalContent.trimEnd() + "\n" + bluesportContent;
         if (eurosportRsiContent)        finalContent = finalContent.trimEnd() + "\n" + eurosportRsiContent;
         if (dazn1RestContentFixed)      finalContent = finalContent.trimEnd() + "\n" + dazn1RestContentFixed;
         if (comotvContentFixed)         finalContent = finalContent.trimEnd() + "\n" + comotvContentFixed;
@@ -442,34 +460,39 @@ export default async function handler(req, res) {
         const isF1Only = f1OnlyPasswords.includes(psw.toLowerCase());
 
         if (isF1Only) {
-            const f1FromSky = finalSkyChannels.find(c => c.name.toUpperCase().includes("SKY SPORT F1"));
+            // Cerca F1 in skyChannels (usando la normalizzazione)
+            const f1FromSky = finalSkyChannels.find(c => normalizeChannelName(c.name).includes("SPORTF1") || c.name.toUpperCase().includes("SKY SPORT F1"));
             if (f1FromSky) {
                 let filtered = "#EXTM3U\n";
                 filtered += buildM3U(f1FromSky);
                 const encoded = Buffer.from(filtered, 'utf-8').toString('base64');
-                return res.status(200).json({ m3u: encoded, proxy: proxyDaUsare }); // Modificato
+                return res.status(200).json({ m3u: encoded, proxy: proxyDaUsare });
             }
+            
+            // Cerca F1 nel resto
             const lines = baseContentFiltered.split('\n');
             let found = false;
             let filtered = "#EXTM3U\n";
             for (let i = 0; i < lines.length; i++) {
-                if (lines[i].startsWith('#EXTINF') && lines[i].toUpperCase().includes("SKY SPORT F1")) {
+                if (lines[i].startsWith('#EXTINF') && (normalizeChannelName(lines[i]).includes("SPORTF1") || lines[i].toUpperCase().includes("SKY SPORT F1"))) {
                     filtered += lines[i] + "\n";
                     if (lines[i+1]) filtered += lines[i+1] + "\n";
                     found = true;
                     break;
                 }
             }
+            
             if (!found) {
-                const f1FromBackup = backupChannels.find(c => c.name.toUpperCase().includes("SKY SPORT F1"));
+                const f1FromBackup = backupChannels.find(c => normalizeChannelName(c.name).includes("SPORTF1") || c.name.toUpperCase().includes("SKY SPORT F1"));
                 if (f1FromBackup) filtered += buildM3U(f1FromBackup);
             }
+            
             const encoded = Buffer.from(filtered, 'utf-8').toString('base64');
-            return res.status(200).json({ m3u: encoded, proxy: proxyDaUsare }); // Modificato
+            return res.status(200).json({ m3u: encoded, proxy: proxyDaUsare });
         }
 
         const encoded = Buffer.from(finalContent, 'utf-8').toString('base64');
-        return res.status(200).json({ m3u: encoded, proxy: proxyDaUsare }); // Modificato
+        return res.status(200).json({ m3u: encoded, proxy: proxyDaUsare });
 
     } catch (error) {
         console.error(error);
