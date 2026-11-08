@@ -197,17 +197,17 @@ export default async function handler(req, res) {
 
     const psw = body.password ? body.password.trim() : "";
 
-    // === LOGICA PROXY E PASSWORD (SICURA, SENZA URL IN CHIARO) ===
-    // Legge SOLO dalle variabili d'ambiente di Vercel
+    // === LOGICA PROXY E PASSWORD (SENZA URL IN CHIARO) ===
     const proxyMioUrl = process.env.PROXY_MIO;
     const proxySteUrl = process.env.PROXY_STE;
-    const proxyTerzoUrl = process.env.PROXY_TERZO; // <-- TERZO PROXY
+    const proxyTerzoUrl = process.env.PROXY_TERZO;
     
     const listaPassMio = (process.env.PASS_PROXY_MIO || '').split(',').map(p => p.trim()).filter(p => p !== '');
     const listaPassSte = (process.env.PASS_PROXY_STE || '').split(',').map(p => p.trim()).filter(p => p !== '');
-    const listaPassTerzo = (process.env.PASS_PROXY_TERZO || '').split(',').map(p => p.trim()).filter(p => p !== ''); // <-- TERZO GRUPPO
+    const listaPassTerzo = (process.env.PASS_PROXY_TERZO || '').split(',').map(p => p.trim()).filter(p => p !== '');
+    
+    const masterPasswords = (process.env.MASTER_PASSWORD || "").split(',').map(p => p.trim()).filter(p => p !== '');
 
-    // Se per qualche motivo le variabili non sono configurate, blocca tutto
     if (!proxyMioUrl || !proxySteUrl || !proxyTerzoUrl) {
         console.error("ERRORE CRITICO: Le variabili d'ambiente PROXY_* non sono configurate su Vercel.");
         return res.status(500).json({ error: "Configurazione server incompleta" });
@@ -221,9 +221,14 @@ export default async function handler(req, res) {
         proxyDaUsare = proxySteUrl;
     } else if (listaPassTerzo.includes(psw)) {
         proxyDaUsare = proxyTerzoUrl;
+    } else if (masterPasswords.includes(psw)) {
+        // FALLBACK PER PASSWORD FUORI LISTA (es. vecchie password admin)
+        proxyDaUsare = proxyMioUrl; 
+        console.log(`[MASTER] Uso il Proxy Mio di default per la password ${psw}`);
     } else {
         return res.status(401).json({ error: "Password errata" });
     }
+    // ==============================
 
     const sessionKey = `session_${psw}`;
 
@@ -462,4 +467,4 @@ export default async function handler(req, res) {
         console.error(error);
         res.status(500).json({ error: "Errore caricamento liste" });
     }
-}
+                                                    }
