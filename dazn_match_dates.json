@@ -1,11 +1,6 @@
 {
   "Serie A": {
     "Zona Serie A Enilive": "2026-11-21T13:42:00Z",
-    "Parma - Udinese": "2026-10-28T17:12:00Z",
-    "Milan - Bologna": "2026-10-28T17:12:00Z",
-    "Venezia - Inter": "2026-10-28T17:12:00Z",
-    "Genoa - Juventus": "2026-10-28T19:27:00Z",
-    "Monza - Napoli": "2026-10-28T19:27:00Z",
     "Frosinone - Lecce": "2026-10-29T16:57:00Z",
     "Fiorentina - Atalanta": "2026-10-29T19:12:00Z",
     "Bologna - Monza": "2026-10-31T13:27:00Z",
@@ -38,9 +33,6 @@
     "Monza - Fiorentina": "2026-11-23T18:57:00Z"
   },
   "Serie B": {
-    "Pisa - Palermo": "2026-10-28T18:00:00Z",
-    "Juve Stabia - Hellas Verona": "2026-10-28T19:00:00Z",
-    "Carrarese - Arezzo": "2026-10-28T19:00:00Z",
     "Cremonese - Benevento": "2026-10-31T14:00:00Z",
     "Südtirol - Cesena": "2026-10-31T14:00:00Z",
     "Modena - Mantova": "2026-10-31T14:00:00Z",
@@ -84,5 +76,5 @@
     "Celta Vigo - Levante": "2026-11-08T17:30:00Z",
     "Atletico Madrid - Barcellona": "2026-11-08T20:00:00Z"
   },
-  "last_update": "2026-11-07 14:00:37"
+  "last_update": "2026-11-08 12:07:58"
 }
