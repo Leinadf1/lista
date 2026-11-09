@@ -4,13 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TV Dashboard PRO</title>
-    
-    <!-- Shaka Player per MPD/HLS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
-    
-    <!-- mpegts.js per flussi .ts -->
-    <script src="https://cdn.jsdelivr.net/npm/mpegts.js@1.7.2/dist/mpegts.js"></script>
     
     <link rel="preload" href="https://raw.githubusercontent.com/Leinadf1/lista/main/Formula1-Bold_web_0.ttf" as="font" type="font/ttf" crossorigin>
     
@@ -614,10 +609,6 @@ let favoriteIds = new Set(JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]'
 let allChannels = [];
 let tvChannelListAll = [];
 
-// Variabili per mpegts.js
-let mainMpegtsPlayer = null;
-let tvMpegtsPlayer = null;
-
 const IFRAME_GROUPS = ['PRIME VIDEO', 'DAZN PRIMEVIDEO DE'];
 
 function shouldUseIframe(ch) {
@@ -1010,8 +1001,6 @@ function enterTvMode() {
     tvModeOverlay.classList.add('active');
     const mainVideo = document.getElementById('video'); const mainPlayer = mainVideo.player;
     if (mainPlayer) { mainPlayer.unload(); mainVideo.pause(); }
-    if (mainMpegtsPlayer) { mainMpegtsPlayer.destroy(); mainMpegtsPlayer = null; }
-    
     tvModeVideoContainer.querySelector('iframe')?.remove(); activeIframe = null; tvIframeExitBtn.style.display = 'none'; tvExitBtn.style.display = 'none'; tvIframeHotspot.classList.remove('active'); tvIframeHotspot.style.display = 'none';
     tvVideo.style.display = 'block'; tvVideo.src = ''; tvVideo.autoplay = true; tvPlayer = new shaka.Player(tvVideo);
     tvPlayer.addEventListener('streaming', () => { if (tvPlayer.isLive()) { const seekRange = tvPlayer.seekRange(); if (seekRange && isFinite(seekRange.end)) tvPlayer.getMediaElement().currentTime = seekRange.end; } });
@@ -1026,8 +1015,6 @@ function enterTvMode() {
 function exitTvMode() {
     if (exitingTv || !tvModeActive) return; exitingTv = true; tvModeActive = false;
     if (tvPlayer) { tvPlayer.destroy(); tvPlayer = null; }
-    if (tvMpegtsPlayer) { tvMpegtsPlayer.destroy(); tvMpegtsPlayer = null; }
-    
     tvModeVideoContainer.querySelector('iframe')?.remove(); activeIframe = null; tvIframeExitBtn.style.display = 'none'; tvIframeHotspot.classList.remove('active'); tvIframeHotspot.style.display = 'none'; tvVideo.style.display = 'block';
     tvModeOverlay.classList.remove('active'); document.getElementById('main-list').style.display = ''; document.getElementById('expiry-info').style.display = ''; document.getElementById('header').style.display = ''; document.querySelector('.player-container').style.display = ''; document.getElementById('epg-info').style.display = 'none';
     document.removeEventListener('keydown', handleTvKeys, true); document.removeEventListener('mousemove', handleMouseMove);
@@ -1044,7 +1031,7 @@ function handleMouseMove() {
     if (activeIframe) { tvIframeExitBtn.style.display = 'flex'; tvExitBtn.style.display = 'none'; tvChannelListBtn.style.display = 'none'; tvAudioBtn.style.display = 'none'; }
     else {
         tvChannelListBtn.style.display = 'flex'; tvAudioBtn.style.display = 'flex'; tvExitBtn.style.display = 'flex'; tvIframeExitBtn.style.display = 'none';
-        if (tvPlayer && !tvMpegtsPlayer) { const mediaElement = tvPlayer.getMediaElement(); if (mediaElement) showSeekBar(mediaElement.currentTime, mediaElement.duration); }
+        if (tvPlayer) { const mediaElement = tvPlayer.getMediaElement(); if (mediaElement) showSeekBar(mediaElement.currentTime, mediaElement.duration); }
         showOsdWithCurrentState();
     }
     if (mouseMoveTimeout) clearTimeout(mouseMoveTimeout);
@@ -1086,7 +1073,7 @@ function selectChannelFromList(index) {
     closeChannelList();
 }
 function buildAudioList() {
-    if (!tvPlayer || tvMpegtsPlayer) { tvAudioOverlay.innerHTML = '<div style="padding:10px;">Audio non disponibile per flussi .ts</div>'; return; }
+    if (!tvPlayer) return;
     const tracks = tvPlayer.getAudioLanguagesAndRoles(); tvAudioOverlay.innerHTML = '';
     if (tracks.length === 0) { tvAudioOverlay.innerHTML = '<div style="padding:10px;">Nessuna traccia audio alternativa</div>'; return; }
     tracks.forEach((track, idx) => {
@@ -1104,7 +1091,7 @@ function openAudioList() {
 }
 function closeAudioList() { audioListOpen = false; tvAudioOverlay.classList.remove('active'); selectedAudioIndex = -1; }
 function selectAudioTrack(index) {
-    if (!tvPlayer || tvMpegtsPlayer) return;
+    if (!tvPlayer) return;
     const tracks = tvPlayer.getAudioLanguagesAndRoles();
     if (index >= 0 && index < tracks.length) {
         tvPlayer.selectAudioLanguage(tracks[index].language);
@@ -1113,7 +1100,7 @@ function selectAudioTrack(index) {
     closeAudioList();
 }
 function autoSelectItalianAudio() {
-    if (!tvPlayer || tvMpegtsPlayer) return;
+    if (!tvPlayer) return;
     const tracks = tvPlayer.getAudioLanguagesAndRoles();
     const italianTrack = tracks.find(t => t.language && (t.language.toLowerCase().startsWith('it') || t.language.toLowerCase() === 'ita') || (t.label && t.label.toLowerCase().includes('ital')));
     if (italianTrack) { try { tvPlayer.selectAudioLanguage(italianTrack.language); } catch (e) {} }
@@ -1122,10 +1109,6 @@ function loadChannelInTv(index) {
     const ch = tvChannelListAll[index]; if (!ch) return;
     currentChannelIndex = index; const token = ++channelLoadToken;
     if (activeIframe) { activeIframe.remove(); activeIframe = null; tvIframeExitBtn.style.display = 'none'; tvIframeHotspot.classList.remove('active'); tvIframeHotspot.style.display = 'none'; }
-    
-    if (tvMpegtsPlayer) { tvMpegtsPlayer.destroy(); tvMpegtsPlayer = null; }
-    if (tvPlayer) tvPlayer.unload();
-    
     tvVideo.style.display = 'block'; tvExitBtn.style.display = 'none';
     if (isEpgDisabled(ch)) { osdEpgState.programs = []; osdEpgState.currentIndex = -1; osdEpgState.liveIndex = -1; }
     else {
@@ -1134,9 +1117,8 @@ function loadChannelInTv(index) {
         else { osdEpgState.channel = ch; osdEpgState.programs = []; osdEpgState.currentIndex = -1; osdEpgState.liveIndex = -1; }
     }
     showOsd({ number: index + 1, name: ch.name, logo: ch.logo, program: '', time: '', progress: 0 }); renderOsdEPG();
-    
     if (shouldUseIframe(ch)) {
-        tvVideo.style.display = 'none'; 
+        tvVideo.style.display = 'none'; if (tvPlayer) tvPlayer.unload();
         const src = buildIframeSrc(ch);
         if (src) {
             const iframe = document.createElement('iframe'); iframe.setAttribute('scrolling', 'no'); iframe.setAttribute('allowfullscreen', ''); iframe.setAttribute('allow', 'autoplay; encrypted-media; fullscreen'); iframe.src = src;
@@ -1149,31 +1131,16 @@ function loadChannelInTv(index) {
         }
         return;
     }
-    
     tvIframeHotspot.classList.remove('active'); tvIframeHotspot.style.display = 'none';
-
-    // --- GESTIONE TS VS MPD/HLS IN TV MODE ---
-    if (ch.url.includes('.ts')) {
-        if (mpegts.getFeatureList().mseLivePlayback) {
-            const mpegtsPlayer = mpegts.createPlayer({ type: 'mse', isLive: true, url: ch.url });
-            mpegtsPlayer.attachMediaElement(tvVideo);
-            mpegtsPlayer.load();
-            mpegtsPlayer.play();
-            tvMpegtsPlayer = mpegtsPlayer;
-            buildAudioList(); // Mostrerà il messaggio "Audio non disponibile per .ts"
-        }
-    } else {
-        tvPlayer.configure({ drm: {} });
-        if (ch.drm && Object.keys(ch.drm).length > 0) tvPlayer.configure({ drm: { clearKeys: ch.drm } });
-        if (ch.streamHeaders && Object.keys(ch.streamHeaders).length > 0) tvPlayer.configure({ streaming: { customHttpHeaders: ch.streamHeaders } });
-        else tvPlayer.configure({ streaming: { customHttpHeaders: {} } });
-
-        tvPlayer.load(ch.url).then(() => {
-            if (token !== channelLoadToken) return;
-            if (tvPlayer.isLive()) { const seekRange = tvPlayer.seekRange(); if (seekRange && isFinite(seekRange.end)) tvPlayer.getMediaElement().currentTime = seekRange.end; }
-            autoSelectItalianAudio(); buildAudioList();
-        }).catch(err => { console.error('Errore caricamento TV:', err); if (token === channelLoadToken) showOsd({ number: index + 1, name: ch.name, logo: ch.logo, program: 'Errore', time: '', progress: 0 }); });
-    }
+    tvPlayer.configure({ drm: {} });
+    if (ch.drm && Object.keys(ch.drm).length > 0) tvPlayer.configure({ drm: { clearKeys: ch.drm } });
+    if (ch.streamHeaders && Object.keys(ch.streamHeaders).length > 0) tvPlayer.configure({ streaming: { customHttpHeaders: ch.streamHeaders } });
+    else tvPlayer.configure({ streaming: { customHttpHeaders: {} } });
+    tvPlayer.load(ch.url).then(() => {
+        if (token !== channelLoadToken) return;
+        if (tvPlayer.isLive()) { const seekRange = tvPlayer.seekRange(); if (seekRange && isFinite(seekRange.end)) tvPlayer.getMediaElement().currentTime = seekRange.end; }
+        autoSelectItalianAudio(); buildAudioList();
+    }).catch(err => { console.error('Errore caricamento TV:', err); if (token === channelLoadToken) showOsd({ number: index + 1, name: ch.name, logo: ch.logo, program: 'Errore', time: '', progress: 0 }); });
 }
 function showOsd(data) {
     document.getElementById('tv-osd-num').textContent = data.number ? `${data.number}.` : '';
@@ -1449,38 +1416,19 @@ async function init(m3uContent) {
                     const iframe = document.createElement('iframe'); iframe.id = 'drm-iframe'; iframe.setAttribute('scrolling', 'no'); iframe.setAttribute('allowfullscreen', ''); iframe.setAttribute('allow', 'autoplay; encrypted-media; fullscreen');
                     iframe.src = src; iframeContainer.appendChild(iframe); playerContainer.appendChild(iframeContainer);
                     await player.unload();
-                    if (mainMpegtsPlayer) { mainMpegtsPlayer.destroy(); mainMpegtsPlayer = null; }
                     iframe.addEventListener('load', () => { startIframeLiveLoop(iframe); }); startIframeLiveLoop(iframe);
                 } else alert("Canale non valido per iframe DRM");
                 window.scrollTo({ top: 0, behavior: 'smooth' }); return;
             }
-
-            // --- GESTIONE TS VS MPD/HLS NEL PLAYER PRINCIPALE ---
-            if (mainMpegtsPlayer) { mainMpegtsPlayer.destroy(); mainMpegtsPlayer = null; }
-            await player.unload();
-
-            if (ch.url.includes('.ts')) {
-                if (mpegts.getFeatureList().mseLivePlayback) {
-                    const mpegtsPlayer = mpegts.createPlayer({ type: 'mse', isLive: true, url: ch.url });
-                    mpegtsPlayer.attachMediaElement(video);
-                    mpegtsPlayer.load();
-                    mpegtsPlayer.play();
-                    mainMpegtsPlayer = mpegtsPlayer;
-                } else {
-                    alert("Il tuo browser non supporta i flussi .ts");
-                }
-            } else {
-                player.configure({ drm: { clearKeys: ch.drm || {} } });
-                if (ch.streamHeaders && Object.keys(ch.streamHeaders).length > 0) player.configure({ streaming: { customHttpHeaders: ch.streamHeaders } });
-                else player.configure({ streaming: { customHttpHeaders: {} } });
-
-                player.load(ch.url).then(() => {
-                    if (player.isLive()) { const seek = player.seekRange(); if (seek && isFinite(seek.end)) video.currentTime = seek.end; }
-                    const tracks = player.getAudioLanguagesAndRoles();
-                    const italianTrack = tracks.find(t => t.language && (t.language.toLowerCase().startsWith('it') || t.language.toLowerCase() === 'ita') || (t.label && t.label.toLowerCase().includes('ital')));
-                    if (italianTrack) { try { player.selectAudioLanguage(italianTrack.language); } catch(e) {} }
-                }).catch(err => { console.error('Errore player principale:', err); });
-            }
+            player.configure({ drm: { clearKeys: ch.drm || {} } });
+            if (ch.streamHeaders && Object.keys(ch.streamHeaders).length > 0) player.configure({ streaming: { customHttpHeaders: ch.streamHeaders } });
+            else player.configure({ streaming: { customHttpHeaders: {} } });
+            player.load(ch.url).then(() => {
+                if (player.isLive()) { const seek = player.seekRange(); if (seek && isFinite(seek.end)) video.currentTime = seek.end; }
+                const tracks = player.getAudioLanguagesAndRoles();
+                const italianTrack = tracks.find(t => t.language && (t.language.toLowerCase().startsWith('it') || t.language.toLowerCase() === 'ita') || (t.label && t.label.toLowerCase().includes('ital')));
+                if (italianTrack) { try { player.selectAudioLanguage(italianTrack.language); } catch(e) {} }
+            }).catch(err => { console.error('Errore player principale:', err); });
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
         return card;
