@@ -252,7 +252,7 @@ export default async function handler(req, res) {
             }
         }
 
-        // --- MODIFICA CHIAVE: Inviamo l'M3U completo codificato in Base64 ---
+        // --- INVIO M3U COMPLETO CODIFICATO ---
         const proxied = applyProxy(finalContent, proxyDaUsare);
         const encoded = Buffer.from(proxied, 'utf-8').toString('base64');
         return res.status(200).json({ m3u: encoded });
