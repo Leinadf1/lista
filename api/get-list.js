@@ -30,7 +30,7 @@ function getClientIp(req) {
 }
 
 // ============================================================
-// PARSER / BUILDER M3U (identici all'originale)
+// PARSER / BUILDER M3U
 // ============================================================
 function buildM3U(channel) {
     let out = '';
@@ -160,7 +160,7 @@ function applyDazn1LogoOverride(content) {
 }
 
 // ============================================================
-// PROXY (spostato dal frontend al server)
+// PROXY
 // ============================================================
 const PROXY_CATEGORIES = [
     'serie bkt', 'laliga ea sports', 'serie a enilive', 'amichevoli',
@@ -172,10 +172,8 @@ function shouldProxy(extinf, url) {
     const nm = extinf.match(/,(.*)/);
     const group = gm ? gm[1] : '';
     const name = nm ? nm[1].trim() : '';
-
     const gN = group.toLowerCase().replace(/[\s\-_]/g, '');
     const nN = name.toLowerCase().replace(/[\s\-_]/g, '');
-
     const isDazn1ST          = nN === 'dazn1' && (gN === 'st' || gN === 'daznst');
     const isDazn1Lineare     = nN === 'dazn1' && gN === 'daznlineari';
     const isDaznSvizzeri     = gN.includes('daznsvizzeri');
@@ -196,17 +194,11 @@ function applyProxy(content, proxyUrl) {
     let currentExtinf = null;
     for (const raw of lines) {
         const line = raw.trim();
-        if (line.startsWith('#EXTINF:')) {
-            currentExtinf = line;
-            out.push(raw);
-            continue;
-        }
+        if (line.startsWith('#EXTINF:')) { currentExtinf = line; out.push(raw); continue; }
         if (line.startsWith('http')) {
             if (currentExtinf && shouldProxy(currentExtinf, line)) {
                 out.push(proxyUrl + line);
-            } else {
-                out.push(raw);
-            }
+            } else { out.push(raw); }
             currentExtinf = null;
             continue;
         }
@@ -224,7 +216,6 @@ export default async function handler(req, res) {
     res.setHeader('Expires', '0');
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Referrer-Policy', 'same-origin');
-    // ⚠️ CORS: SOLO i tuoi domini. Aggiungi altri separati da virgola se serve.
     res.setHeader('Access-Control-Allow-Origin', 'https://listaitnow.vercel.app');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-heartbeat, x-reload');
@@ -232,7 +223,6 @@ export default async function handler(req, res) {
     if (req.method === 'OPTIONS') return res.status(200).end();
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-    // Parse body
     let body = {};
     try {
         const buffers = [];
@@ -243,20 +233,13 @@ export default async function handler(req, res) {
     const psw = String(body.password || '').trim();
     if (!psw) return res.status(400).json({ error: 'Password mancante' });
 
-    const kv = createClient({
-        url: process.env.KV_REST_API_URL,
-        token: process.env.KV_REST_API_TOKEN,
-    });
+    const kv = createClient({ url: process.env.KV_REST_API_URL, token: process.env.KV_REST_API_TOKEN });
 
-    // Rate limit per IP
     const ip = getClientIp(req);
     const rlKey = `rl:getlist:${ip}`;
     const attempts = parseInt(await kv.get(rlKey) || '0', 10);
-    if (attempts >= MAX_FAILED) {
-        return res.status(429).json({ error: 'Troppi tentativi falliti. Riprova più tardi.' });
-    }
+    if (attempts >= MAX_FAILED) return res.status(429).json({ error: 'Troppi tentativi falliti. Riprova più tardi.' });
 
-    // Liste password (IDENTICHE all'originale)
     const proxyMioUrl   = process.env.PROXY_MIO;
     const proxySteUrl   = process.env.PROXY_STE;
     const proxyTerzoUrl = process.env.PROXY_TERZO;
@@ -266,12 +249,8 @@ export default async function handler(req, res) {
     const listaPassTerzo = (process.env.PASS_PROXY_TERZO || '').split(',').map(p => p.trim()).filter(p => p !== '');
     const masterPasswords = (process.env.MASTER_PASSWORD || '').split(',').map(p => p.trim()).filter(p => p !== '');
 
-    if (!proxyMioUrl || !proxySteUrl || !proxyTerzoUrl) {
-        console.error("ERRORE CRITICO: Le variabili d'ambiente PROXY_* non sono configurate.");
-        return res.status(500).json({ error: 'Configurazione server incompleta' });
-    }
+    if (!proxyMioUrl || !proxySteUrl || !proxyTerzoUrl) return res.status(500).json({ error: 'Configurazione server incompleta' });
 
-    // Verifica password (constant-time)
     const allValidPasswords = [...listaPassMio, ...listaPassSte, ...listaPassTerzo, ...masterPasswords];
     if (!safePasswordCheck(psw, allValidPasswords)) {
         await kv.set(rlKey, String(attempts + 1), { ex: RATE_WINDOW });
@@ -279,40 +258,26 @@ export default async function handler(req, res) {
     }
     if (attempts > 0) await kv.del(rlKey);
 
-    // Determina proxy (IDENTICO all'originale, ma con constant-time)
     let proxyDaUsare = null;
-    if (safePasswordCheck(psw, listaPassMio)) {
-        proxyDaUsare = proxyMioUrl;
-    } else if (safePasswordCheck(psw, listaPassSte)) {
-        proxyDaUsare = proxySteUrl;
-    } else if (safePasswordCheck(psw, listaPassTerzo)) {
-        proxyDaUsare = proxyTerzoUrl;
-    } else if (safePasswordCheck(psw, masterPasswords)) {
-        proxyDaUsare = proxyMioUrl;
-        console.log(`[MASTER] Uso il Proxy Mio di default per la password ${psw}`);
-    }
+    if (safePasswordCheck(psw, listaPassMio)) proxyDaUsare = proxyMioUrl;
+    else if (safePasswordCheck(psw, listaPassSte)) proxyDaUsare = proxySteUrl;
+    else if (safePasswordCheck(psw, listaPassTerzo)) proxyDaUsare = proxyTerzoUrl;
+    else if (safePasswordCheck(psw, masterPasswords)) proxyDaUsare = proxyMioUrl;
 
-    if (!proxyDaUsare) {
-        return res.status(500).json({ error: 'Configurazione proxy mancante' });
-    }
+    if (!proxyDaUsare) return res.status(500).json({ error: 'Configurazione proxy mancante' });
 
-    // Session key = HASH della password (non plaintext)
     const phash = sha256hex(psw);
     const sessionKey = `sess:${phash}`;
 
-    // Heartbeat
     if (req.headers['x-heartbeat'] === 'true') {
         await kv.set(sessionKey, 'active', { ex: 30 });
         return res.status(200).json({ status: 'ok' });
     }
 
-    // Anti-sharing (logica originale)
     const isReload = req.headers['x-reload'] === 'true';
     if (!isReload) {
         const isOccupied = await kv.get(sessionKey);
-        if (isOccupied) {
-            return res.status(403).json({ error: 'Accesso negato: sessione già attiva' });
-        }
+        if (isOccupied) return res.status(403).json({ error: 'Accesso negato: sessione già attiva' });
     }
     await kv.set(sessionKey, 'active', { ex: 30 });
 
@@ -327,14 +292,14 @@ export default async function handler(req, res) {
             const skyUrl = withCacheBust(`${gistBase}/sky.m3u`);
             const skyResponse = await fetch(skyUrl);
             if (skyResponse.ok) skyChannels = parseM3U(await skyResponse.text());
-        } catch (e) { console.error("Errore sky.m3u:", e); }
+        } catch (e) {}
 
         let backupChannels = [];
         try {
             const backupUrl = withCacheBust(`${gistBase}/sky2.m3u`);
             const backupResponse = await fetch(backupUrl);
             if (backupResponse.ok) backupChannels = parseM3U(await backupResponse.text());
-        } catch (e) { console.error("Errore sky2.m3u:", e); }
+        } catch (e) {}
 
         let daznContent = "";
         try {
@@ -342,11 +307,9 @@ export default async function handler(req, res) {
             if (daznGistId) {
                 const daznUrl = withCacheBust(`https://gist.githubusercontent.com/Leinadf1/${daznGistId}/raw/dazn.m3u`);
                 const daznResponse = await fetch(daznUrl);
-                if (daznResponse.ok) {
-                    daznContent = (await daznResponse.text()).replace(/^#EXTM3U\s*\n?/i, '').trim();
-                }
+                if (daznResponse.ok) daznContent = (await daznResponse.text()).replace(/^#EXTM3U\s*\n?/i, '').trim();
             }
-        } catch (e) { console.error("[DAZN] Errore dazn.m3u:", e); }
+        } catch (e) {}
 
         let daznEventsContent = "";
         try {
@@ -354,14 +317,11 @@ export default async function handler(req, res) {
             if (daznGistId) {
                 const eventsUrl = withCacheBust(`https://gist.githubusercontent.com/Leinadf1/${daznGistId}/raw/dazn_events.m3u`);
                 const eventsResponse = await fetch(eventsUrl);
-                if (eventsResponse.ok) {
-                    daznEventsContent = (await eventsResponse.text()).replace(/^#EXTM3U\s*\n?/i, '').trim();
-                }
+                if (eventsResponse.ok) daznEventsContent = (await eventsResponse.text()).replace(/^#EXTM3U\s*\n?/i, '').trim();
             }
-        } catch (e) { console.error("[DAZN] Errore dazn_events.m3u:", e); }
+        } catch (e) {}
 
-        let daznSwissContent = "";
-        let comotvContent = "";
+        let daznSwissContent = "", comotvContent = "";
         try {
             const swissUrl = withCacheBust(`${gistBase}/z_dazn_swiss.m3u`);
             const swissResponse = await fetch(swissUrl);
@@ -371,25 +331,25 @@ export default async function handler(req, res) {
                 comotvContent = swissSplit.matching;
                 daznSwissContent = swissSplit.others;
             }
-        } catch (e) { console.error("[DAZN Swiss] Errore:", e); }
+        } catch (e) {}
 
         let bluesportContent = "";
         try {
             const r = await fetch(withCacheBust(`${gistBase}/z_bluesport.m3u`));
             if (r.ok) bluesportContent = (await r.text()).replace(/^#EXTM3U\s*\n?/i, '').trim();
-        } catch (e) { console.error("[Bluesport] Errore:", e); }
+        } catch (e) {}
 
         let primevideoContent = "";
         try {
             const r = await fetch(withCacheBust(`${gistBase}/z_primevideo.m3u`));
             if (r.ok) primevideoContent = (await r.text()).replace(/^#EXTM3U\s*\n?/i, '').trim();
-        } catch (e) { console.error("[Primevideo] Errore:", e); }
+        } catch (e) {}
 
         let nerozoneContent = "";
         try {
             const r = await fetch(withCacheBust(`${gistBase}/z_dazn_nerozone.m3u`));
             if (r.ok) nerozoneContent = (await r.text()).replace(/^#EXTM3U\s*\n?/i, '').trim();
-        } catch (e) { console.error("[NeroZone] Errore:", e); }
+        } catch (e) {}
 
         let eurosportRsiContent = "";
         try {
@@ -401,7 +361,7 @@ export default async function handler(req, res) {
         try {
             const r = await fetch(withCacheBust(`https://gist.githubusercontent.com/stefa-menne/607a5986fa5ddcf07639b79200a31aa4/raw/dazn1.m3u`));
             if (r.ok) dazn1Content = (await r.text()).replace(/^#EXTM3U\s*\n?/i, '').trim();
-        } catch (e) { console.error("[DAZN1] Errore:", e); }
+        } catch (e) {}
 
         const primevideoSplit = splitByGroup(primevideoContent, "DAZN PRIMEVIDEO DE");
         const primevideoDEContent = primevideoSplit.matching;
@@ -439,9 +399,7 @@ export default async function handler(req, res) {
         const baseContentFiltered = removeChannelsByName(fileContent, skyNamesSet);
 
         let finalContent = "#EXTM3U\n";
-        if (finalSkyChannels.length > 0) {
-            finalContent += finalSkyChannels.map(c => buildM3U(c)).join('\n') + "\n";
-        }
+        if (finalSkyChannels.length > 0) finalContent += finalSkyChannels.map(c => buildM3U(c)).join('\n') + "\n";
         if (baseContentFiltered.trim().length > 0) finalContent += baseContentFiltered + "\n";
 
         if (daznContentFixed)         finalContent = finalContent.trimEnd() + "\n" + daznContentFixed;
@@ -456,27 +414,22 @@ export default async function handler(req, res) {
         if (dazn1RestContentFixed)    finalContent = finalContent.trimEnd() + "\n" + dazn1RestContentFixed;
         if (comotvContentFixed)       finalContent = finalContent.trimEnd() + "\n" + comotvContentFixed;
 
-        // F1-only (IDENTICO all'originale)
         const f1OnlyPasswords = (process.env.F1_ONLY_PASSWORD || "").split(',').map(p => p.trim().toLowerCase());
         const isF1Only = f1OnlyPasswords.includes(psw.toLowerCase());
 
         if (isF1Only) {
-            const f1FromSky = finalSkyChannels.find(c =>
-                normalizeChannelName(c.name).includes("SPORTF1") ||
-                c.name.toUpperCase().includes("SKY SPORT F1"));
+            const f1FromSky = finalSkyChannels.find(c => normalizeChannelName(c.name).includes("SPORTF1") || c.name.toUpperCase().includes("SKY SPORT F1"));
             if (f1FromSky) {
                 let filtered = "#EXTM3U\n" + buildM3U(f1FromSky);
                 const proxied = applyProxy(filtered, proxyDaUsare);
-                const encoded = Buffer.from(proxied, 'utf-8').toString('base64');
-                return res.status(200).json({ m3u: encoded });
+                const parsed = parseM3U(proxied);
+                return res.status(200).json({ channels: parsed });
             }
             const lines = baseContentFiltered.split('\n');
             let found = false;
             let filtered = "#EXTM3U\n";
             for (let i = 0; i < lines.length; i++) {
-                if (lines[i].startsWith('#EXTINF') &&
-                    (normalizeChannelName(lines[i]).includes("SPORTF1") ||
-                     lines[i].toUpperCase().includes("SKY SPORT F1"))) {
+                if (lines[i].startsWith('#EXTINF') && (normalizeChannelName(lines[i]).includes("SPORTF1") || lines[i].toUpperCase().includes("SKY SPORT F1"))) {
                     filtered += lines[i] + "\n";
                     if (lines[i + 1]) filtered += lines[i + 1] + "\n";
                     found = true;
@@ -484,20 +437,34 @@ export default async function handler(req, res) {
                 }
             }
             if (!found) {
-                const f1FromBackup = backupChannels.find(c =>
-                    normalizeChannelName(c.name).includes("SPORTF1") ||
-                    c.name.toUpperCase().includes("SKY SPORT F1"));
+                const f1FromBackup = backupChannels.find(c => normalizeChannelName(c.name).includes("SPORTF1") || c.name.toUpperCase().includes("SKY SPORT F1"));
                 if (f1FromBackup) filtered += buildM3U(f1FromBackup);
             }
             const proxied = applyProxy(filtered, proxyDaUsare);
-            const encoded = Buffer.from(proxied, 'utf-8').toString('base64');
-            return res.status(200).json({ m3u: encoded });
+            const parsed = parseM3U(proxied);
+            return res.status(200).json({ channels: parsed });
         }
 
-        // Path normale: applica proxy server-side e restituisci SOLO m3u
+        // --- MODIFICA CHIAVE: Invia JSON invece di M3U ---
         const proxied = applyProxy(finalContent, proxyDaUsare);
-        const encoded = Buffer.from(proxied, 'utf-8').toString('base64');
-        return res.status(200).json({ m3u: encoded });
+        
+        // Parsiamo l'M3U finale in un array di oggetti
+        const parsedChannels = parseM3U(proxied).map(ch => {
+            // Convertiamo la stringa DRM in un oggetto vero e proprio per il frontend
+            let drmObj = {};
+            try { drmObj = JSON.parse(ch.drm); } catch (e) {}
+            
+            return {
+                name: ch.name,
+                logo: ch.logo,
+                group: ch.group_title, // Il frontend si aspetta "group"
+                url: ch.url,
+                drm: drmObj
+            };
+        });
+
+        // Restituiamo JSON pulito, niente Base64, niente formato M3U
+        return res.status(200).json({ channels: parsedChannels });
 
     } catch (error) {
         console.error(error);
