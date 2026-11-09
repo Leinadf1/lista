@@ -247,19 +247,15 @@ export default async function handler(req, res) {
             if (f1FromSky) {
                 let filtered = "#EXTM3U\n" + buildM3U(f1FromSky);
                 const proxied = applyProxy(filtered, proxyDaUsare);
-                const parsed = parseM3U(proxied).map(ch => ({ name: ch.name, logo: ch.logo, group: ch.group_title, url: ch.url, drm: JSON.parse(ch.drm) }));
-                return res.status(200).json({ channels: parsed });
+                const encoded = Buffer.from(proxied, 'utf-8').toString('base64');
+                return res.status(200).json({ m3u: encoded });
             }
         }
 
+        // --- MODIFICA CHIAVE: Inviamo l'M3U completo codificato in Base64 ---
         const proxied = applyProxy(finalContent, proxyDaUsare);
-        const parsedChannels = parseM3U(proxied).map(ch => {
-            let drmObj = {};
-            try { drmObj = JSON.parse(ch.drm); } catch (e) {}
-            return { name: ch.name, logo: ch.logo, group: ch.group_title, url: ch.url, drm: drmObj };
-        });
-
-        return res.status(200).json({ channels: parsedChannels });
+        const encoded = Buffer.from(proxied, 'utf-8').toString('base64');
+        return res.status(200).json({ m3u: encoded });
 
     } catch (error) {
         console.error(error);
