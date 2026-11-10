@@ -189,10 +189,17 @@ export default async function handler(req, res) {
         const fileContent = await githubResponse.text();
         const baseChannels = parseM3U(fileContent);
 
+        // Scarica sky.m3u
         let skyChannels = [];
         try { const r = await fetch(withCacheBust(`${gistBase}/sky.m3u`)); if (r.ok) skyChannels = parseM3U(await r.text()); } catch (e) {}
+        
+        // Scarica sky2.m3u
         let backupChannels = [];
         try { const r = await fetch(withCacheBust(`${gistBase}/sky2.m3u`)); if (r.ok) backupChannels = parseM3U(await r.text()); } catch (e) {}
+
+        // Scarica sky3.m3u (NUOVO)
+        let sky3Channels = [];
+        try { const r = await fetch(withCacheBust(`${gistBase}/sky3.m3u`)); if (r.ok) sky3Channels = parseM3U(await r.text()); } catch (e) {}
 
         let daznContent = "";
         try { const id = process.env.DAZN_GIST_ID; if (id) { const r = await fetch(withCacheBust(`https://gist.githubusercontent.com/Leinadf1/${id}/raw/dazn.m3u`)); if (r.ok) daznContent = (await r.text()).replace(/^#EXTM3U\s*\n?/i, '').trim(); } } catch (e) {}
@@ -223,13 +230,36 @@ export default async function handler(req, res) {
             pvOther: applyDazn1LogoOverride(primevideoSplit.others), swiss: applyDazn1LogoOverride(daznSwissContent), como: applyDazn1LogoOverride(comotvContent)
         };
 
+        // Logica per canali SCADUTI
         let finalSkyChannels = skyChannels.map(ch => {
             if (isChannelExpired(ch)) {
-                const b1 = findBackupChannel(ch.name, backupChannels); if (b1) return { ...ch, url: b1.url, drm: b1.drm };
-                const b2 = findBackupChannel(ch.name, baseChannels); if (b2) return { ...ch, url: b2.url, drm: b2.drm };
+                // 1. Prova da sky2.m3u
+                const b1 = findBackupChannel(ch.name, backupChannels); 
+                if (b1) return { ...ch, url: b1.url, drm: b1.drm };
+                
+                // 2. Prova da sky3.m3u
+                const b3 = findBackupChannel(ch.name, sky3Channels); 
+                if (b3) return { ...ch, url: b3.url, drm: b3.drm };
+                
+                // 3. Prova dal file base
+                const b2 = findBackupChannel(ch.name, baseChannels); 
+                if (b2) return { ...ch, url: b2.url, drm: b2.drm };
             }
             return ch;
         });
+
+        // Logica per canali MANCANTI in sky.m3u (aggiunge da sky2 e sky3 se non presenti)
+        const addMissingChannels = (sourceList) => {
+            sourceList.forEach(ch => {
+                const exists = finalSkyChannels.find(c => normalizeChannelName(c.name) === normalizeChannelName(ch.name));
+                if (!exists) {
+                    finalSkyChannels.push(ch);
+                }
+            });
+        };
+        
+        addMissingChannels(backupChannels); // Aggiunge i mancanti da sky2
+        addMissingChannels(sky3Channels);   // Aggiunge i mancanti da sky3
 
         const skyNamesSet = new Set(finalSkyChannels.map(ch => ch.name.toUpperCase()));
         const baseContentFiltered = removeChannelsByName(fileContent, skyNamesSet);
