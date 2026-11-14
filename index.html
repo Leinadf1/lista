@@ -4,8 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TV Dashboard PRO</title>
+    <!-- Shaka Player per DASH/HLS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
+    <!-- mpegts.js per flussi MPEG-TS (.ts) -->
+    <script src="https://cdn.jsdelivr.net/npm/mpegts.js@1.7.3/dist/mpegts.js"></script>
     
     <link rel="preload" href="https://raw.githubusercontent.com/Leinadf1/lista/main/Formula1-Bold_web_0.ttf" as="font" type="font/ttf" crossorigin>
     
@@ -541,7 +544,10 @@
     </div>
 
     <div class="player-container" data-shaka-player-container>
+        <!-- Video Shaka Player (DASH/HLS) -->
         <video autoplay data-shaka-player id="video"></video>
+        <!-- Video mpegts.js (MPEG-TS) -->
+        <video id="ts-video" controls autoplay playsinline style="display:none; width:100%; aspect-ratio:16/9; background:#000; position:absolute; top:0; left:0; z-index:15;"></video>
     </div>
 
     <div id="expiry-info"></div>
@@ -631,6 +637,8 @@ const FAVORITES_KEY = 'favoriteChannels';
 let favoriteIds = new Set(JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]'));
 let allChannels = [];
 let tvChannelListAll = [];
+let tsPlayer = null;     // Player per i flussi MPEG-TS (Main)
+let tvTsPlayer = null;   // Player per i flussi MPEG-TS (TV Mode)
 
 const IFRAME_GROUPS = ['PRIME VIDEO', 'DAZN PRIMEVIDEO DE'];
 
@@ -1080,9 +1088,17 @@ function enterTvMode() {
     tvModeOverlay.classList.add('active');
     const mainVideo = document.getElementById('video'); const mainPlayer = mainVideo.player;
     if (mainPlayer) { mainPlayer.unload(); mainVideo.pause(); }
+    
+    if (tsPlayer) { tsPlayer.destroy(); tsPlayer = null; }
+    if (tvTsPlayer) { tvTsPlayer.destroy(); tvTsPlayer = null; }
+
     tvModeVideoContainer.querySelector('iframe')?.remove(); activeIframe = null; tvIframeExitBtn.style.display = 'none'; tvExitBtn.style.display = 'none'; tvIframeHotspot.classList.remove('active'); tvIframeHotspot.style.display = 'none';
-    tvVideo.style.display = 'block'; tvVideo.src = ''; tvVideo.autoplay = true; tvPlayer = new shaka.Player(tvVideo);
+    tvVideo.style.display = 'block'; tvVideo.src = ''; tvVideo.autoplay = true; 
+    
+    tvPlayer = new shaka.Player(tvVideo);
     tvPlayer.addEventListener('streaming', () => { if (tvPlayer.isLive()) { const seekRange = tvPlayer.seekRange(); if (seekRange && isFinite(seekRange.end)) tvPlayer.getMediaElement().currentTime = seekRange.end; } });
+    tvPlayer.addEventListener('error', (event) => { dbg(`TV SHAKA ERROR: ${shakaErrorToString(event.detail)}`, 'error'); });
+
     if (currentChannelIndex >= 0 && currentChannelIndex < tvChannelListAll.length) loadChannelInTv(currentChannelIndex);
     else if (tvChannelListAll.length > 0) { currentChannelIndex = 0; loadChannelInTv(0); }
     document.addEventListener('keydown', handleTvKeys, true); document.addEventListener('mousemove', handleMouseMove);
@@ -1094,6 +1110,7 @@ function enterTvMode() {
 function exitTvMode() {
     if (exitingTv || !tvModeActive) return; exitingTv = true; tvModeActive = false;
     if (tvPlayer) { tvPlayer.destroy(); tvPlayer = null; }
+    if (tvTsPlayer) { tvTsPlayer.destroy(); tvTsPlayer = null; }
     tvModeVideoContainer.querySelector('iframe')?.remove(); activeIframe = null; tvIframeExitBtn.style.display = 'none'; tvIframeHotspot.classList.remove('active'); tvIframeHotspot.style.display = 'none'; tvVideo.style.display = 'block';
     tvModeOverlay.classList.remove('active'); document.getElementById('main-list').style.display = ''; document.getElementById('expiry-info').style.display = ''; document.getElementById('header').style.display = ''; document.querySelector('.player-container').style.display = ''; document.getElementById('epg-info').style.display = 'none';
     document.removeEventListener('keydown', handleTvKeys, true); document.removeEventListener('mousemove', handleMouseMove);
@@ -1110,7 +1127,7 @@ function handleMouseMove() {
     if (activeIframe) { tvIframeExitBtn.style.display = 'flex'; tvExitBtn.style.display = 'none'; tvChannelListBtn.style.display = 'none'; tvAudioBtn.style.display = 'none'; }
     else {
         tvChannelListBtn.style.display = 'flex'; tvAudioBtn.style.display = 'flex'; tvExitBtn.style.display = 'flex'; tvIframeExitBtn.style.display = 'none';
-        if (tvPlayer) { const mediaElement = tvPlayer.getMediaElement(); if (mediaElement) showSeekBar(mediaElement.currentTime, mediaElement.duration); }
+        if (tvPlayer && tvPlayer.getMediaElement()) { const mediaElement = tvPlayer.getMediaElement(); if (mediaElement) showSeekBar(mediaElement.currentTime, mediaElement.duration); }
         showOsdWithCurrentState();
     }
     if (mouseMoveTimeout) clearTimeout(mouseMoveTimeout);
@@ -1188,20 +1205,15 @@ function loadChannelInTv(index) {
     const ch = tvChannelListAll[index]; if (!ch) return;
 
     dbg(`TV MODE: carico "${ch.name}" — ${ch.url}`);
-
-    // Se è .ts, Shaka non supporta: mostra OSD e stop
-    if (isTsUrl(ch.url)) {
-        dbg('TV MODE: stream .ts rilevato — non supportato dal player', 'warn');
-        currentChannelIndex = index;
-        if (tvPlayer) tvPlayer.unload();
-        osdEpgState.channel = ch; osdEpgState.programs = []; osdEpgState.currentIndex = -1; osdEpgState.liveIndex = -1;
-        showOsd({ number: index + 1, name: ch.name, logo: ch.logo, program: 'MPEG-TS non supportato dal player', time: 'Usa la modalità normale', progress: 0 });
-        return;
-    }
-
     currentChannelIndex = index; const token = ++channelLoadToken;
+
     if (activeIframe) { activeIframe.remove(); activeIframe = null; tvIframeExitBtn.style.display = 'none'; tvIframeHotspot.classList.remove('active'); tvIframeHotspot.style.display = 'none'; }
     tvVideo.style.display = 'block'; tvExitBtn.style.display = 'none';
+
+    // Pulisci player precedenti
+    if (tvPlayer) tvPlayer.unload();
+    if (tvTsPlayer) { tvTsPlayer.destroy(); tvTsPlayer = null; }
+
     if (isEpgDisabled(ch)) { osdEpgState.programs = []; osdEpgState.currentIndex = -1; osdEpgState.liveIndex = -1; }
     else {
         const epgResult = getCurrentProgram(ch);
@@ -1209,8 +1221,9 @@ function loadChannelInTv(index) {
         else { osdEpgState.channel = ch; osdEpgState.programs = []; osdEpgState.currentIndex = -1; osdEpgState.liveIndex = -1; }
     }
     showOsd({ number: index + 1, name: ch.name, logo: ch.logo, program: '', time: '', progress: 0 }); renderOsdEPG();
+
     if (shouldUseIframe(ch)) {
-        tvVideo.style.display = 'none'; if (tvPlayer) tvPlayer.unload();
+        tvVideo.style.display = 'none'; 
         const src = buildIframeSrc(ch);
         if (src) {
             const iframe = document.createElement('iframe'); iframe.setAttribute('scrolling', 'no'); iframe.setAttribute('allowfullscreen', ''); iframe.setAttribute('allow', 'autoplay; encrypted-media; fullscreen'); iframe.src = src;
@@ -1224,15 +1237,40 @@ function loadChannelInTv(index) {
         return;
     }
     tvIframeHotspot.classList.remove('active'); tvIframeHotspot.style.display = 'none';
+
+    // --- CASO: MPEG-TS in TV MODE ---
+    if (isTsUrl(ch.url)) {
+        dbg('TV MODE: stream .ts — uso mpegts.js', 'info');
+        if (mpegts.getFeatureList().mseLivePlayback) {
+            tvTsPlayer = mpegts.createPlayer({ type: 'mse', isLive: true, url: ch.url });
+            tvTsPlayer.attachMediaElement(tvVideo);
+            tvTsPlayer.load();
+            tvTsPlayer.play();
+            tvTsPlayer.on(mpegts.Events.ERROR, (type, detail, info) => {
+                dbg(`TV mpegts errore: ${type} - ${detail}`, 'error');
+            });
+        } else {
+            dbg('TV mpegts non supportato, provo nativo', 'warn');
+            tvVideo.src = ch.url;
+        }
+        return;
+    }
+
+    // --- CASO: DASH/HLS ---
     tvPlayer.configure({ drm: {} });
     if (ch.drm && Object.keys(ch.drm).length > 0) tvPlayer.configure({ drm: { clearKeys: ch.drm } });
     if (ch.streamHeaders && Object.keys(ch.streamHeaders).length > 0) tvPlayer.configure({ streaming: { customHttpHeaders: ch.streamHeaders } });
     else tvPlayer.configure({ streaming: { customHttpHeaders: {} } });
+    
     tvPlayer.load(ch.url).then(() => {
         if (token !== channelLoadToken) return;
         if (tvPlayer.isLive()) { const seekRange = tvPlayer.seekRange(); if (seekRange && isFinite(seekRange.end)) tvPlayer.getMediaElement().currentTime = seekRange.end; }
         autoSelectItalianAudio(); buildAudioList();
-    }).catch(err => { console.error('Errore caricamento TV:', err); dbg(`TV errore Shaka: ${shakaErrorToString(err)}`, 'error'); if (token === channelLoadToken) showOsd({ number: index + 1, name: ch.name, logo: ch.logo, program: 'Errore', time: '', progress: 0 }); });
+    }).catch(err => { 
+        console.error('Errore caricamento TV:', err); 
+        dbg(`TV errore Shaka: ${shakaErrorToString(err)}`, 'error'); 
+        if (token === channelLoadToken) showOsd({ number: index + 1, name: ch.name, logo: ch.logo, program: 'Errore', time: '', progress: 0 }); 
+    });
 }
 function showOsd(data) {
     document.getElementById('tv-osd-num').textContent = data.number ? `${data.number}.` : '';
@@ -1299,7 +1337,7 @@ function handleTvKeys(e) {
     if (key === 'a' || key === 'A' || key === 'F4' || code === 'F4' || keyCode === 115) { toggleAudioList(); return; }
     if (keyCode >= 48 && keyCode <= 57) { handleNumberKey(key); return; }
     if (/^[0-9]$/.test(key)) { handleNumberKey(key); return; }
-    if (keyCode === 178 || key === 'MediaStop') { if (tvPlayer) tvPlayer.unload(); return; }
+    if (keyCode === 178 || key === 'MediaStop') { if (tvPlayer) tvPlayer.unload(); if (tvTsPlayer) tvTsPlayer.destroy(); return; }
     if (keyCode === 180 || key === 'MediaNextTrack') { changeChannel(1); return; }
     if (keyCode === 181 || key === 'MediaPrevTrack') { changeChannel(-1); return; }
     if (keyCode === 417 || key === 'MediaFastForward') { if (tvPlayer) { const mediaElement = tvPlayer.getMediaElement(); if (mediaElement && isFinite(mediaElement.duration)) { mediaElement.currentTime = Math.min(mediaElement.currentTime + 10, mediaElement.duration - 1); showSeekBar(mediaElement.currentTime, mediaElement.duration); } } return; }
@@ -1514,11 +1552,17 @@ async function init(m3uContent) {
             displayEPG(ch);
 
             const oldIframe = playerContainer.querySelector('.iframe-container'); if (oldIframe) oldIframe.remove();
-            const oldTs = playerContainer.querySelector('.ts-fallback'); if (oldTs) oldTs.remove();
+            
+            const tsVideoEl = document.getElementById('ts-video');
+            const mainVideoEl = document.getElementById('video');
 
             // --- CASO 1: IFRAME DRM ---
             if (shouldUseIframe(ch)) {
                 dbg('Tipo: IFRAME DRM', 'warn');
+                if (tsPlayer) { tsPlayer.destroy(); tsPlayer = null; }
+                tsVideoEl.style.display = 'none';
+                mainVideoEl.style.display = 'block';
+
                 const src = buildIframeSrc(ch);
                 if (src) {
                     const iframeContainer = document.createElement('div'); iframeContainer.className = 'iframe-container active';
@@ -1536,51 +1580,37 @@ async function init(m3uContent) {
 
             // --- CASO 2: STREAM .TS (MPEG-TS raw) ---
             if (isTsUrl(ch.url)) {
-                dbg('Tipo: MPEG-TS (.ts) — Shaka NON lo supporta direttamente', 'warn');
-                dbg('Tentativo: <video> nativo con type="video/mp2t"', 'info');
-                await player.unload();
+                dbg('Tipo: MPEG-TS (.ts) — uso mpegts.js', 'info');
+                
+                await player.unload(); // Ferma Shaka
+                mainVideoEl.style.display = 'none'; // Nascondi video Shaka
+                
+                tsVideoEl.style.display = 'block';
+                tsVideoEl.src = ''; // Reset
 
-                const tsContainer = document.createElement('div');
-                tsContainer.className = 'ts-fallback';
-                tsContainer.style.cssText = 'position:absolute; top:0; left:0; width:100%; height:100%; background:#000; z-index:20; display:flex; align-items:center; justify-content:center; color:#fff; font-family:sans-serif;';
-                const tsVideo = document.createElement('video');
-                tsVideo.autoplay = true;
-                tsVideo.controls = true;
-                tsVideo.playsInline = true;
-                tsVideo.style.cssText = 'width:100%; height:100%; object-fit:contain;';
-                const srcEl = document.createElement('source');
-                srcEl.src = ch.url;
-                srcEl.type = 'video/mp2t';
-                tsVideo.appendChild(srcEl);
-                tsVideo.src = ch.url;
+                if (tsPlayer) { tsPlayer.destroy(); tsPlayer = null; }
 
-                const msgDiv = document.createElement('div');
-                msgDiv.style.cssText = 'position:absolute; bottom:10px; left:10px; right:10px; background:rgba(200,0,0,0.85); color:#fff; padding:8px 12px; border-radius:6px; font-size:13px; display:none;';
-                msgDiv.textContent = '⚠️ Il browser non riesce a riprodurre MPEG-TS (.ts) nativamente. Serve Safari o un transcoder lato server.';
-
-                tsContainer.appendChild(tsVideo);
-                tsContainer.appendChild(msgDiv);
-                playerContainer.appendChild(tsContainer);
-
-                let tsPlayed = false;
-                tsVideo.addEventListener('playing', () => {
-                    tsPlayed = true;
-                    dbg('✅ <video> nativo sta riproducendo il .ts!', 'ok');
-                    msgDiv.style.display = 'none';
-                });
-                tsVideo.addEventListener('error', () => {
-                    const err = tsVideo.error;
-                    dbg(`❌ <video> nativo errore: code=${err?.code} message=${err?.message}`, 'error');
-                    msgDiv.style.display = 'block';
-                    dbg('Il browser NON supporta MPEG-TS nativo. Il canale non può partire senza transcoder.', 'error');
-                });
-
-                setTimeout(() => {
-                    if (!tsPlayed) {
-                        dbg('Timeout 8s: il .ts non è partito. Il browser quasi sicuramente non supporta MPEG-TS nativo.', 'error');
-                        msgDiv.style.display = 'block';
-                    }
-                }, 8000);
+                if (mpegts.getFeatureList().mseLivePlayback) {
+                    tsPlayer = mpegts.createPlayer({
+                        type: 'mse',
+                        isLive: true,
+                        url: ch.url
+                    });
+                    tsPlayer.attachMediaElement(tsVideoEl);
+                    tsPlayer.load();
+                    tsPlayer.play();
+                    dbg('✅ mpegts.js avviato', 'ok');
+                    
+                    tsPlayer.on(mpegts.Events.ERROR, (type, detail, info) => {
+                        dbg(`❌ mpegts errore: ${type} - ${detail}`, 'error');
+                        if (detail === 'NetworkError') {
+                            dbg('Probabile blocco CORS da parte del server del provider.', 'error');
+                        }
+                    });
+                } else {
+                    dbg('mpegts.js non supportato, provo nativo', 'warn');
+                    tsVideoEl.src = ch.url; // Fallback nativo (Safari)
+                }
 
                 window.scrollTo({ top: 0, behavior: 'smooth' });
                 return;
@@ -1588,6 +1618,12 @@ async function init(m3uContent) {
 
             // --- CASO 3: DASH/HLS (Shaka) ---
             dbg('Tipo: DASH/HLS — uso Shaka Player', 'info');
+            
+            // Pulisci mpegts se presente
+            if (tsPlayer) { tsPlayer.destroy(); tsPlayer = null; }
+            tsVideoEl.style.display = 'none';
+            mainVideoEl.style.display = 'block';
+
             player.configure({ drm: { clearKeys: ch.drm || {} } });
             if (ch.streamHeaders && Object.keys(ch.streamHeaders).length > 0) player.configure({ streaming: { customHttpHeaders: ch.streamHeaders } });
             else player.configure({ streaming: { customHttpHeaders: {} } });
