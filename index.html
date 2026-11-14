@@ -549,6 +549,29 @@
 
     <div id="main-list" style="width: 100%;"></div>
 
+    <!-- ========== DEBUG OVERLAY ========== -->
+    <button id="debug-toggle" onclick="toggleDebug()" style="
+        position: fixed; top: 10px; right: 10px; z-index: 100000;
+        background: #1c2128; color: #0f0; border: 1px solid #0f0; border-radius: 6px;
+        padding: 6px 12px; font-family: monospace; font-size: 12px; cursor: pointer;">
+        🐞 DEBUG
+    </button>
+    <div id="debug-overlay" style="
+        position: fixed; bottom: 0; left: 0; right: 0; max-height: 40vh; overflow-y: auto;
+        background: rgba(0,0,0,0.92); color: #0f0; font-family: monospace; font-size: 12px;
+        padding: 10px 14px; z-index: 99999; display: none; border-top: 2px solid #0f0;
+        white-space: pre-wrap; word-break: break-all;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+            <strong style="color:#ff0;">🔧 DEBUG CONSOLE</strong>
+            <span>
+                <button onclick="document.getElementById('debug-overlay').style.display='none'" style="background:#333;color:#fff;border:1px solid #555;padding:2px 8px;cursor:pointer;">Chiudi</button>
+                <button onclick="dbgClear()" style="background:#333;color:#fff;border:1px solid #555;padding:2px 8px;cursor:pointer;">Pulisci</button>
+            </span>
+        </div>
+        <div id="debug-log"></div>
+    </div>
+    <!-- ========== /DEBUG OVERLAY ========== -->
+
     <div id="tv-mode-overlay">
         <div id="tv-mode-video-container">
             <video autoplay id="tv-mode-video"></video>
@@ -683,6 +706,61 @@ function startIframeLiveLoop(iframe) {
     setTimeout(() => sendIframeLive(iframe), 3000);
 }
 
+// ============================================================
+// DEBUG A SCHERMO
+// ============================================================
+const DEBUG_MAX_LINES = 300;
+let debugVisible = false;
+
+window.toggleDebug = function() {
+    debugVisible = !debugVisible;
+    document.getElementById('debug-overlay').style.display = debugVisible ? 'block' : 'none';
+};
+
+window.dbgClear = function() {
+    const el = document.getElementById('debug-log');
+    if (el) el.textContent = '';
+};
+
+function dbg(msg, type = 'info') {
+    const el = document.getElementById('debug-log');
+    if (!el) return;
+    const color = type === 'error' ? '#ff5555' : type === 'warn' ? '#ffb86c' : type === 'ok' ? '#50fa7b' : '#8be9fd';
+    const time = new Date().toLocaleTimeString('it-IT');
+    const line = document.createElement('div');
+    line.style.color = color;
+    line.textContent = `[${time}] ${msg}`;
+    el.appendChild(line);
+    while (el.children.length > DEBUG_MAX_LINES) el.removeChild(el.firstChild);
+    const overlay = document.getElementById('debug-overlay');
+    if (overlay) overlay.scrollTop = overlay.scrollHeight;
+    if (type === 'error') console.error(msg);
+    else if (type === 'warn') console.warn(msg);
+    else console.log(msg);
+}
+
+window.addEventListener('error', (e) => {
+    dbg(`GLOBAL ERROR: ${e.message} @ ${e.filename}:${e.lineno}`, 'error');
+});
+window.addEventListener('unhandledrejection', (e) => {
+    dbg(`UNHANDLED PROMISE: ${e.reason}`, 'error');
+});
+
+function isTsUrl(url) {
+    if (!url) return false;
+    const clean = url.split('?')[0].split('#')[0];
+    return /\.ts$/i.test(clean);
+}
+
+function shakaErrorToString(err) {
+    if (!err) return 'unknown';
+    const code = err.code || err.detail?.code;
+    const category = err.category || err.detail?.category;
+    const severity = err.severity || err.detail?.severity;
+    const data = err.data || err.detail?.data || [];
+    return `code=${code} category=${category} severity=${severity} data=${JSON.stringify(data)}`;
+}
+
 // -------------------- EPG --------------------
 const EPG_URL = 'https://raw.githubusercontent.com/Leinadf1/lista/main/epg_ripper_IT1.xml';
 let epgChannels = new Map();
@@ -771,7 +849,8 @@ async function loadEPG() {
         });
         for (const [key, programs] of epgChannels.entries()) { programs.sort((a, b) => a.start - b.start); }
         epgReady = true;
-    } catch (error) { epgReady = false; }
+        dbg('EPG caricato', 'ok');
+    } catch (error) { epgReady = false; dbg(`EPG errore: ${error}`, 'warn'); }
 }
 function getAliasesForChannel(ch) {
     const aliases = []; const normName = normalizeName(ch.name);
@@ -1107,6 +1186,19 @@ function autoSelectItalianAudio() {
 }
 function loadChannelInTv(index) {
     const ch = tvChannelListAll[index]; if (!ch) return;
+
+    dbg(`TV MODE: carico "${ch.name}" — ${ch.url}`);
+
+    // Se è .ts, Shaka non supporta: mostra OSD e stop
+    if (isTsUrl(ch.url)) {
+        dbg('TV MODE: stream .ts rilevato — non supportato dal player', 'warn');
+        currentChannelIndex = index;
+        if (tvPlayer) tvPlayer.unload();
+        osdEpgState.channel = ch; osdEpgState.programs = []; osdEpgState.currentIndex = -1; osdEpgState.liveIndex = -1;
+        showOsd({ number: index + 1, name: ch.name, logo: ch.logo, program: 'MPEG-TS non supportato dal player', time: 'Usa la modalità normale', progress: 0 });
+        return;
+    }
+
     currentChannelIndex = index; const token = ++channelLoadToken;
     if (activeIframe) { activeIframe.remove(); activeIframe = null; tvIframeExitBtn.style.display = 'none'; tvIframeHotspot.classList.remove('active'); tvIframeHotspot.style.display = 'none'; }
     tvVideo.style.display = 'block'; tvExitBtn.style.display = 'none';
@@ -1140,7 +1232,7 @@ function loadChannelInTv(index) {
         if (token !== channelLoadToken) return;
         if (tvPlayer.isLive()) { const seekRange = tvPlayer.seekRange(); if (seekRange && isFinite(seekRange.end)) tvPlayer.getMediaElement().currentTime = seekRange.end; }
         autoSelectItalianAudio(); buildAudioList();
-    }).catch(err => { console.error('Errore caricamento TV:', err); if (token === channelLoadToken) showOsd({ number: index + 1, name: ch.name, logo: ch.logo, program: 'Errore', time: '', progress: 0 }); });
+    }).catch(err => { console.error('Errore caricamento TV:', err); dbg(`TV errore Shaka: ${shakaErrorToString(err)}`, 'error'); if (token === channelLoadToken) showOsd({ number: index + 1, name: ch.name, logo: ch.logo, program: 'Errore', time: '', progress: 0 }); });
 }
 function showOsd(data) {
     document.getElementById('tv-osd-num').textContent = data.number ? `${data.number}.` : '';
@@ -1323,6 +1415,7 @@ async function checkAccess() {
     const psw = prompt("Password:");
     if (!psw) return;
     try {
+        dbg('Login in corso...');
         const response = await fetch("/api/get-list", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: psw }) });
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
@@ -1338,9 +1431,10 @@ async function checkAccess() {
         startHeartbeat(psw);
         loadEPG();
         init(m3uData);
+        dbg(`Login OK — ${m3uData.length} bytes di M3U ricevuti`, 'ok');
         const isTV = /Android TV|SmartTV|WebTV|Tizen|LGTV|Viera|BRAVIA|Fire TV|Roku|AppleTV/i.test(navigator.userAgent);
         if (isTV) { isAutoEnter = true; setTimeout(() => { if (!tvModeActive) enterTvMode(); }, 5000); }
-    } catch (error) { alert("Errore server."); }
+    } catch (error) { alert("Errore server."); dbg(`checkAccess error: ${error}`, 'error'); }
 }
 
 async function reloadPlaylist() {
@@ -1365,9 +1459,11 @@ async function reloadPlaylist() {
         document.getElementById('main-list').innerHTML = '';
         allChannels = []; tvChannelListAll = [];
         init(m3uData);
+        dbg('Playlist aggiornata', 'ok');
     } catch (err) {
         console.error('Errore aggiorna playlist:', err);
         alert("Errore di rete durante l'aggiornamento");
+        dbg(`reloadPlaylist error: ${err}`, 'error');
     } finally {
         btn.disabled = false; btn.querySelector('.reload-icon').textContent = '🔄';
     }
@@ -1383,6 +1479,11 @@ async function init(m3uContent) {
     const playerContainer = document.querySelector('.player-container');
 
     player.configure({ streaming: { jumpLargeGaps: true } });
+
+    // Listener globale per errori Shaka
+    player.addEventListener('error', (event) => {
+        dbg(`SHAKA GLOBAL ERROR: ${shakaErrorToString(event.detail)}`, 'error');
+    });
 
     function heartSVG() { return `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path class="heart-outline" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`; }
 
@@ -1401,6 +1502,9 @@ async function init(m3uContent) {
         });
 
         card.addEventListener('click', async () => {
+            dbg(`--- CLICK: "${ch.name}" ---`, 'ok');
+            dbg(`URL: ${ch.url}`);
+
             document.querySelectorAll('.channel-card').forEach(c => c.classList.remove('active'));
             card.classList.add('active');
             if (expiryDiv) {
@@ -1408,8 +1512,13 @@ async function init(m3uContent) {
                 expiryDiv.textContent = expiry ? `⏳ ${expiry === "Scaduto" ? "Scaduto" : `Scade il: ${expiry}`}` : '';
             }
             displayEPG(ch);
+
             const oldIframe = playerContainer.querySelector('.iframe-container'); if (oldIframe) oldIframe.remove();
+            const oldTs = playerContainer.querySelector('.ts-fallback'); if (oldTs) oldTs.remove();
+
+            // --- CASO 1: IFRAME DRM ---
             if (shouldUseIframe(ch)) {
+                dbg('Tipo: IFRAME DRM', 'warn');
                 const src = buildIframeSrc(ch);
                 if (src) {
                     const iframeContainer = document.createElement('div'); iframeContainer.className = 'iframe-container active';
@@ -1417,18 +1526,87 @@ async function init(m3uContent) {
                     iframe.src = src; iframeContainer.appendChild(iframe); playerContainer.appendChild(iframeContainer);
                     await player.unload();
                     iframe.addEventListener('load', () => { startIframeLiveLoop(iframe); }); startIframeLiveLoop(iframe);
-                } else alert("Canale non valido per iframe DRM");
-                window.scrollTo({ top: 0, behavior: 'smooth' }); return;
+                } else {
+                    dbg('Iframe DRM: src nullo (manca kid/key)', 'error');
+                    alert("Canale non valido per iframe DRM");
+                }
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                return;
             }
+
+            // --- CASO 2: STREAM .TS (MPEG-TS raw) ---
+            if (isTsUrl(ch.url)) {
+                dbg('Tipo: MPEG-TS (.ts) — Shaka NON lo supporta direttamente', 'warn');
+                dbg('Tentativo: <video> nativo con type="video/mp2t"', 'info');
+                await player.unload();
+
+                const tsContainer = document.createElement('div');
+                tsContainer.className = 'ts-fallback';
+                tsContainer.style.cssText = 'position:absolute; top:0; left:0; width:100%; height:100%; background:#000; z-index:20; display:flex; align-items:center; justify-content:center; color:#fff; font-family:sans-serif;';
+                const tsVideo = document.createElement('video');
+                tsVideo.autoplay = true;
+                tsVideo.controls = true;
+                tsVideo.playsInline = true;
+                tsVideo.style.cssText = 'width:100%; height:100%; object-fit:contain;';
+                const srcEl = document.createElement('source');
+                srcEl.src = ch.url;
+                srcEl.type = 'video/mp2t';
+                tsVideo.appendChild(srcEl);
+                tsVideo.src = ch.url;
+
+                const msgDiv = document.createElement('div');
+                msgDiv.style.cssText = 'position:absolute; bottom:10px; left:10px; right:10px; background:rgba(200,0,0,0.85); color:#fff; padding:8px 12px; border-radius:6px; font-size:13px; display:none;';
+                msgDiv.textContent = '⚠️ Il browser non riesce a riprodurre MPEG-TS (.ts) nativamente. Serve Safari o un transcoder lato server.';
+
+                tsContainer.appendChild(tsVideo);
+                tsContainer.appendChild(msgDiv);
+                playerContainer.appendChild(tsContainer);
+
+                let tsPlayed = false;
+                tsVideo.addEventListener('playing', () => {
+                    tsPlayed = true;
+                    dbg('✅ <video> nativo sta riproducendo il .ts!', 'ok');
+                    msgDiv.style.display = 'none';
+                });
+                tsVideo.addEventListener('error', () => {
+                    const err = tsVideo.error;
+                    dbg(`❌ <video> nativo errore: code=${err?.code} message=${err?.message}`, 'error');
+                    msgDiv.style.display = 'block';
+                    dbg('Il browser NON supporta MPEG-TS nativo. Il canale non può partire senza transcoder.', 'error');
+                });
+
+                setTimeout(() => {
+                    if (!tsPlayed) {
+                        dbg('Timeout 8s: il .ts non è partito. Il browser quasi sicuramente non supporta MPEG-TS nativo.', 'error');
+                        msgDiv.style.display = 'block';
+                    }
+                }, 8000);
+
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                return;
+            }
+
+            // --- CASO 3: DASH/HLS (Shaka) ---
+            dbg('Tipo: DASH/HLS — uso Shaka Player', 'info');
             player.configure({ drm: { clearKeys: ch.drm || {} } });
             if (ch.streamHeaders && Object.keys(ch.streamHeaders).length > 0) player.configure({ streaming: { customHttpHeaders: ch.streamHeaders } });
             else player.configure({ streaming: { customHttpHeaders: {} } });
-            player.load(ch.url).then(() => {
+
+            dbg(`Shaka: carico ${ch.url}`);
+            dbg(`DRM keys: ${JSON.stringify(ch.drm || {})}`);
+
+            try {
+                await player.load(ch.url);
+                dbg('✅ Shaka: load completato', 'ok');
                 if (player.isLive()) { const seek = player.seekRange(); if (seek && isFinite(seek.end)) video.currentTime = seek.end; }
                 const tracks = player.getAudioLanguagesAndRoles();
                 const italianTrack = tracks.find(t => t.language && (t.language.toLowerCase().startsWith('it') || t.language.toLowerCase() === 'ita') || (t.label && t.label.toLowerCase().includes('ital')));
                 if (italianTrack) { try { player.selectAudioLanguage(italianTrack.language); } catch(e) {} }
-            }).catch(err => { console.error('Errore player principale:', err); });
+            } catch (err) {
+                dbg(`❌ Shaka load FALLITO: ${shakaErrorToString(err)}`, 'error');
+                dbg(`Errore raw: ${err}`, 'error');
+            }
+
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
         return card;
@@ -1506,6 +1684,7 @@ async function init(m3uContent) {
     countHeader.innerText = loadedCount + " CANALI";
     renderFavorites();
     sortCategories();
+    dbg(`Playlist parsata: ${loadedCount} canali`, 'ok');
     
     const searchInput = document.getElementById('search-input');
     const newSearchInput = searchInput.cloneNode(true);
