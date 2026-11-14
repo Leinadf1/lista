@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TV Dashboard PRO</title>
-    <!-- Shaka Player per DASH/HLS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/shaka-player.ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.11.11/controls.min.css">
-    <!-- mpegts.js per flussi MPEG-TS (.ts) -->
-    <script src="https://cdn.jsdelivr.net/npm/mpegts.js@1.7.3/dist/mpegts.js"></script>
     
     <link rel="preload" href="https://raw.githubusercontent.com/Leinadf1/lista/main/Formula1-Bold_web_0.ttf" as="font" type="font/ttf" crossorigin>
     
@@ -544,39 +541,13 @@
     </div>
 
     <div class="player-container" data-shaka-player-container>
-        <!-- Video Shaka Player (DASH/HLS) -->
         <video autoplay data-shaka-player id="video"></video>
-        <!-- Video mpegts.js (MPEG-TS) -->
-        <video id="ts-video" controls autoplay playsinline style="display:none; width:100%; aspect-ratio:16/9; background:#000; position:absolute; top:0; left:0; z-index:15;"></video>
     </div>
 
     <div id="expiry-info"></div>
     <div id="epg-info"></div>
 
     <div id="main-list" style="width: 100%;"></div>
-
-    <!-- ========== DEBUG OVERLAY ========== -->
-    <button id="debug-toggle" onclick="toggleDebug()" style="
-        position: fixed; top: 10px; right: 10px; z-index: 100000;
-        background: #1c2128; color: #0f0; border: 1px solid #0f0; border-radius: 6px;
-        padding: 6px 12px; font-family: monospace; font-size: 12px; cursor: pointer;">
-        🐞 DEBUG
-    </button>
-    <div id="debug-overlay" style="
-        position: fixed; bottom: 0; left: 0; right: 0; max-height: 40vh; overflow-y: auto;
-        background: rgba(0,0,0,0.92); color: #0f0; font-family: monospace; font-size: 12px;
-        padding: 10px 14px; z-index: 99999; display: none; border-top: 2px solid #0f0;
-        white-space: pre-wrap; word-break: break-all;">
-        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-            <strong style="color:#ff0;">🔧 DEBUG CONSOLE</strong>
-            <span>
-                <button onclick="document.getElementById('debug-overlay').style.display='none'" style="background:#333;color:#fff;border:1px solid #555;padding:2px 8px;cursor:pointer;">Chiudi</button>
-                <button onclick="dbgClear()" style="background:#333;color:#fff;border:1px solid #555;padding:2px 8px;cursor:pointer;">Pulisci</button>
-            </span>
-        </div>
-        <div id="debug-log"></div>
-    </div>
-    <!-- ========== /DEBUG OVERLAY ========== -->
 
     <div id="tv-mode-overlay">
         <div id="tv-mode-video-container">
@@ -637,8 +608,6 @@ const FAVORITES_KEY = 'favoriteChannels';
 let favoriteIds = new Set(JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]'));
 let allChannels = [];
 let tvChannelListAll = [];
-let tsPlayer = null;     // Player per i flussi MPEG-TS (Main)
-let tvTsPlayer = null;   // Player per i flussi MPEG-TS (TV Mode)
 
 const IFRAME_GROUPS = ['PRIME VIDEO', 'DAZN PRIMEVIDEO DE'];
 
@@ -712,61 +681,6 @@ function startIframeLiveLoop(iframe) {
     setTimeout(() => sendIframeLive(iframe), 800);
     setTimeout(() => sendIframeLive(iframe), 1500);
     setTimeout(() => sendIframeLive(iframe), 3000);
-}
-
-// ============================================================
-// DEBUG A SCHERMO
-// ============================================================
-const DEBUG_MAX_LINES = 300;
-let debugVisible = false;
-
-window.toggleDebug = function() {
-    debugVisible = !debugVisible;
-    document.getElementById('debug-overlay').style.display = debugVisible ? 'block' : 'none';
-};
-
-window.dbgClear = function() {
-    const el = document.getElementById('debug-log');
-    if (el) el.textContent = '';
-};
-
-function dbg(msg, type = 'info') {
-    const el = document.getElementById('debug-log');
-    if (!el) return;
-    const color = type === 'error' ? '#ff5555' : type === 'warn' ? '#ffb86c' : type === 'ok' ? '#50fa7b' : '#8be9fd';
-    const time = new Date().toLocaleTimeString('it-IT');
-    const line = document.createElement('div');
-    line.style.color = color;
-    line.textContent = `[${time}] ${msg}`;
-    el.appendChild(line);
-    while (el.children.length > DEBUG_MAX_LINES) el.removeChild(el.firstChild);
-    const overlay = document.getElementById('debug-overlay');
-    if (overlay) overlay.scrollTop = overlay.scrollHeight;
-    if (type === 'error') console.error(msg);
-    else if (type === 'warn') console.warn(msg);
-    else console.log(msg);
-}
-
-window.addEventListener('error', (e) => {
-    dbg(`GLOBAL ERROR: ${e.message} @ ${e.filename}:${e.lineno}`, 'error');
-});
-window.addEventListener('unhandledrejection', (e) => {
-    dbg(`UNHANDLED PROMISE: ${e.reason}`, 'error');
-});
-
-function isTsUrl(url) {
-    if (!url) return false;
-    const clean = url.split('?')[0].split('#')[0];
-    return /\.ts$/i.test(clean);
-}
-
-function shakaErrorToString(err) {
-    if (!err) return 'unknown';
-    const code = err.code || err.detail?.code;
-    const category = err.category || err.detail?.category;
-    const severity = err.severity || err.detail?.severity;
-    const data = err.data || err.detail?.data || [];
-    return `code=${code} category=${category} severity=${severity} data=${JSON.stringify(data)}`;
 }
 
 // -------------------- EPG --------------------
@@ -857,8 +771,7 @@ async function loadEPG() {
         });
         for (const [key, programs] of epgChannels.entries()) { programs.sort((a, b) => a.start - b.start); }
         epgReady = true;
-        dbg('EPG caricato', 'ok');
-    } catch (error) { epgReady = false; dbg(`EPG errore: ${error}`, 'warn'); }
+    } catch (error) { epgReady = false; }
 }
 function getAliasesForChannel(ch) {
     const aliases = []; const normName = normalizeName(ch.name);
@@ -1088,17 +1001,9 @@ function enterTvMode() {
     tvModeOverlay.classList.add('active');
     const mainVideo = document.getElementById('video'); const mainPlayer = mainVideo.player;
     if (mainPlayer) { mainPlayer.unload(); mainVideo.pause(); }
-    
-    if (tsPlayer) { tsPlayer.destroy(); tsPlayer = null; }
-    if (tvTsPlayer) { tvTsPlayer.destroy(); tvTsPlayer = null; }
-
     tvModeVideoContainer.querySelector('iframe')?.remove(); activeIframe = null; tvIframeExitBtn.style.display = 'none'; tvExitBtn.style.display = 'none'; tvIframeHotspot.classList.remove('active'); tvIframeHotspot.style.display = 'none';
-    tvVideo.style.display = 'block'; tvVideo.src = ''; tvVideo.autoplay = true; 
-    
-    tvPlayer = new shaka.Player(tvVideo);
+    tvVideo.style.display = 'block'; tvVideo.src = ''; tvVideo.autoplay = true; tvPlayer = new shaka.Player(tvVideo);
     tvPlayer.addEventListener('streaming', () => { if (tvPlayer.isLive()) { const seekRange = tvPlayer.seekRange(); if (seekRange && isFinite(seekRange.end)) tvPlayer.getMediaElement().currentTime = seekRange.end; } });
-    tvPlayer.addEventListener('error', (event) => { dbg(`TV SHAKA ERROR: ${shakaErrorToString(event.detail)}`, 'error'); });
-
     if (currentChannelIndex >= 0 && currentChannelIndex < tvChannelListAll.length) loadChannelInTv(currentChannelIndex);
     else if (tvChannelListAll.length > 0) { currentChannelIndex = 0; loadChannelInTv(0); }
     document.addEventListener('keydown', handleTvKeys, true); document.addEventListener('mousemove', handleMouseMove);
@@ -1110,7 +1015,6 @@ function enterTvMode() {
 function exitTvMode() {
     if (exitingTv || !tvModeActive) return; exitingTv = true; tvModeActive = false;
     if (tvPlayer) { tvPlayer.destroy(); tvPlayer = null; }
-    if (tvTsPlayer) { tvTsPlayer.destroy(); tvTsPlayer = null; }
     tvModeVideoContainer.querySelector('iframe')?.remove(); activeIframe = null; tvIframeExitBtn.style.display = 'none'; tvIframeHotspot.classList.remove('active'); tvIframeHotspot.style.display = 'none'; tvVideo.style.display = 'block';
     tvModeOverlay.classList.remove('active'); document.getElementById('main-list').style.display = ''; document.getElementById('expiry-info').style.display = ''; document.getElementById('header').style.display = ''; document.querySelector('.player-container').style.display = ''; document.getElementById('epg-info').style.display = 'none';
     document.removeEventListener('keydown', handleTvKeys, true); document.removeEventListener('mousemove', handleMouseMove);
@@ -1127,7 +1031,7 @@ function handleMouseMove() {
     if (activeIframe) { tvIframeExitBtn.style.display = 'flex'; tvExitBtn.style.display = 'none'; tvChannelListBtn.style.display = 'none'; tvAudioBtn.style.display = 'none'; }
     else {
         tvChannelListBtn.style.display = 'flex'; tvAudioBtn.style.display = 'flex'; tvExitBtn.style.display = 'flex'; tvIframeExitBtn.style.display = 'none';
-        if (tvPlayer && tvPlayer.getMediaElement()) { const mediaElement = tvPlayer.getMediaElement(); if (mediaElement) showSeekBar(mediaElement.currentTime, mediaElement.duration); }
+        if (tvPlayer) { const mediaElement = tvPlayer.getMediaElement(); if (mediaElement) showSeekBar(mediaElement.currentTime, mediaElement.duration); }
         showOsdWithCurrentState();
     }
     if (mouseMoveTimeout) clearTimeout(mouseMoveTimeout);
@@ -1203,17 +1107,9 @@ function autoSelectItalianAudio() {
 }
 function loadChannelInTv(index) {
     const ch = tvChannelListAll[index]; if (!ch) return;
-
-    dbg(`TV MODE: carico "${ch.name}" — ${ch.url}`);
     currentChannelIndex = index; const token = ++channelLoadToken;
-
     if (activeIframe) { activeIframe.remove(); activeIframe = null; tvIframeExitBtn.style.display = 'none'; tvIframeHotspot.classList.remove('active'); tvIframeHotspot.style.display = 'none'; }
     tvVideo.style.display = 'block'; tvExitBtn.style.display = 'none';
-
-    // Pulisci player precedenti
-    if (tvPlayer) tvPlayer.unload();
-    if (tvTsPlayer) { tvTsPlayer.destroy(); tvTsPlayer = null; }
-
     if (isEpgDisabled(ch)) { osdEpgState.programs = []; osdEpgState.currentIndex = -1; osdEpgState.liveIndex = -1; }
     else {
         const epgResult = getCurrentProgram(ch);
@@ -1221,9 +1117,8 @@ function loadChannelInTv(index) {
         else { osdEpgState.channel = ch; osdEpgState.programs = []; osdEpgState.currentIndex = -1; osdEpgState.liveIndex = -1; }
     }
     showOsd({ number: index + 1, name: ch.name, logo: ch.logo, program: '', time: '', progress: 0 }); renderOsdEPG();
-
     if (shouldUseIframe(ch)) {
-        tvVideo.style.display = 'none'; 
+        tvVideo.style.display = 'none'; if (tvPlayer) tvPlayer.unload();
         const src = buildIframeSrc(ch);
         if (src) {
             const iframe = document.createElement('iframe'); iframe.setAttribute('scrolling', 'no'); iframe.setAttribute('allowfullscreen', ''); iframe.setAttribute('allow', 'autoplay; encrypted-media; fullscreen'); iframe.src = src;
@@ -1237,40 +1132,15 @@ function loadChannelInTv(index) {
         return;
     }
     tvIframeHotspot.classList.remove('active'); tvIframeHotspot.style.display = 'none';
-
-    // --- CASO: MPEG-TS in TV MODE ---
-    if (isTsUrl(ch.url)) {
-        dbg('TV MODE: stream .ts — uso mpegts.js', 'info');
-        if (mpegts.getFeatureList().mseLivePlayback) {
-            tvTsPlayer = mpegts.createPlayer({ type: 'mse', isLive: true, url: ch.url });
-            tvTsPlayer.attachMediaElement(tvVideo);
-            tvTsPlayer.load();
-            tvTsPlayer.play();
-            tvTsPlayer.on(mpegts.Events.ERROR, (type, detail, info) => {
-                dbg(`TV mpegts errore: ${type} - ${detail}`, 'error');
-            });
-        } else {
-            dbg('TV mpegts non supportato, provo nativo', 'warn');
-            tvVideo.src = ch.url;
-        }
-        return;
-    }
-
-    // --- CASO: DASH/HLS ---
     tvPlayer.configure({ drm: {} });
     if (ch.drm && Object.keys(ch.drm).length > 0) tvPlayer.configure({ drm: { clearKeys: ch.drm } });
     if (ch.streamHeaders && Object.keys(ch.streamHeaders).length > 0) tvPlayer.configure({ streaming: { customHttpHeaders: ch.streamHeaders } });
     else tvPlayer.configure({ streaming: { customHttpHeaders: {} } });
-    
     tvPlayer.load(ch.url).then(() => {
         if (token !== channelLoadToken) return;
         if (tvPlayer.isLive()) { const seekRange = tvPlayer.seekRange(); if (seekRange && isFinite(seekRange.end)) tvPlayer.getMediaElement().currentTime = seekRange.end; }
         autoSelectItalianAudio(); buildAudioList();
-    }).catch(err => { 
-        console.error('Errore caricamento TV:', err); 
-        dbg(`TV errore Shaka: ${shakaErrorToString(err)}`, 'error'); 
-        if (token === channelLoadToken) showOsd({ number: index + 1, name: ch.name, logo: ch.logo, program: 'Errore', time: '', progress: 0 }); 
-    });
+    }).catch(err => { console.error('Errore caricamento TV:', err); if (token === channelLoadToken) showOsd({ number: index + 1, name: ch.name, logo: ch.logo, program: 'Errore', time: '', progress: 0 }); });
 }
 function showOsd(data) {
     document.getElementById('tv-osd-num').textContent = data.number ? `${data.number}.` : '';
@@ -1337,7 +1207,7 @@ function handleTvKeys(e) {
     if (key === 'a' || key === 'A' || key === 'F4' || code === 'F4' || keyCode === 115) { toggleAudioList(); return; }
     if (keyCode >= 48 && keyCode <= 57) { handleNumberKey(key); return; }
     if (/^[0-9]$/.test(key)) { handleNumberKey(key); return; }
-    if (keyCode === 178 || key === 'MediaStop') { if (tvPlayer) tvPlayer.unload(); if (tvTsPlayer) tvTsPlayer.destroy(); return; }
+    if (keyCode === 178 || key === 'MediaStop') { if (tvPlayer) tvPlayer.unload(); return; }
     if (keyCode === 180 || key === 'MediaNextTrack') { changeChannel(1); return; }
     if (keyCode === 181 || key === 'MediaPrevTrack') { changeChannel(-1); return; }
     if (keyCode === 417 || key === 'MediaFastForward') { if (tvPlayer) { const mediaElement = tvPlayer.getMediaElement(); if (mediaElement && isFinite(mediaElement.duration)) { mediaElement.currentTime = Math.min(mediaElement.currentTime + 10, mediaElement.duration - 1); showSeekBar(mediaElement.currentTime, mediaElement.duration); } } return; }
@@ -1453,7 +1323,6 @@ async function checkAccess() {
     const psw = prompt("Password:");
     if (!psw) return;
     try {
-        dbg('Login in corso...');
         const response = await fetch("/api/get-list", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: psw }) });
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
@@ -1469,10 +1338,9 @@ async function checkAccess() {
         startHeartbeat(psw);
         loadEPG();
         init(m3uData);
-        dbg(`Login OK — ${m3uData.length} bytes di M3U ricevuti`, 'ok');
         const isTV = /Android TV|SmartTV|WebTV|Tizen|LGTV|Viera|BRAVIA|Fire TV|Roku|AppleTV/i.test(navigator.userAgent);
         if (isTV) { isAutoEnter = true; setTimeout(() => { if (!tvModeActive) enterTvMode(); }, 5000); }
-    } catch (error) { alert("Errore server."); dbg(`checkAccess error: ${error}`, 'error'); }
+    } catch (error) { alert("Errore server."); }
 }
 
 async function reloadPlaylist() {
@@ -1497,11 +1365,9 @@ async function reloadPlaylist() {
         document.getElementById('main-list').innerHTML = '';
         allChannels = []; tvChannelListAll = [];
         init(m3uData);
-        dbg('Playlist aggiornata', 'ok');
     } catch (err) {
         console.error('Errore aggiorna playlist:', err);
         alert("Errore di rete durante l'aggiornamento");
-        dbg(`reloadPlaylist error: ${err}`, 'error');
     } finally {
         btn.disabled = false; btn.querySelector('.reload-icon').textContent = '🔄';
     }
@@ -1517,11 +1383,6 @@ async function init(m3uContent) {
     const playerContainer = document.querySelector('.player-container');
 
     player.configure({ streaming: { jumpLargeGaps: true } });
-
-    // Listener globale per errori Shaka
-    player.addEventListener('error', (event) => {
-        dbg(`SHAKA GLOBAL ERROR: ${shakaErrorToString(event.detail)}`, 'error');
-    });
 
     function heartSVG() { return `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path class="heart-outline" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`; }
 
@@ -1540,9 +1401,6 @@ async function init(m3uContent) {
         });
 
         card.addEventListener('click', async () => {
-            dbg(`--- CLICK: "${ch.name}" ---`, 'ok');
-            dbg(`URL: ${ch.url}`);
-
             document.querySelectorAll('.channel-card').forEach(c => c.classList.remove('active'));
             card.classList.add('active');
             if (expiryDiv) {
@@ -1550,19 +1408,8 @@ async function init(m3uContent) {
                 expiryDiv.textContent = expiry ? `⏳ ${expiry === "Scaduto" ? "Scaduto" : `Scade il: ${expiry}`}` : '';
             }
             displayEPG(ch);
-
             const oldIframe = playerContainer.querySelector('.iframe-container'); if (oldIframe) oldIframe.remove();
-            
-            const tsVideoEl = document.getElementById('ts-video');
-            const mainVideoEl = document.getElementById('video');
-
-            // --- CASO 1: IFRAME DRM ---
             if (shouldUseIframe(ch)) {
-                dbg('Tipo: IFRAME DRM', 'warn');
-                if (tsPlayer) { tsPlayer.destroy(); tsPlayer = null; }
-                tsVideoEl.style.display = 'none';
-                mainVideoEl.style.display = 'block';
-
                 const src = buildIframeSrc(ch);
                 if (src) {
                     const iframeContainer = document.createElement('div'); iframeContainer.className = 'iframe-container active';
@@ -1570,79 +1417,18 @@ async function init(m3uContent) {
                     iframe.src = src; iframeContainer.appendChild(iframe); playerContainer.appendChild(iframeContainer);
                     await player.unload();
                     iframe.addEventListener('load', () => { startIframeLiveLoop(iframe); }); startIframeLiveLoop(iframe);
-                } else {
-                    dbg('Iframe DRM: src nullo (manca kid/key)', 'error');
-                    alert("Canale non valido per iframe DRM");
-                }
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                return;
+                } else alert("Canale non valido per iframe DRM");
+                window.scrollTo({ top: 0, behavior: 'smooth' }); return;
             }
-
-            // --- CASO 2: STREAM .TS (MPEG-TS raw) ---
-            if (isTsUrl(ch.url)) {
-                dbg('Tipo: MPEG-TS (.ts) — uso mpegts.js', 'info');
-                
-                await player.unload(); // Ferma Shaka
-                mainVideoEl.style.display = 'none'; // Nascondi video Shaka
-                
-                tsVideoEl.style.display = 'block';
-                tsVideoEl.src = ''; // Reset
-
-                if (tsPlayer) { tsPlayer.destroy(); tsPlayer = null; }
-
-                if (mpegts.getFeatureList().mseLivePlayback) {
-                    tsPlayer = mpegts.createPlayer({
-                        type: 'mse',
-                        isLive: true,
-                        url: ch.url
-                    });
-                    tsPlayer.attachMediaElement(tsVideoEl);
-                    tsPlayer.load();
-                    tsPlayer.play();
-                    dbg('✅ mpegts.js avviato', 'ok');
-                    
-                    tsPlayer.on(mpegts.Events.ERROR, (type, detail, info) => {
-                        dbg(`❌ mpegts errore: ${type} - ${detail}`, 'error');
-                        if (detail === 'NetworkError') {
-                            dbg('Probabile blocco CORS da parte del server del provider.', 'error');
-                        }
-                    });
-                } else {
-                    dbg('mpegts.js non supportato, provo nativo', 'warn');
-                    tsVideoEl.src = ch.url; // Fallback nativo (Safari)
-                }
-
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                return;
-            }
-
-            // --- CASO 3: DASH/HLS (Shaka) ---
-            dbg('Tipo: DASH/HLS — uso Shaka Player', 'info');
-            
-            // Pulisci mpegts se presente
-            if (tsPlayer) { tsPlayer.destroy(); tsPlayer = null; }
-            tsVideoEl.style.display = 'none';
-            mainVideoEl.style.display = 'block';
-
             player.configure({ drm: { clearKeys: ch.drm || {} } });
             if (ch.streamHeaders && Object.keys(ch.streamHeaders).length > 0) player.configure({ streaming: { customHttpHeaders: ch.streamHeaders } });
             else player.configure({ streaming: { customHttpHeaders: {} } });
-
-            dbg(`Shaka: carico ${ch.url}`);
-            dbg(`DRM keys: ${JSON.stringify(ch.drm || {})}`);
-
-            try {
-                await player.load(ch.url);
-                dbg('✅ Shaka: load completato', 'ok');
+            player.load(ch.url).then(() => {
                 if (player.isLive()) { const seek = player.seekRange(); if (seek && isFinite(seek.end)) video.currentTime = seek.end; }
                 const tracks = player.getAudioLanguagesAndRoles();
                 const italianTrack = tracks.find(t => t.language && (t.language.toLowerCase().startsWith('it') || t.language.toLowerCase() === 'ita') || (t.label && t.label.toLowerCase().includes('ital')));
                 if (italianTrack) { try { player.selectAudioLanguage(italianTrack.language); } catch(e) {} }
-            } catch (err) {
-                dbg(`❌ Shaka load FALLITO: ${shakaErrorToString(err)}`, 'error');
-                dbg(`Errore raw: ${err}`, 'error');
-            }
-
+            }).catch(err => { console.error('Errore player principale:', err); });
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
         return card;
@@ -1720,7 +1506,6 @@ async function init(m3uContent) {
     countHeader.innerText = loadedCount + " CANALI";
     renderFavorites();
     sortCategories();
-    dbg(`Playlist parsata: ${loadedCount} canali`, 'ok');
     
     const searchInput = document.getElementById('search-input');
     const newSearchInput = searchInput.cloneNode(true);
