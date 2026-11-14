@@ -93,6 +93,29 @@ const DAZN1_LOGO_FIXED = "https://nowtv-live.pages.dev/logos/dazn1.png?v=2";
 function applyDazn1LogoOverride(content) { return !content ? content : content.replace(/(#EXTINF:[^\n]*?tvg-name="DAZN\s+1(?:\s[^"]*)?"[^\n]*?)tvg-logo="[^"]*"/gim, `$1tvg-logo="${DAZN1_LOGO_FIXED}"`); }
 
 // ============================================================
+// LEAK DETECTION: marca un canale con la password prima dell'URL
+// ============================================================
+function tagChannelUrlWithPassword(content, targetName, password) {
+    if (!content || !password || !targetName) return content;
+    const target = targetName.toLowerCase().trim();
+    const safePwd = String(password).replace(/[^\w@.-]/g, '_');
+    const lines = content.split('\n');
+    let currentName = '';
+    return lines.map(line => {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('#EXTINF:')) {
+            const m = trimmed.match(/,(.*)/);
+            currentName = m ? m[1].trim().toLowerCase() : '';
+            return line;
+        }
+        if (currentName === target && trimmed.startsWith('http')) {
+            return `PWD_${safePwd}_${line}`;
+        }
+        return line;
+    }).join('\n');
+}
+
+// ============================================================
 // PROXY LOGIC
 // ============================================================
 const PROXY_CATEGORIES = ['serie bkt', 'laliga ea sports', 'serie a enilive', 'amichevoli', 'jupiler pro league', 'liga portugal betclic', 'nerozone', 'dazn nerozone'];
@@ -211,6 +234,7 @@ export default async function handler(req, res) {
         
         let bluesportContent = "";
         try { const r = await fetch(withCacheBust(`${gistBase}/z_bluesport.m3u`)); if (r.ok) bluesportContent = (await r.text()).replace(/^#EXTM3U\s*\n?/i, '').trim(); } catch (e) {}
+        bluesportContent = tagChannelUrlWithPassword(bluesportContent, 'Blue Sport 1 Live', psw);
         let primevideoContent = "";
         try { const r = await fetch(withCacheBust(`${gistBase}/z_primevideo.m3u`)); if (r.ok) primevideoContent = (await r.text()).replace(/^#EXTM3U\s*\n?/i, '').trim(); } catch (e) {}
         let nerozoneContent = "";
