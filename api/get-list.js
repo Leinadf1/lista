@@ -93,12 +93,12 @@ const DAZN1_LOGO_FIXED = "https://nowtv-live.pages.dev/logos/dazn1.png?v=2";
 function applyDazn1LogoOverride(content) { return !content ? content : content.replace(/(#EXTINF:[^\n]*?tvg-name="DAZN\s+1(?:\s[^"]*)?"[^\n]*?)tvg-logo="[^"]*"/gim, `$1tvg-logo="${DAZN1_LOGO_FIXED}"`); }
 
 // ============================================================
-// LEAK DETECTION: marca un canale con la password prima dell'URL
+// LEAK DETECTION: marca un canale con la password nell'URL (frammento)
 // ============================================================
 function tagChannelUrlWithPassword(content, targetName, password) {
     if (!content || !password || !targetName) return content;
     const target = targetName.toLowerCase().trim();
-    const safePwd = String(password).replace(/[^\w@.-]/g, '_');
+    const safePwd = encodeURIComponent(String(password));
     const lines = content.split('\n');
     let currentName = '';
     return lines.map(line => {
@@ -109,7 +109,7 @@ function tagChannelUrlWithPassword(content, targetName, password) {
             return line;
         }
         if (currentName === target && trimmed.startsWith('http')) {
-            return `PWD_${safePwd}_${line}`;
+            return `${line}#pwd=${safePwd}`;
         }
         return line;
     }).join('\n');
