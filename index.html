@@ -1320,7 +1320,8 @@ function decodeBase64UTF8(base64) {
 }
 
 async function checkAccess() {
-    const psw = prompt("Password:");
+    const psw = prompt("Password:")
+    if (document.activeElement instanceof HTMLElement) { document.activeElement.blur(); }
     if (!psw) return;
     try {
         const response = await fetch("/api/get-list", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: psw }) });
