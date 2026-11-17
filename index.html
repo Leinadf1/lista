@@ -199,6 +199,26 @@
             transform: translateY(-2px);
             box-shadow: 0 6px 14px rgba(0,0,0,0.4);
         }
+
+        #logout-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 14px;
+            background: #da3633;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-weight: 700;
+            font-size: 13px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Formula1 Display Bold', 'Inter', sans-serif;
+        }
+        #logout-btn:hover {
+            background: #b62320;
+        }
         
         @media (max-width: 600px) {
             #tv-mode-btn { display: none; }
@@ -578,6 +598,7 @@
             <div id="header-right">
                 <button id="tv-mode-btn" title="Modalità TV">📺 TV Mode</button>
                 <div id="chan-count">Caricamento...</div>
+                <button id="logout-btn" title="Esci dall'account">Logout</button>
             </div>
         </div>
 
@@ -648,6 +669,7 @@ let passwordGlobale = "";
 let heartbeatInterval;
 let lastM3UData = null;
 const FAVORITES_KEY = 'favoriteChannels';
+const AUTH_STORAGE_KEY = 'tv_dashboard_password';
 let favoriteIds = new Set(JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]'));
 let allChannels = [];
 let tvChannelListAll = [];
@@ -1319,7 +1341,12 @@ function startHeartbeat(password) {
     if (heartbeatInterval) clearInterval(heartbeatInterval);
     heartbeatInterval = setInterval(async () => {
         try {
-            await fetch("/api/get-list", { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-heartbeat': 'true' }, body: JSON.stringify({ password: password }) });
+            const res = await fetch("/api/get-list", { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-heartbeat': 'true' }, body: JSON.stringify({ password: password }) });
+            if (res.status === 401) {
+                // Password rimossa dal server!
+                alert("La tua password è stata disattivata. Verrai disconnesso.");
+                logout();
+            }
         } catch (e) { console.warn("Sessione persa"); }
     }, 15000);
 }
@@ -1362,65 +1389,99 @@ function decodeBase64UTF8(base64) {
     return new TextDecoder('utf-8').decode(bytes);
 }
 
-// NUOVA FUNZIONE CHECKACCESS CON POPUP PERSONALIZZATO
+// LOGIN / LOGOUT LOGIC
+function logout() {
+    localStorage.removeItem(AUTH_STORAGE_KEY);
+    if (heartbeatInterval) clearInterval(heartbeatInterval);
+    window.location.reload(); // Il modo più pulito per resettare tutto
+}
+
 async function checkAccess() {
-    const loginOverlay = document.getElementById('custom-login-overlay');
-    const input = document.getElementById('custom-login-input');
+    const savedPsw = localStorage.getItem(AUTH_STORAGE_KEY);
+
+    if (savedPsw) {
+        // Tenta il login automatico
+        const success = await attemptLogin(savedPsw, true);
+        if (success) return;
+    }
+
+    // Se arriviamo qui, non c'è password salvata o non è più valida
+    document.getElementById('custom-login-overlay').style.display = 'flex';
+    document.getElementById('mainBody').style.display = 'none';
+}
+
+async function attemptLogin(psw, isAuto = false) {
     const btn = document.getElementById('custom-login-btn');
     const errorDiv = document.getElementById('custom-login-error');
 
-    const doLogin = async () => {
-        const psw = input.value.trim();
-        if (!psw) return;
-
+    if (!isAuto) {
         btn.disabled = true; btn.textContent = "Caricamento..."; errorDiv.style.display = 'none';
+        document.getElementById('custom-login-input').blur(); // Nasconde tastiera mobile
+    }
+
+    try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (isAuto) headers['x-reload'] = 'true'; // Bypassa il check "sessione già attiva" in caso di refresh della pagina
+
+        const response = await fetch("/api/get-list", { method: 'POST', headers, body: JSON.stringify({ password: psw }) });
         
-        // Nasconde la tastiera immediatamente
-        input.blur();
-
-        try {
-            const response = await fetch("/api/get-list", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: psw }) });
-            
-            if (!response.ok) {
+        if (!response.ok) {
+            if (response.status === 401) {
+                localStorage.removeItem(AUTH_STORAGE_KEY);
+                if (isAuto) return false; // Fallisce silenziosamente, mostra login
                 const errorData = await response.json().catch(() => ({}));
-                errorDiv.textContent = errorData.error || "Sessione già attiva o password errata!";
-                errorDiv.style.display = 'block';
-                btn.disabled = false; btn.textContent = "Accedi";
-                return;
+                throw new Error(errorData.error || "Password errata");
             }
-            
-            const data = await response.json();
-            const m3uData = decodeBase64UTF8(data.m3u);
-            
-            passwordGlobale = psw;
-            lastM3UData = m3uData;
-            
-            loginOverlay.style.display = 'none';
-            document.getElementById('mainBody').style.display = "flex"; // Mostra il sito
-            document.getElementById('expiry-info').textContent = '';
-            
-            startHeartbeat(psw);
-            loadEPG();
-            init(m3uData);
-            
-            const isTV = /Android TV|SmartTV|WebTV|Tizen|LGTV|Viera|BRAVIA|Fire TV|Roku|AppleTV/i.test(navigator.userAgent);
-            if (isTV) { isAutoEnter = true; setTimeout(() => { if (!tvModeActive) enterTvMode(); }, 5000); }
-            
-        } catch (error) {
-            errorDiv.textContent = "Errore di connessione al server.";
-            errorDiv.style.display = 'block';
-            btn.disabled = false; btn.textContent = "Accedi";
+            if (response.status === 403) {
+                if (isAuto) return false; 
+                throw new Error("Sessione già attiva. Riprova o aspetta.");
+            }
+            throw new Error("Errore di connessione al server");
         }
-    };
+        
+        const data = await response.json();
+        const m3uData = decodeBase64UTF8(data.m3u);
+        
+        passwordGlobale = psw;
+        lastM3UData = m3uData;
+        localStorage.setItem(AUTH_STORAGE_KEY, psw);
 
-    btn.addEventListener('click', doLogin);
-    input.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            doLogin();
-        }
-    });
+        document.getElementById('custom-login-overlay').style.display = 'none';
+        document.getElementById('mainBody').style.display = "flex";
+        document.getElementById('expiry-info').textContent = '';
+        
+        startHeartbeat(psw);
+        loadEPG();
+        init(m3uData);
+
+        const isTV = /Android TV|SmartTV|WebTV|Tizen|LGTV|Viera|BRAVIA|Fire TV|Roku|AppleTV/i.test(navigator.userAgent);
+        if (isTV) { isAutoEnter = true; setTimeout(() => { if (!tvModeActive) enterTvMode(); }, 5000); }
+        
+        return true;
+
+    } catch (error) {
+        if (isAuto) return false;
+        errorDiv.textContent = error.message;
+        errorDiv.style.display = 'block';
+        btn.disabled = false; btn.textContent = "Accedi";
+        return false;
+    }
 }
+
+// Setup iniziale della schermata di login
+document.getElementById('custom-login-btn').addEventListener('click', () => {
+    const psw = document.getElementById('custom-login-input').value.trim();
+    if (psw) attemptLogin(psw);
+});
+document.getElementById('custom-login-input').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        const psw = document.getElementById('custom-login-input').value.trim();
+        if (psw) attemptLogin(psw);
+    }
+});
+document.getElementById('logout-btn').addEventListener('click', logout);
+
 
 async function reloadPlaylist() {
     if (!passwordGlobale) { alert("Sessione scaduta, ricarica la pagina."); return; }
@@ -1432,6 +1493,13 @@ async function reloadPlaylist() {
             headers: { 'Content-Type': 'application/json', 'x-reload': 'true', 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache' },
             body: JSON.stringify({ password: passwordGlobale })
         });
+        
+        if (response.status === 401) {
+            alert("Password non più valida. Effettua di nuovo il login.");
+            logout();
+            return;
+        }
+        
         if (!response.ok) { const errorData = await response.json().catch(() => ({})); alert(errorData.error || "Errore nel recupero della playlist"); return; }
         const data = await response.json();
         const m3uData = decodeBase64UTF8(data.m3u);
@@ -1623,4 +1691,4 @@ function sortCategories() {
 document.getElementById('reload-btn').addEventListener('click', reloadPlaylist);
 </script>
 </body>
-</html>
+    </html>
