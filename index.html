@@ -242,19 +242,25 @@
                 flex-wrap: wrap;
                 justify-content: space-between;
                 align-items: center;
-                gap: 6px; /* Gap leggermente ridotto */
+                gap: 8px;
             }
             
-            /* Rimpicciolito SOLO il tasto Aggiorna Playlist */
+            /* UNICA COSA MODIFICATA: Rimpicciolito ancor di più SOLO il tasto Aggiorna */
             .reload-btn {
-                padding: 6px 10px;
-                font-size: 11px;
-                gap: 4px;
-                letter-spacing: 0.5px;
-                flex-shrink: 1;
+                padding: 4px 8px;
+                font-size: 9px;
+                gap: 3px;
+                letter-spacing: 0.3px;
+                flex-shrink: 0;
             }
-            .reload-btn .reload-icon { font-size: 14px; }
+            .reload-btn .reload-icon { font-size: 11px; }
+            /* ------------------------------------------------------------- */
             
+            #search-container {
+                order: 3;
+                flex: 1 1 100%;
+                min-width: auto;
+            }
             #header-right {
                 margin-left: auto;
                 display: flex;
@@ -263,18 +269,7 @@
                 flex-shrink: 0;
             }
             #chan-count { font-size: 11px; padding: 4px 8px; }
-            
-            #logout-btn {
-                padding: 6px 10px;
-                font-size: 11px;
-            }
-
-            #search-container {
-                order: 3;
-                flex: 1 1 100%;
-                min-width: auto;
-                margin-top: 8px;
-            }
+            #logout-btn { padding: 6px 10px; font-size: 11px; }
         }
         
         .player-container { 
