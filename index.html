@@ -1322,9 +1322,21 @@ function decodeBase64UTF8(base64) {
 async function checkAccess() {
     const psw = prompt("Password:");
 
-    // FIX TASTIERA MOBILE: Forza la chiusura della tastiera su Chrome Android
-    if (document.activeElement instanceof HTMLElement) { document.activeElement.blur(); }
-    // -------------------------------------------------------------------------
+    // FIX TASTIERA MOBILE (CHROME ANDROID)
+    // Usiamo un setTimeout per aspettare che il popup nativo si chiuda del tutto, 
+    // poi creiamo un input invisibile per forzare il browser a resettare lo stato della tastiera.
+    setTimeout(() => {
+        const dummyInput = document.createElement('input');
+        dummyInput.type = 'text';
+        dummyInput.style.position = 'absolute';
+        dummyInput.style.opacity = '0';
+        dummyInput.style.pointerEvents = 'none';
+        document.body.appendChild(dummyInput);
+        dummyInput.focus();
+        dummyInput.blur();
+        document.body.removeChild(dummyInput);
+    }, 100);
+    // ---------------------------------------------
 
     if (!psw) return;
     try {
@@ -1341,10 +1353,6 @@ async function checkAccess() {
         document.getElementById('mainBody').style.display = "flex";
         document.getElementById('expiry-info').textContent = '';
         
-        // FIX TASTIERA MOBILE: Rimuove il focus per sicurezza anche dopo il login
-        if (document.activeElement instanceof HTMLElement) { document.activeElement.blur(); }
-        // -----------------------------------------------------------------------
-
         startHeartbeat(psw);
         loadEPG();
         init(m3uData);
