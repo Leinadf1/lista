@@ -242,32 +242,31 @@
                 flex-wrap: wrap;
                 justify-content: space-between;
                 align-items: center;
-                gap: 4px; 
+                gap: 6px; /* Gap leggermente ridotto */
             }
+            
+            /* Rimpicciolito SOLO il tasto Aggiorna Playlist */
             .reload-btn {
-                padding: 4px 6px;
-                font-size: 9px;
-                gap: 3px;
-                letter-spacing: 0px;
-                flex-shrink: 0;
+                padding: 6px 10px;
+                font-size: 11px;
+                gap: 4px;
+                letter-spacing: 0.5px;
+                flex-shrink: 1;
             }
-            .reload-btn .reload-icon { font-size: 11px; }
+            .reload-btn .reload-icon { font-size: 14px; }
             
             #header-right {
                 margin-left: auto;
                 display: flex;
                 align-items: center;
-                gap: 4px;
+                gap: 6px;
                 flex-shrink: 0;
             }
-            #chan-count { 
-                font-size: 9px; 
-                padding: 3px 6px; 
-            }
+            #chan-count { font-size: 11px; padding: 4px 8px; }
             
             #logout-btn {
-                padding: 3px 6px;
-                font-size: 9px;
+                padding: 6px 10px;
+                font-size: 11px;
             }
 
             #search-container {
@@ -1733,4 +1732,4 @@ function sortCategories() {
 document.getElementById('reload-btn').addEventListener('click', reloadPlaylist);
 </script>
 </body>
-</html>
+    </html>
