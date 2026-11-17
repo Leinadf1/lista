@@ -1321,6 +1321,11 @@ function decodeBase64UTF8(base64) {
 
 async function checkAccess() {
     const psw = prompt("Password:");
+
+    // FIX TASTIERA MOBILE: Forza la chiusura della tastiera su Chrome Android
+    if (document.activeElement instanceof HTMLElement) { document.activeElement.blur(); }
+    // -------------------------------------------------------------------------
+
     if (!psw) return;
     try {
         const response = await fetch("/api/get-list", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: psw }) });
@@ -1335,6 +1340,11 @@ async function checkAccess() {
         lastM3UData = m3uData;
         document.getElementById('mainBody').style.display = "flex";
         document.getElementById('expiry-info').textContent = '';
+        
+        // FIX TASTIERA MOBILE: Rimuove il focus per sicurezza anche dopo il login
+        if (document.activeElement instanceof HTMLElement) { document.activeElement.blur(); }
+        // -----------------------------------------------------------------------
+
         startHeartbeat(psw);
         loadEPG();
         init(m3uData);
