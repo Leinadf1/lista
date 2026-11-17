@@ -242,35 +242,36 @@
                 flex-wrap: wrap;
                 justify-content: space-between;
                 align-items: center;
-                gap: 8px;
+                gap: 4px; /* Gap ridotto per far stare tutto su una riga */
             }
             .reload-btn {
-                padding: 7px 12px;
-                font-size: 12px;
-                gap: 5px;
-                letter-spacing: 0.8px;
-                flex: 0 1 auto;
-                min-width: 0;
+                padding: 6px 10px;
+                font-size: 11px;
+                gap: 4px;
+                letter-spacing: 0.5px;
+                flex-shrink: 1;
             }
-            .reload-btn .reload-icon { font-size: 15px; }
-            #search-container {
-                order: 3;
-                flex: 1 1 100%;
-                min-width: auto;
-            }
+            .reload-btn .reload-icon { font-size: 14px; }
+            
             #header-right {
                 margin-left: auto;
                 display: flex;
                 align-items: center;
-                gap: 8px;
+                gap: 4px;
                 flex-shrink: 0;
             }
-            #chan-count { font-size: 12px; padding: 4px 10px; }
+            #chan-count { font-size: 11px; padding: 4px 8px; }
             
-            /* Logout più piccolo su mobile */
             #logout-btn {
                 padding: 5px 10px;
                 font-size: 11px;
+            }
+
+            #search-container {
+                order: 3;
+                flex: 1 1 100%;
+                min-width: auto;
+                margin-top: 8px;
             }
         }
         
