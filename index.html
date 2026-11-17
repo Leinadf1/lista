@@ -521,9 +521,38 @@
             .fav-heart { width: 22px; height: 22px; top: 2px; right: 2px; }
             .epg-btn { width: 32px; height: 32px; font-size: 22px; }
         }
+        
+        /* CSS per il popup di login personalizzato */
+        #custom-login-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #0d1117; z-index: 999999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 20px; box-sizing: border-box;
+        }
+        #custom-login-overlay h2 { color: #f1e05a; font-size: 24px; margin-bottom: 20px; text-align: center; }
+        #custom-login-input {
+            width: 100%; max-width: 300px; padding: 12px; border-radius: 8px;
+            border: 1px solid #30363d; background: #161b22; color: #fff;
+            font-size: 16px; margin-bottom: 15px; text-align: center; outline: none;
+        }
+        #custom-login-btn {
+            width: 100%; max-width: 300px; padding: 12px; border-radius: 8px;
+            border: none; background: #0a2540; color: white; font-weight: bold;
+            font-size: 16px; cursor: pointer; transition: 0.2s;
+        }
+        #custom-login-btn:hover { background: #123b66; }
+        #custom-login-error { color: #ff5555; margin-top: 15px; font-size: 14px; text-align: center; display: none; }
     </style>
 </head>
 <body id="mainBody" style="display:none;">
+
+    <!-- SCHERMATA DI LOGIN PERSONALIZZATA (Sostituisce il prompt nativo) -->
+    <div id="custom-login-overlay">
+        <h2>Inserisci la Password</h2>
+        <input type="password" id="custom-login-input" placeholder="Password...">
+        <button id="custom-login-btn">Accedi</button>
+        <div id="custom-login-error"></div>
+    </div>
 
     <button id="fullscreen-btn">FULLSCREEN</button>
 
@@ -1319,46 +1348,64 @@ function decodeBase64UTF8(base64) {
     return new TextDecoder('utf-8').decode(bytes);
 }
 
+// NUOVA FUNZIONE CHECKACCESS CON POPUP PERSONALIZZATO
 async function checkAccess() {
-    const psw = prompt("Password:");
+    const loginOverlay = document.getElementById('custom-login-overlay');
+    const input = document.getElementById('custom-login-input');
+    const btn = document.getElementById('custom-login-btn');
+    const errorDiv = document.getElementById('custom-login-error');
 
-    // FIX TASTIERA MOBILE (CHROME ANDROID)
-    // Usiamo un setTimeout per aspettare che il popup nativo si chiuda del tutto, 
-    // poi creiamo un input invisibile per forzare il browser a resettare lo stato della tastiera.
-    setTimeout(() => {
-        const dummyInput = document.createElement('input');
-        dummyInput.type = 'text';
-        dummyInput.style.position = 'absolute';
-        dummyInput.style.opacity = '0';
-        dummyInput.style.pointerEvents = 'none';
-        document.body.appendChild(dummyInput);
-        dummyInput.focus();
-        dummyInput.blur();
-        document.body.removeChild(dummyInput);
-    }, 100);
-    // ---------------------------------------------
+    const doLogin = async () => {
+        const psw = input.value.trim();
+        if (!psw) return;
 
-    if (!psw) return;
-    try {
-        const response = await fetch("/api/get-list", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: psw }) });
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            alert(errorData.error || "Sessione già attiva o password errata!");
-            window.location.reload(); return;
-        }
-        const data = await response.json();
-        const m3uData = decodeBase64UTF8(data.m3u);
-        passwordGlobale = psw;
-        lastM3UData = m3uData;
-        document.getElementById('mainBody').style.display = "flex";
-        document.getElementById('expiry-info').textContent = '';
+        btn.disabled = true; btn.textContent = "Caricamento..."; errorDiv.style.display = 'none';
         
-        startHeartbeat(psw);
-        loadEPG();
-        init(m3uData);
-        const isTV = /Android TV|SmartTV|WebTV|Tizen|LGTV|Viera|BRAVIA|Fire TV|Roku|AppleTV/i.test(navigator.userAgent);
-        if (isTV) { isAutoEnter = true; setTimeout(() => { if (!tvModeActive) enterTvMode(); }, 5000); }
-    } catch (error) { alert("Errore server."); }
+        // Nasconde la tastiera immediatamente
+        input.blur();
+
+        try {
+            const response = await fetch("/api/get-list", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: psw }) });
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                errorDiv.textContent = errorData.error || "Sessione già attiva o password errata!";
+                errorDiv.style.display = 'block';
+                btn.disabled = false; btn.textContent = "Accedi";
+                return;
+            }
+            
+            const data = await response.json();
+            const m3uData = decodeBase64UTF8(data.m3u);
+            
+            passwordGlobale = psw;
+            lastM3UData = m3uData;
+            
+            loginOverlay.style.display = 'none';
+            document.getElementById('mainBody').style.display = "flex";
+            document.getElementById('expiry-info').textContent = '';
+            
+            startHeartbeat(psw);
+            loadEPG();
+            init(m3uData);
+            
+            const isTV = /Android TV|SmartTV|WebTV|Tizen|LGTV|Viera|BRAVIA|Fire TV|Roku|AppleTV/i.test(navigator.userAgent);
+            if (isTV) { isAutoEnter = true; setTimeout(() => { if (!tvModeActive) enterTvMode(); }, 5000); }
+            
+        } catch (error) {
+            errorDiv.textContent = "Errore di connessione al server.";
+            errorDiv.style.display = 'block';
+            btn.disabled = false; btn.textContent = "Accedi";
+        }
+    };
+
+    btn.addEventListener('click', doLogin);
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            doLogin();
+        }
+    });
 }
 
 async function reloadPlaylist() {
