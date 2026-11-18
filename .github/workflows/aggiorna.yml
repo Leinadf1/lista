@@ -20,9 +20,6 @@ jobs:
             "https://gist.githubusercontent.com/Leinadf1/${{ secrets.SKY_SCRIPTS_GIST_ID }}/raw/sky_lc.py" -o sky_lc.py
           curl -sL -H "Authorization: token ${{ secrets.GIST_TOKEN }}" \
             "https://gist.githubusercontent.com/Leinadf1/${{ secrets.SKY_SCRIPTS_GIST_ID }}/raw/dazn_nerozone.py" -o dazn_nerozone.py
-          # NUOVO SCRIPT
-          curl -sL -H "Authorization: token ${{ secrets.GIST_TOKEN }}" \
-            "https://gist.githubusercontent.com/Leinadf1/${{ secrets.SKY_SCRIPTS_GIST_ID }}/raw/uaznao.js" -o uaznao.js
             
           if [ ! -s AutoDecrypt.js ]; then echo "Errore: AutoDecrypt.js vuoto"; exit 1; fi
           if [ ! -s sky_lc.py ]; then echo "Errore: sky_lc.py vuoto"; exit 1; fi
