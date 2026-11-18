@@ -12,7 +12,6 @@ jobs:
         with:
           persist-credentials: true
 
-      # 2. Scarica gli script dal Gist privato (AGGIORNATO CON uaznao.js)
       - name: Download scripts from private Gist
         run: |
           curl -sL -H "Authorization: token ${{ secrets.GIST_TOKEN }}" \
@@ -28,7 +27,6 @@ jobs:
           if [ ! -s AutoDecrypt.js ]; then echo "Errore: AutoDecrypt.js vuoto"; exit 1; fi
           if [ ! -s sky_lc.py ]; then echo "Errore: sky_lc.py vuoto"; exit 1; fi
           if [ ! -s dazn_nerozone.py ]; then echo "Errore: dazn_nerozone.py vuoto"; exit 1; fi
-          if [ ! -s uaznao.js ]; then echo "Errore: uaznao.js vuoto"; exit 1; fi
 
       # 3. Scarica il sky.m3u attuale dal Gist delle liste
       - name: Fetch current sky.m3u from Gist
@@ -62,11 +60,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GIST_ID: ${{ secrets.GIST_ID }}
           GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
-
-      # 7. Genera sky3.m3u (AGGIORNATO CON uaznao.js)
-      - name: Generate sky3.m3u from JSON
-        continue-on-error: true
-        run: node uaznao.js
 
       # 8. Controllo ultimo aggiornamento EPG
       - name: Check if EPG was updated today
