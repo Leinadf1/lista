@@ -158,7 +158,7 @@ export default async function handler(req, res) {
     try { const buffers = []; for await (const chunk of req) buffers.push(chunk); body = JSON.parse(Buffer.concat(buffers).toString() || '{}'); } catch { body = {}; }
 
     const psw = String(body.password || '').trim();
-    const sessionId = String(body.sessionId || 'unknown'); // <-- NUOVO: Legge l'ID della scheda
+    const sessionId = String(body.sessionId || 'unknown');
     if (!psw) return res.status(400).json({ error: 'Password mancante' });
 
     const kv = createClient({ url: process.env.KV_REST_API_URL, token: process.env.KV_REST_API_TOKEN });
@@ -194,25 +194,35 @@ export default async function handler(req, res) {
 
     if (!proxyDaUsare) return res.status(500).json({ error: 'Configurazione proxy mancante' });
 
-    const phash = sha256hex(psw); const sessionKey = `sess:${phash}`;
+    const phash = sha256hex(psw);
+    const sessionKey = `sess:${phash}`;
 
     // ============================================================
-    // GESTIONE HEARTBEAT E SESSIONE UNIVOCA
+    // GESTIONE HEARTBEAT E SESSIONE UNIVOCA (PRIMA SESSIONE VINCE)
     // ============================================================
     if (req.headers['x-heartbeat'] === 'true') {
         const activeSessionId = await kv.get(sessionKey);
-        
-        // Se c'è già una sessione attiva ed è diversa da questa, l'utente è stato buttato fuori
-        if (activeSessionId && activeSessionId !== sessionId) {
-            return res.status(401).json({ error: 'Sessione occupata da un altro dispositivo' });
+
+        if (!activeSessionId) {
+            await kv.set(sessionKey, sessionId, { ex: 30 });
+            return res.status(200).json({ status: 'ok' });
         }
-        
-        // Rinnova la sessione
+
+        if (activeSessionId !== sessionId) {
+            return res.status(401).json({ error: 'Sessione già attiva su un altro dispositivo' });
+        }
+
         await kv.set(sessionKey, sessionId, { ex: 30 });
         return res.status(200).json({ status: 'ok' });
     }
 
-    // Se stiamo facendo un nuovo login o un reload, l'ultimo vince e sovrascrive l'ID
+    // Login iniziale o aggiornamento playlist:
+    // Se c'è già una sessione attiva con un ID diverso, blocca il nuovo accesso
+    const existingSessionId = await kv.get(sessionKey);
+    if (existingSessionId && existingSessionId !== sessionId) {
+        return res.status(403).json({ error: 'Sessione già attiva' });
+    }
+
     await kv.set(sessionKey, sessionId, { ex: 30 });
 
     try {
@@ -311,4 +321,4 @@ export default async function handler(req, res) {
         console.error(error);
         res.status(500).json({ error: "Errore caricamento liste" });
     }
-        }
+}
