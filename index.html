@@ -242,13 +242,13 @@
             }
             
             .reload-btn {
-                padding: 6px 10px;
-                font-size: 11px;
-                gap: 4px;
-                letter-spacing: 0.5px;
+                padding: 5px 8px;
+                font-size: 10px;
+                gap: 3px;
+                letter-spacing: 0.3px;
                 flex-shrink: 0;
             }
-            .reload-btn .reload-icon { font-size: 14px; }
+            .reload-btn .reload-icon { font-size: 12px; }
             
             #search-container {
                 order: 3;
@@ -681,10 +681,9 @@
     </div> <!-- Fine mainBody -->
 
 <script type="module">
-// ============================================================
-// SESSION ID (Genera un ID univoco per questa specifica scheda)
-// ============================================================
+// Genera un ID univoco per questa specifica scheda
 const SESSION_ID = Date.now().toString() + Math.random().toString(36).slice(2);
+const SESSION_ALERT_KEY = 'tv_dashboard_session_alert';
 
 let passwordGlobale = "";
 let heartbeatInterval;
@@ -694,6 +693,20 @@ const AUTH_STORAGE_KEY = 'tv_dashboard_password';
 let favoriteIds = new Set(JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]'));
 let allChannels = [];
 let tvChannelListAll = [];
+
+// --- SINCRONIZZAZIONE SCHEDE (Stesso Browser) ---
+window.addEventListener('storage', (e) => {
+    if (e.key === SESSION_ALERT_KEY) {
+        const data = JSON.parse(e.newValue || '{}');
+        if (data.tabId && data.tabId !== SESSION_ID) {
+            // Un'altra scheda ha fatto login
+            alert("Accesso effettuato da un'altra scheda. Questa verrà chiusa.");
+            localStorage.removeItem(AUTH_STORAGE_KEY);
+            if (heartbeatInterval) clearInterval(heartbeatInterval);
+            window.location.reload();
+        }
+    }
+});
 
 const IFRAME_GROUPS = ['PRIME VIDEO', 'DAZN PRIMEVIDEO DE'];
 
@@ -1358,23 +1371,33 @@ if (document.fonts && document.fonts.load) document.fonts.load('1em "Formula1 Di
 if (document.readyState === 'complete') { checkAccess(); } else { window.addEventListener('load', checkAccess); }
 
 // -------------------- Funzioni di supporto per il player principale --------------------
+async function doHeartbeat(password) {
+    try {
+        const res = await fetch("/api/get-list", { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json', 'x-heartbeat': 'true' }, 
+            body: JSON.stringify({ password: password, sessionId: SESSION_ID }) 
+        });
+        if (res.status === 401) {
+            alert("La tua sessione è stata chiusa perché è stato effettuato l'accesso da un altro dispositivo.");
+            localStorage.removeItem(AUTH_STORAGE_KEY);
+            if (heartbeatInterval) clearInterval(heartbeatInterval);
+            window.location.reload();
+        }
+    } catch (e) { console.warn("Sessione persa"); }
+}
+
 function startHeartbeat(password) {
     if (heartbeatInterval) clearInterval(heartbeatInterval);
-    heartbeatInterval = setInterval(async () => {
-        try {
-            const res = await fetch("/api/get-list", { 
-                method: 'POST', 
-                headers: { 'Content-Type': 'application/json', 'x-heartbeat': 'true' }, 
-                body: JSON.stringify({ password: password, sessionId: SESSION_ID }) 
-            });
-            if (res.status === 401) {
-                alert("La tua sessione è stata chiusa perché è stato effettuato l'accesso da un altro dispositivo o scheda.");
-                localStorage.removeItem(AUTH_STORAGE_KEY);
-                window.location.reload();
-            }
-        } catch (e) { console.warn("Sessione persa"); }
-    }, 15000);
+    doHeartbeat(password); 
+    heartbeatInterval = setInterval(() => doHeartbeat(password), 15000);
 }
+
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && passwordGlobale) {
+        doHeartbeat(passwordGlobale); 
+    }
+});
 
 function getExpiryFromUrl(url) {
     let match = url.match(/e~(\d+)/);
@@ -1475,7 +1498,10 @@ async function attemptLogin(psw, isAuto = false) {
         
         passwordGlobale = psw;
         lastM3UData = m3uData;
+        
+        // Salva la password e notifica le altre schede dello stesso dispositivo
         localStorage.setItem(AUTH_STORAGE_KEY, psw);
+        localStorage.setItem(SESSION_ALERT_KEY, JSON.stringify({ tabId: SESSION_ID, time: Date.now() }));
 
         if (!isAuto) {
             document.getElementById('custom-login-overlay').style.display = 'none';
