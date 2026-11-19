@@ -695,15 +695,19 @@ let allChannels = [];
 let tvChannelListAll = [];
 
 // --- SINCRONIZZAZIONE SCHEDE (Stesso Browser) ---
+// La scheda già attiva rimane aperta; se un'altra scheda rileva la sessione occupata, mostra l'avviso
 window.addEventListener('storage', (e) => {
     if (e.key === SESSION_ALERT_KEY) {
         const data = JSON.parse(e.newValue || '{}');
-        if (data.tabId && data.tabId !== SESSION_ID) {
-            // Un'altra scheda ha fatto login
-            alert("Accesso effettuato da un'altra scheda. Questa verrà chiusa.");
-            localStorage.removeItem(AUTH_STORAGE_KEY);
-            if (heartbeatInterval) clearInterval(heartbeatInterval);
-            window.location.reload();
+        if (data.tabId && data.tabId !== SESSION_ID && data.type === 'session_busy') {
+            const errorDiv = document.getElementById('custom-login-error');
+            const btn = document.getElementById('custom-login-btn');
+            if (errorDiv && document.getElementById('custom-login-overlay').style.display !== 'none') {
+                errorDiv.textContent = "Sessione già attiva";
+                errorDiv.style.display = 'block';
+                btn.disabled = false;
+                btn.textContent = "Accedi";
+            }
         }
     }
 });
@@ -1379,7 +1383,7 @@ async function doHeartbeat(password) {
             body: JSON.stringify({ password: password, sessionId: SESSION_ID }) 
         });
         if (res.status === 401) {
-            alert("La tua sessione è stata chiusa perché è stato effettuato l'accesso da un altro dispositivo.");
+            alert("La tua sessione non è più attiva.");
             localStorage.removeItem(AUTH_STORAGE_KEY);
             if (heartbeatInterval) clearInterval(heartbeatInterval);
             window.location.reload();
@@ -1448,14 +1452,20 @@ async function checkAccess() {
     const loadingScreen = document.getElementById('loading-screen');
     const loginOverlay = document.getElementById('custom-login-overlay');
     const mainBody = document.getElementById('mainBody');
+    const errorDiv = document.getElementById('custom-login-error');
 
     if (savedPsw) {
-        const success = await attemptLogin(savedPsw, true);
-        if (success) {
-            loadingScreen.style.display = 'none';
-            mainBody.style.display = 'flex';
-            loginOverlay.style.display = 'none';
-            return;
+        try {
+            const success = await attemptLogin(savedPsw, true);
+            if (success) {
+                loadingScreen.style.display = 'none';
+                mainBody.style.display = 'flex';
+                loginOverlay.style.display = 'none';
+                return;
+            }
+        } catch (err) {
+            errorDiv.textContent = err.message || "Sessione già attiva";
+            errorDiv.style.display = 'block';
         }
     }
 
@@ -1477,20 +1487,25 @@ async function attemptLogin(psw, isAuto = false) {
         const headers = { 'Content-Type': 'application/json' };
         if (isAuto) headers['x-reload'] = 'true';
 
-        const response = await fetch("/api/get-list", { method: 'POST', headers, body: JSON.stringify({ password: psw, sessionId: SESSION_ID }) });
+        const response = await fetch("/api/get-list", {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ password: psw, sessionId: SESSION_ID })
+        });
         
         if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
             if (response.status === 401) {
                 localStorage.removeItem(AUTH_STORAGE_KEY);
-                if (isAuto) return false; 
-                const errorData = await response.json().catch(() => ({}));
+                if (isAuto) return false;
                 throw new Error(errorData.error || "Password errata");
             }
             if (response.status === 403) {
-                if (isAuto) return false; 
-                throw new Error("Sessione già attiva. Riprova o aspetta.");
+                localStorage.removeItem(AUTH_STORAGE_KEY);
+                localStorage.setItem(SESSION_ALERT_KEY, JSON.stringify({ tabId: SESSION_ID, type: 'session_busy', time: Date.now() }));
+                throw new Error(errorData.error || "Sessione già attiva");
             }
-            throw new Error("Errore di connessione al server");
+            throw new Error(errorData.error || "Errore di connessione al server");
         }
         
         const data = await response.json();
@@ -1499,9 +1514,7 @@ async function attemptLogin(psw, isAuto = false) {
         passwordGlobale = psw;
         lastM3UData = m3uData;
         
-        // Salva la password e notifica le altre schede dello stesso dispositivo
         localStorage.setItem(AUTH_STORAGE_KEY, psw);
-        localStorage.setItem(SESSION_ALERT_KEY, JSON.stringify({ tabId: SESSION_ID, time: Date.now() }));
 
         if (!isAuto) {
             document.getElementById('custom-login-overlay').style.display = 'none';
@@ -1518,7 +1531,7 @@ async function attemptLogin(psw, isAuto = false) {
         return true;
 
     } catch (error) {
-        if (isAuto) return false;
+        if (isAuto) throw error;
         errorDiv.textContent = error.message;
         errorDiv.style.display = 'block';
         btn.disabled = false; btn.textContent = "Accedi";
@@ -1550,8 +1563,8 @@ async function reloadPlaylist() {
             body: JSON.stringify({ password: passwordGlobale, sessionId: SESSION_ID })
         });
         
-        if (response.status === 401) {
-            alert("Password non più valida o sessione occupata. Effettua di nuovo il login.");
+        if (response.status === 401 || response.status === 403) {
+            alert("Sessione già attiva o non valida. Effettua di nuovo il login.");
             logout();
             return;
         }
