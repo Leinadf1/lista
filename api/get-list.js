@@ -177,18 +177,26 @@ export default async function handler(req, res) {
 
     if (!proxyMioUrl || !proxySteUrl || !proxyTerzoUrl) return res.status(500).json({ error: 'Configurazione server incompleta' });
 
-    const allValidPasswords = [...listaPassMio, ...listaPassSte, ...listaPassTerzo, ...masterPasswords];
-    if (!safePasswordCheck(psw, allValidPasswords)) {
+    // ============================================================
+    // MODIFICA APPLICATA: La password DEVE essere presente nella MASTER_PASSWORD per essere considerata valida.
+    // Se non è presente qui, viene rifiutata a prescindere, anche se presente nelle altre liste.
+    // ============================================================
+    if (!safePasswordCheck(psw, masterPasswords)) {
         await kv.set(rlKey, String(attempts + 1), { ex: RATE_WINDOW });
-        return res.status(401).json({ error: 'Password errata' });
+        return res.status(401).json({ error: 'Password errata o non autorizzata' });
     }
+    
     if (attempts > 0) await kv.del(rlKey);
 
-    let proxyDaUsare = null;
-    if (safePasswordCheck(psw, listaPassMio)) proxyDaUsare = proxyMioUrl;
-    else if (safePasswordCheck(psw, listaPassSte)) proxyDaUsare = proxySteUrl;
-    else if (safePasswordCheck(psw, listaPassTerzo)) proxyDaUsare = proxyTerzoUrl;
-    else if (safePasswordCheck(psw, masterPasswords)) proxyDaUsare = proxyMioUrl;
+    // Determina il proxy da usare. Il default per le master password è proxyMioUrl.
+    let proxyDaUsare = proxyMioUrl; 
+    
+    // Se la password è specificata anche nelle liste di altri proxy, sovrascrivi il default
+    if (safePasswordCheck(psw, listaPassSte)) {
+        proxyDaUsare = proxySteUrl;
+    } else if (safePasswordCheck(psw, listaPassTerzo)) {
+        proxyDaUsare = proxyTerzoUrl;
+    }
 
     if (!proxyDaUsare) return res.status(500).json({ error: 'Configurazione proxy mancante' });
 
@@ -315,4 +323,4 @@ export default async function handler(req, res) {
         console.error(error);
         res.status(500).json({ error: "Errore caricamento liste" });
     }
-}
+                                                           }
