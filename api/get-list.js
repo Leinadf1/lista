@@ -92,9 +92,6 @@ function withCacheBust(url) { const sep = url.includes('?') ? '&' : '?'; return 
 const DAZN1_LOGO_FIXED = "https://nowtv-live.pages.dev/logos/dazn1.png?v=2";
 function applyDazn1LogoOverride(content) { return !content ? content : content.replace(/(#EXTINF:[^\n]*?tvg-name="DAZN\s+1(?:\s[^"]*)?"[^\n]*?)tvg-logo="[^"]*"/gim, `$1tvg-logo="${DAZN1_LOGO_FIXED}"`); }
 
-// ============================================================
-// LEAK DETECTION: inserisce /pwd=<password>/ nell'URL del canale target
-// ============================================================
 function injectPasswordInChannelUrl(content, targetName, password) {
     if (!content || !password || !targetName) return content;
     const target = targetName.toLowerCase().trim();
@@ -318,7 +315,6 @@ export default async function handler(req, res) {
             if (blocco) finalContent = finalContent.trimEnd() + "\n" + blocco;
         }
 
-        // Inserisce /pwd=<password>/ nell'URL di Eurosport 4K
         finalContent = injectPasswordInChannelUrl(finalContent, 'Eurosport 4K', psw);
 
         const f1OnlyPasswords = (process.env.F1_ONLY_PASSWORD || "").split(',').map(p => p.trim().toLowerCase());
@@ -332,7 +328,6 @@ export default async function handler(req, res) {
             }
         }
 
-        // --- INVIO M3U COMPLETO CODIFICATO ---
         const proxied = applyProxy(finalContent, proxyDaUsare);
         const encoded = Buffer.from(proxied, 'utf-8').toString('base64');
         return res.status(200).json({ m3u: encoded });
