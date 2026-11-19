@@ -158,6 +158,7 @@ export default async function handler(req, res) {
     try { const buffers = []; for await (const chunk of req) buffers.push(chunk); body = JSON.parse(Buffer.concat(buffers).toString() || '{}'); } catch { body = {}; }
 
     const psw = String(body.password || '').trim();
+    const sessionId = String(body.sessionId || 'unknown'); // <-- NUOVO: Legge l'ID della scheda
     if (!psw) return res.status(400).json({ error: 'Password mancante' });
 
     const kv = createClient({ url: process.env.KV_REST_API_URL, token: process.env.KV_REST_API_TOKEN });
@@ -177,10 +178,6 @@ export default async function handler(req, res) {
 
     if (!proxyMioUrl || !proxySteUrl || !proxyTerzoUrl) return res.status(500).json({ error: 'Configurazione server incompleta' });
 
-    // ============================================================
-    // MODIFICA APPLICATA: La password DEVE essere presente nella MASTER_PASSWORD per essere considerata valida.
-    // Se non è presente qui, viene rifiutata a prescindere, anche se presente nelle altre liste.
-    // ============================================================
     if (!safePasswordCheck(psw, masterPasswords)) {
         await kv.set(rlKey, String(attempts + 1), { ex: RATE_WINDOW });
         return res.status(401).json({ error: 'Password errata o non autorizzata' });
@@ -188,10 +185,7 @@ export default async function handler(req, res) {
     
     if (attempts > 0) await kv.del(rlKey);
 
-    // Determina il proxy da usare. Il default per le master password è proxyMioUrl.
     let proxyDaUsare = proxyMioUrl; 
-    
-    // Se la password è specificata anche nelle liste di altri proxy, sovrascrivi il default
     if (safePasswordCheck(psw, listaPassSte)) {
         proxyDaUsare = proxySteUrl;
     } else if (safePasswordCheck(psw, listaPassTerzo)) {
@@ -202,17 +196,24 @@ export default async function handler(req, res) {
 
     const phash = sha256hex(psw); const sessionKey = `sess:${phash}`;
 
+    // ============================================================
+    // GESTIONE HEARTBEAT E SESSIONE UNIVOCA
+    // ============================================================
     if (req.headers['x-heartbeat'] === 'true') {
-        await kv.set(sessionKey, 'active', { ex: 30 });
+        const activeSessionId = await kv.get(sessionKey);
+        
+        // Se c'è già una sessione attiva ed è diversa da questa, l'utente è stato buttato fuori
+        if (activeSessionId && activeSessionId !== sessionId) {
+            return res.status(401).json({ error: 'Sessione occupata da un altro dispositivo' });
+        }
+        
+        // Rinnova la sessione
+        await kv.set(sessionKey, sessionId, { ex: 30 });
         return res.status(200).json({ status: 'ok' });
     }
 
-    const isReload = req.headers['x-reload'] === 'true';
-    if (!isReload) {
-        const isOccupied = await kv.get(sessionKey);
-        if (isOccupied) return res.status(403).json({ error: 'Accesso negato: sessione già attiva' });
-    }
-    await kv.set(sessionKey, 'active', { ex: 30 });
+    // Se stiamo facendo un nuovo login o un reload, l'ultimo vince e sovrascrive l'ID
+    await kv.set(sessionKey, sessionId, { ex: 30 });
 
     try {
         const gistBase = process.env.GIST_RAW_URL.replace(/\/[^\/]+$/, '');
@@ -220,15 +221,10 @@ export default async function handler(req, res) {
         const fileContent = await githubResponse.text();
         const baseChannels = parseM3U(fileContent);
 
-        // Scarica sky.m3u
         let skyChannels = [];
         try { const r = await fetch(withCacheBust(`${gistBase}/sky.m3u`)); if (r.ok) skyChannels = parseM3U(await r.text()); } catch (e) {}
-        
-        // Scarica sky2.m3u
         let backupChannels = [];
         try { const r = await fetch(withCacheBust(`${gistBase}/sky2.m3u`)); if (r.ok) backupChannels = parseM3U(await r.text()); } catch (e) {}
-
-        // Scarica sky3.m3u (NUOVO)
         let sky3Channels = [];
         try { const r = await fetch(withCacheBust(`${gistBase}/sky3.m3u`)); if (r.ok) sky3Channels = parseM3U(await r.text()); } catch (e) {}
 
@@ -262,25 +258,18 @@ export default async function handler(req, res) {
             pvOther: applyDazn1LogoOverride(primevideoSplit.others), swiss: applyDazn1LogoOverride(daznSwissContent), como: applyDazn1LogoOverride(comotvContent)
         };
 
-        // Logica per canali SCADUTI
         let finalSkyChannels = skyChannels.map(ch => {
             if (isChannelExpired(ch)) {
-                // 1. Prova da sky2.m3u
                 const b1 = findBackupChannel(ch.name, backupChannels); 
                 if (b1) return { ...ch, url: b1.url, drm: b1.drm };
-                
-                // 2. Prova da sky3.m3u
                 const b3 = findBackupChannel(ch.name, sky3Channels); 
                 if (b3) return { ...ch, url: b3.url, drm: b3.drm };
-                
-                // 3. Prova dal file base
                 const b2 = findBackupChannel(ch.name, baseChannels); 
                 if (b2) return { ...ch, url: b2.url, drm: b2.drm };
             }
             return ch;
         });
 
-        // Logica per canali MANCANTI in sky.m3u (aggiunge da sky2 e sky3 se non presenti)
         const addMissingChannels = (sourceList) => {
             sourceList.forEach(ch => {
                 const exists = finalSkyChannels.find(c => normalizeChannelName(c.name) === normalizeChannelName(ch.name));
@@ -290,8 +279,8 @@ export default async function handler(req, res) {
             });
         };
         
-        addMissingChannels(backupChannels); // Aggiunge i mancanti da sky2
-        addMissingChannels(sky3Channels);   // Aggiunge i mancanti da sky3
+        addMissingChannels(backupChannels);
+        addMissingChannels(sky3Channels);
 
         const skyNamesSet = new Set(finalSkyChannels.map(ch => ch.name.toUpperCase()));
         const baseContentFiltered = removeChannelsByName(fileContent, skyNamesSet);
@@ -314,7 +303,6 @@ export default async function handler(req, res) {
             }
         }
 
-        // --- INVIO M3U COMPLETO CODIFICATO ---
         const proxied = applyProxy(finalContent, proxyDaUsare);
         const encoded = Buffer.from(proxied, 'utf-8').toString('base64');
         return res.status(200).json({ m3u: encoded });
@@ -323,4 +311,4 @@ export default async function handler(req, res) {
         console.error(error);
         res.status(500).json({ error: "Errore caricamento liste" });
     }
-                                                           }
+        }
