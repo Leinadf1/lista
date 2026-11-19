@@ -92,13 +92,15 @@ function withCacheBust(url) { const sep = url.includes('?') ? '&' : '?'; return 
 const DAZN1_LOGO_FIXED = "https://nowtv-live.pages.dev/logos/dazn1.png?v=2";
 function applyDazn1LogoOverride(content) { return !content ? content : content.replace(/(#EXTINF:[^\n]*?tvg-name="DAZN\s+1(?:\s[^"]*)?"[^\n]*?)tvg-logo="[^"]*"/gim, `$1tvg-logo="${DAZN1_LOGO_FIXED}"`); }
 
-function injectPasswordInChannelUrl(content, targetName, password) {
+// ============================================================
+// LEAK DETECTION: marca un canale con la password nell'URL (frammento)
+// ============================================================
+function tagChannelUrlWithPassword(content, targetName, password) {
     if (!content || !password || !targetName) return content;
     const target = targetName.toLowerCase().trim();
     const safePwd = encodeURIComponent(String(password));
     const lines = content.split('\n');
     let currentName = '';
-
     return lines.map(line => {
         const trimmed = line.trim();
         if (trimmed.startsWith('#EXTINF:')) {
@@ -107,22 +109,7 @@ function injectPasswordInChannelUrl(content, targetName, password) {
             return line;
         }
         if (currentName === target && trimmed.startsWith('http')) {
-            try {
-                const parsed = new URL(trimmed);
-                if (/\/pwd=[^/]*/i.test(parsed.pathname)) {
-                    parsed.pathname = parsed.pathname.replace(/\/pwd=[^/]*/i, `/pwd=${safePwd}`);
-                } else {
-                    parsed.pathname = `/pwd=${safePwd}${parsed.pathname.startsWith('/') ? '' : '/'}${parsed.pathname}`;
-                }
-                return parsed.toString();
-            } catch {
-                if (/\/pwd=[^/]*/i.test(trimmed)) {
-                    return trimmed.replace(/\/pwd=[^/]*/i, `/pwd=${safePwd}`);
-                }
-                return trimmed.replace(/^(https?:\/\/[^/]+)(\/.*)?$/i, (_, host, path = '') => {
-                    return `${host}/pwd=${safePwd}${path.startsWith('/') ? path : '/' + path}`;
-                });
-            }
+            return `${line}#pwd=${safePwd}`;
         }
         return line;
     }).join('\n');
@@ -255,6 +242,7 @@ export default async function handler(req, res) {
         
         let bluesportContent = "";
         try { const r = await fetch(withCacheBust(`${gistBase}/z_bluesport.m3u`)); if (r.ok) bluesportContent = (await r.text()).replace(/^#EXTM3U\s*\n?/i, '').trim(); } catch (e) {}
+        bluesportContent = tagChannelUrlWithPassword(bluesportContent, 'Blue Sport 1 Live', psw);
         let primevideoContent = "";
         try { const r = await fetch(withCacheBust(`${gistBase}/z_primevideo.m3u`)); if (r.ok) primevideoContent = (await r.text()).replace(/^#EXTM3U\s*\n?/i, '').trim(); } catch (e) {}
         let nerozoneContent = "";
@@ -315,8 +303,6 @@ export default async function handler(req, res) {
             if (blocco) finalContent = finalContent.trimEnd() + "\n" + blocco;
         }
 
-        finalContent = injectPasswordInChannelUrl(finalContent, 'Eurosport 4K', psw);
-
         const f1OnlyPasswords = (process.env.F1_ONLY_PASSWORD || "").split(',').map(p => p.trim().toLowerCase());
         if (f1OnlyPasswords.includes(psw.toLowerCase())) {
             const f1FromSky = finalSkyChannels.find(c => normalizeChannelName(c.name).includes("SPORTF1") || c.name.toUpperCase().includes("SKY SPORT F1"));
@@ -328,6 +314,7 @@ export default async function handler(req, res) {
             }
         }
 
+        // --- INVIO M3U COMPLETO CODIFICATO ---
         const proxied = applyProxy(finalContent, proxyDaUsare);
         const encoded = Buffer.from(proxied, 'utf-8').toString('base64');
         return res.status(200).json({ m3u: encoded });
@@ -336,4 +323,4 @@ export default async function handler(req, res) {
         console.error(error);
         res.status(500).json({ error: "Errore caricamento liste" });
     }
-}
+                                                           }
