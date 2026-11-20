@@ -148,12 +148,12 @@ function shouldProxy(extinf, url) {
 }
 
 function buildProxiedUrl(extinf, url, proxyUrl) {
-    if (!shouldProxy(extinf, url)) return url;
     const { isDaznNeroZoneCategory, isDazn1InNeroZone } = getChannelMeta(extinf);
-    const hasRelay = url.includes('mandra-ua-relay.nowtvpages.workers.dev/');
     if (isDaznNeroZoneCategory && !isDazn1InNeroZone) {
-        return `${proxyUrl}${hasRelay ? url : NEROZONE_RELAY_URL + url}`;
+        const hasRelay = url.includes('mandra-ua-relay.nowtvpages.workers.dev/');
+        return hasRelay ? url : `${NEROZONE_RELAY_URL}${url}`;
     }
+    if (!shouldProxy(extinf, url)) return url;
     return `${proxyUrl}${url}`;
 }
 
