@@ -129,7 +129,7 @@ function getChannelMeta(extinf) {
     const gN = group.toLowerCase().replace(/[\s\-_]/g, '');
     const nN = name.toLowerCase().replace(/[\s\-_]/g, '');
     const isDaznNeroZoneCategory = group.toLowerCase().trim() === 'dazn nerozone';
-    const isDazn1InNeroZone = nN === 'dazn1' && isDaznNeroZoneCategory;
+    const isDazn1InNeroZone = isDaznNeroZoneCategory && nN.includes('dazn1');
     return { group, name, gN, nN, isDaznNeroZoneCategory, isDazn1InNeroZone };
 }
 
