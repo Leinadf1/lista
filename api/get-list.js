@@ -118,17 +118,16 @@ function tagChannelUrlWithPassword(content, targetName, password) {
 // ============================================================
 // PROXY LOGIC
 // ============================================================
-const PROXY_CATEGORIES = ['serie bkt', 'laliga ea sports', 'serie a enilive', 'amichevoli', 'jupiler pro league', 'liga portugal betclic', 'nerozone', 'dazn nerozone'];
+const PROXY_CATEGORIES = ['serie bkt', 'laliga ea sports', 'serie a enilive', 'amichevoli', 'jupiler pro league', 'liga portugal betclic'];
 function shouldProxy(extinf, url) {
     const gm = extinf.match(/group-title="([^"]+)"/i); const nm = extinf.match(/,(.*)/); const group = gm ? gm[1] : ''; const name = nm ? nm[1].trim() : '';
     const gN = group.toLowerCase().replace(/[\s\-_]/g, ''); const nN = name.toLowerCase().replace(/[\s\-_]/g, '');
     const isDazn1ST = nN === 'dazn1' && (gN === 'st' || gN === 'daznst'); const isDazn1Lineare = nN === 'dazn1' && gN === 'daznlineari';
     const isDaznSvizzeri = gN.includes('daznsvizzeri'); const isDaznPrimeVideoDE = gN.includes('daznprimevideode');
-    const isNeroZone = gN.includes('nerozone') || nN.includes('nerozone') || gN.includes('daznnero') || nN.includes('daznnero');
     const isDaznChannel = gN.includes('dazn') || nN.includes('dazn'); const isProxyCategory = PROXY_CATEGORIES.includes(group.toLowerCase().trim());
     const alreadyProxied = url.includes('.workers.dev/');
     if (alreadyProxied || isDazn1ST) return false;
-    return isProxyCategory || isNeroZone || (!isDazn1Lineare && !isDaznSvizzeri && !isDaznPrimeVideoDE && isDaznChannel);
+    return isProxyCategory || (!isDazn1Lineare && !isDaznSvizzeri && !isDaznPrimeVideoDE && isDaznChannel);
 }
 function applyProxy(content, proxyUrl) {
     if (!proxyUrl || !content) return content;
