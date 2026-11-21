@@ -299,29 +299,57 @@ export default async function handler(req, res) {
             pvOther: applyDazn1LogoOverride(primevideoSplit.others), swiss: applyDazn1LogoOverride(daznSwissContent), como: applyDazn1LogoOverride(comotvContent)
         };
 
+        // ============================================================
+        // CASCATA SCADENZA: SKY -> SKY2 -> SKY3 -> BASE
+        // ============================================================
         let finalSkyChannels = skyChannels.map(ch => {
             if (isChannelExpired(ch)) {
-                const b1 = findBackupChannel(ch.name, backupChannels); 
-                if (b1) return { ...ch, url: b1.url, drm: b1.drm };
-                const b3 = findBackupChannel(ch.name, sky3Channels); 
-                if (b3) return { ...ch, url: b3.url, drm: b3.drm };
-                const b2 = findBackupChannel(ch.name, baseChannels); 
-                if (b2) return { ...ch, url: b2.url, drm: b2.drm };
+                const b1 = findBackupChannel(ch.name, backupChannels); // sky2
+                if (b1 && !isChannelExpired(b1)) return { ...ch, url: b1.url, drm: b1.drm };
+
+                const b3 = findBackupChannel(ch.name, sky3Channels); // sky3
+                if (b3 && !isChannelExpired(b3)) return { ...ch, url: b3.url, drm: b3.drm };
+
+                const b2 = findBackupChannel(ch.name, baseChannels); // base
+                if (b2 && !isChannelExpired(b2)) return { ...ch, url: b2.url, drm: b2.drm };
             }
             return ch;
         });
 
-        const addMissingChannels = (sourceList) => {
-            sourceList.forEach(ch => {
-                const exists = finalSkyChannels.find(c => normalizeChannelName(c.name) === normalizeChannelName(ch.name));
-                if (!exists) {
-                    finalSkyChannels.push(ch);
+        // Aggiunge canali mancanti da sky2 (se scaduti, controlla sky3 e poi base)
+        backupChannels.forEach(ch => {
+            const exists = finalSkyChannels.find(c => normalizeChannelName(c.name) === normalizeChannelName(ch.name));
+            if (!exists) {
+                if (isChannelExpired(ch)) {
+                    const b3 = findBackupChannel(ch.name, sky3Channels);
+                    if (b3 && !isChannelExpired(b3)) {
+                        finalSkyChannels.push({ ...ch, url: b3.url, drm: b3.drm });
+                        return;
+                    }
+                    const b2 = findBackupChannel(ch.name, baseChannels);
+                    if (b2 && !isChannelExpired(b2)) {
+                        finalSkyChannels.push({ ...ch, url: b2.url, drm: b2.drm });
+                        return;
+                    }
                 }
-            });
-        };
-        
-        addMissingChannels(backupChannels);
-        addMissingChannels(sky3Channels);
+                finalSkyChannels.push(ch);
+            }
+        });
+
+        // Aggiunge canali mancanti da sky3 (se scaduti, controlla base)
+        sky3Channels.forEach(ch => {
+            const exists = finalSkyChannels.find(c => normalizeChannelName(c.name) === normalizeChannelName(ch.name));
+            if (!exists) {
+                if (isChannelExpired(ch)) {
+                    const b2 = findBackupChannel(ch.name, baseChannels);
+                    if (b2 && !isChannelExpired(b2)) {
+                        finalSkyChannels.push({ ...ch, url: b2.url, drm: b2.drm });
+                        return;
+                    }
+                }
+                finalSkyChannels.push(ch);
+            }
+        });
 
         const skyNamesSet = new Set(finalSkyChannels.map(ch => ch.name.toUpperCase()));
         const baseContentFiltered = removeChannelsByName(fileContent, skyNamesSet);
