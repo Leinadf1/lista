@@ -129,12 +129,13 @@ function getChannelMeta(extinf) {
     const gN = group.toLowerCase().replace(/[\s\-_]/g, '');
     const nN = name.toLowerCase().replace(/[\s\-_]/g, '');
     const isDaznNeroZoneCategory = group.toLowerCase().trim() === 'dazn nerozone';
-    const isDazn1InNeroZone = isDaznNeroZoneCategory && nN.includes('dazn1');
-    return { group, name, gN, nN, isDaznNeroZoneCategory, isDazn1InNeroZone };
+    return { group, name, gN, nN, isDaznNeroZoneCategory };
 }
 
 function shouldProxy(extinf, url) {
-    const { group, gN, nN, isDazn1InNeroZone } = getChannelMeta(extinf);
+    const { group, gN, nN, isDaznNeroZoneCategory } = getChannelMeta(extinf);
+    if (isDaznNeroZoneCategory) return true;
+
     const isDazn1ST = nN === 'dazn1' && (gN === 'st' || gN === 'daznst');
     const isDazn1Lineare = nN === 'dazn1' && gN === 'daznlineari';
     const isDaznSvizzeri = gN.includes('daznsvizzeri');
@@ -143,13 +144,13 @@ function shouldProxy(extinf, url) {
     const isDaznChannel = gN.includes('dazn') || nN.includes('dazn');
     const isProxyCategory = PROXY_CATEGORIES.includes(group.toLowerCase().trim());
     const alreadyProxied = url.includes('.workers.dev/');
-    if (alreadyProxied || isDazn1ST || isDazn1InNeroZone) return false;
+    if (alreadyProxied || isDazn1ST) return false;
     return isProxyCategory || isNeroZone || (!isDazn1Lineare && !isDaznSvizzeri && !isDaznPrimeVideoDE && isDaznChannel);
 }
 
 function buildProxiedUrl(extinf, url, proxyUrl) {
-    const { isDaznNeroZoneCategory, isDazn1InNeroZone } = getChannelMeta(extinf);
-    if (isDaznNeroZoneCategory && !isDazn1InNeroZone) {
+    const { isDaznNeroZoneCategory } = getChannelMeta(extinf);
+    if (isDaznNeroZoneCategory) {
         const hasRelay = url.includes('mandra-ua-relay.nowtvpages.workers.dev/');
         return hasRelay ? url : `${NEROZONE_RELAY_URL}${url}`;
     }
